@@ -1,0 +1,348 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Enigma</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="all,follow">
+  <link rel="shortcut icon" type="image/x-icon" href={% static "favicon.ico" %}>
+  <!-- Bootstrap CSS-->
+  <link rel="stylesheet" href={% static "files/vendor/bootstrap/css/bootstrap.min.css" %}>
+  <!-- Font Awesome CSS-->
+  <link rel="stylesheet" href={% static "files/vendor/font-awesome/css/font-awesome.min.css" %}>
+  <!-- Custom Font Icons CSS-->
+  <link rel="stylesheet" type="text/css" href="{% static "files/css/semantic.min.css" %}">
+
+  <link rel="stylesheet" href={% static "files/css/font.css" %}>
+  <!-- Google fonts - Muli-->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli:300,400,700">
+  <!-- theme stylesheet-->
+  <link rel="stylesheet" href={% static "files/css/style.green.css" %} id="theme-stylesheet">
+  <!-- Custom stylesheet - for your changes-->
+  <link rel="stylesheet" href={% static "files/css/custom.css" %}>
+  <!-- Favicon-->
+  <!-- Tweaks for older IEs-->
+  <script src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+</head>
+
+<style>
+form label{
+  font-size: larger !important;
+}
+</style>
+
+<script>
+function toggleInventoryDiv() {
+    var x = document.getElementById("inventoryToggle");
+    if (x.style.display === "none") {
+        x.style.display = "block";
+    } else {
+        x.style.display = "none";
+    }
+}
+function inputRegion(e) {
+  e.preventDefault()
+  region = prompt("Input region to boot machine")
+  console.log(region)
+  window.location.href = `${e.target.href}?region=${region}`
+}
+</script>
+
+<body>
+  <header class="header">
+    <nav class="navbar navbar-expand-lg">
+      <div class="container-fluid d-flex align-items-center justify-content-between">
+        <div class="navbar-header">
+          <!-- Navbar Header-->
+          <a href="{% url 'dashboard' %}" class="navbar-brand">
+            <div class="brand-text brand-big visible text-uppercase"><strong class="text-primary">ENI</strong><strong style="color:white">GMA</strong></div>
+            <div class="brand-text brand-sm"><strong class="text-primary">E</strong><strong style="color:white">G</strong></div>
+          </a>
+          <!-- Sidebar Toggle Btn-->
+          <button class="sidebar-toggle"><i class="fas fa-arrow-left" style="color:white;"></i></button>
+        </div>
+        <div class="right-menu list-inline no-margin-bottom">
+
+          <div class="list-inline-item" style="padding-right:15px">
+            <a href="{% url 'showAccessHistory' %}"><i class="fa fa-tasks" style="font-size:22px;color:white" title="Request History"></i></a>
+          </div>
+
+          {% if anyApprover %}
+          <div class="list-inline-item" style="padding-right:15px">
+            <a href="{% url 'pendingRequests' %}"><i class="far fa-bell" style="font-size:28px;color:white"></i><span class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ pendingCount }}</span></a>
+          </div>
+          {% endif %}
+
+          {% if user.is_superuser or is_ops %}
+          <div class="list-inline-item" style="padding-right:15px">
+            <a href="{% url 'pendingFailure' %}" title="Grant Failures"><i class="fas fa-exclamation" style="font-size:25px;color:white"></i><span
+                class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ failureCount }}</span></a>
+          </div>
+
+          <div class="list-inline-item" style="padding-right:15px">
+            <a href="{% url 'pendingRevoke' %}" title="Revoke Failures"><i class="fas fa-exclamation-triangle" style="font-size:25px;color:white"></i><span
+                class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ revokefailureCount }}</span></a>
+          </div>
+
+          {% endif %}
+
+          <div class="list-inline-item"> <a id="profile" href="{% url 'updateUserInfo' %}" class="nav-link" style="color:#1AC98E;">Profile <i class="icon-paper-and-pencil" style="color:white;font-size: 20px;"></i></a></div>
+          <div class="list-inline-item logout"> <a id="logout" href="{% url 'logout' %}" class="nav-link" style="color:#1AC98E;">Logout <i class="icon-logout" style="color:white;font-size: 20px;"></i></a></div>
+        </div>
+      </div>
+    </nav>
+  </header>
+  <div class="d-flex align-items-stretch" style="height:calc(100vh - 149px);overflow-y:auto">
+    <!-- Sidebar Navigation-->
+    <nav id="sidebar" style="overflow-y: scroll; min-width: 6%;">
+      <!-- Sidebar Header-->
+      <div class="sidebar-header d-flex align-items-center">
+        {% if request.user.user.avatar %}
+          <div class="avatar" style="border:none;"><img style="border:3px solid #282b2f"src={{request.user.user.avatar}} alt="O" class="img-fluid rounded-circle"></div>
+        {% endif %}
+        <!-- <div class="avatar"><i class="fa fa-user-circle-o rounded-circle" style="font-size:48px;"></i></div> -->
+        <div class="title">
+          <h1 class="h4" style="color:white;">{{request.user.user.name}}</h1>
+        </div>
+      </div>
+      <ul class="list-unstyled" style="color:#1AC98E;">
+        <li><a href={% url 'dashboard' %}><i class="icon-home nav-icon"></i>Home</a></li>
+        <li><a href={% url 'showAccessHistory' %}><i class="fa fa-list-ol nav-icon"></i>My Access</a></li>
+      </ul>
+      <!-- Sidebar Navidation Menus-->
+      <span class="heading">GROUP</span>
+      <ul class="list-unstyled" style="color:#1AC98E;">
+        <li><a href={% url 'createNewGroup' %}><i class="fas fa-users nav-icon"></i>Create New Group</a></li>
+        {% if groups %}
+        <li><a data-toggle="modal" data-target="#groupAccess" style="cursor: pointer;"> <i class="icon-list nav-icon"></i>Access Request</a></li>
+        <li><a data-toggle="modal" data-target="#newGroupMember" style="cursor: pointer;"> <i class="fa fa-user-plus nav-icon"></i>Add New Members</a></li>
+        <!-- <li><a href={% url 'groupDashboard' %}> <i class="icon-grid nav-icon"></i>Add New Member2</a></li> -->
+        <li><a data-toggle="modal" data-target="#groupAccessList" style="cursor: pointer;"> <i class="fa fa-list-ol nav-icon"></i>List Group Access</a></li>
+        <!-- <li><a href={% url 'groupAccessList' 'gel' %}> <i class="fa fa-list-ol nav-icon"></i>List Group Access</a></li> -->
+        {% endif %}
+      </ul>
+
+      <span class="heading">MACHINES</span>
+      <ul class="list-unstyled" style="color:#1AC98E;">
+        <!-- <li><a href={% url 'inventoryDashboard' %}> <i class="icon-grid nav-icon"></i>Inventory</a></li> -->
+        <li><a onclick="toggleInventoryDiv()"><i class="fas fa-industry nav-icon"></i>Inventory</a></li>
+        <div id="inventoryToggle" style="display: none;padding-left: 8%;">
+          <li><a href={% url 'centralInventoryDashboard' %}> <i class="fas fa-server nav-icon"></i>IP Inventory</a></li>
+          <li><a href={% url 'inventoryDashboard' %}> <i class="fas fa-server nav-icon"></i>EC2/DC VMs</a></li>
+          <li><a href={% url 'esxiInventoryDashboard' %}> <i class="fas fa-server nav-icon"></i>ESXI</a></li>
+          <li><a href={% url 'DCLinuxDashboard' %}> <i class="fas fa-server nav-icon"></i>DC Linux</a></li>
+          <li><a href={% url 'dcIPInventoryDashboard' %}> <i class="fas fa-server nav-icon"></i>DC IP</a></li>
+          <li><a href={% url 'dcCIDR' %}> <i class="fas fa-server nav-icon"></i>DC CIDR</a></li>
+          <li><a href={% url 'displayMobileInventory' %}> <i class="fas fa-mobile-alt nav-icon"></i>Mobile Inventory</a></li>
+          <li><a href={% url 'displaySoftwareInventory' %}> <i class="fas fa-server nav-icon"></i>Software Inventory</a></li>
+          <!-- <li><a href={% url 'addNewDCIP' %}> <i class="fas fa-plus nav-icon"></i>Add New DC IPs</a></li> -->
+        </div>
+
+        <li><a href={% url 'stateChangeEc2' %}> <i class="fa fa-cogs nav-icon"></i>Machine Start Stop</a></li>
+      </ul>
+
+      <span class="heading">GITHUB</span>
+      <ul class="list-unstyled" style="color:#1AC98E;">
+        <li><a href={% url 'requestRepo' %}><i class="fab fa-git-square nav-icon"></i>Create Repository</a></li>
+      </ul>
+
+      <span class="heading">KEY ROTATION</span>
+      <ul class="list-unstyled" style="color:#1AC98E;">
+        <li><a href={% url 'krf_summary' %}><i class="fas fa-key nav-icon"></i>KRF Summary</a></li>
+        <li><a href={% url 'keyRotationV2Dashboard' %}><i class="fas fa-key nav-icon"></i>All Keys Dashboard</a></li>
+        <li><a href={% url 'keyRotationDashboard' %}><i class="fas fa-key nav-icon"></i>KRF v1 Dashboard</a></li>
+        <li><a href={% url 'krfJobs' %}><i class="fas fa-key nav-icon"></i>KRF v2 Dashboard</a></li>
+        <span class="heading">Manage AWS Account</span>
+        <ul class="list-unstyled" style="color:#1AC98E;">
+          <li><a href={% url 'pwdReset' %}><i class="fas fa-lock nav-icon"></i>Reset Account</a></li>
+        </ul>
+      </ul>
+
+      {% if request.user.is_superuser %}
+      <span class="heading">ESXI</span>
+      <ul class="list-unstyled" style="color:#1AC98E;">
+        <li><a href={% url 'esxiDetails' %}><i class="icon-computer nav-icon"></i>ESXI Details</a></li>
+        <li><a href='#'><i class="icon-computer nav-icon"></i>Create VM</a></li>
+        <li><a href={% url 'getVMDetails' %}><i class="fa fa-list nav-icon"></i>Get VM Details</a></li>
+      </ul>
+      {% endif %}
+
+      {% if request.user.is_superuser or user.user.is_manager or is_ops %}
+      <span class="heading">MANAGEMENT</span>
+      <ul class="list-unstyled" style="color:#1AC98E;">
+        <li><a href={% url 'allUserAccessList' %}><i class="fa fa-list-ul nav-icon"></i>User Access List</a></li>
+        <li><a href={% url 'allUsersList' %}><i class="fa fa-list-ul nav-icon"></i>Users List</a></li>
+        <li><a href={% url 'ec2TagsView' %}><i class="fa fa-list-ul nav-icon"></i>EC2 Tags View</a></li>
+      </ul>
+      {% endif %}
+
+      {% if request.user.is_superuser %}
+      <span class="heading">ADMIN</span>
+      <ul class="list-unstyled" style="color:#1AC98E;">
+        <li><a data-toggle="modal" data-target="#gitRevoke" style="cursor: pointer;"> <i class="icon-list nav-icon"></i>Git Revoke</a></li>
+      </ul>
+      {% endif %}
+
+    </nav>
+
+    <div class="modal fade" id="myAccess">
+      <div class="modal-dialog generic-access-modal">
+        <div class="modal-content">
+          <!-- Modal Header -->
+          <div class="modal-header">
+            <h4 class="modal-title">Access Request</h4>
+            <p>&nbsp;Note - Only resource creation requests are approved via this flow. If you wan't to get access to any tool, connect with your manager to have the request raised via group access.</p>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+          <!-- Modal body -->
+          <div class="modal-body generic-access-modal-body">
+            <form class="generic-access-form" action="{% url 'requestAccess' %}">
+              <div class="generic-access-select-wrapper">
+                <select id="accesses" name="accesses" multiple="" class="ui fluid search dropdown generic-access-select-dropdown">
+                  <option value="">Access List</option>
+                  {% for each_access in access_list %}
+                    <option value="access_{{ each_access.tag }}">{{ each_access.desc }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="generic-access-form-submit">
+                <button type="submit" class="btn btn-primary">Proceed</button></a>&nbsp;&nbsp;
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="groupAccess">
+      <div class="modal-dialog groupAccessModal">
+        <div class="modal-content">
+          <!-- Modal Header -->
+          <div class="modal-header">
+            <h4 class="modal-title">Access Request</h4>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+          <!-- Modal body -->
+          <div class="modal-body">
+            <form action="{% url 'groupRequestAccess' %}">
+              <div class="contentDiv">
+                <div class="labelDiv col-sm-2">
+                  <label>Select Group:</label>
+                </div>
+                <div class="selectDiv col-sm-10">
+                  <select id="group" name="groupName" class="form-control group-access-select-dropdown">
+                    {% for group in groups %}
+                    <option value="{{group}}" >{{group}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div class="contentDiv">
+                <div class="labelDiv col-sm-2">
+                  <label>Select Accesses:</label>
+                </div>
+                <div class="selectDiv col-sm-10">
+                  <select id="group" name="accessList" multiple="" class="ui fluid search dropdown group-access-select-dropdown">
+                    {% for each_access in access_list %}
+                      <option id="{{ each_access.tag }}-box" value="{{ each_access.tag }}">{{ each_access.desc }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn btn-primary">Proceed</button></a>&nbsp;&nbsp;
+          </div>
+          </form>
+          </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="newGroupMember" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Add New Members</h4>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="labelDiv">
+              <label>Select Group: </label>
+            </div>
+            <div>
+              <select id="selectedGroup" name="group" class="form-control custom-dropdown">
+                {% for group in groups %}
+                <option value="{% url 'addUserToGroup' group %}" >{{group}}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="javascript:location.href=document.getElementById('selectedGroup').value">Fill Request Form</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="groupAccessList" role="dialog">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Select Group</h4>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <select id="groupList" class="form-control custom-dropdown" name="groupName" style="width: -moz-available;width: -webkit-fill-available;">
+              {% for group in groups %}
+                <option value="{% url 'groupAccessList' group %}" >{{group}}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="javascript:location.href= document.getElementById('groupList').value">Proceed</button>
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width: 94%;">
+    <!-- Sidebar Navigation end-->
+    <div class="page-content" style="overflow-y:auto; width: 100%; height: 100%; min-height: auto">
+
+      {% block content_body %}
+      {% endblock %}
+    </div>
+    </div>
+  </div>
+  <footer class="custom_footer">
+    <div class="footer__block block no-margin-bottom">
+      <div class="container-fluid text-center">
+        <p class="no-margin-bottom"><strong>Copyright &copy; {{currentYear}} <a href="/" data-ajax="false"
+              data-transition="slide" style="color:white;">BrowserStack</a></strong> All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- JavaScript files-->
+  <script src="{% static "files/vendor/popper.js/umd/popper.min.js" %}"></script>
+  <script src="{% static "files/vendor/bootstrap/js/bootstrap.min.js" %}"></script>
+  <script src="{% static "files/js/front.js" %}"></script>
+  <script src="{% static 'files/js/semantic.min.js' %}"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $('.generic-access-select-dropdown').dropdown();
+      $('.group-access-select-dropdown').dropdown();
+      $('.custom-dropdown').dropdown();
+    });
+  </script>
+</body>
+
+</html>

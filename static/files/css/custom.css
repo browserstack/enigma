@@ -1,0 +1,144 @@
+/* your styles go here */
+
+.row {
+  margin:0px;
+  padding:1%;
+}
+
+.heading {
+  color:#1AC98E !important;
+}
+
+.form-text1 {
+  height: calc(2.4rem + 2px);
+  background: transparent;
+  padding: 0.45rem 0.75rem;
+  display:inline-block;
+}
+/* i{
+  color:white !important;
+} */
+
+input[type=text], input[type=number]{
+  background-color: inherit;
+  border: 1px solid #8a8d93;
+  color: #8a8d93;
+}
+
+input {
+  border-radius: 5px !important;
+}
+
+i.nav-icon{
+  color:white !important;
+}
+
+.tablesorter-filter-row {
+  background-color: transparent !important;
+}
+
+.tablesorter-filter{
+  background-color: transparent !important;
+  color: white !important;
+}
+
+.tablesorter-header{
+  color:#1AC98E !important;
+}
+/* .form-control {
+  border:1px solid white !important;
+  color: white;
+} */
+/* nav#sidebar li.active > a {
+  color: white !important;
+} */
+
+h2 {
+  color:#1AC98E !important;
+}
+
+/* label {
+  color:#FFFFFF !important;
+} */
+
+/* tbody {
+  color: white !important;
+} */
+
+.table-bordered {
+  border:none !important;
+}
+
+.ts-pager {
+  background-color: transparent !important;
+}
+
+.generic-access-modal {
+  width: 80%;
+  max-width: 80%;
+}
+
+.generic-access-modal-body > select {
+  height: 100%;
+  width: 200px;
+}
+
+.generic-access-select-wrapper {
+  float: left;
+  width: 80%;
+}
+
+.generic-access-form-submit {
+  float: right;
+  width: 100px;
+}
+
+.modal-content {
+  margin-top: 150px;
+}
+
+#newGroupMember #selectedGroup {
+  width: 70%;
+}
+
+#newGroupMember .labelDiv {
+  float: left;
+  margin-right: 20px;
+}
+
+#groupAccess .labelDiv {
+  float: left;
+  margin-right: 20px;
+}
+
+#groupAccess .selectDiv {
+  float: right;
+  width: 70%;
+}
+
+#groupAccess #group {
+  width: 70%;
+}
+
+.groupAccessModal {
+  width: 80%;
+  max-width: 80%;
+}
+
+.groupAccessModal .contentDiv {
+  width: 80%;
+  max-width: 80%;
+  padding-bottom: 60px;
+}
+
+.groupAccessModal select {
+  height: 100%;
+}
+
+.vaultRequest.accessKey {
+  display: none;
+}
+
+.vaultRequest.addNewComponent {
+  display: none;
+}
