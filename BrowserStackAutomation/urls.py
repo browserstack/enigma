@@ -19,6 +19,7 @@ from django.urls import re_path, include
 
 urlpatterns = [
     re_path(r'^admin/', admin.site.urls),
+    re_path(r'^$',dashboard, name='dashboard'),
     re_path(r'^login/$', auth_views.LoginView.as_view(), name='login'),
     re_path(r'^oauth/', include('social_django.urls', namespace='social')),
 
