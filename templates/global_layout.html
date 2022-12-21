@@ -127,57 +127,12 @@ function inputRegion(e) {
         {% endif %}
       </ul>
 
-      <span class="heading">MACHINES</span>
-      <ul class="list-unstyled" style="color:#1AC98E;">
-        <!-- <li><a href={% url 'inventoryDashboard' %}> <i class="icon-grid nav-icon"></i>Inventory</a></li> -->
-        <li><a onclick="toggleInventoryDiv()"><i class="fas fa-industry nav-icon"></i>Inventory</a></li>
-        <div id="inventoryToggle" style="display: none;padding-left: 8%;">
-          <li><a href={% url 'centralInventoryDashboard' %}> <i class="fas fa-server nav-icon"></i>IP Inventory</a></li>
-          <li><a href={% url 'inventoryDashboard' %}> <i class="fas fa-server nav-icon"></i>EC2/DC VMs</a></li>
-          <li><a href={% url 'esxiInventoryDashboard' %}> <i class="fas fa-server nav-icon"></i>ESXI</a></li>
-          <li><a href={% url 'DCLinuxDashboard' %}> <i class="fas fa-server nav-icon"></i>DC Linux</a></li>
-          <li><a href={% url 'dcIPInventoryDashboard' %}> <i class="fas fa-server nav-icon"></i>DC IP</a></li>
-          <li><a href={% url 'dcCIDR' %}> <i class="fas fa-server nav-icon"></i>DC CIDR</a></li>
-          <li><a href={% url 'displayMobileInventory' %}> <i class="fas fa-mobile-alt nav-icon"></i>Mobile Inventory</a></li>
-          <li><a href={% url 'displaySoftwareInventory' %}> <i class="fas fa-server nav-icon"></i>Software Inventory</a></li>
-          <!-- <li><a href={% url 'addNewDCIP' %}> <i class="fas fa-plus nav-icon"></i>Add New DC IPs</a></li> -->
-        </div>
-
-        <li><a href={% url 'stateChangeEc2' %}> <i class="fa fa-cogs nav-icon"></i>Machine Start Stop</a></li>
-      </ul>
-
-      <span class="heading">GITHUB</span>
-      <ul class="list-unstyled" style="color:#1AC98E;">
-        <li><a href={% url 'requestRepo' %}><i class="fab fa-git-square nav-icon"></i>Create Repository</a></li>
-      </ul>
-
-      <span class="heading">KEY ROTATION</span>
-      <ul class="list-unstyled" style="color:#1AC98E;">
-        <li><a href={% url 'krf_summary' %}><i class="fas fa-key nav-icon"></i>KRF Summary</a></li>
-        <li><a href={% url 'keyRotationV2Dashboard' %}><i class="fas fa-key nav-icon"></i>All Keys Dashboard</a></li>
-        <li><a href={% url 'keyRotationDashboard' %}><i class="fas fa-key nav-icon"></i>KRF v1 Dashboard</a></li>
-        <li><a href={% url 'krfJobs' %}><i class="fas fa-key nav-icon"></i>KRF v2 Dashboard</a></li>
-        <span class="heading">Manage AWS Account</span>
-        <ul class="list-unstyled" style="color:#1AC98E;">
-          <li><a href={% url 'pwdReset' %}><i class="fas fa-lock nav-icon"></i>Reset Account</a></li>
-        </ul>
-      </ul>
-
-      {% if request.user.is_superuser %}
-      <span class="heading">ESXI</span>
-      <ul class="list-unstyled" style="color:#1AC98E;">
-        <li><a href={% url 'esxiDetails' %}><i class="icon-computer nav-icon"></i>ESXI Details</a></li>
-        <li><a href='#'><i class="icon-computer nav-icon"></i>Create VM</a></li>
-        <li><a href={% url 'getVMDetails' %}><i class="fa fa-list nav-icon"></i>Get VM Details</a></li>
-      </ul>
-      {% endif %}
 
       {% if request.user.is_superuser or user.user.is_manager or is_ops %}
       <span class="heading">MANAGEMENT</span>
       <ul class="list-unstyled" style="color:#1AC98E;">
         <li><a href={% url 'allUserAccessList' %}><i class="fa fa-list-ul nav-icon"></i>User Access List</a></li>
         <li><a href={% url 'allUsersList' %}><i class="fa fa-list-ul nav-icon"></i>Users List</a></li>
-        <li><a href={% url 'ec2TagsView' %}><i class="fa fa-list-ul nav-icon"></i>EC2 Tags View</a></li>
       </ul>
       {% endif %}
 

@@ -14,6 +14,7 @@ import glob
 from os.path import join
 import json
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -42,6 +43,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "bootprocess.apps.BootprocessConfig",
     'social_django',
+    'Access',
 ]
 
 MIDDLEWARE = [
@@ -88,7 +90,6 @@ SOCIAL_AUTH_DISCONNECT_PIPELINE = (
 # Removes the social associations.
 'social_core.pipeline.disconnect.disconnect',
 )
-
 
 ROOT_URLCONF = "BrowserStackAutomation.urls"
 
@@ -159,7 +160,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "static/"
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'public/')
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static/"),
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
@@ -173,3 +177,11 @@ with open('config.json') as data_file:
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = data['googleapi']['SOCIAL_AUTH_GOOGLE_OAUTH2_KEY']
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET= data['googleapi']['SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET']
 SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = data['googleapi']['SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS']
+
+USER_STATUS_CHOICES = [
+    ('1', 'active'),
+    ('2', 'offboarding'),
+    ('3', 'offboarded'),
+]
+
+DEFAULT_ACCESS_GROUP = 'default_access_group'
