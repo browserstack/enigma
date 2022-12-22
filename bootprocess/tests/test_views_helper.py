@@ -21,7 +21,7 @@ class MockRequest:
     [
         # user is not part of default group and has respective count of git repo,
         # dashboard, ssh machines and group accesses
-        # ("UserInDefaultGroup", True, 10, 20, 30, 40),
+        ("UserInDefaultGroup", True, 10, 20, 30, 40),
         ("UserInDefaultGroup", False, 10, 20, 30, 40),
     ],
 )
