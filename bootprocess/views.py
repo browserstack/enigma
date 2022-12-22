@@ -2,12 +2,7 @@ from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 import logging
-from Access.models import User as access_user, MembershipV2, GroupV2, gitAcces, UserAccessMapping
 from BrowserStackAutomation.settings import DEFAULT_ACCESS_GROUP
-from Access.views import executeGroupAccess, generateUserMappings
-import threading
-import json
-import datetime
 from .views_helper import getDashboardData
 
 logger = logging.getLogger(__name__)
