@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = ""
+SECRET_KEY = "abc"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -42,8 +42,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "bootprocess.apps.BootprocessConfig",
-    'social_django',
-    'Access',
+    "social_django",
+    "Access",
 ]
 
 MIDDLEWARE = [
@@ -54,41 +54,38 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'social_django.middleware.SocialAuthExceptionMiddleware',
+    "social_django.middleware.SocialAuthExceptionMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = (
-    'social_core.backends.google.GoogleOAuth2',
-    'django.contrib.auth.backends.ModelBackend',
+    "social_core.backends.google.GoogleOAuth2",
+    "django.contrib.auth.backends.ModelBackend",
 )
 
 SOCIAL_AUTH_PIPELINE = (
-    'social_core.pipeline.social_auth.social_details',
-    'social_core.pipeline.social_auth.social_uid',
-    'social_core.pipeline.social_auth.auth_allowed',
-    'social_core.pipeline.social_auth.social_user',
-    'social_core.pipeline.user.get_username',
-    'social_core.pipeline.user.create_user',
-    'social_core.pipeline.social_auth.associate_user',
-    'social_core.pipeline.social_auth.load_extra_data',
-    'social_core.pipeline.user.user_details',
-    'social_core.pipeline.debug.debug',
+    "social_core.pipeline.social_auth.social_details",
+    "social_core.pipeline.social_auth.social_uid",
+    "social_core.pipeline.social_auth.auth_allowed",
+    "social_core.pipeline.social_auth.social_user",
+    "social_core.pipeline.user.get_username",
+    "social_core.pipeline.user.create_user",
+    "social_core.pipeline.social_auth.associate_user",
+    "social_core.pipeline.social_auth.load_extra_data",
+    "social_core.pipeline.user.user_details",
+    "social_core.pipeline.debug.debug",
 )
 
 SOCIAL_AUTH_DISCONNECT_PIPELINE = (
-# Verifies that the social association can be disconnected from the current
-# user (ensure that the user login mechanism is not compromised by this
-# disconnection).
-#'social.pipeline.disconnect.allowed_to_disconnect',
-
-# Collects the social associations to disconnect.
-'social_core.pipeline.disconnect.get_entries',
-
-# Revoke any access_token when possible.
-'social_core.pipeline.disconnect.revoke_tokens',
-
-# Removes the social associations.
-'social_core.pipeline.disconnect.disconnect',
+    # Verifies that the social association can be disconnected from the current
+    # user (ensure that the user login mechanism is not compromised by this
+    # disconnection).
+    # 'social.pipeline.disconnect.allowed_to_disconnect',
+    # Collects the social associations to disconnect.
+    "social_core.pipeline.disconnect.get_entries",
+    # Revoke any access_token when possible.
+    "social_core.pipeline.disconnect.revoke_tokens",
+    # Removes the social associations.
+    "social_core.pipeline.disconnect.disconnect",
 )
 
 ROOT_URLCONF = "BrowserStackAutomation.urls"
@@ -160,7 +157,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, 'public/')
+STATIC_ROOT = os.path.join(BASE_DIR, "public/")
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static/"),
 ]
@@ -170,18 +167,20 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-with open('config.json') as data_file:
+with open("config.json") as data_file:
     data = json.load(data_file)
 
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = data['googleapi']['SOCIAL_AUTH_GOOGLE_OAUTH2_KEY']
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET= data['googleapi']['SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET']
-SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = data['googleapi']['SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS']
-
-USER_STATUS_CHOICES = [
-    ('1', 'active'),
-    ('2', 'offboarding'),
-    ('3', 'offboarded'),
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = data["googleapi"]["SOCIAL_AUTH_GOOGLE_OAUTH2_KEY"]
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = data["googleapi"]["SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET"]
+SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = data["googleapi"][
+    "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS"
 ]
 
-DEFAULT_ACCESS_GROUP = 'default_access_group'
+USER_STATUS_CHOICES = [
+    ("1", "active"),
+    ("2", "offboarding"),
+    ("3", "offboarded"),
+]
+
+DEFAULT_ACCESS_GROUP = "default_access_group"
