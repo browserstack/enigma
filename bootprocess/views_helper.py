@@ -3,7 +3,6 @@ from Access.models import (
     User as access_user,
     MembershipV2,
     GroupV2,
-    gitAcces,
     UserAccessMapping,
 )
 from BrowserStackAutomation.settings import DEFAULT_ACCESS_GROUP
@@ -83,25 +82,6 @@ def getDashboardData(request):
     dashboardCount = 0
     sshMachineCount = 0
     groupCount = 0
-
-    # TODO: Is this code even used?
-    gitRepos = gitAcces.objects.filter(requester=str(request.user)).filter(
-        status="Approved"
-    )
-    for repos in gitRepos:
-        if "selectedRepoList" in repos.requestInfo:
-            gitCount += len(repos.requestInfo["selectedRepoList"])
-            for re in repos.requestInfo["selectedRepoList"]:
-                dataList.append(
-                    {
-                        "name": re,
-                        "accessType": "GIT",
-                        "accessLevel": repos.requestInfo["gitAccessLevel"][0],
-                        "type": "Personal",
-                    }
-                )
-        else:
-            gitCount += 1
 
     dashboardCount = len(
         UserAccessMapping.objects.filter(

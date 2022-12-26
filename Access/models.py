@@ -72,9 +72,6 @@ class User(models.Model):
 
     alerts_enabled = models.BooleanField(null=False, blank=False, default=False)
 
-    is_manager = models.BooleanField(null=False, blank=False, default=False)
-    is_ops = models.BooleanField(null=False, blank=False, default=False)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -234,39 +231,6 @@ class GroupV2(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class gitAcces(models.Model):
-    """Model for storing request object"""
-
-    requested_on = models.DateTimeField(auto_now_add=True)
-    updated_on = models.DateTimeField(auto_now=True)
-    requestInfo = models.JSONField(default=dict)
-    STATUS = (
-        ("Pending", "pending"),
-        ("Approved", "approved"),
-        ("Declined", "declined"),
-        ("Processing", "processing"),
-        ("Revoked", "revoked"),
-    )
-    status = models.CharField(
-        max_length=255, null=False, blank=False, choices=STATUS, default="Pending"
-    )
-    requestDateUTC = models.CharField(max_length=255, null=False, blank=False)
-    RevokeDateUTC = models.CharField(max_length=255, null=True, blank=True)
-    requestId = models.CharField(
-        max_length=255, null=False, blank=False, primary_key=True
-    )
-    approver = models.CharField(max_length=255, blank=True)
-    requester = models.CharField(max_length=255, null=False, blank=False)
-    reason = models.TextField(null=True, blank=True)
-
-    def __str__(self):
-        return self.requestId + " - " + self.status
-
-    def get_repo_list(self):
-        return (",").join(self.requestInfo["selectedRepoList"])
-
 
 class UserAccessMapping(models.Model):
     """

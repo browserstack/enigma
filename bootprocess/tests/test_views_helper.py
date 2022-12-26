@@ -135,7 +135,6 @@ def test_getDashboardData(
     models.MembershipV2.objects = MockMembershipV2()
     models.User.objects = MockUserModelobj()
     models.UserAccessMapping.objects = MockUserAccessMapping()
-    models.gitAcces.objects = MockGitAccessModelobj()
     models.GroupV2.objects = MockGroupV2()
     request = MockRequest(username="username1")
     context = views_helper.getDashboardData(request)
