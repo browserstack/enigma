@@ -78,7 +78,7 @@ function inputRegion(e) {
           </div>
           {% endif %}
 
-          {% if user.is_superuser %}
+          {% if user.is_superuser or is_ops %}
           <div class="list-inline-item" style="padding-right:15px">
             <a href="{% url 'pendingFailure' %}" title="Grant Failures"><i class="fas fa-exclamation" style="font-size:25px;color:white"></i><span
                 class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ failureCount }}</span></a>
@@ -128,7 +128,7 @@ function inputRegion(e) {
       </ul>
 
 
-      {% if request.user.is_superuser %}
+      {% if request.user.is_superuser or user.user.is_manager or is_ops %}
       <span class="heading">MANAGEMENT</span>
       <ul class="list-unstyled" style="color:#1AC98E;">
         <li><a href={% url 'allUserAccessList' %}><i class="fa fa-list-ul nav-icon"></i>User Access List</a></li>

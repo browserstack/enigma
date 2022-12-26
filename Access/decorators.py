@@ -3,7 +3,7 @@ from django.core.exceptions import PermissionDenied
 
 def user_admin_or_ops(function):
     def wrap(request, *args, **kwargs):
-        if request.user.is_superuser :
+        if request.user.is_superuser or request.user.user.is_ops:
             return function(request, *args, **kwargs)
         else:
             raise PermissionDenied
