@@ -6,7 +6,7 @@ from jsonschema import validate
 try:
   f = open("schema.json","r")
   schema = json.load(f)
-  f = open("config.json", "r")
+  f = open(sys.argv[1], "r")
   config = json.load(f)
   modules = [ f.path for f in os.scandir("../enigma-public-access-modules") if f.is_dir() ]
   for module in modules:
