@@ -173,11 +173,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 with open('config.json') as data_file:
     data = json.load(data_file)
 
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = data['googleapi']['SOCIAL_AUTH_GOOGLE_OAUTH2_KEY']
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET= data['googleapi']['SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET']
-SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = data['googleapi']['SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS']
-
 USER_STATUS_CHOICES = [
     ('1', 'active'),
     ('2', 'offboarding'),
