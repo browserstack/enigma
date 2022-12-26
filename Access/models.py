@@ -61,14 +61,6 @@ class User(models.Model):
 
     email = models.EmailField(null=True, blank=False)
     phone = models.IntegerField(null=True, blank=True)
-    is_bot = models.BooleanField(null=False, blank=False, default=False)
-    BOT_TYPES = (
-        ("None", "none"),
-        ("Github", "github"),
-    )
-    bot_type = models.CharField(
-        max_length=100, null=False, blank=False, choices=BOT_TYPES, default="None"
-    )
 
     alerts_enabled = models.BooleanField(null=False, blank=False, default=False)
 
