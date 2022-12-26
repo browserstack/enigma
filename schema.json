@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "/schemas/central",
+  "title": "Config",
+  "description": "The config file schema",
+  "type": "object",
+  "properties": {
+    "supportedLoginOptions": {
+      "description": "Array of SSO tools which can be used to login to Enigma",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "number"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "description"
+        ]
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "currentLoginOptionId": {
+      "description": "ID of the current login tool to use",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "supportedLoginOptions",
+    "currentLoginOptionId"
+  ]
+}
