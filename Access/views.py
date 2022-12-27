@@ -43,14 +43,13 @@ def updateUserInfo(request):
 
 @login_required
 def createNewGroup(request):
-    # if request.POST:
-    #     context = group_helper.createGroup(request)
-    #     if context["status"] or context['error']:
-    #         return render(request, 'BSOps/accessStatus.html',context)
-    #     return render(request,'BSOps/createNewGroup.html',context)
-    # else:
-    #     return render(request,'BSOps/createNewGroup.html',{})
-    return False
+    if request.POST:
+        context = group_helper.createGroup(request)
+        if context["status"] or context['error']:
+            return render(request, 'BSOps/accessStatus.html',context)
+        return render(request,'BSOps/createNewGroup.html',context)
+    else:
+        return render(request,'BSOps/createNewGroup.html',{})
 
 @api_view(["GET"])
 @login_required
