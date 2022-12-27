@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  web:
+    image: 737963123736.dkr.ecr.eu-central.amazonaws.com/browserstack/enigma-app:dev
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+    env_file:
+      - ./secrets/ops_app_dev.env
+    volumes:
+      - .:/srv/code/bsops
+      - ./mounts/logs/:/ebs/logs/
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    command: >
+      /bin/bash -c "
+        while ! nc -z db 3306;
+        do
+          echo sleeping;
+          sleep 1;
+        done;
+        echo Connected!;"
+  db:
+    image: mysql/mysql-server:8.0.31
+    ports:
+      - "3306:3306"
+    env_file:
+      - ./secrets/ops_mysql_dev.env
+    volumes:
+      - ./dbs:/var/lib/mysql --socket=/tmp/mysql.sock
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: test
+    env_file:
+      - ./secrets/ops_app_test.env
+    volumes:
+      - .:/srv/code/bsops
+      - ./mounts/logs/:/ebs/logs/
