@@ -1,7 +1,8 @@
-from .models import UserAccessMapping, GroupAccessMapping
+from .models import User, UserAccessMapping, GroupAccessMapping
 import datetime
 import traceback
 import logging
+import json
 from . import helpers as helper
 from bootprocess import general
 
@@ -200,3 +201,36 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             # additional email of "Access approved" is not needed
             return True
     return False
+
+def getAccessHistory(request):
+    try:
+        dataList = []
+
+        access_user = User.objects.get(email=request.user.email)
+        genericAccessRequests = UserAccessMapping.objects.filter(user=access_user)
+        for data in genericAccessRequests:
+            access_details = helper.getAccessRequestDetails(data)
+            temp = {}
+            temp['id'] = data.request_id
+            temp['type'] = access_details["accessType"]
+            temp['access'] = access_details["accessCategory"] + " details: " + json.dumps(access_details["accessMeta"])
+            temp['status'] = data.status
+            temp['reason'] = data.request_reason
+            temp['decline_reason'] = data.decline_reason
+            temp['approver'] = ""
+            if data.approver_1:
+                temp['approver'] += data.approver_1.user.username
+            if data.approver_2:
+                temp['approver'] = "1: "+temp['approver']+"\n2: "+data.approver_2.user.username
+            dataList.append(temp)
+
+        context = {}
+        context['dataList'] = dataList
+    except Exception as e:
+        import traceback
+        logger.error(traceback.format_exc())
+        logger.error("Request Could not be Processed "+str(e))
+        context = {}
+        context['error'] = {'error_msg': str(e), 'msg': "Error request not found OR Invalid request type"}
+
+    return context

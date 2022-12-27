@@ -1,7 +1,9 @@
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
 import logging
 from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
+from .views_helper import getAccessHistory
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
 from django.shortcuts import render
@@ -17,8 +19,12 @@ all_access_modules = helper.getAvailableAccessModules()
 
 @login_required
 def showAccessHistory(request):
-    return False
-
+    if request.method == 'GET':
+        context = getAccessHistory(request)
+        if context.get("error"):
+            return render(request, "BSOps/accessStatus.html", context)
+        else:
+            return render(request, "BSOps/showAccessHistory.html", context)
 
 @login_required
 @user_admin_or_ops

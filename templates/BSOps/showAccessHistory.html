@@ -1,0 +1,184 @@
+{% extends 'global_layout.html' %}
+{% load static %}
+
+{% block content_body %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" type="text/css" href="{% static "css/theme.bootstrap_4.css" %}">
+
+<script src="{% static "js/jquery.tablesorter.js" %}"></script>
+<script src="{% static "js/jquery.tablesorter.widgets.js" %}"></script>
+<script src="{% static "js/jquery.tablesorter.pager.js" %}"></script>
+
+<!-- <link rel="stylesheet" type="text/css" href="{% static "files/css/custom.css" %}"> -->
+
+<style id="css">
+
+  table.hover-highlight td:before,
+  table.focus-highlight td:before {
+    background: #fff;
+  }
+
+  body {
+    overflow: visible;
+  }
+
+  a.lia {
+    color: white !important;
+  }
+
+  select.tablesorter-filter {
+    display: block;
+  }
+
+  input[type='search'].tablesorter-filter {
+    background: white;
+  }
+
+  .col.s12 {
+    padding: 0px;
+  }
+</style>
+
+<script id="js">
+$(function() {
+
+  $("table").tablesorter({
+    theme : "bootstrap",
+
+    widthFixed: true,
+
+    // widget code contained in the jquery.tablesorter.widgets.js file
+    // use the zebra stripe widget if you plan on hiding any rows (filter widget)
+    // the uitheme widget is NOT REQUIRED!
+    widgets : [ "filter", "columns" ],
+    widgetOptions : {
+      // using the default zebra striping class name, so it actually isn't included in the theme variable above
+      // this is ONLY needed for bootstrap theming if you are using the filter widget, because rows are hidden
+      zebra : ["even", "odd"],
+      // class names added to columns when sorted
+      columns: [ "primary", "secondary", "tertiary" ],
+      // reset filters button
+      filter_reset : ".reset",
+      // extra css class name (string or array) added to the filter element (input or select)
+      filter_cssFilter: [
+        'form-control',
+        'form-control custom-select',
+        'form-control', // select needs custom class names :(
+        'form-control',
+        'form-control',
+        'form-control'
+      ]
+
+    }
+  })
+  .tablesorterPager({
+
+    // target the pager markup - see the HTML block below
+    container: $(".ts-pager"),
+
+    // target the pager page select dropdown - choose a page
+    cssGoto  : ".pagenum",
+
+    // remove rows from the table to speed up the sort of large tables.
+    // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
+    removeRows: false,
+
+    // output string - default is '{page}/{totalPages}';
+    // possible variables: {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
+    output: '( {startRow} - {endRow} ) Total: {filteredRows}'
+
+  });
+
+});
+</script>
+
+<div class="page-header" style="margin-bottom:0px;">
+  <div class="container-fluid">
+    <h2 class="h5 no-margin-bottom">Access List</h2>
+  </div>
+</div>
+<div class="wrapper">
+  <div id="demo">
+    <table class="table table-bordered table-striped"><!-- add materialize classes, as desired -->
+    <thead class="thead-dark">
+  		<tr>
+        <th data-placeholder="Search">ID</th>
+        <th class="filter-select filter-exact" data-placeholder="ALL">Access Type</th>
+        <th data-placeholder="Search">Access</th>
+        <th data-placeholder="Search">Approver</th>
+        <th class="filter-select filter-exact" data-placeholder="ALL">Status</th>
+        <th data-placeholder="Search">Access Reason</th>
+        <th data-placeholder="Search">Decline Reason</th>
+        <th data-placeholder="Search">Action</th>
+      </tr>
+  	</thead>
+  	<tfoot>
+  		<!-- include "tablesorter-ignoreRow" class for pager rows in thead -->
+      <tr class="tablesorter-ignoreRow">
+  			<th colspan="8" class="ts-pager form-horizontal" style="padding:1%">
+  				<button type="button" class="btn btn-primary first" style="padding: 0px 30px;"><i class="small material-icons">first_page</i></button>
+  				<button type="button" class="btn btn-primary prev" style="padding: 0px 30px;"><i class="small material-icons">navigate_before</i></button>
+  				<span class="pagedisplay"></span>
+  				<!-- this can be any element, including an input -->
+  				<button type="button" class="btn btn-primary next" style="padding: 0px 30px;"><i class="small material-icons">navigate_next</i></button>
+  				<button type="button" class="btn btn-primary last" style="padding: 0px 30px;"><i class="small material-icons">last_page</i></button>
+  				<select class="pagesize browser-default form-control col-sm-1" title="Select page size" style="display:  inherit;">
+  					<option selected="selected" value="40">40</option>
+  					<option value="50">50</option>
+  					<option value="60">60</option>
+  					<option value="70">70</option>
+  				</select>
+  				<select class="pagenum browser-default form-control col-sm-1" title="Select page number" style="display:  inherit;"></select>
+  			</th>
+  		</tr>
+  	</tfoot>
+  	<tbody>
+      {% for item in dataList %}
+      <tr >
+        <td>{{item.id}}</td>
+        <td>{{item.type}}</td>
+        <td>{{item.access}}</td>
+        <td>{{item.approver}}</td>
+        <td>{{item.status}}</td>
+        <td>{{item.reason}}</td>
+        <td>{{item.decline_reason}}</td>
+        {% if item.type == 'VPN Access' %}
+          {% if item.status == 'GrantFailed' or item.status == 'Approved' %}
+           <td><a class="btn btn-primary" target="_blank"  href="/individual_resolve?requestId={{ item.id }}">ReGrant</a></td>
+          {% else %}
+            <td>NA</td>
+          {% endif %}
+        {% elif item.type == 'SSH Machine Access' and item.status == 'GrantFailed' %}
+          <td><a class="btn btn-primary" target="_blank" href="/individual_resolve?requestId={{ item.id }}">ReGrant</a></td>
+        {% elif item.type == 'Github Access' %}
+          {% if item.status == 'GrantFailed' or item.status == 'Approved' %}
+            <td><a class="btn btn-primary" target="_blank" href="/individual_resolve?requestId={{ item.id }}">ReGrant</a></td>
+          {% endif %}
+        {% elif item.type == 'Zombie and RailsApp Dashboard' %}
+          {% if item.status == 'GrantFailed' or item.status == 'Approved' %}
+            <td><a class="btn btn-primary" target="_blank" href="/individual_resolve?requestId={{ item.id }}">ReGrant</a></td>
+          {% endif %}
+        {% else %}
+        <td>NA</td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+  	</tbody>
+  </table></div>
+
+</div>
+
+
+<!-- <section class="no-padding-top no-padding-bottom">
+  <div class="container-fluid card-deck" style="text-align:center;margin:0px;">
+    <div class="row">
+      <div class="card col-md-4 col-sm-8">
+        <img class="card-img-top" src="{% static "img/mockup1.jpg" %}" alt="Card image">
+        <div class="card-body">
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section> -->
+{% endblock %}
