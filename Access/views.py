@@ -50,6 +50,7 @@ def createNewGroup(request):
     #     return render(request,'BSOps/createNewGroup.html',context)
     # else:
     #     return render(request,'BSOps/createNewGroup.html',{})
+    return False
 
 @api_view(["GET"])
 @login_required

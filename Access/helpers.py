@@ -28,6 +28,7 @@ def getAccessModules():
     cached_accesses = \
         [globals()[basename(f)].access.get_object() for f in access_modules_dirs if not isfile(f)]
     return cached_accesses
+<<<<<<< HEAD
 
 def check_user_permissions(user, permissions):
     if hasattr(user, 'user'):
@@ -39,3 +40,5 @@ def check_user_permissions(user, permissions):
             if permissions in permission_labels:
                 return True
     return False
+=======
+>>>>>>> d9b5ea59fa334f03711701a7596d0e797a6f51a0
