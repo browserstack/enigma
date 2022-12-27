@@ -1,13 +1,23 @@
 import pytest
 from Access import helpers
-from Access.helpers import getAvailableAccessModules, getAccessModules
-
+from Access.helpers import getAvailableAccessModules, getAccessModules, getAccessRequestDetails
 
 class MockAccessModule:
     def __init__(self, name=""):
         self.name = name
         self.available = True
 
+    def tag(self):
+        return "TAG"
+
+    def access_desc(self):
+        return "access_desc"
+
+    def combine_labels_desc(self, access_labels):
+        return access_labels
+
+    def combine_labels_meta(self, access_labels):
+        return access_labels
 
 @pytest.mark.parametrize(
     "testName, available_accesses, expectedModuleList",
@@ -56,3 +66,38 @@ def test_getAccessModules(mocker, testName, cached_accesses, expectedModuleList)
     assert len(modules) == len(expectedModuleList)
     for i in range(len(modules)):
         assert modules[i].name == expectedModuleList[i].name
+
+# test for getAccessRequestDetails
+@pytest.fixture
+def each_access_request():
+    class MockUser:
+        def __init__(self):
+            self.email = "test@test.com"
+
+    class MockAccess:
+        def __init__(self):
+            self.access_tag = "TAG"
+            self.access_label = "LABEL"
+
+    class MockAccessRequest:
+        def __init__(self):
+            self.request_id = "1"
+            self.request_reason = "Test reason"
+            self.requested_on = "2022-12-27"
+            self.user = MockUser()
+            self.access = MockAccess()
+
+    return MockAccessRequest()
+
+def test_get_access_request_details(each_access_request):
+    result = getAccessRequestDetails(each_access_request)
+    assert result == {
+        "access_tag": "TAG",
+        "userEmail": "test@test.com",
+        "requestId": "1",
+        "accessReason": "Test reason",
+        "requested_on": "2022-12-27",
+        "accessType": "access_desc",
+        "accessCategory": ['LABEL'],
+        "accessMeta": ['LABEL']
+    }
