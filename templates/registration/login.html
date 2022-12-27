@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Enigma</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="all,follow">
+
+  <link rel="shortcut icon" type="image/x-icon" href={% static "favicon.ico" %}>
+  <!-- Bootstrap CSS-->
+  <link rel="stylesheet" href={% static "files/vendor/bootstrap/css/bootstrap.min.css" %}>
+  <!-- Font Awesome CSS-->
+  <link rel="stylesheet" href={% static "files/vendor/font-awesome/css/font-awesome.min.css" %}>
+  <!-- Custom Font Icons CSS-->
+
+  <link rel="stylesheet" href={% static "files/css/font.css" %}>
+  <!-- Google fonts - Muli-->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli:300,400,700">
+  <!-- theme stylesheet-->
+  <link rel="stylesheet" href={% static "files/css/style.green.css" %} id="theme-stylesheet">
+  <!-- Custom stylesheet - for your changes-->
+  <link rel="stylesheet" href={% static "files/css/custom.css" %}>
+  <!-- Tweaks for older IEs-->
+  <script src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
+</head>
+
+<style>
+  body {
+    background-image: url("{% static 'background.jpg' %}");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+</style>
+
+<body>
+  <div class="login-page">
+    <div class="container d-flex align-items-center">
+      <div class="form-holder has-shadow">
+        <div class="row">
+          <!-- Logo & Information Panel-->
+          <div class="content" style="margin:auto;text-align:center;">
+            <div class="logo">
+              <div class="col-sm-4" style="margin:auto;padding-left:1%">
+                <img src="{% static 'engima_logo.png' %}" style="width:inherit">
+              </div>
+            </div>
+            <a href="{% url "social:begin" "google-oauth2" %}" style="margin-top:2%"><button type="button"
+                class="loginBtn loginBtn--google btn-primary" style="border-radius:  5px;padding: 10px 60px;">Google
+                Sign In</button></a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- JavaScript files-->
+  <!-- <script src="vendor/jquery/jquery.min.js"></script> -->
+  <!-- <script src="vendor/popper.js/umd/popper.min.js"> </script> -->
+  <script src="{% static " files/vendor/bootstrap/js/bootstrap.min.js" %}"></script>
+  <!-- <script src="{% static "files/vendor/jquery-validation/jquery.validate.min.js" %}"></script> -->
+  <script src="{% static " files/js/front.js" %}"></script>
+</body>
+
+</html>
