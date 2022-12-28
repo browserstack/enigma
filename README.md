@@ -1,6 +1,18 @@
 # enigma-public-central
 Central Codebase for access management tool
 
+## Local setup
+
+After cloning this repository, make sure that the dependencies are installed on your local machine by running:
+`pip install -r requirments.txt`
+
+### For contributing code
+
+- Python 3.11.0
+- pre-commit (see rules [below](#rules-enforced-by-the-pre-commit-hooks))
+  - run: `brew install pre-commit` or `pip install pre-commit`
+  - run: `pre-commit install --install-hooks --overwrite` in the base directory of this project
+
 ## Commit Message Guideline
 
 Format: `<type>(<scope>): <subject>`
