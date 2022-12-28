@@ -2,6 +2,7 @@ version: '3'
 
 services:
   web:
+    container_name: dev
     image: 737963123736.dkr.ecr.eu-central.amazonaws.com/browserstack/enigma-app:dev
     build:
       context: .
@@ -25,6 +26,7 @@ services:
         done;
         echo Connected!;"
   db:
+    container_name: db
     image: mysql/mysql-server:8.0.31
     ports:
       - "3306:3306"
@@ -33,6 +35,7 @@ services:
     volumes:
       - ./dbs:/var/lib/mysql --socket=/tmp/mysql.sock
   test:
+    container_name: test
     build:
       context: .
       dockerfile: Dockerfile

@@ -12,20 +12,20 @@ RUN DEBIAN_FRONTEND=noninteractive \
   && apt-get clean \
   && apt-get autoremove -y
 
-# Set env variables used in this Dockerfile (add a unique prefix, such as DOCKYARD)
+# Set env variables used in this Dockerfile (add a unique prefix, such as DEV)
 RUN apt update && apt install -y netcat dnsutils
 
 # Directory in container for all project files
-ENV DOCKYARD_SRVHOME=/srv
+ENV DEV_SRVHOME=/srv
 
 # Local directory with project source
-ENV DOCKYARD_SRC=code/bsops
+ENV DEV_SRC=code/bsops
 
 # Directory in container for project source files
-ENV DOCKYARD_SRVPROJ=$DOCKYARD_SRVHOME/$DOCKYARD_SRC
+ENV DEV_SRVPROJ=$DEV_SRVHOME/$DEV_SRC
 
 # Create application subdirectories
-WORKDIR $DOCKYARD_SRVPROJ
+WORKDIR $DEV_SRVPROJ
 
 # Copy just requirements.txt
 COPY requirements.txt /tmp/requirements.txt
