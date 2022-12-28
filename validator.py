@@ -8,7 +8,7 @@ try:
   schema = json.load(f)
   f = open(sys.argv[1], "r")
   config = json.load(f)
-  modules = [ f.path for f in os.scandir("../enigma-public-access-modules") if f.is_dir() ]
+  modules = [ f.path for f in os.scandir("./Access/access_modules") if f.is_dir() ]
   for module in modules:
     f = open(module+"/schema.json")
     module_schema = json.load(f)
