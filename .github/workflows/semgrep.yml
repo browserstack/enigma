@@ -1,0 +1,24 @@
+name: Semgrep
+on:
+  pull_request: {}
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - .github/workflows/semgrep.yml
+  schedule:
+    # random HH:MM to avoid a load spike on GitHub Actions at 00:00
+    - cron: '12 15 * * *'
+jobs:
+  semgrep:
+    name: Scan
+    runs-on: ubuntu-20.04
+    container:
+      image: returntocorp/semgrep
+    if: (github.actor != 'dependabot[bot]')
+    steps:
+      - uses: actions/checkout@v3
+      - run: semgrep --error --config "p/cwe-top-25"
+      - run: semgrep --error --config "p/owasp-top-ten"
+      - run: semgrep --error --config "p/r2c-security-audit"
