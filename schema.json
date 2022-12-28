@@ -5,34 +5,26 @@
   "description": "The config file schema",
   "type": "object",
   "properties": {
-    "supportedLoginOptions": {
-      "description": "Array of SSO tools which can be used to login to Enigma",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "number"
-          },
-          "description": {
-            "type": "string"
-          }
+    "googleapi": {
+      "description": "Config keys related to Google SSO",
+      "type": "object",
+      "properties": {
+        "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": {
+          "description": "Google OAuth2 Key",
+          "type": "string"
         },
-        "required": [
-          "id",
-          "description"
-        ]
-      },
-      "minItems": 1,
-      "uniqueItems": true
-    },
-    "currentLoginOptionId": {
-      "description": "ID of the current login tool to use",
-      "type": "integer"
+        "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": {
+          "description": "Google OAuth2 secret",
+          "type": "string"
+        },
+        "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS": {
+          "description": "Google OAuth2 whitelisted domains",
+          "type": "string"
+        }
+      }
     }
   },
   "required": [
-    "supportedLoginOptions",
-    "currentLoginOptionId"
+    "googleapi"
   ]
 }
