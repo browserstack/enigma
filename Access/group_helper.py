@@ -16,7 +16,7 @@ def createGroup(request):
         newGroupName = (data["newGroupName"][0]).lower()
         # Group name has to be unique.
         existing_groups = GroupV2.objects.filter(name=newGroupName).filter(
-            status__in=["approved", "pending"]
+            status__in=["Approved", "Pending"]
         )
         if len(existing_groups):
             # the group name is not unique.

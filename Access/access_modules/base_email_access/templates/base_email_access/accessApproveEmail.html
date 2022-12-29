@@ -1,0 +1,34 @@
+{% if not isGroup %}
+<div class="row " style="background-color:#d9d9d9">
+  <br>
+    <center>
+      <h2>{{ user.email }} has raised an access request for {{ requestData.accessCategory }} for {{ requestData.accessDesc }}</h2>
+    </center>
+  <br>
+</div>
+<h4>Primary Approver: {{ approvers.primary }}</h4>
+<h4>Other: </h4> {{ approvers.other }}<br>
+{% else %}
+<div class="row " style="background-color:#d9d9d9">
+  <br>
+    <center>
+      <h2>{{ requestData.accessCategory }} for {{ requestData.accessDesc }}</h2>
+    </center>
+  <br>
+</div>
+{% endif %}
+<h4>Category: {{ requestData.accessCategory }}</h4>
+{% if requestData.accessMeta %}
+<h4>Access Metadata:</h4>
+<table style="border: 1px solid black;">
+{% for key, value in requestData.accessMeta.items %}
+<tr style="border: 1px solid black;"><td style="border: 1px solid black; padding: 5px">{{ key }}</td><td style="border: 1px solid black; padding: 5px">{{ value }}</td></tr>
+{% endfor %}
+</table>
+{% endif %}
+<h4>Request Id: {{ requestId }}</h4>
+<h4>Requesting User: {{ user.username }} {{ user.email }} <br>
+<h4>Reason: {{ requestData.accessReason }}</h4>
+<center>
+  <a href="http://{{ request.META.HTTP_HOST }}/access/pendingRequests" class="button button2" style="color:white;">Go to Requests Dashboard</a>
+</center>"""
