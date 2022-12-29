@@ -7,7 +7,7 @@ django-ajax-datatable==4.4.4
 django-filter==22.1
 django-mysql ==4.7.1
 djangorestframework==3.14.0
-pre-commit==v1.1.1
+pre-commit==2.21.0
 pylama==8.4.1
 pytest==7.2.0
 pytest-cov==4.0.0

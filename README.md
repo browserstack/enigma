@@ -10,8 +10,10 @@ After cloning this repository, make sure that the dependencies are installed on 
 
 - Python 3.11.0
 - pre-commit (see rules [below](#rules-enforced-by-the-pre-commit-hooks))
-  - run: `brew install pre-commit` or `pip install pre-commit`
+  - run: `pip install pre-commit==2.21.0`
   - run: `pre-commit install --install-hooks --overwrite` in the base directory of this project
+  - run: `pre-commit autoupdate`
+  - run: `pre-commit run --all-files --show-diff-on-failure --color always`
 
 ## Commit Message Guideline
 
