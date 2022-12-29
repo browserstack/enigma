@@ -321,21 +321,21 @@ class UserAccessMapping(models.Model):
             self.approved_on = self.updated_on
             super(UserAccessMapping, self).save(*args, **kwargs)
 
-    @staticmethod
-    def getAccessRequestDetails(access_request, access_module):
+    def getAccessRequestDetails(self, access_module):
         access_request_data = {}
-        access = [access_request.access]
-        access_tags = [access_request.access.access_tag]
-        access_labels = [access_request.access.access_label]
+        access = [self.access]
+        access_tags = [self.access.access_tag]
+        access_labels = [self.access.access_label]
 
         access_tag = access_tags[0]
         # code metadata
         access_request_data["access_tag"] = access_tag
         # ui metadata
-        access_request_data["userEmail"] = access_request.user.email
-        access_request_data["requestId"] = access_request.request_id
-        access_request_data['accessReason'] = access_request.request_reason
-        access_request_data['requested_on'] = access_request.requested_on
+        access_request_data["userEmail"] = self.user.email
+        access_request_data["requestId"] = self.request_id
+        access_request_data['accessReason'] = self.request_reason
+        access_request_data['requested_on'] = self.requested_on
+
 
         access_request_data["accessType"] = access_module.access_desc()
         access_request_data["accessCategory"] = access_module.combine_labels_desc(access_labels)
@@ -417,26 +417,26 @@ class GroupAccessMapping(models.Model):
     def __str__(self):
         return self.request_id
 
-    @staticmethod
-    def getAccessRequestDetails(access_request, access_module):
+    def getAccessRequestDetails(self, access_module):
         access_request_data = {}
-        access = [access_request.access]
-        access_tags = [access_request.access.access_tag]
-        access_labels = [access_request.access.access_label]
+        access = [self.access]
+        access_tags = [self.access.access_tag]
+        access_labels = [self.access.access_label]
 
         access_tag = access_tags[0]
         # code metadata
         access_request_data["access_tag"] = access_tag
         # ui metadata
-        access_request_data["userEmail"] = access_request.requested_by.email
-        access_request_data["groupName"] = access_request.group.name
-        access_request_data["requestId"] = access_request.request_id
-        access_request_data['accessReason'] = access_request.request_reason
-        access_request_data['requested_on'] = access_request.requested_on
+        access_request_data["userEmail"] = self.requested_by.email
+        access_request_data["groupName"] = self.group.name
+        access_request_data["requestId"] = self.request_id
+        access_request_data['accessReason'] = self.request_reason
+        access_request_data['requested_on'] = self.requested_on
 
         access_request_data["accessType"] = access_module.access_desc()
         access_request_data["accessCategory"] = access_module.combine_labels_desc(access_labels)
         access_request_data["accessMeta"] = access_module.combine_labels_meta(access_labels)
+
         return access_request_data
 
 

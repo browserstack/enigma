@@ -72,7 +72,7 @@ class BaseEmailAccess(object):
         pending_accesses = []
 
         for pending_request in mapping.objects.filter(status=pending_status, access__access_tag=access_tag):
-            pending_accesses.append(mapping.getAccessRequestDetails(pending_request, self))
+            pending_accesses.append(pending_request.getAccessRequestDetails(self))
         
         return pending_accesses
 
