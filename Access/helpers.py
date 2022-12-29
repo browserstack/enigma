@@ -4,6 +4,7 @@ import re
 import logging
 import time, datetime
 from Access.access_modules import *
+from django.template import loader
 
 logger = logging.getLogger(__name__)
 available_accesses = []
@@ -47,3 +48,10 @@ def sla_breached(requested_on):
     duration_in_s = diff.total_seconds()
     hours = divmod(duration_in_s, 3600)[0]
     return hours >= 24
+
+def generateStringFromTemplate(filename, **kwargs):
+    template = loader.get_template(filename)
+    vals = {}
+    for key, value in kwargs.items():
+        vals[key] = value
+    return template.render(vals)

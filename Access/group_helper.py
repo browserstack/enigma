@@ -1,9 +1,8 @@
 from Access.models import User, GroupV2, MembershipV2
-from Access import email_helper
+from Access import helpers
 import datetime
 import logging
 from bootprocess import general
-
 from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS
 
 logger = logging.getLogger(__name__)
@@ -16,8 +15,7 @@ def createGroup(request):
         newGroupName = (data["newGroupName"][0]).lower()
         # Group name has to be unique.
         existing_groups = GroupV2.objects.filter(name=newGroupName).filter(
-            status__in=["Approved", "Pending"]
-        )
+            status__in=["Approved", "Pending"])
         if len(existing_groups):
             # the group name is not unique.
             context = {}
@@ -93,7 +91,7 @@ def createGroup(request):
             + " -- "
             + base_datetime_prefix
         )
-        body = email_helper.generateEmail(
+        body = helpers.generateStringFromTemplate(filename="email.html",emailBody=
             generateNewGroupCreationEmailBody(
                 request,
                 group_id,
@@ -129,62 +127,18 @@ def createGroup(request):
         return context
 
 
-def generateNewGroupCreationEmailBody(
-    request, requestId, groupName, memberList, reason, needsAccessApprove
-):
-    ret = (
-        """<center><h1> New Group Request from """
-        + str(request.user.user)
-        + """ </h1></center>
-    <br>
-    <b>"""
-        + request.user.first_name
-        + """ """
-        + request.user.last_name
-        + """</b>("""
-        + request.user.email
-        + """) has requested for creation of new group with name <b>"""
-        + str(groupName)
-        + """</b>
-    <br><br>
-    Following members are requested for being added to the group."""
-    )
-    ret += (
-        generateGroupMemberTable(memberList)
-        + """
-    <br>
-    Reason : """
-        + reason
-        + """
-    <br>"""
-    )
-
-    if needsAccessApprove:
-        ret += "Further addition of members <b>will</b> require premission from access_approve"
-    else:
-        ret += "Further addition of members <b>will not</b> require premission from access_approve"
-
-    ret += """<center>
-    <a href='https://enigma.browserstack.com/access/pendingRequests' class="button button2" style="color:white;">Go to access-approve Dashboard</a>
-    </center>"""
-    return ret
-
+def generateNewGroupCreationEmailBody(request, requestId, groupName, memberList, reason, needsAccessApprove):
+    return helpers.generateStringFromTemplate(filename="groupCreationEmailBody.html", 
+                            user = str(request.user.user), 
+                            first_name=request.user.first_name, 
+                            last_name = request.user.last_name,
+                            email = request.user.email,
+                            groupName = groupName,
+                            memberList = generateGroupMemberTable(memberList), 
+                            reason = reason,
+                            needsAccessApprove = needsAccessApprove)
 
 def generateGroupMemberTable(memberList):
     if len(memberList) <= 0:
         return "No members are being added initially"
-    ret = """<table>
-      <tr>
-        <th>Member Email</th>
-      </tr>"""
-    for member in memberList:
-        ret += (
-            """
-        <tr>
-        <td>"""
-            + member
-            + """</td>
-        </tr>"""
-        )
-    ret += """</table>"""
-    return ret
+    return helpers.generateStringFromTemplate("listToTable.html", memberList=memberList)
