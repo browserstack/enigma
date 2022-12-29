@@ -1,0 +1,17 @@
+asgiref==3.5.2
+boto3==1.25.0
+cffi==1.15.1
+coverage==7.0.1
+django==4.1.3
+django-ajax-datatable==4.4.4
+django-filter==22.1
+django-mysql ==4.7.1
+djangorestframework==3.14.0
+pre-commit==v1.1.1
+pylama==8.4.1
+pytest==7.2.0
+pytest-cov==4.0.0
+pytest-django==4.5.2
+pytest-mock==3.10.0
+social-auth-app-django==5.0.0
+social-auth-core==4.3.0
