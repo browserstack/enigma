@@ -80,7 +80,7 @@ class BaseEmailAccess(object):
         pending_requests = []
         module_permissions = self.fetch_approver_permissions()
 
-        status = "Pending"
+        status = None
         if module_permissions["1"] in user_permissions:
             status = "Pending"
         elif "2" in module_permissions and module_permissions["2"] in user_permissions and not self.is_custom_secondary_approval_flow():
