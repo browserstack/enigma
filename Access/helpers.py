@@ -39,3 +39,22 @@ def check_user_permissions(user, permissions):
             if permissions in permission_labels:
                 return True
     return False
+
+def getAccessDetails(eachAccess):
+    accessDetails = {}
+    access_label = eachAccess.access_label
+    logger.debug(accessDetails)
+    for eachAccessModule in getAccessModules():
+        if eachAccess.access_tag == eachAccessModule.tag():
+            accessDetails['accessType'] = eachAccessModule.access_desc()
+            accessDetails['accessCategory'] = eachAccessModule.get_label_desc(access_label)
+            accessDetails['accessMeta'] = eachAccessModule.get_label_meta(access_label)
+
+            if eachAccess.access_tag == "other" and "grant_emails" in eachAccess.access_label and type(eachAccess.access_label["grant_emails"])==list:
+                accessDetails['revokeOwner'] = ",".join(eachAccess.access_label["grant_emails"])
+                accessDetails['grantOwner']  = accessDetails['revokeOwner']
+            else:
+                accessDetails['revokeOwner'] = ",".join(eachAccessModule.revoke_owner())
+                accessDetails['grantOwner'] = ",".join(eachAccessModule.grant_owner())
+    logger.debug(accessDetails)
+    return accessDetails

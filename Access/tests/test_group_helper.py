@@ -1,8 +1,9 @@
 import pytest
 from django.http import QueryDict
-from Access import models
-from Access import group_helper
+from Access import models, helpers
+from Access import group_helper, email_helper
 from unittest.mock import ANY
+from bootprocess import general
 
 testGroupName = "testgroupname"
 #TESTCASE NAMES
@@ -115,3 +116,246 @@ def test_createGroup(mocker, testname, postData,expectedContext, membershipCreat
     if membershipCreationCallCount>0:
         assert models.MembershipV2.objects.create.call_count == membershipCreationCallCount
         models.GroupV2.objects.create.assert_called_with(name=ANY, group_id=ANY, requester=ANY, description=ANY, needsAccessApprove=needsAccessApprove)
+
+
+test_getGroupAccessList_groupDoesNotExist= "groupDoesNotExist"
+test_getGroupAccessList_groupExists_NoPermission= "groupDoesNotExist_UserDoesNotHavePermission"
+test_getGroupAccessList_groupExists_HasPermission = "groupDoesNotExist_UserHasPermission"
+
+@pytest.mark.parametrize("testname, expectedOutput",
+    [
+        (
+            test_getGroupAccessList_groupDoesNotExist, 
+            "{'error': {'title': 'Invalid Group', 'msg': 'There is no group named testgroupname. Please contact admin for any queries.'}}"
+        ),
+        (
+            test_getGroupAccessList_groupExists_NoPermission, 
+            "{'error': {'error_msg': 'Internal Error', 'msg': 'Error Occured while loading the page. Please contact admin, Permission denied, requester is non owner'}}"
+        ),
+        (
+            test_getGroupAccessList_groupExists_HasPermission, 
+            "{'userList': ['member1', 'member2'], 'groupName': 'testgroupname', 'allowRevoke': False}"
+        ),
+    ]
+)
+def test_getGroupAccessList(mocker, testname, expectedOutput):
+    request = mocker.MagicMock()
+    groupName = "testgroupname"
+
+    if testname == test_getGroupAccessList_groupDoesNotExist:
+        groupFilter = mocker.MagicMock()
+        groupFilter.filter.return_value = []
+        mocker.patch("Access.models.GroupV2.objects.filter", return_value=groupFilter)
+
+    elif testname == test_getGroupAccessList_groupExists_NoPermission:
+        request.user.user.email = "loggedinuser@user.com"
+        request.user.is_superuser = False
+        request.user.user.is_ops = False
+        groupFilter = mocker.MagicMock()
+        groupFilter.filter.return_value = ["group1"]
+        mocker.patch("Access.models.GroupV2.objects.filter", return_value=groupFilter)
+
+        member1 = mocker.MagicMock()
+        member1.user.email = "user1@user.com"
+        member2 = mocker.MagicMock()
+        member2.user.email = "user2@user.com"
+
+
+        groupMembersFilter2 = mocker.MagicMock()
+        groupMembersFilter2.filter.return_value = [member1, member2]
+
+        groupMembersFilter = mocker.MagicMock()
+        groupMembersFilter.filter.return_value = groupMembersFilter2
+        mocker.patch("Access.models.MembershipV2.objects.filter", return_value=groupMembersFilter)
+        mocker.patch("Access.models.Role.objects.get", return_value="")
+        mocker.patch("Access.models.User.objects.filter", return_value=[])
+
+    elif testname == test_getGroupAccessList_groupExists_HasPermission:
+        request.POST = False
+        request.user.user.email = "loggedinuser@user.com"
+        request.user.is_superuser = False
+        request.user.user.is_ops = True
+        groupFilter = mocker.MagicMock()
+        groupFilter.filter.return_value = ["group1"]
+        mocker.patch("Access.models.GroupV2.objects.filter", return_value=groupFilter)
+
+
+        member1 = mocker.MagicMock()
+        member1.user.email = "user1@user.com"
+        member1.user.name = "user1"
+        member1.is_owner = False
+        member1.user.current_state.return_value = "is_active"
+        member1.membership_id = "1"
+
+        member2 = mocker.MagicMock()
+        member2.user.email = "user2@user.com"
+        member2.user.name = "user2"
+        member2.is_owner = False
+        member2.user.current_state.return_value = "is_active"
+        member2.membership_id = "2"
+        
+
+
+        groupMembersFilter2 = mocker.MagicMock()
+        groupMembersFilter2.filter.return_value = [member1, member2]
+
+        groupMembersFilter = mocker.MagicMock()
+        groupMembersFilter.filter.return_value = groupMembersFilter2
+
+        def mock_getGroupMembers(groupMembers):
+            return ["member1", "member2"]
+
+        group_helper.getGroupMembers = mock_getGroupMembers
+
+        mocker.patch("Access.models.MembershipV2.objects.filter", return_value=groupMembersFilter)
+        mocker.patch("Access.models.Role.objects.get", return_value="")
+        mocker.patch("Access.models.User.objects.filter", return_value=[])
+
+        mocker.patch("Access.models.GroupAccessMapping.objects.filter", return_value=[])
+
+        mocker.patch("Access.helpers.check_user_permissions", return_value=False)
+        def mock_getAccessDetails(eachAccess):
+            return eachAccess
+        helpers.getAccessDetails = mock_getAccessDetails
+        
+        def mock_check_user_is_group_owner(user_name, group):
+            return []
+        group_helper.check_user_is_group_owner = mock_check_user_is_group_owner
+
+    context = group_helper.getGroupAccessList(request, groupName)
+    assert str(context) == expectedOutput
+
+def test_updateOwner(mocker):
+    request = mocker.MagicMock()
+    request.user.user.email = "loggedinuser@user.com"
+    request.user.is_superuser = False
+    request.user.user.is_ops = False
+    request.POST = QueryDict("owners=user1@user.com&newGroupReason")
+
+    mock_membershipObj = mocker.MagicMock()
+    mock_membershipObj.user.email = "user1@user.com"
+    mock_membershipObj.save.return_value = True
+
+    mock_excludeMembership = mocker.MagicMock()
+    mock_excludeMembership.exclude.return_value = [mock_membershipObj]
+
+    mocker.patch("Access.models.Role.objects.get", return_value="")
+    mocker.patch("Access.models.User.objects.filter", return_value=[])
+    mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_excludeMembership)
+    mocker.patch("bootprocess.general.emailSES", return_value=True)
+    context = {}
+    group_helper.updateOwner(request, "testgroupname","", context)
+    assert context["notification"] == "Owner's updated"
+
+
+test_approveNewGroupRequest_GroupNotFound="GroupNotFound"
+test_approveNewGroupRequest_ReqNotInPending="ReuestNotInPendingState"
+test_approveNewGroupRequest_UserApprovingHisOwn="UserApprovingHisOwnRequest"
+test_approveNewGroupRequest_ProcessReq = "ProcessReq"
+test_approveNewGroupRequest_ThrowsException = "ThrowsException"
+@pytest.mark.parametrize("testname,expectedoutput, groupID, requestApproved, throwsException",
+    [
+        (
+            test_approveNewGroupRequest_GroupNotFound,
+            "{'error': 'Error request not found OR Invalid request type'}",
+              "1", False, False,
+        ),
+        (
+            test_approveNewGroupRequest_ReqNotInPending,
+            "{'error': 'The Request (1) is already Processed By : username2'}",
+            "1", False, False,
+        ),
+        (
+            test_approveNewGroupRequest_UserApprovingHisOwn,
+            "{'error': 'You cannot approve your own request. Please ask other admins to do that'}",
+            "1", False, False,
+        ),
+        (
+            test_approveNewGroupRequest_ProcessReq,
+            "{'msg': 'The Request (grp1) is now being processed'}",
+            "grp1", True, False,
+        ),
+        (
+            test_approveNewGroupRequest_ThrowsException,
+            "{'error': 'Error Occured while Approving group creation. Please contact admin - sendEmailError'}",
+            "grp1", False, True,
+        ),        
+    ]
+)
+
+def test_approveNewGroupRequest(mocker, testname, expectedoutput,groupID, requestApproved, throwsException):
+    request = mocker.MagicMock()
+
+    if testname == test_approveNewGroupRequest_GroupNotFound:
+        mocker.patch("Access.models.GroupV2.objects.get", return_value=[], side_effect = Exception("GroupNotFound"))
+
+    elif testname == test_approveNewGroupRequest_ReqNotInPending:
+        request.user.username = "username1"
+        mock_groupObject = mocker.MagicMock()
+        mock_groupObject.status="Declined"
+        mock_groupObject.approver.user.username = "username2"
+        mocker.patch("Access.models.GroupV2.objects.get", return_value=mock_groupObject)
+        
+    elif testname == test_approveNewGroupRequest_UserApprovingHisOwn:
+        request.user.username = "username1"
+        mock_groupObject = mocker.MagicMock()
+        mock_groupObject.status="Pending"
+        mock_groupObject.approver.user.username = "username2"
+        mock_groupObject.requester.user.username = "username1"
+        mocker.patch("Access.models.GroupV2.objects.get", return_value=mock_groupObject)
+
+    elif testname == test_approveNewGroupRequest_ProcessReq:
+        request.user.username = "username1"
+        request.user.user = mocker.MagicMock()
+        mock_groupObject = mocker.MagicMock()
+        mock_groupObject.status="Pending"
+        mock_groupObject.approver.user.username = "username2"
+        mock_groupObject.requester.user.username = "username3"
+        mock_groupObject.save.return_value = True
+        mock_groupObject.requester.email = "requester@email.com"
+        
+        mock_membership_update = mocker.MagicMock()
+        mock_membership_update.update.return_value = True
+        mock_membership_update.values_list.return_value = ["member1"]
+        mocker.patch("Access.models.GroupV2.objects.get", return_value=mock_groupObject)
+        mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_membership_update)
+        mocker.patch("Access.email_helper.generateEmail", return_value="email body")
+        mocker.patch("bootprocess.general.emailSES", return_value=True)
+
+    elif testname == test_approveNewGroupRequest_ThrowsException:
+        request.user.username = "username1"
+        request.user.user = mocker.MagicMock()
+        mock_groupObject = mocker.MagicMock()
+        mock_groupObject.status="Pending"
+        mock_groupObject.approver.user.username = "username2"
+        mock_groupObject.requester.user.username = "username3"
+        mock_groupObject.save.return_value = True
+        mock_groupObject.requester.email = "requester@email.com"
+        
+        mock_membership_update = mocker.MagicMock()
+        mock_membership_update.update.return_value = True
+        mock_membership_update.values_list.return_value = ["member1"]
+        mocker.patch("Access.models.GroupV2.objects.get", return_value=mock_groupObject)
+        mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_membership_update)
+        mocker.patch("Access.email_helper.generateEmail", return_value="email body")
+        mocker.patch("bootprocess.general.emailSES", return_value=True, side_effect=Exception("sendEmailError"))
+        mocker.patch("Access.models.GroupV2.objects.filter", return_value=[])
+
+    response = group_helper.approveNewGroupRequest(request, groupID)
+
+    assert str(response) == expectedoutput
+    assert models.GroupV2.objects.get.call_count == 1
+
+    if requestApproved:
+        assert general.emailSES.call_count == 1
+        assert models.MembershipV2.objects.filter.call_count == 2
+        assert email_helper.generateEmail.call_count == 1
+    if throwsException:
+        assert models.GroupV2.objects.filter.call_count == 1
+        assert models.MembershipV2.objects.filter.call_count == 2
+        assert general.emailSES.call_count == 1
+        assert email_helper.generateEmail.call_count == 1
+
+def test_addUserToGroup(mocker):
+    request = mocker.MagicMock()
+    groupName = mocker.MagicMock()

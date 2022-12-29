@@ -6,7 +6,7 @@ from rest_framework.authentication import TokenAuthentication, BasicAuthenticati
 from rest_framework.decorators import api_view
 from django.shortcuts import render
 from Access.userlist_helper import getallUserList
-from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests
+from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRevokeFailures
 from Access import group_helper
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ def showAccessHistory(request):
 @user_admin_or_ops
 def pendingFailure(request):
     response = getGrantFailedRequests(request)
-    if response['error']:
+    if type(response) is dict:
         return render(request, 'BSOps/accessStatus.html', response)
     
     return render(request,'BSOps/failureAdminRequests.html',response)
@@ -33,8 +33,10 @@ def pendingFailure(request):
 @login_required
 @user_admin_or_ops
 def pendingRevoke(request):
-    return False
-
+    response = getPendingRevokeFailures(request)
+    if type(response) is dict:
+        return render(request, 'BSOps/accessStatus.html', response)
+    return render(request,'BSOps/failureAdminRequests.html',response)
 
 @login_required
 def updateUserInfo(request):
@@ -74,3 +76,19 @@ def requestAccess(request):
 @login_required
 def groupRequestAccess(request):
     return False
+
+@login_required
+def groupAccessList(request, groupName):
+    context = group_helper.getGroupAccessList(request, groupName)
+    if context['error']:
+        return render(request,"BSOps/accessStatus.html",context)
+    
+    return render(request,"BSOps/accessStatus.html",context)
+
+def approveNewGroup(request, group_id):
+    return group_helper.approveNewGroupRequest(request, group_id)
+
+@login_required
+def addUserToGroup(request, groupName):
+    context =  group_helper.addUserToGroup(request, groupName)
+    return render(request, 'BSOps/accessStatus.html',context)
