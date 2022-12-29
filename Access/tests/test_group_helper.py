@@ -62,7 +62,7 @@ def test_createGroup(mocker, testname, postData,expectedContext, membershipCreat
         mocker.patch("Access.models.GroupV2.objects.filter", return_value=statusFilterPatch)
         mocker.patch("Access.models.GroupV2.objects.create", return_value=mockGroup)
         mocker.patch("Access.models.MembershipV2.objects.create", return_value=True)
-        mocker.patch("Access.email_helper.generateEmail", return_value="email body")
+        mocker.patch("Access.helpers.generateStringFromTemplate", return_value="email body")
         mocker.patch("bootprocess.general.emailSES", return_value="")
         group_helper.generateNewGroupCreationEmailBody  = mockGenerateNewGroupCreationEmailBody
 
@@ -84,7 +84,7 @@ def test_createGroup(mocker, testname, postData,expectedContext, membershipCreat
         mocker.patch("Access.models.GroupV2.objects.create", return_value=mockGroup)
         mocker.patch("Access.models.MembershipV2.objects.create", return_value=None)
         mocker.patch("Access.models.User.objects.filter", return_value=[mockAccUser])
-        mocker.patch("Access.email_helper.generateEmail", return_value="email body")
+        mocker.patch("Access.helpers.generateStringFromTemplate", return_value="email body")
         mocker.patch("bootprocess.general.emailSES", return_value="")
         group_helper.generateNewGroupCreationEmailBody  = mockGenerateNewGroupCreationEmailBody
 
@@ -106,7 +106,7 @@ def test_createGroup(mocker, testname, postData,expectedContext, membershipCreat
         mocker.patch("Access.models.GroupV2.objects.create", return_value=mockGroup)
         mocker.patch("Access.models.MembershipV2.objects.create", return_value=None)
         mocker.patch("Access.models.User.objects.filter", return_value=[mockAccUser])
-        mocker.patch("Access.email_helper.generateEmail", return_value="email body")
+        mocker.patch("Access.helpers.generateStringFromTemplate", return_value="email body")
         mocker.patch("bootprocess.general.emailSES", return_value="")
         group_helper.generateNewGroupCreationEmailBody  = mockGenerateNewGroupCreationEmailBody
 

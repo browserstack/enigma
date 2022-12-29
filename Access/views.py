@@ -5,7 +5,7 @@ from .decorators import user_admin_or_ops, authentication_classes, user_with_per
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
 from django.shortcuts import render
-from Access.userlist_helper import getallUserList
+from Access.userlist_helper import getAllUserList
 from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests
 from Access import group_helper
 
@@ -61,7 +61,7 @@ def allUserAccessList(request, load_ui=True):
 
 @login_required
 def allUsersList(request):
-    context = getallUserList(request)
+    context = getAllUserList(request)
     return render(request, 'BSOps/allUsersList.html', context)
 
 
