@@ -90,5 +90,9 @@ def approveNewGroup(request, group_id):
 
 @login_required
 def addUserToGroup(request, groupName):
-    context =  group_helper.addUserToGroup(request, groupName)
-    return render(request, 'BSOps/accessStatus.html',context)
+    if request.POST:
+        context =  group_helper.addUserToGroup(request, groupName)
+        return render(request, 'BSOps/accessStatus.html',context)
+    else:
+        context =  group_helper.getUserGroup(request, groupName)
+        return render(request, 'BSOps/accessStatus.html',context)

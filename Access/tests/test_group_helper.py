@@ -356,6 +356,78 @@ def test_approveNewGroupRequest(mocker, testname, expectedoutput,groupID, reques
         assert general.emailSES.call_count == 1
         assert email_helper.generateEmail.call_count == 1
 
-def test_addUserToGroup(mocker):
+test_get_user_group_group_not_found = "GroupNotFound"
+test_get_user_group_cannot_access_group = "UserIsNotOwnerOfGroupOrSuperUser"
+test_get_user_group_can_access_group = "UserCanAccessGroup"
+@pytest.mark.parametrize("test_name, group_name,expected_output",
+    [
+        (
+            test_get_user_group_group_not_found,
+            "TestGroupName1",
+            "{'status': {'title': 'Invalid Group', 'msg': 'There is no group named TestGroupName1. Please contact admin for any queries.'}}",
+        ),
+        (
+            test_get_user_group_cannot_access_group,
+            "TestGroupName1",
+            "{'error': {'error_msg': 'Internal Error', 'msg': \"Error Occured while loading the page. Please contact admin, Permission denied, you're not owner of this group\"}}",
+        ),
+        (
+            test_get_user_group_can_access_group,
+            "TestGroupName1",
+            "{'groupMembers': 'user1', 'groupName': 'TestGroupName1'}",
+        ),        
+    ]
+)
+def test_get_user_group(mocker, test_name, group_name, expected_output):
     request = mocker.MagicMock()
-    groupName = mocker.MagicMock()
+    if test_name == test_get_user_group_group_not_found:
+        mock_filtered_group = mocker.MagicMock()
+        mock_filtered_group.filter.return_value = []
+        mocker.patch("Access.models.GroupV2.objects.filter", return_value=mock_filtered_group)
+    elif test_name == test_get_user_group_cannot_access_group:
+        request.user.user.email = "member0@email.com"
+        request.user.is_superuser = False
+
+        mock_group = mocker.MagicMock()
+        mock_filtered_group = mocker.MagicMock()
+        mock_filtered_group.filter.return_value = [mock_group]
+        mocker.patch("Access.models.GroupV2.objects.filter", return_value=mock_filtered_group)
+
+        mock_membership_only_filter = mocker.MagicMock()
+        mock_membership_filter1 = mocker.MagicMock()
+        mock_group_member = mocker.MagicMock()
+        mock_group_member.filter.return_value = ["member1@email.com"]
+        
+        mock_membership_filter1.filter.return_value = mock_membership_only_filter
+
+        mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_membership_filter1)
+    
+    elif test_name == test_get_user_group_can_access_group:
+        request.user.user.email = "member1@email.com"
+        request.user.is_superuser = True
+
+        mock_group = mocker.MagicMock()
+        mock_filtered_group = mocker.MagicMock()
+        mock_filtered_group.filter.return_value = [mock_group]
+        mocker.patch("Access.models.GroupV2.objects.filter", return_value=mock_filtered_group)
+
+        mock_membership_filter1 = mocker.MagicMock()
+        mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_membership_filter1)
+
+        mock_membership_only_filter = mocker.MagicMock()
+        
+        def mock_get_users_from_groupmembers(groupMembers):
+            return "user1"
+
+        group_helper.get_users_from_groupmembers = mock_get_users_from_groupmembers
+        mock_member = mocker.MagicMock()
+        mock_member.user.email = "member1@email.com"
+
+        mock_group_member = mocker.MagicMock()
+        mock_group_member.filter.return_value = [mock_member]
+        mock_membership_only_filter.only.return_value = mock_group_member        
+        mock_membership_filter1.filter.return_value = mock_membership_only_filter
+
+        
+    context = group_helper.get_user_group(request, group_name)
+    assert str(context) == expected_output
