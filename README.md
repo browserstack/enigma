@@ -1,7 +1,6 @@
 # enigma-public-central
 Central Codebase for access management tool
 
-<<<<<<< HEAD
 ### Pre-requisistes
 
 - Install Docker
@@ -18,15 +17,17 @@ colima start
 
 ### Setup
 
-1. Start the service
+1. Create .env file from .env.sample file. Edit the DOCKERIMAGE to the latest image URL.
+
+2. Start the service
 ```bash
 make dev
 ```
-2. Check logs with 
+3. Check logs with 
 ```bash
 make logs
 ```
-3. After seeing migration output in the logs (or waiting a minute after the containers come up), 
+4. After seeing migration output in the logs (or waiting a minute after the containers come up), 
  create superuser with
 ```bash
 # Access the container with:
@@ -35,13 +36,13 @@ docker exec -it dev bash
 python manage.py createsuperuser
 # Set email to your email id, and password to anything you want
 ```
-4. Access the db container with below commands. Password for db container is testtest
+5. Access the db container with below commands. Password for db container is testtest
 ```bash
 docker exec -it db bash
 mysql -u root -p
 create database enigma;
 ```
-4. Restart the server by runing below commands
+6. Restart the server by runing below commands
 ```bash
 docker-compose -f docker-compose.yml restart
 ```

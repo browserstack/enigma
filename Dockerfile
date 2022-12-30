@@ -19,7 +19,7 @@ RUN apt update && apt install -y netcat dnsutils
 ENV DEV_SRVHOME=/srv
 
 # Local directory with project source
-ENV DEV_SRC=code/bsops
+ENV DEV_SRC=code/dev
 
 # Directory in container for project source files
 ENV DEV_SRVPROJ=$DEV_SRVHOME/$DEV_SRC

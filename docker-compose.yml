@@ -3,7 +3,7 @@ version: '3'
 services:
   web:
     container_name: dev
-    image: 737963123736.dkr.ecr.eu-central.amazonaws.com/browserstack/enigma-app:dev
+    image: "${DOCKERIMAGE}"
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,7 +11,7 @@ services:
     env_file:
       - ./secrets/ops_app_dev.env
     volumes:
-      - .:/srv/code/bsops
+      - .:/srv/code/dev
       - ./mounts/logs/:/ebs/logs/
     ports:
       - "8000:8000"
@@ -43,5 +43,5 @@ services:
     env_file:
       - ./secrets/ops_app_test.env
     volumes:
-      - .:/srv/code/bsops
+      - .:/srv/code/dev
       - ./mounts/logs/:/ebs/logs/
