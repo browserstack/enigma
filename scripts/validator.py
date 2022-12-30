@@ -4,9 +4,9 @@ import sys
 from jsonschema import validate
 
 try:
-  f = open("schema.json","r")
+  f = open("./schema.json","r")
   schema = json.load(f)
-  f = open("config.json", "r")
+  f = open("./config.json", "r")
   config = json.load(f)
   root_folders = [ f.path for f in os.scandir("./Access/access_modules") if f.is_dir() ]
   for folder in root_folders:

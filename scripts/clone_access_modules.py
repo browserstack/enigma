@@ -3,7 +3,7 @@ import sys
 from git import Repo
 
 try:
-  f = open("config.json","r")
+  f = open("./config.json","r")
   config = json.load(f)
   urls = config["access_modules"]["git_urls"]
   for url in urls:
