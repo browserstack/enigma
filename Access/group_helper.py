@@ -254,19 +254,19 @@ def check_user_is_group_owner(user_name, group):
 def approveNewGroupRequest(request, group_id):
     try:
         try:
-            groupObject = GroupV2.objects.get(group_id=group_id, status='Pending')
+            group_object = GroupV2.objects.get(group_id=group_id, status='Pending')
         except Exception as e:
             logger.error("Error in approveNewGroup request, Not found OR Invalid request type")
             json_response = {}
             json_response['error'] = "Error request not found OR Invalid request type"
             return json_response
 
-        if groupObject.status in ['Declined','Approved','Processing','Revoked']:
+        if group_object.status in ['Declined','Approved','Processing','Revoked']:
             logger.warning("An Already Approved/Declined/Processing Request was accessed by - "+request.user.username)
             json_response = {}
-            json_response['error'] = 'The Request ('+group_id+') is already Processed By : '+groupObject.approver.user.username
+            json_response['error'] = 'The Request ('+group_id+') is already Processed By : '+group_object.approver.user.username
             return json_response
-        elif request.user.username == groupObject.requester.user.username:
+        elif request.user.username == group_object.requester.user.username:
             # Approving self request
             context = {}
             context["error"] = "You cannot approve your own request. Please ask other admins to do that"
@@ -275,22 +275,22 @@ def approveNewGroupRequest(request, group_id):
             json_response = {}
             json_response['msg'] = 'The Request ('+group_id+') is now being processed'
 
-            groupObject.approver = request.user.user
-            groupObject.status = 'Approved'
-            groupObject.save()
+            group_object.approver = request.user.user
+            group_object.status = 'Approved'
+            group_object.save()
             
-            MembershipV2.objects.filter(group=groupObject, status="Pending").update(status="Approved", approver=request.user.user)
-            initial_members = list(MembershipV2.objects.filter(group=groupObject).values_list("user__user__username", flat=True))
+            MembershipV2.objects.filter(group=group_object, status="Pending").update(status="Approved", approver=request.user.user)
+            initial_members = list(MembershipV2.objects.filter(group=group_object).values_list("user__user__username", flat=True))
 
-            subject = "New Group Created ("+groupObject.name+")"
-            body = "New group with name "+groupObject.name+" has been created with owner being "+groupObject.requester.user.username+"<br>"
+            subject = "New Group Created ("+group_object.name+")"
+            body = "New group with name "+group_object.name+" has been created with owner being "+group_object.requester.user.username+"<br>"
             if initial_members:
                 body += "The following members have been added to this team<br>"
                 body += generateGroupMemberTable(initial_members)
             body = email_helper.generateEmail(body)
             destination = []
             destination += MAIL_APPROVER_GROUPS[:]
-            destination.append(groupObject.requester.email)
+            destination.append(group_object.requester.email)
             # TODO send a mail to initial members
             logger.debug(group_id+" -- Approved email sent to - "+str(destination))
             general.emailSES(destination,subject,body)
@@ -300,12 +300,12 @@ def approveNewGroupRequest(request, group_id):
                 logger.debug("Members added to group - "+group_id+" ="+", ".join(initial_members))
             return json_response
     except Exception as e:
-        groupObject = GroupV2.objects.filter(group_id=group_id, status='Approved')
-        if len(groupObject):
-            groupObject = groupObject[0]
-            groupObject.status = "Pending"
-            groupObject.save()
-            MembershipV2.objects.filter(group=groupObject).update(status="Pending", approver=None)
+        group_object = GroupV2.objects.filter(group_id=group_id, status='Approved')
+        if len(group_object):
+            group_object = group_object[0]
+            group_object.status = "Pending"
+            group_object.save()
+            MembershipV2.objects.filter(group=group_object).update(status="Pending", approver=None)
         logger.exception(e)
         logger.error("Error in Approving New Group request.")
         context = {}
@@ -329,7 +329,6 @@ def get_user_group(request, group_name):
         if request.user.user.email not in ownersEmail and not request.user.is_superuser:
             raise Exception("Permission denied, you're not owner of this group")
     
-
         groupMembers = get_users_from_groupmembers(groupMembers)
         context['groupMembers'] = groupMembers
         context['groupName'] = group_name
@@ -345,7 +344,7 @@ def get_users_from_groupmembers(group_members):
     return [member.user for member in group_members]
 
 
-def addUserToGroup(request, groupName):
+def add_user_to_group(request):
     try:
         data = request.POST
         data = dict(data.lists())
