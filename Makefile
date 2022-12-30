@@ -1,3 +1,2 @@
 schema_validate:
-	$(shell git clone https://github.com/browserstack/enigma-public-access-modules.git ../enigma-public-access-modules)
-	@echo $(shell python3 validator.py $(config_file))
+	@echo $(shell python3 clone_access_modules.py && python3 validator.py)

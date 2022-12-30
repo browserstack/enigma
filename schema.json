@@ -22,6 +22,26 @@
           "type": "string"
         }
       }
+    },
+    "access_modules": {
+      "description": "List of access modules attached to this tool",
+      "type": "object",
+      "properties": {
+        "git_urls": {
+          "description": "List of git URLs of access modules",
+          "type": "array"
+        }
+      }
+    },
+    "enigmaGroup":{
+      "description":"Config related of enigma groups",
+      "type":"object",
+      "properties":{
+        "MAIL_APPROVER_GROUPS":{
+          "description":"List of mail approvers",
+          "type":"array"
+        }
+      }
     }
   },
   "required": [
