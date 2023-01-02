@@ -234,7 +234,6 @@ def updateOwner(request, groupName, group, context):
 
 def requesterIsOwner(request,groupMembers):
     ownersEmail = [member.user.email for member in groupMembers.filter(is_owner = True)]
-    print(ownersEmail)
     is_approver = len(User.objects.filter(role=Role.objects.get(label='TEAMS:ACCESSAPPROVE'),state=1, email=request.user.user.email)) > 0
     
     if request.user.user.email not in ownersEmail and not (request.user.is_superuser or request.user.user.is_ops or is_approver):
@@ -346,28 +345,31 @@ def get_users_from_groupmembers(group_members):
 
 def add_user_to_group(request):
     try:
+        
         data = request.POST
         data = dict(data.lists())
         group = GroupV2.objects.filter(name=data['groupName'][0]).filter(status='Approved')[0]
+        group_members = MembershipV2.objects.filter(group=group).filter(status__in=["Approved", "Pending"]).only('user')
 
-        groupMembers = MembershipV2.objects.filter(group=group).filter(status__in=["Approved", "Pending"]).only('user')
-        ownersEmail = [member.user.email for member in groupMembers.filter(is_owner = True)]
-        requesterEmail = request.user.user.email
-        isRequesterAdmin = request.user.is_superuser
-        isRequesterOwner = requesterEmail in ownersEmail
+        owners_email = [member.user.email for member in group_members.filter(is_owner = True)]
+        
+        requester_email = request.user.user.email
+        is_requester_admin = request.user.is_superuser
+        is_requester_owner = requester_email in owners_email
 
-        if not (isRequesterOwner or isRequesterAdmin):
+        
+        if not (is_requester_owner or is_requester_admin):
             raise Exception("Permission denied, requester is non owner")
 
-        groupMembersEmail = [member.user.email for member in groupMembers]
+        group_members_email = [member.user.email for member in group_members]
         # groupAccessMappings = GroupAccessMapping.objects.filter(group=group, status="Approved")
         # groupAccessV2s = [(groupMapping.access, groupMapping.request_id) for groupMapping in groupAccessMappings]
-
         for user_email in data['selectedUserList']:
-            if user_email in groupMembersEmail:
+            if is_user_in_group(user_email, group_members_email):
                 context = {}
                 context['error'] = {'error_msg': 'Duplicate Request', 'msg': "User " + user_email + " is already added to group/or pending approval for group addition"}
                 return context
+
 
         for user_email in data['selectedUserList']:
             # if user_email not in groupMembersEmail:
@@ -376,7 +378,6 @@ def add_user_to_group(request):
             #     context = {}
             #     context['error'] = {'error_msg':'Request Not Submitted', 'msg': 'The user has not added a SSH key in enigma and hence can not add user to this group as this group has a SSH request. Please ask the user to add a ssh key and then try adding the user again to the group.'}
             #     return context
-
             membership_id = user.name+'-'+str(group)+'-membership-'+datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
             member = MembershipV2.objects.create(group=group,user=user,reason=data['memberReason'][0],membership_id=membership_id,requested_by=request.user.user)
             if not group.needsAccessApprove:
@@ -391,7 +392,7 @@ def add_user_to_group(request):
                 accessAcceptThread.start()
                 logger.debug("Process has been started for the Approval of request - " + membership_id + " - Approver=" + request.user.username)
                 return json_response
-            
+
             sendMailForGroupApproval(membership_id, user_email, str(request.user), data['groupName'][0], request.META['HTTP_HOST'], data['memberReason'][0])
         
         context = {}
@@ -403,6 +404,9 @@ def add_user_to_group(request):
         context = {}
         context['error'] = {'error_msg': 'Internal Error', 'msg': "Error Occured while loading the page. Please contact admin, " + str(e)}
         return context
+
+def is_user_in_group(user_email, group_members_email):
+    return user_email in group_members_email    
 
 def sendMailForGroupApproval(membership_id, userEmail, requester, group_name, http_host, reason ):
     primary_approver , otherApprover = helpers.getApprovers()

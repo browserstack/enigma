@@ -431,3 +431,164 @@ def test_get_user_group(mocker, test_name, group_name, expected_output):
         
     context = group_helper.get_user_group(request, group_name)
     assert str(context) == expected_output
+
+
+test_add_user_to_group_permission_denied= "PermissionDenied"
+test_add_user_to_group_duplicate_request= "DuplicateRequest"
+test_add_user_to_group_needs_approval= "NeedsApproval"
+test_add_user_to_group_doesnot_need_approval= "DoesNotNeedApproval"
+
+@pytest.mark.parametrize("test_name, post_data ,expected_output",
+[
+        (
+            test_add_user_to_group_permission_denied,
+            "groupName=TestGroupName",
+            "{'error': {'error_msg': 'Internal Error', 'msg': 'Error Occured while loading the page. Please contact admin, Permission denied, requester is non owner'}}",
+        ),
+        (
+            test_add_user_to_group_duplicate_request,
+            "groupName=TestGroupName&selectedUserList=member2@member2.com",
+            "{'error': {'error_msg': 'Duplicate Request', 'msg': 'User member2@member2.com is already added to group/or pending approval for group addition'}}",
+        ),
+       (
+            test_add_user_to_group_needs_approval,
+            "groupName=TestGroupName&selectedUserList=member2@member2.com&memberReason=somereason",
+            "{'status': {'title': 'Request Submitted', 'msg': 'Once Approved the newly added members will be granted the same permissions as the group'}}",
+        ),
+       (
+            test_add_user_to_group_doesnot_need_approval,
+            "groupName=TestGroupName&selectedUserList=member2@member2.com&memberReason=somereason",
+            "is now being processed', 'desc': 'A email will be sent after the requested access are granted'}}",
+        ),    
+]
+)
+def test_add_user_to_group(mocker, test_name, post_data, expected_output):
+    request = mocker.MagicMock()
+
+    request.user.email = "member1@member1.com"
+    request.user.is_superuser = False
+
+    if test_name == test_add_user_to_group_permission_denied:
+        request.POST = QueryDict(post_data)
+        request.user.email = "member1@member1.com"
+        request.user.is_superuser = False
+
+        mock_member = mocker.MagicMock()
+        mock_member.user.email = "member2@member2.com"
+
+
+        mock_group_filter = mocker.MagicMock()
+        mock_group_filter.filter.return_value = ["group1"]
+
+        mock_member_filter1 = mocker.MagicMock()
+        mock_member_filter1.filter.return_value = [mock_member]
+
+        mock_member_filter = mocker.MagicMock()
+        mock_member_filter.filter.return_value = mock_member_filter
+        mock_member_filter.only.return_value = mock_member_filter1
+
+        mocker.patch("Access.models.GroupV2.objects.filter", return_value=mock_group_filter)
+        mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_member_filter)
+
+    elif test_name == test_add_user_to_group_duplicate_request:
+        request.POST = QueryDict(post_data)
+        request.user.email = "member1@member1.com"
+        request.user.is_superuser = True
+
+        mock_member = mocker.MagicMock()
+        mock_member.user.email = "member2@member2.com"
+
+        mock_group_filter = mocker.MagicMock()
+        mock_group_filter.filter.return_value = ["group1"]
+
+        mock_member_filter1 = mocker.MagicMock()
+        mock_member_filter1.filter.return_value = [mock_member]
+
+        mock_member_filter = mocker.MagicMock()
+        mock_member_filter.filter.return_value = mock_member_filter
+        mock_member_filter.only.return_value = mock_member_filter1
+
+        mocker.patch("Access.group_helper.is_user_in_group", return_value = True)
+
+        mocker.patch("Access.models.GroupV2.objects.filter", return_value=mock_group_filter)
+        mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_member_filter)
+
+    elif test_name == test_add_user_to_group_needs_approval:
+        request.POST = QueryDict(post_data)
+        request.user.email = "member1@member1.com"
+        request.user.is_superuser = True
+        
+
+        mock_member = mocker.MagicMock()
+        mock_member.user.email = "member2@member2.com"
+
+        mock_group = mocker.MagicMock()
+        mock_group.needsAccessApprove = True
+
+        mock_group_filter = mocker.MagicMock()
+        mock_group_filter.filter.return_value = [mock_group]
+
+        mock_member_filter1 = mocker.MagicMock()
+        mock_member_filter1.filter.return_value = [mock_member]
+
+        mock_member_filter = mocker.MagicMock()
+        mock_member_filter.filter.return_value = mock_member_filter
+        mock_member_filter.only.return_value = mock_member_filter1
+
+        mock_user = mocker.MagicMock()
+        mock_user.user.name = "username"
+
+        mocker.patch("Access.group_helper.is_user_in_group", return_value = False)
+
+        mocker.patch("Access.models.GroupV2.objects.filter", return_value=mock_group_filter)
+        mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_member_filter)
+        mocker.patch("Access.models.User.objects.filter", return_value=mock_user)
+        mocker.patch("Access.models.MembershipV2.objects.create", return_value=mocker.MagicMock())
+        mocker.patch("Access.group_helper.sendMailForGroupApproval", return_value=True)
+
+    elif test_name == test_add_user_to_group_doesnot_need_approval:
+        request.POST = QueryDict(post_data)
+        request.user.email = "member1@member1.com"
+        request.user.is_superuser = True
+        request.user.user = mocker.MagicMock()
+
+        mock_member = mocker.MagicMock()
+        mock_member.user.email = "member2@member2.com"
+
+        mock_group = mocker.MagicMock()
+        mock_group.needsAccessApprove = False
+        mock_group.__str__.return_value = "grp1"
+
+        mock_group_filter = mocker.MagicMock()
+        mock_group_filter.filter.return_value = [mock_group]
+
+        mock_member_filter1 = mocker.MagicMock()
+        mock_member_filter1.filter.return_value = [mock_member]
+
+        mock_member_filter = mocker.MagicMock()
+        mock_member_filter.filter.return_value = mock_member_filter
+        mock_member_filter.only.return_value = mock_member_filter1
+
+        mock_user = mocker.MagicMock()
+        mock_user.name = "username"
+
+        mock_member = mocker.MagicMock()
+        mock_member.save.return_value = True
+
+        mocker.patch("Access.group_helper.is_user_in_group", return_value = False)
+
+        mocker.patch("Access.models.GroupV2.objects.filter", return_value=mock_group_filter)
+        mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_member_filter)
+        mocker.patch("Access.models.User.objects.filter", return_value=[mock_user])
+        mocker.patch("Access.models.MembershipV2.objects.create", return_value=mock_member)
+        mocker.patch("Access.group_helper.sendMailForGroupApproval", return_value=True)
+        mocker.patch("Access.views_helper.generateUserMappings", return_value=mocker.MagicMock())
+
+        mock_thread = mocker.MagicMock()
+        mock_thread.start.return_value = True
+
+        mocker.patch("threading.Thread", return_value = mock_thread)
+    
+
+    context = group_helper.add_user_to_group(request)
+    assert expected_output in str(context)
