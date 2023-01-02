@@ -26,7 +26,7 @@ def pendingFailure(request):
     response = getGrantFailedRequests(request)
     if response['error']:
         return render(request, 'BSOps/accessStatus.html', response)
-    
+
     return render(request,'BSOps/failureAdminRequests.html',response)
 
 

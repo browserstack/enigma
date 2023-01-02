@@ -18,7 +18,7 @@ def requestAccessGet(request):
                         extra_fields = []
                     try:
                         notice = each_access.get_notice()
-                            
+
                     except Exception:
                         notice = ""
                     context['accesses'].append({
@@ -29,7 +29,7 @@ def requestAccessGet(request):
                             'extraFields': extra_fields,
                             'notice': notice,
                             'accessRequestPath': each_access.fetch_access_request_form_path()
-                        })    
+                        })
     except Exception as e:
         logger.exception(e)
         context = {}
@@ -58,4 +58,3 @@ def getGrantFailedRequests(request):
         json_response = {}
         json_response['error'] = {'error_msg': str(e), 'msg': "Error in request not found OR Invalid request type"}
         return json_response
-    
