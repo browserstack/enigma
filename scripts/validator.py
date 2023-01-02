@@ -17,7 +17,7 @@ try:
         module_schema = json.load(f)
         schema["properties"].update(module_schema["properties"])
         schema["required"] += module_schema["required"]
-  validate(instance=config, schema=schema) 
+  validate(instance=config, schema=schema)
   print("Schema validation passed!")
 except Exception as e:
   print("Schema validation failed!")
