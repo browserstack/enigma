@@ -2,8 +2,9 @@ from os.path import dirname, basename, isfile, join
 import glob
 import re
 import logging
+import time, datetime
+from Access.access_modules import *
 from django.template import loader
-
 
 logger = logging.getLogger(__name__)
 available_accesses = []
@@ -41,6 +42,12 @@ def check_user_permissions(user, permissions):
             if permissions in permission_labels:
                 return True
     return False
+
+def sla_breached(requested_on):
+    diff = datetime.datetime.now().replace(tzinfo=None) - requested_on.replace(tzinfo=None)
+    duration_in_s = diff.total_seconds()
+    hours = divmod(duration_in_s, 3600)[0]
+    return hours >= 24
 
 def generateStringFromTemplate(filename, **kwargs):
     template = loader.get_template(filename)
