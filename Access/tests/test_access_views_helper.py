@@ -1,10 +1,14 @@
-from Access.views_helper import generateUserMappings, executeGroupAccess
-from Access import models
+from Access.views_helper import generateUserMappings, executeGroupAccess, getAccessHistory
+from Access.views import showAccessHistory
+from Access.models import User
+from Access import models, helpers
 import pytest
 from Access import views_helper
 from bootprocess import general
 import logging
 
+from django.contrib.auth import get_user_model
+from django.test import RequestFactory
 
 class MockAuthUser:
     def __init__(self, username="", user=""):
@@ -215,3 +219,128 @@ def test_executeGroupAccess_run_access_grant(
     executeGroupAccess([mappingObj])
     assert mappingObj.status == expectedStatus
     assert emailSES_Spy.call_count == emailSesCallCount
+
+@pytest.mark.django_db
+def test_show_access_history(mocker):
+
+    # save user with email='test@test.com' to the database 
+    djangoUser = get_user_model()
+    # Create a test user
+    test_auth_user = djangoUser.objects.create(
+        username='testuser', email='test@test.com', password='testpass'
+    )
+    test_auth_user.save()
+
+    # Set up test data
+    user = User()
+    user.user_id = '1'
+    user.gitusername = '123'
+    user.name = 'testuser'
+    user.password = 'testpass'
+    user.email = 'test@test.com'
+    user.state = 1
+    user.save()
+
+    # mark the user as authenticated to bypass the login_required decorator
+    user.is_authenticated = True
+
+    # use RequestFactory to create a request object
+    factory = RequestFactory()
+    request = factory.get('/access/showAccessHistory')
+    request.user = user
+    response = showAccessHistory(request)
+
+    # Assert that the response is successful
+    assert response.status_code == 200
+
+    # assert 'access_history' in response.content.decode('utf-8')
+    assert 'Request History' in response.content.decode('utf-8')
+
+
+@pytest.mark.django_db
+def test_get_access_history(mocker):
+
+    # save user with email='test@test.com' to the database 
+    djangoUser = get_user_model()
+    # Create a test user
+    test_auth_user = djangoUser.objects.create(
+        username='testuser', email='test@test.com', password='testpass'
+    )
+    test_auth_user.save()
+
+    # Set up test data
+    user = User()
+    user.user_id = '1'
+    user.gitusername = '123'
+    user.name = 'testuser'
+    user.password = 'testpass'
+    user.email = 'test@test.com'
+    user.state = 1
+    user.save()
+
+    # create a user
+    userMock = mocker.MagicMock()
+    userMock.username = "approver1"
+
+    mappingObj = mocker.MagicMock()
+    mappingObj.access.access_tag = "tagname"
+    mappingObj.user = user
+    mappingObj.approver_1.user = userMock
+    mappingObj.approver_2.user = userMock
+    mappingObj.request_id = "requestid"
+    mappingObj.request_reason = "Test request"
+    mappingObj.status = "Approved"
+    mappingObj.decline_reason = ""
+
+    # create another user
+    userMock2 = mocker.MagicMock()
+    userMock2.username = "approver2"
+
+    mappingObj2 = mocker.MagicMock()
+    mappingObj2.access.access_tag = "tagname"
+    mappingObj2.user = user
+    mappingObj2.approver_1.user = userMock2
+    mappingObj2.approver_2.user = userMock2
+    mappingObj2.request_id = "requestid 2"
+
+    # mock query db for user whose email = "test@exmaple.com"
+    mocker.patch(
+        "Access.models.UserAccessMapping.objects.filter",
+        return_value=[mappingObj, mappingObj2],
+    )
+    userAccessMappingFilterSpy = mocker.spy(models.UserAccessMapping.objects, "filter")
+
+    # mock so that access_details = helper.getAccessRequestDetails(data) line in getAccessHistory() returns a dict with key 'accessType' and value 'accessTypeValue' 
+    mocker.patch(
+        "Access.helpers.getAccessRequestDetails",
+        return_value={
+            "accessType": "accessTypeValue",
+            "accessCategory": "accessCategoryValue",
+            "accessMeta": "accessMetaValue",
+        },
+    )
+
+    # import helpers module and spy on getAccessRequestDetails() function
+    getAccessRequestDetailsSpy = mocker.spy(helpers, "getAccessRequestDetails")
+
+    request = mocker.MagicMock()
+    request.user = user
+    context = getAccessHistory(request)
+
+    assert len(context['dataList']) == 2
+
+    assert userAccessMappingFilterSpy.call_count == 1
+    assert getAccessRequestDetailsSpy.call_count == 2
+
+    assert context['dataList'][0]['id'] == "requestid"
+    assert context['dataList'][0]['type'] == "accessTypeValue"
+    assert context['dataList'][0]['access'] == 'accessCategoryValue details: "accessMetaValue"'
+    assert context['dataList'][0]['status'] == "Approved"
+    assert context['dataList'][0]['reason'] == "Test request"
+    assert context['dataList'][0]['decline_reason'] == ""
+    assert context['dataList'][0]['approver'] == "1: "+userMock.username+"\n2: "+userMock.username
+
+    assert context['dataList'][1]['id'] == "requestid 2"
+    assert context['dataList'][1]['type'] == "accessTypeValue"
+    assert context['dataList'][1]['access'] == 'accessCategoryValue details: "accessMetaValue"'
+    assert context['dataList'][1]['approver'] == "1: "+userMock2.username+"\n2: "+userMock2.username
