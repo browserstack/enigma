@@ -23,7 +23,7 @@ logs:
 
 ## Run tests with coverage
 .PHONY: test
-test: 
+test:
 	@if [ $$(docker ps -a -f name=dev | wc -l) -eq 2 ]; then \
 		docker exec dev python -m pytest --version; \
 	else \
@@ -51,4 +51,3 @@ schema_validate:
 
 run_semgrep:
 	$(shell semgrep --error --config "p/cwe-top-25" --config "p/owasp-top-ten" --config "p/r2c-security-audit")
-
