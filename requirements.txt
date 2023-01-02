@@ -30,7 +30,7 @@ enum34==1.1.10
 futures==3.1.1
 fuzzywuzzy==0.18.0
 gunicorn==20.0.4
-httplib2==0.18.1
+httplib2==0.19.0
 hvac==0.10.5
 idna==2.10
 importlib-metadata==3.1.1
