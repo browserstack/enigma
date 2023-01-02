@@ -1,0 +1,37 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h2 class="h5 no-margin-bottom">{{ each_access.formDesc }}</h2>
+  </div>
+</div>
+
+{% if each_access.notice != "" %}
+<div class="container-fluid">
+<span class="text-warning ml-3 mb-3"> {{ each_access.notice }}</span>
+</div>
+{% endif %}
+
+<div class="form-group" style="padding-left:1%;">
+  <div class="form-group">
+    {% if each_access.accessTypes|length > 1 %}
+    <label class="col-sm-3" for="accessLabel" style="padding-left: 15px; font-weight: bolder; min-height: 0px; margin-top: 10px; font-size: medium; float: left">Select an access type:</label>
+    <select class="form-control col-sm-3" id="accessLabel" name="accessLabel">
+      {% for each_access_type in each_access.accessTypes %}
+      <!-- adding &quot; so json.loads can work in backend -->
+      <option value="[&quot;{{ each_access_type.type }}&quot;]">{{ each_access_type.desc }}</option>
+      {% endfor %}
+    </select>
+    {% else %}
+    <!-- adding &quot; so json.loads can work in backend -->
+    <input type="hidden" name="accessLabel" value="[&quot;{{ each_access.accessTypes.0.type }}&quot;]">
+    {% endif %}
+    {% for extra_field in each_access.extraFields %}
+      <label class="col-sm-3" for="{{extra_field}}" style="padding-left:15px; font-weight: bolder; min-height:0px; margin-top:10px; font-size:medium;">{{extra_field}}</label>
+      <input type="text" class="form-text1" id="{{extra_field}}" name="extraFields" style="width:60%;" maxlength="2024" required><br>
+    {% endfor %}
+  </div>
+
+  <div>
+    <label class="col-sm-3" for="reason" style="padding-left:15px; font-weight: bolder; min-height:0px; margin-top:10px; font-size:medium;">Reason for Access:</label>
+    <input type="text" class="form-text1" id="reason" name="accessReason" style="width:60%;" maxlength="2024" required>
+  </div>
+</div>
