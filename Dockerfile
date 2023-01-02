@@ -8,12 +8,15 @@ FROM python:3.11-slim-buster AS base
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update -y \
   && apt-get install --no-install-recommends -y \
-  openssh-client curl procps git vim gcc linux-libc-dev libc6-dev build-essential\
+  openssh-client curl procps git vim gcc linux-libc-dev libc6-dev build-essential \
   && apt-get clean \
   && apt-get autoremove -y
 
 # Set env variables used in this Dockerfile (add a unique prefix, such as DEV)
 RUN apt update && apt install -y netcat dnsutils
+
+RUN useradd -rm -d /home/app -s /bin/bash -g root -G sudo -u 1001 app
+USER app
 
 # Directory in container for all project files
 ENV DEV_SRVHOME=/srv
@@ -41,5 +44,4 @@ CMD [ "-m", "pytest", "-v", "--cov", "--disable-warnings" ]
 
 FROM base as web
 COPY ./docker-entrypoint.sh /tmp/entrypoint.sh
-RUN chmod a+x /tmp/entrypoint.sh
 ENTRYPOINT ["/tmp/entrypoint.sh"]
