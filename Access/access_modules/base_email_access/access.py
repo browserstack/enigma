@@ -57,17 +57,17 @@ class BaseEmailAccess(object):
 
     def get_pending_accesses(self, request, user_permissions):
         return {
-            "individual_requests": self.get_pending_individual_accesses(user_permissions),
-            "group_requests": self.get_pending_group_accesses(user_permissions),
+            "individual_requests": self.__get_pending_individual_accesses(user_permissions),
+            "group_requests": self.__get_pending_group_accesses(user_permissions),
         }
 
-    def get_pending_individual_accesses(self, user_permissions):
-        return self.get_pending_accesses_from_mapping(UserAccessMapping, user_permissions)
+    def __get_pending_individual_accesses(self, user_permissions):
+        return self.__get_pending_accesses_from_mapping(UserAccessMapping, user_permissions)
 
-    def get_pending_group_accesses(self, user_permissions):
-        return self.get_pending_accesses_from_mapping(GroupAccessMapping, user_permissions)
+    def __get_pending_group_accesses(self, user_permissions):
+        return self.__get_pending_accesses_from_mapping(GroupAccessMapping, user_permissions)
         
-    def query_pending_accesses(self, mapping, pending_status):
+    def __query_pending_accesses(self, mapping, pending_status):
         access_tag = self.tag()
         pending_accesses = []
 
@@ -76,7 +76,7 @@ class BaseEmailAccess(object):
         
         return pending_accesses
 
-    def get_pending_accesses_from_mapping(self, mapping, user_permissions):
+    def __get_pending_accesses_from_mapping(self, mapping, user_permissions):
         pending_requests = []
         module_permissions = self.fetch_approver_permissions()
 
@@ -86,10 +86,10 @@ class BaseEmailAccess(object):
         elif "2" in module_permissions and module_permissions["2"] in user_permissions and not self.is_custom_secondary_approval_flow():
             status = "SecondaryPending"
 
-        if status: pending_requests = self.query_pending_accesses(mapping, status)
+        if status: pending_requests = self.__query_pending_accesses(mapping, status)
 
         if self.is_custom_secondary_approval_flow():
-            secondary_pending_requests = self.query_pending_accesses(mapping, "SecondaryPending")
+            secondary_pending_requests = self.__query_pending_accesses(mapping, "SecondaryPending")
 
             for secondary_pending_request in secondary_pending_requests:
                 req_obj = mapping.objects.get(request_id=secondary_pending_request["requestId"])

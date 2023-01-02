@@ -118,8 +118,7 @@ def get_pending_accesses_from_modules(request):
         process_individual_requests(pending_accesses["individual_requests"], individual_requests, access_module.tag())
         process_group_requests(pending_accesses["group_requests"], group_requests)
 
-        access_module_query_duration = time.time() - access_module_start_time
-        logger.info("Time to fetch pending requests of access module: " + access_module.tag() + " - " + str(access_module_query_duration))
+        logger.info("Time to fetch pending requests of access module: " + access_module.tag() + " - " + str(time.time() - access_module_start_time))
 
     return individual_requests, list(group_requests.values())
 
@@ -151,13 +150,13 @@ def process_group_requests(group_pending_requests, group_requests):
     if len(group_pending_requests):
         for accessrequest in group_pending_requests:
             club_id = accessrequest["groupName"]+"-"+accessrequest["requestId"].rsplit("-",1)[-1].rsplit("_",1)[0]
-            needsAccessApprove = GroupV2.objects.get(name=accessrequest["groupName"], status="Approved").needsAccessApprove
+            needs_access_approve = GroupV2.objects.get(name=accessrequest["groupName"], status="Approved").needsAccessApprove
             if club_id not in group_requests:
                 group_requests[club_id] = {
                                 "group_club_id": club_id,
                                 "userEmail": accessrequest["userEmail"],
                                 "groupName": accessrequest["groupName"],
-                                "needsAccessApprove": needsAccessApprove,
+                                "needsAccessApprove": needs_access_approve,
                                 "requested_on": accessrequest["requested_on"],
                                 "sla_breached": helpers.sla_breached(accessrequest["requested_on"]),
                                 "hasOtherRequest": False,

@@ -494,7 +494,6 @@
                           <p>Git user name: {{request.requestInfo.gitusername}}</p>
                           <p>Repo Name: {{request.requestInfo.githubRepoName}}</p>
                           <p>Repo Description: {{request.requestInfo.githubRepoDesc}}</p>
-                          <p>Tech Spec: <a target="_blank" rel="noreferrer" href="{{request.requestInfo.techSpec}}">{{request.requestInfo.techSpec}}</a></p>
                           <p>Repo type: {{request.requestInfo.githubRepoType}}</p>
                           <p>Master Branch Protection: {{request.requestInfo.masterBranchProtection}}</p>
                           <p>README enabled: {{request.requestInfo.readmeEnabled}}</p>
@@ -738,7 +737,7 @@
                         <h6 class="text-warning">This request has other access. Bulk approve not available.</h6>
                         {% endif %}
                       <h4 class="card-title">{{group.group_club_id}}</h4>
-                      <p>Requested for group: <a target="_blank" href="/group/access/list/{{ group.groupName }}">{{ group.groupName }}</a> (click to view group accesses)</p>
+                      <p>Requested for group: <a target="_blank" href="/group/access/list/{{ group.groupName }}" rel="noopener noreferrer nofollow">{{ group.groupName }}</a> (click to view group accesses)</p>
                       <p>Requested By: {{ group.userEmail }}</p>
                       <p>Requested On: {{ group.requested_on }} UTC</p>
                       {% if not group.needsAccessApprove %}
