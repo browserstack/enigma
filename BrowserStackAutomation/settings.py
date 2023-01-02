@@ -184,3 +184,4 @@ USER_STATUS_CHOICES = [
 ]
 
 DEFAULT_ACCESS_GROUP = "default_access_group"
+MAIL_APPROVER_GROUPS = data['enigmaGroup']['MAIL_APPROVER_GROUPS']

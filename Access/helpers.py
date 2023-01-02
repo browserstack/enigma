@@ -2,6 +2,8 @@ from os.path import dirname, basename, isfile, join
 import glob
 import re
 import logging
+from django.template import loader
+
 
 logger = logging.getLogger(__name__)
 available_accesses = []
@@ -28,3 +30,21 @@ def getAccessModules():
     cached_accesses = \
         [globals()[basename(f)].access.get_object() for f in access_modules_dirs if not isfile(f)]
     return cached_accesses
+
+def check_user_permissions(user, permissions):
+    if hasattr(user, 'user'):
+        permission_labels = [permission.label for permission in user.user.permissions]
+        if type(permissions) == list:
+            if len(set(permissions).intersection(permission_labels)) > 0:
+                return True
+        else:
+            if permissions in permission_labels:
+                return True
+    return False
+
+def generateStringFromTemplate(filename, **kwargs):
+    template = loader.get_template(filename)
+    vals = {}
+    for key, value in kwargs.items():
+        vals[key] = value
+    return template.render(vals)
