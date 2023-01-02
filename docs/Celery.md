@@ -20,13 +20,13 @@
 	```
 7. Requirements:
 	```bash
-	django
-	social-auth-app-django
-	djangorestframework
-	mysqlclient
-	django-celery-results
-	sqlalchemy
-	redis
-	celery
+	django==4.1.3
+	social-auth-app-django==5.0.0
+	djangorestframework==3.14.0
+	mysqlclient==2.1.1
+	django-celery-results==2.4.0
+	sqlalchemy==1.4.45
+	redis==4.4.0
+	celery==5.2.7
 	```
 	

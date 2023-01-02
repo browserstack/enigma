@@ -31,10 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# Celery settings
-#Add CELERY_BROKER_URL and CELERY_RESULT_BACKEND as given below
-# CELERY_BROKER_URL = "redis://localhost:6379"
-# CELERY_RESULT_BACKEND = "db+mysql://root@localhost:3306/BrowserStackAutomation"
+
 
 # Application definition
 
