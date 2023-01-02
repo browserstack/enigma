@@ -7,6 +7,7 @@ from rest_framework.decorators import api_view
 from django.shortcuts import render
 from Access.userlist_helper import getAllUserList
 from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRequests
+from Access.views_helper import getAccessHistory
 from Access import group_helper
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,12 @@ all_access_modules = helper.getAvailableAccessModules()
 
 @login_required
 def showAccessHistory(request):
-    return False
+    if request.method == 'GET':
+        context = getAccessHistory(request)
+        if context.get("error"):
+            return render(request, "BSOps/accessStatus.html", context)
+        else:
+            return render(request, "BSOps/showAccessHistory.html", context)
 
 
 @login_required

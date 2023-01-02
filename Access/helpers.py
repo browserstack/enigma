@@ -55,3 +55,26 @@ def generateStringFromTemplate(filename, **kwargs):
     for key, value in kwargs.items():
         vals[key] = value
     return template.render(vals)
+
+# One Access request will contain Accesses to one component at a time.
+def getAccessRequestDetails(eachAccessRequest):
+    access_request_data = {}
+    access_tags = [eachAccessRequest.access.access_tag]
+    access_labels = [eachAccessRequest.access.access_label]
+
+    access_tag = access_tags[0]
+    # code metadata
+    access_request_data["access_tag"] = access_tag
+    # ui metadata
+    access_request_data["userEmail"] = eachAccessRequest.user.email
+    access_request_data["requestId"] = eachAccessRequest.request_id
+    access_request_data['accessReason'] = eachAccessRequest.request_reason
+    access_request_data['requested_on'] = eachAccessRequest.requested_on
+
+    for eachAccessModule in getAccessModules():
+        if access_tag == eachAccessModule.tag():
+            access_request_data["accessType"] = eachAccessModule.access_desc()
+            access_request_data["accessCategory"] = eachAccessModule.combine_labels_desc(access_labels)
+            access_request_data["accessMeta"] = eachAccessModule.combine_labels_meta(access_labels)
+
+    return access_request_data
