@@ -3,7 +3,6 @@ version: '3'
 services:
   web:
     container_name: dev
-    image: "${DOCKERIMAGE}"
     build:
       context: .
       dockerfile: Dockerfile

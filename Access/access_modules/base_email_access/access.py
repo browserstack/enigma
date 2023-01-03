@@ -157,3 +157,10 @@ class BaseEmailAccess(object):
 
     def fetch_access_request_form_path(self):
         return 'base_email_access/accessRequest.html'
+
+    def generateStringFromTemplate(filename, **kwargs):
+        template = loader.get_template(filename)
+        vals = {}
+        for key, value in kwargs.items():
+            vals[key] = value
+        return template.render(vals)

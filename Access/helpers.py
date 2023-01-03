@@ -32,6 +32,12 @@ def getAccessModules():
         [globals()[basename(f)].access.get_object() for f in access_modules_dirs if not isfile(f)]
     return cached_accesses
 
+def is_user_any_approver(user):
+    permission_label_slices = [permission.label[-7:] for permission in user.user.permissions]
+    if "APPROVE" in  permission_label_slices:
+        return True
+    return False
+
 def check_user_permissions(user, permissions):
     if hasattr(user, 'user'):
         permission_labels = [permission.label for permission in user.user.permissions]
