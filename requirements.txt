@@ -52,6 +52,7 @@ parso==0.7.1
 pathlib2==2.3.5
 pexpect==4.8.0
 pickleshare==0.7.5
+pre-commit==2.21.0
 prompt-toolkit==3.0.8
 ptpython==3.0.7
 ptyprocess==0.6.0
@@ -96,3 +97,4 @@ pytest==7.2.0
 pytest-django==4.5.2
 pytest-cov==4.0.0
 pylama==8.4.1
+semgrep==1.2.1
