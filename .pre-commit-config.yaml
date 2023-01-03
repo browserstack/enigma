@@ -9,10 +9,14 @@ repos:
       - id: end-of-file-fixer
       - id: mixed-line-ending
       - id: check-json
+        types: [file]  # override `types: [json]`
+        files: \.(json|json.sample)$
       - id: check-xml
       - id: check-yaml
         args: [--allow-multiple-documents]
       - id: pretty-format-json
+        types: [file]  # override `types: [json]`
+        files: \.(json|json.sample)$
         args: [--autofix, --no-sort-keys]
   - repo: https://github.com/commitizen-tools/commitizen
     rev: v2.38.0
