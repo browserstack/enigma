@@ -18,7 +18,6 @@ def getAvailableAccessModules():
     available_accesses = [access for access in getAccessModules() if access.available]
     return available_accesses
 
-
 def getAccessModules():
     global cached_accesses
     if len(cached_accesses) > 0:
@@ -55,3 +54,18 @@ def generateStringFromTemplate(filename, **kwargs):
     for key, value in kwargs.items():
         vals[key] = value
     return template.render(vals)
+
+def getPossibleApproverPermissions():
+    all_approver_permissions = []
+    for each_module in getAvailableAccessModules():
+        if hasattr(each_module, 'fetch_approver_permissions'):
+            approver_permissions = each_module.fetch_approver_permissions()
+            all_approver_permissions.extend(approver_permissions.values())
+        else:
+            all_approver_permissions.extend(["ACCESS_APPROVE"])
+    return list(set(all_approver_permissions))
+
+def isUserAnApprover(user):
+    permission_labels = [permission.label for permission in user.user.permissions]
+    approver_permissions = getPossibleApproverPermissions()
+    return len(list(set(permission_labels) & set(approver_permissions))) > 0

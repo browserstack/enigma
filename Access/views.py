@@ -68,7 +68,7 @@ def allUsersList(request):
 @login_required
 def requestAccess(request):
     context = requestAccessGet(request)
-    return render(request, 'BSOps/accessStatus.html',context)
+    return render(request, 'BSOps/accessRequestForm.html', context)
 
 
 @login_required

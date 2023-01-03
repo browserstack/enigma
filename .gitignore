@@ -2,3 +2,8 @@ config.json
 __pycache__/
 *.py[cod]
 db.sqlite3
+.coverage
+mounts/
+public/
+lint_issues
+.env

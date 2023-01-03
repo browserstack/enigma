@@ -91,7 +91,8 @@ SOCIAL_AUTH_DISCONNECT_PIPELINE = (
 
 ROOT_URLCONF = "BrowserStackAutomation.urls"
 
-template_dirs = glob.glob(join(BASE_DIR, "templates"))
+template_dirs = glob.glob(join(BASE_DIR, "Access", "access_modules", "*", "templates"))
+template_dirs.extend(glob.glob(join(BASE_DIR, "templates")))
 
 TEMPLATES = [
     {
@@ -104,6 +105,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'Access.context_processors.add_variables_to_context',
             ],
         },
     },
