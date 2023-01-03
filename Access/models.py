@@ -202,7 +202,7 @@ class GroupV2(models.Model):
     requested_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
-    name = models.CharField(max_length=128, null=False, blank=False)
+    name = models.CharField(max_length=128, null=False, blank=False, unique=True)
     description = models.TextField(null=False, blank=False)
 
     requester = models.ForeignKey(

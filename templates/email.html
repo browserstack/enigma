@@ -1,7 +1,6 @@
-def generateEmail(emailBody):
-    return """<html>
-            <head>
-            <style>
+<html>
+    <head>
+        <style>
             table {
                 border-collapse: collapse;
             }
@@ -37,10 +36,11 @@ def generateEmail(emailBody):
             .button2:hover {
                 box-shadow: 0 12px 16px 0 rgba(0,0,0,0.24),0 17px 50px 0 rgba(0,0,0,0.19);
             }
-            </style>
-        </head>
-        <body>
+        </style>
+    </head>
+    <body>
         <div class="container" style="width:70%;margin:  auto;">
-        """ + str(emailBody) +"""</div>
-        </body>
-        </html>"""
+            {{ emailBody }}
+        </div>
+    </body>
+</html>

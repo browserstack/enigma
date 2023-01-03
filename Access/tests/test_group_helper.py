@@ -1,7 +1,7 @@
 import pytest
 from django.http import QueryDict
 from Access import models, helpers
-from Access import group_helper, email_helper
+from Access import group_helper
 from unittest.mock import ANY
 from bootprocess import general
 
@@ -63,7 +63,7 @@ def test_createGroup(mocker, testname, postData,expectedContext, membershipCreat
         mocker.patch("Access.models.GroupV2.objects.filter", return_value=statusFilterPatch)
         mocker.patch("Access.models.GroupV2.objects.create", return_value=mockGroup)
         mocker.patch("Access.models.MembershipV2.objects.create", return_value=True)
-        mocker.patch("Access.email_helper.generateEmail", return_value="email body")
+        mocker.patch("Access.helpers.generateStringFromTemplate", return_value="email body")
         mocker.patch("bootprocess.general.emailSES", return_value="")
         group_helper.generateNewGroupCreationEmailBody  = mockGenerateNewGroupCreationEmailBody
 
@@ -85,7 +85,7 @@ def test_createGroup(mocker, testname, postData,expectedContext, membershipCreat
         mocker.patch("Access.models.GroupV2.objects.create", return_value=mockGroup)
         mocker.patch("Access.models.MembershipV2.objects.create", return_value=None)
         mocker.patch("Access.models.User.objects.filter", return_value=[mockAccUser])
-        mocker.patch("Access.email_helper.generateEmail", return_value="email body")
+        mocker.patch("Access.helpers.generateStringFromTemplate", return_value="email body")
         mocker.patch("bootprocess.general.emailSES", return_value="")
         group_helper.generateNewGroupCreationEmailBody  = mockGenerateNewGroupCreationEmailBody
 
@@ -107,7 +107,7 @@ def test_createGroup(mocker, testname, postData,expectedContext, membershipCreat
         mocker.patch("Access.models.GroupV2.objects.create", return_value=mockGroup)
         mocker.patch("Access.models.MembershipV2.objects.create", return_value=None)
         mocker.patch("Access.models.User.objects.filter", return_value=[mockAccUser])
-        mocker.patch("Access.email_helper.generateEmail", return_value="email body")
+        mocker.patch("Access.helpers.generateStringFromTemplate", return_value="email body")
         mocker.patch("bootprocess.general.emailSES", return_value="")
         group_helper.generateNewGroupCreationEmailBody  = mockGenerateNewGroupCreationEmailBody
 
@@ -319,7 +319,7 @@ def test_approveNewGroupRequest(mocker, testname, expectedoutput,groupID, reques
         mock_membership_update.values_list.return_value = ["member1"]
         mocker.patch("Access.models.GroupV2.objects.get", return_value=mock_groupObject)
         mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_membership_update)
-        mocker.patch("Access.email_helper.generateEmail", return_value="email body")
+        mocker.patch("Access.helpers.generateStringFromTemplate", return_value="email body")
         mocker.patch("bootprocess.general.emailSES", return_value=True)
 
     elif testname == test_approveNewGroupRequest_ThrowsException:
@@ -337,7 +337,7 @@ def test_approveNewGroupRequest(mocker, testname, expectedoutput,groupID, reques
         mock_membership_update.values_list.return_value = ["member1"]
         mocker.patch("Access.models.GroupV2.objects.get", return_value=mock_groupObject)
         mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_membership_update)
-        mocker.patch("Access.email_helper.generateEmail", return_value="email body")
+        mocker.patch("Access.helpers.generateStringFromTemplate", return_value="email body")
         mocker.patch("bootprocess.general.emailSES", return_value=True, side_effect=Exception("sendEmailError"))
         mocker.patch("Access.models.GroupV2.objects.filter", return_value=[])
 
@@ -349,12 +349,13 @@ def test_approveNewGroupRequest(mocker, testname, expectedoutput,groupID, reques
     if requestApproved:
         assert general.emailSES.call_count == 1
         assert models.MembershipV2.objects.filter.call_count == 2
-        assert email_helper.generateEmail.call_count == 1
+        assert helpers.generateStringFromTemplate.call_count == 2
     if throwsException:
         assert models.GroupV2.objects.filter.call_count == 1
         assert models.MembershipV2.objects.filter.call_count == 2
         assert general.emailSES.call_count == 1
-        assert email_helper.generateEmail.call_count == 1
+        assert helpers.generateStringFromTemplate.call_count == 2
+        
 
 test_get_user_group_group_not_found = "GroupNotFound"
 test_get_user_group_cannot_access_group = "UserIsNotOwnerOfGroupOrSuperUser"

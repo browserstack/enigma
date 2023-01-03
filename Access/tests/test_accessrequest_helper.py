@@ -3,7 +3,6 @@ from Access import accessrequest_helper
 from django.http import HttpRequest, QueryDict
 import json
 
-
 @pytest.mark.parametrize("contextoutput, getAvailableAccessModulesThrowsException, get_extra_fields_throwsException, get_noticeThrowsException",[
         # no exceptions are thrown
         ({'accesses': [{'formDesc': 'desc value', 'accessTag': 'AccModule1', 'accessTypes': 'access types', 'accessRequestData': 'request data', 'extraFields': ['fields1'], 'notice': 'somenotice', 'accessRequestPath': '/path'}], 'genericForm': True}, False, False, False),

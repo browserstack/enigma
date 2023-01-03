@@ -2,6 +2,8 @@ from os.path import dirname, basename, isfile, join
 import glob
 import re
 import logging
+from django.template import loader
+
 
 logger = logging.getLogger(__name__)
 available_accesses = []
@@ -58,3 +60,10 @@ def getAccessDetails(eachAccess):
                 accessDetails['grantOwner'] = ",".join(eachAccessModule.grant_owner())
     logger.debug(accessDetails)
     return accessDetails
+
+def generateStringFromTemplate(filename, **kwargs):
+    template = loader.get_template(filename)
+    vals = {}
+    for key, value in kwargs.items():
+        vals[key] = value
+    return template.render(vals)
