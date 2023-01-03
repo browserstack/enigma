@@ -189,3 +189,5 @@ DEFAULT_ACCESS_GROUP = "default_access_group"
 MAIL_APPROVER_GROUPS = data['enigmaGroup']['MAIL_APPROVER_GROUPS']
 
 ACCESS_APPROVE_EMAIL = data['emails']['access-approve']
+
+ACCESS_MODULES = data["access_modules"]
