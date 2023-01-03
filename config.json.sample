@@ -13,5 +13,8 @@
     "MAIL_APPROVER_GROUPS": [
       "devnull@browserstack.com"
     ]
+  },
+  "emails": {
+    "access-approve": "<access-approve-email>"
   }
 }

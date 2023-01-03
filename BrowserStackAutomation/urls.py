@@ -19,6 +19,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import re_path, include
 from Access.views import (
     showAccessHistory,
+    pendingRequests,
     pendingFailure,
     pendingRevoke,
     updateUserInfo,
@@ -39,6 +40,7 @@ urlpatterns = [
     re_path(r"^logout/$", logout_view, name="logout"),
     re_path(r"^oauth/", include("social_django.urls", namespace="social")),
     re_path(r"^access/showAccessHistory$", showAccessHistory, name="showAccessHistory"),
+    re_path(r"^access/pendingRequests$", pendingRequests, name="pendingRequests"),
     re_path(r"^resolve/pendingFailure", pendingFailure, name="pendingFailure"),
     re_path(r"^resolve/pendingRevoke", pendingRevoke, name="pendingRevoke"),
     re_path(r"^user/updateUserInfo/", updateUserInfo, name="updateUserInfo"),

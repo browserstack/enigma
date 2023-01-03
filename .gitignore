@@ -1,3 +1,4 @@
+config.json
 __pycache__/
 *.py[cod]
-Access/access_modules/
+db.sqlite3
