@@ -40,7 +40,7 @@ COPY . .
 
 FROM base as test
 ENTRYPOINT [ "python" ]
-CMD [ "-m", "pytest", "-v", "--cov", "--disable-warnings" ] 
+CMD [ "-m", "pytest", "-v", "--cov", "--disable-warnings" ]
 
 FROM base as web
 COPY ./docker-entrypoint.sh /tmp/entrypoint.sh

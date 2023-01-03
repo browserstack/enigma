@@ -61,7 +61,7 @@ class User(models.Model):
 
     email = models.EmailField(null=True, blank=False)
     phone = models.IntegerField(null=True, blank=True)
-    
+
     is_bot = models.BooleanField(null=False, blank=False, default=False)
     BOT_TYPES = (
         ("None", "none"),

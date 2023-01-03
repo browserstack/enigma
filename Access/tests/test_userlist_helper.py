@@ -6,7 +6,7 @@ UserIsNotAuthorized = "UserIsNotAuthorized"
 UserIsAuthorized = "UserIsAuthorized"
 
 @pytest.mark.parametrize("testname, UserHasPermission, UserHasOffboardPermission,expectedError",
-                        
+
     [
         # user does not have permission to view the page
         (UserIsNotAuthorized, False, False,True),
@@ -23,7 +23,7 @@ def test_getAllUserList(mocker, testname ,UserHasPermission, UserHasOffboardPerm
         request.user = userMock
 
     elif testname == UserIsAuthorized:
-        
+
         userMock.name = "UserNickName"
         userMock.user.name = "UserNickName"
         userMock.user.first_name = "UserFirstName"
@@ -35,10 +35,10 @@ def test_getAllUserList(mocker, testname ,UserHasPermission, UserHasOffboardPerm
         userMock.current_state.return_value = "Active"
         userMock.user.is_active = True
         userMock.user.has_permission.return_value = UserHasOffboardPermission
-        
+
         request.user = userMock
 
-        
+
         mocker.patch("Access.helpers.check_user_permissions", return_value=UserHasPermission)
         mocker.patch("Access.models.User.objects.all", return_value=[userMock])
 
@@ -60,6 +60,3 @@ def test_getAllUserList(mocker, testname ,UserHasPermission, UserHasOffboardPerm
             assert context["viewDetails"]["numColumns"] == 8
         else:
             assert context["viewDetails"]["numColumns"] == 7
-
-
-

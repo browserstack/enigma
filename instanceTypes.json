@@ -1,38 +1,38 @@
 {
-    "eu-central-1": {
-        "instanceTypes": [
-            {
-                "type": "t3.nano",
-                "dispName": "General -- CPU: 1 -- RAM: 0.5 -- $0.0067/hr"
-            },
-            {
-                "type": "t3.micro",
-                "dispName": "General -- CPU: 1 -- RAM: 1 -- $0.0134/hr"
-            },
-            {
-                "type": "t3.small",
-                "dispName": "General -- CPU: 1 -- RAM: 2 -- $0.0268/hr"
-            },
-            {
-                "type": "t3.medium",
-                "dispName": "General -- CPU: 2 -- RAM: 4 -- $0.0536/hr"
-            },
-            {
-                "type": "t3.large",
-                "dispName": "General -- CPU: 2 -- RAM: 8 -- $0.1072/hr"
-            },
-            {
-                "type": "m5.large",
-                "dispName": "EBS-Optimized -- CPU: 2 -- RAM: 8 -- $0.1150/hr"
-            },
-            {
-                "type": "c5.large",
-                "dispName": "Compute -- CPU: 2 -- RAM: 4 -- $0.0970/hr"
-            },
-            {
-                "type": "c5.xlarge",
-                "dispName": "Compute -- CPU: 4 -- RAM: 8 -- $0.1940/hr"
-            }
-        ]
-    }
+  "eu-central-1": {
+    "instanceTypes": [
+      {
+        "type": "t3.nano",
+        "dispName": "General -- CPU: 1 -- RAM: 0.5 -- $0.0067/hr"
+      },
+      {
+        "type": "t3.micro",
+        "dispName": "General -- CPU: 1 -- RAM: 1 -- $0.0134/hr"
+      },
+      {
+        "type": "t3.small",
+        "dispName": "General -- CPU: 1 -- RAM: 2 -- $0.0268/hr"
+      },
+      {
+        "type": "t3.medium",
+        "dispName": "General -- CPU: 2 -- RAM: 4 -- $0.0536/hr"
+      },
+      {
+        "type": "t3.large",
+        "dispName": "General -- CPU: 2 -- RAM: 8 -- $0.1072/hr"
+      },
+      {
+        "type": "m5.large",
+        "dispName": "EBS-Optimized -- CPU: 2 -- RAM: 8 -- $0.1150/hr"
+      },
+      {
+        "type": "c5.large",
+        "dispName": "Compute -- CPU: 2 -- RAM: 4 -- $0.0970/hr"
+      },
+      {
+        "type": "c5.xlarge",
+        "dispName": "Compute -- CPU: 4 -- RAM: 8 -- $0.1940/hr"
+      }
+    ]
+  }
 }

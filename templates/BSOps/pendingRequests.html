@@ -231,7 +231,7 @@
       urlBuilder = urlBuilder + reqParams.join("&")
       div_id = request_id+"-action"
       document.getElementById(div_id).innerHTML = "<p style='color: green'>Processing...</p>"
-      $.ajax({url: urlBuilder, 
+      $.ajax({url: urlBuilder,
       success: function(result){
           updateStatus(result, selector)
         },
@@ -442,7 +442,7 @@
             <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#collapse11"
                 data-parent="#pending-accordion">Github Repo Creation Pending : </a>
               <span class="h6 badge badge-light">{{ repoRequest|length }}</span>
-      
+
             </h2>
           </div>
         </div>
@@ -468,8 +468,8 @@
               </div>
             </div>
             {% endif %}
-      
-      
+
+
             {% for request in repoRequest %}
             <div class="row">
               <div class="card col-xs-12 col-md-12">
