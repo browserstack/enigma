@@ -1,6 +1,6 @@
 # github action to run commit-msg hook on pull request commits and push commits to master branch
 name: config-validator
-on: [push, pull_request]
+on: pull_request
 jobs:
   config-validator:
     runs-on: ubuntu-latest
