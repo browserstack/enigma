@@ -47,7 +47,7 @@ lint: lint_issues
 	@pylama --skip "./env/*" -r lint_issues || echo "Linter run returned errors. Check lint_issues file for details." && false
 
 schema_validate:
-	@echo $(shell python3 scripts/clone_access_modules.py && python3 scripts/validator.py)
+	@echo $(shell python scripts/clone_access_modules.py && python scripts/validator.py)
 
 run_semgrep:
 	$(shell semgrep --error --config "p/cwe-top-25" --config "p/owasp-top-ten" --config "p/r2c-security-audit")
