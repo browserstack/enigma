@@ -16,8 +16,5 @@
   },
   "emails": {
     "access-approve": "<access-approve-email>"
-  },
-    "emails2": {
-    "access-approve": "<access-approve-email>"
   }
 }
