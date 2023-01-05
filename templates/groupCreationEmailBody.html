@@ -1,0 +1,20 @@
+<center><h1> New Group Request from {{user}} </h1></center>
+<br>
+<b>{{first_name}} {{last_name}} </b>
+{{email}} has requested for creation of new group with name <b>{{groupName}}</b>
+<br><br>
+Following members are requested for being added to the group.
+({{memberList}})
+<br>
+Reason :
+    {{reason}}
+<br>
+
+{% if needsAccessApprove %}
+    "Further addition of members <b>will</b> require premission from access_approve"
+{% else %}:
+    "Further addition of members <b>will not</b> require premission from access_approve"
+{% endif %}
+<center>
+<a href='https://enigma.browserstack.com/access/pendingRequests' class="button button2" style="color:white;">Go to access-approve Dashboard</a>
+</center>

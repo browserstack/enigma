@@ -1,0 +1,20 @@
+{
+  "googleapi": {
+    "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "",
+    "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "",
+    "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS": ""
+  },
+  "access_modules": {
+    "git_urls": [
+      "https://github.com/browserstack/enigma-public-access-modules.git"
+    ]
+  },
+  "enigmaGroup": {
+    "MAIL_APPROVER_GROUPS": [
+      "devnull@browserstack.com"
+    ]
+  },
+  "emails": {
+    "access-approve": "<access-approve-email>"
+  }
+}
