@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "/schemas/central",
+  "title": "Config",
+  "description": "The config file schema",
+  "type": "object",
+  "properties": {
+    "googleapi": {
+      "description": "Config keys related to Google SSO",
+      "type": "object",
+      "properties": {
+        "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": {
+          "description": "Google OAuth2 Key",
+          "type": "string"
+        },
+        "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": {
+          "description": "Google OAuth2 secret",
+          "type": "string"
+        },
+        "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS": {
+          "description": "Google OAuth2 whitelisted domains",
+          "type": "string"
+        }
+      }
+    },
+    "access_modules": {
+      "description": "List of access modules attached to this tool",
+      "type": "object",
+      "properties": {
+        "git_urls": {
+          "description": "List of git URLs of access modules",
+          "type": "array"
+        }
+      }
+    },
+    "enigmaGroup": {
+      "description": "Config related of enigma groups",
+      "type": "object",
+      "properties": {
+        "MAIL_APPROVER_GROUPS": {
+          "description": "List of mail approvers",
+          "type": "array"
+        }
+      }
+    }
+  },
+  "required": [
+    "googleapi"
+  ]
+}

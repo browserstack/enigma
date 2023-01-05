@@ -4,6 +4,10 @@ from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
+from django.shortcuts import render
+from Access.userlist_helper import getAllUserList
+from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRequests
+from Access import group_helper
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +23,11 @@ def showAccessHistory(request):
 @login_required
 @user_admin_or_ops
 def pendingFailure(request):
-    return False
+    response = getGrantFailedRequests(request)
+    if response['error']:
+        return render(request, 'BSOps/accessStatus.html', response)
+
+    return render(request,'BSOps/failureAdminRequests.html',response)
 
 
 @login_required
@@ -35,8 +43,13 @@ def updateUserInfo(request):
 
 @login_required
 def createNewGroup(request):
-    return False
-
+    if request.POST:
+        context = group_helper.createGroup(request)
+        if "status" in context or "error" in context:
+            return render(request, 'BSOps/accessStatus.html',context)
+        return render(request,'BSOps/createNewGroup.html',context)
+    else:
+        return render(request,'BSOps/createNewGroup.html',{})
 
 @api_view(["GET"])
 @login_required
@@ -48,14 +61,23 @@ def allUserAccessList(request, load_ui=True):
 
 @login_required
 def allUsersList(request):
-    return False
+    context = getAllUserList(request)
+    return render(request, 'BSOps/allUsersList.html', context)
 
 
 @login_required
 def requestAccess(request):
-    return False
+    context = requestAccessGet(request)
+    return render(request, 'BSOps/accessStatus.html',context)
 
 
 @login_required
 def groupRequestAccess(request):
     return False
+
+@api_view(["GET"])
+@login_required
+@user_with_permission(["ACCESS_APPROVE"])
+def pendingRequests(request):
+    context = getPendingRequests(request)
+    return render(request, 'BSOps/pendingRequests.html', context)
