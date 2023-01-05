@@ -1,12 +1,13 @@
+# run .github/scripts/commit-msg-check.sh
 name: Conventional Commits Msg Check
 on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - name: Run script
-        run: |
-         chmod +x .github/scripts/commit-msg-check.sh
-          .github/scripts/commit-msg-check.sh
+    - uses: actions/checkout@v2
+    - name: Run commit-msg check script
+      run: |
+        chmod +x .github/scripts/commit-msg-check.sh
+        .github/scripts/commit-msg-check.sh
       shell: bash

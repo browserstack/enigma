@@ -3,12 +3,12 @@ on:
   pull_request: {}
   push:
     branches:
-      - main
+    - main
     paths:
-      - .github/workflows/semgrep.yml
+    - .github/workflows/semgrep.yml
   schedule:
     # random HH:MM to avoid a load spike on GitHub Actions at 00:00
-    - cron: '12 15 * * *'
+  - cron: 12 15 * * *
 jobs:
   semgrep:
     name: Scan
@@ -17,5 +17,5 @@ jobs:
       image: returntocorp/semgrep
     if: (github.actor != 'dependabot[bot]')
     steps:
-      - uses: actions/checkout@v3
-      - run: semgrep --error --config "p/cwe-top-25" --config "p/owasp-top-ten" --config "p/r2c-security-audit"
+    - uses: actions/checkout@v3
+    - run: semgrep --error --config "p/cwe-top-25" --config "p/owasp-top-ten" --config "p/r2c-security-audit"
