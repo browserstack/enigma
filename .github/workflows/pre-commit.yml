@@ -5,7 +5,7 @@ jobs:
   commit-msg-hook:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v1
       - name: Run commit-msg hook
         run: |
             pip install pre-commit==2.21.0
