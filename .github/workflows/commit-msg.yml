@@ -6,4 +6,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run script
-        run: bash commit-msg-check.sh
+        run: |
+         chmod +x .github/scripts/commit-msg-check.sh
+          .github/scripts/commit-msg-check.sh
+      shell: bash
