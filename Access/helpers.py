@@ -64,8 +64,3 @@ def getPossibleApproverPermissions():
         else:
             all_approver_permissions.extend(["ACCESS_APPROVE"])
     return list(set(all_approver_permissions))
-
-def isUserAnApprover(user):
-    permission_labels = [permission.label for permission in user.user.permissions]
-    approver_permissions = getPossibleApproverPermissions()
-    return len(list(set(permission_labels) & set(approver_permissions))) > 0

@@ -1,7 +1,7 @@
 import datetime, json
 
-from .models import (User, GroupAccessMapping, UserAccessMapping, GroupV2, MembershipV2)
-from . import helpers as helper
+from Access.models import (User, GroupAccessMapping, UserAccessMapping, GroupV2, MembershipV2)
+from Access.helpers import check_user_permissions, getAvailableAccessModules, getPossibleApproverPermissions
 
 def add_variables_to_context(request):
     pendingCount = 0
@@ -15,12 +15,12 @@ def add_variables_to_context(request):
     context['currentYear'] = now.year
     context["users"] = User.objects.filter().only('user')
 
-    if helper.check_user_permissions(request.user, "ACCESS_APPROVE"):
+    if check_user_permissions(request.user, "ACCESS_APPROVE"):
         pendingCount += MembershipV2.objects.filter(status='pending', group__status="Approved").count()
         pendingCount += GroupAccessMapping.objects.filter(status='pending').count()
         pendingCount += GroupV2.objects.filter(status='pending').count()
 
-    all_access_modules = helper.getAvailableAccessModules()
+    all_access_modules = getAvailableAccessModules()
 
     ### Get count of pending requests on user.
     for each_access_module in all_access_modules:
@@ -33,12 +33,12 @@ def add_variables_to_context(request):
         access_tag = each_access_module.tag()
         requests = []
 
-        if helper.check_user_permissions(request.user, module_permissions["1"]):
+        if check_user_permissions(request.user, module_permissions["1"]):
             pendingCount += UserAccessMapping.objects.filter(status='pending', access__access_tag=access_tag).count()
-        elif "2" in module_permissions and helper.check_user_permissions(request.user, module_permissions["2"]):
+        elif "2" in module_permissions and check_user_permissions(request.user, module_permissions["2"]):
             pendingCount += UserAccessMapping.objects.filter(status='secondarypending', access__access_tag=access_tag).count()
 
-    context['anyApprover'] = helper.isUserAnApprover(request.user)
+    context['anyApprover'] = request.user.user.isAnApprover(getPossibleApproverPermissions())
     context['pendingCount'] = pendingCount
     context['is_ops'] = currentUser.is_ops
 

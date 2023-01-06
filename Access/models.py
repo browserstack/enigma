@@ -2,7 +2,6 @@ from BrowserStackAutomation.settings import USER_STATUS_CHOICES
 from django.contrib.auth.models import User as user
 from django.db import models
 
-
 class Permission(models.Model):
     """
     Permission to perform actions on enigma
@@ -128,6 +127,11 @@ class User(models.Model):
                 state_key = key
         self.state = state_key
         self.save()
+
+    def isAnApprover(self, allApproverPermissions):
+        permission_labels = [permission.label for permission in self.permissions]
+        approver_permissions = allApproverPermissions
+        return len(list(set(permission_labels) & set(approver_permissions))) > 0
 
     def __str__(self):
         return "%s" % (self.user)
