@@ -96,5 +96,6 @@ attrs==21.3.0
 pytest==7.2.0
 pytest-django==4.5.2
 pytest-cov==4.0.0
+pytest-mock==3.10.0
 pylama==8.4.1
 semgrep==1.2.1
