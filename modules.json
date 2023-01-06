@@ -1,0 +1,14 @@
+{
+    "Zoom": {
+        "grant": {
+            "exec": "grant",
+            "success": "on_success_grant",
+            "fail": "on_fail_grant"
+        },
+        "revoke": {
+            "exec": "revoke",
+            "success": "on_success_revoke",
+            "fail": "on_fail_revoke"
+        }
+    }
+}
