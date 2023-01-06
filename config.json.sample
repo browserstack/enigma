@@ -16,5 +16,9 @@
   },
   "emails": {
     "access-approve": "<access-approve-email>"
+  },
+  "celery": {
+    "broker": "<celery-broker-url>",
+    "backend": "<celery-result-backend-url>"
   }
 }
