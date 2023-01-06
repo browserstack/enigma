@@ -33,13 +33,13 @@
         }
       }
     },
-    "enigmaGroup":{
-      "description":"Config related of enigma groups",
-      "type":"object",
-      "properties":{
-        "MAIL_APPROVER_GROUPS":{
-          "description":"List of mail approvers",
-          "type":"array"
+    "enigmaGroup": {
+      "description": "Config related of enigma groups",
+      "type": "object",
+      "properties": {
+        "MAIL_APPROVER_GROUPS": {
+          "description": "List of mail approvers",
+          "type": "array"
         }
       }
     }

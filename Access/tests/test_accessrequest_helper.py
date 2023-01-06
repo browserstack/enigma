@@ -20,7 +20,7 @@ def test_requestAccessGet(mocker, contextoutput, getAvailableAccessModulesThrows
     accessModule.access_types.return_value = "access types"
     accessModule.access_request_data.return_value = "request data"
     accessModule.tag.return_value = "AccModule1"
-    
+
     if not get_extra_fields_throwsException:
         accessModule.get_extra_fields.return_value = ["fields1"]
     else:
@@ -32,7 +32,7 @@ def test_requestAccessGet(mocker, contextoutput, getAvailableAccessModulesThrows
         accessModule.get_notice.return_value = ""
 
     accessModule.fetch_access_request_form_path.return_value = "/path"
-    
+
     if not getAvailableAccessModulesThrowsException:
         mocker.patch("Access.helpers.getAvailableAccessModules", return_value=[accessModule])
     else:

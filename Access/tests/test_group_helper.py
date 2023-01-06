@@ -32,24 +32,24 @@ GroupDoesNotExists_NeedsApproval_3 = "GroupDoesNotExists NeedsApproval with Sele
             "newGroupName=['" + testGroupName + "']&requiresAccessApprove=false&newGroupReason=['test reason']&selectedUserList=user1@user1.com",
             "{'status': {'title': 'New Group Request submitted', 'msg': \"A request for New Group with name ['" + testGroupName+ "'] has been submitted for approval. You will be notified for any changes in request status.\"}}",
             2, False
-        ),    
+        ),
         (
             GroupDoesNotExists_NeedsApproval_3,
             "newGroupName=['" + testGroupName + "']&requiresAccessApprove=true&newGroupReason=['test reason']&selectedUserList=user1@user1.com",
             "{'status': {'title': 'New Group Request submitted', 'msg': \"A request for New Group with name ['" + testGroupName+ "'] has been submitted for approval. You will be notified for any changes in request status.\"}}",
             2, True
-        ),            
+        ),
     ]
 )
 def test_createGroup(mocker, testname, postData,expectedContext, membershipCreationCallCount, needsAccessApprove):
     request = mocker.MagicMock()
     request.POST = QueryDict(postData)
-    
+
     if testname==GroupAlreadyExists:
         statusFilterPatch = mocker.MagicMock()
         statusFilterPatch.filter.return_value = ['testGroupName']
         mocker.patch("Access.models.GroupV2.objects.filter", return_value=statusFilterPatch)
-    
+
     elif testname==GroupDoesNotExists_DoesNotNeedsApproval_1:
         def mockGenerateNewGroupCreationEmailBody(request, group_id, newGroupName, initialMembers, newGroupReason, needsAccessApprove):
             return ""

@@ -26,7 +26,7 @@ def pendingFailure(request):
     response = getGrantFailedRequests(request)
     if type(response) is dict:
         return render(request, 'BSOps/accessStatus.html', response)
-    
+
     return render(request,'BSOps/failureAdminRequests.html',response)
 
 
