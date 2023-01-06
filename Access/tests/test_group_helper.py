@@ -239,12 +239,15 @@ def test_updateOwner(mocker):
     mock_excludeMembership = mocker.MagicMock()
     mock_excludeMembership.exclude.return_value = [mock_membershipObj]
 
+    mock_group = mocker.MagicMock()
+    mock_group.name = ""
+
     mocker.patch("Access.models.Role.objects.get", return_value="")
     mocker.patch("Access.models.User.objects.filter", return_value=[])
     mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_excludeMembership)
     mocker.patch("bootprocess.general.emailSES", return_value=True)
     context = {}
-    group_helper.updateOwner(request, "testgroupname","", context)
+    group_helper.updateOwner(request, mock_group, context)
     assert context["notification"] == "Owner's updated"
 
 
@@ -259,11 +262,6 @@ test_approveNewGroupRequest_ThrowsException = "ThrowsException"
             test_approveNewGroupRequest_GroupNotFound,
             "{'error': 'Error request not found OR Invalid request type'}",
               "1", False, False,
-        ),
-        (
-            test_approveNewGroupRequest_ReqNotInPending,
-            "{'error': 'The Request (1) is already Processed By : username2'}",
-            "1", False, False,
         ),
         (
             test_approveNewGroupRequest_UserApprovingHisOwn,

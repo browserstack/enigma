@@ -142,38 +142,11 @@ def getGroupAccessList(request, groupName):
         group = group[0]
         groupMembers = MembershipV2.objects.filter(group=group).filter(status="Approved")
         
-        if not requesterIsOwner(request, groupMembers):
+        if not isAllowedGroupAdminFunctions(request, groupMembers):
             raise Exception("Permission denied, requester is non owner")
         # updating owner
         if request.POST:
-            context["notification"] = updateOwner(request, groupName,group, context)
-            # # if request.user.user.email not in ownersEmail and not request.user.is_superuser:
-            # #     raise Exception("Permission denied, requester is non owner")
-            # if not requesterIsOwner(request, groupMembers):
-            #     raise Exception("Permission denied, requester is non owner")
-
-            # logger.debug("updating owners for group "+ groupName+ " requested by "+ request.user.username)
-            # data=request.POST
-            # data=dict(data.lists())
-            # if "owners" not in data:
-            #     data["owners"] = []
-
-            # destination = [request.user.user.email]
-            # # we will only get data["owners"] as owners who are checked in UI(exluding disabled checkbox owner who requested the change)
-            # for membership_obj in MembershipV2.objects.filter(group=group,status='Approved').exclude(user=request.user.user):
-            #     if membership_obj.user.email in data["owners"]:
-            #         membership_obj.is_owner = True
-            #         destination.append(membership_obj.user.email)
-            #     else:
-            #         membership_obj.is_owner = False
-            #     membership_obj.save()
-
-            # logger.debug("Owners changed to "+", ".join(destination))
-            # context["notification"] = "Owner's updated"
-            # subject = "Enigma Group '"+groupName+"' owners changed"
-            # body= "\nGroup Name :- {} \nupdated owners :- {} \nupdated by :- {}".format(groupName,", ".join(destination),request.user.user.email)
-            # destination.extend(MAIL_APPROVER_GROUPS)
-            # general.emailSES(destination,subject,body)
+            context["notification"] = updateOwner(request, group, context)
         
         groupMembers = getGroupMembers(groupMembers)
         
@@ -204,8 +177,8 @@ def getGroupAccessList(request, groupName):
         context['error'] = {'error_msg': 'Internal Error', 'msg': "Error Occured while loading the page. Please contact admin, "+str(e)}
         return context
 
-def updateOwner(request, groupName, group, context):
-    logger.debug("updating owners for group "+ groupName+ " requested by "+ request.user.username)
+def updateOwner(request, group, context):
+    logger.debug("updating owners for group "+ group.name + " requested by "+ request.user.username)
     data=request.POST
     data=dict(data.lists())
     
@@ -223,13 +196,13 @@ def updateOwner(request, groupName, group, context):
         membership_obj.save()
 
     logger.debug("Owners changed to "+", ".join(destination))
-    subject = "Enigma Group '"+groupName+"' owners changed"
-    body= "\nGroup Name :- {} \nupdated owners :- {} \nupdated by :- {}".format(groupName,", ".join(destination),request.user.user.email)
+    subject = "Enigma Group '"+ group.name +"' owners changed"
+    body= "\nGroup Name :- {} \nupdated owners :- {} \nupdated by :- {}".format(group.name,", ".join(destination),request.user.user.email)
     destination.extend(MAIL_APPROVER_GROUPS)
     general.emailSES(destination,subject,body)
     context["notification"] = "Owner's updated"
 
-def requesterIsOwner(request,groupMembers):
+def isAllowedGroupAdminFunctions(request,groupMembers):
     ownersEmail = [member.user.email for member in groupMembers.filter(is_owner = True)]
     is_approver = len(User.objects.filter(role=Role.objects.get(label='TEAMS:ACCESSAPPROVE'),state=1, email=request.user.user.email)) > 0
     
@@ -257,12 +230,7 @@ def approveNewGroupRequest(request, group_id):
             json_response['error'] = "Error request not found OR Invalid request type"
             return json_response
 
-        if group_object.status in ['Declined','Approved','Processing','Revoked']:
-            logger.warning("An Already Approved/Declined/Processing Request was accessed by - "+request.user.username)
-            json_response = {}
-            json_response['error'] = 'The Request ('+group_id+') is already Processed By : '+group_object.approver.user.username
-            return json_response
-        elif request.user.username == group_object.requester.user.username:
+        if request.user.username == group_object.requester.user.username:
             # Approving self request
             context = {}
             context["error"] = "You cannot approve your own request. Please ask other admins to do that"
@@ -321,6 +289,7 @@ def get_user_group(request, group_name):
             return context
         group = group[0]
         groupMembers = MembershipV2.objects.filter(group=group).filter(status="Approved").only('user')
+        # if isAllowedGroupAdminFunctions(request, groupMembers):
         ownersEmail = [member.user.email for member in groupMembers.filter(is_owner = True)]
         if request.user.user.email not in ownersEmail and not request.user.is_superuser:
             raise Exception("Permission denied, you're not owner of this group")
@@ -413,18 +382,14 @@ def sendMailForGroupApproval(membership_id, userEmail, requester, group_name, ht
     general.emailSES(destination,subject,body)
 
 
-def generateUserAddToGroupEmailBody(requestId, userEmail, PrimaryApprover, otherApprover, requester, groupName, http_host, reason):
-    ret = """<center><h1> Access Request </h1></center>
-    <h4>Primary Approver: <h4>"""+PrimaryApprover+""", <h4>Other:</h4>"""+otherApprover+"""
-    <br><br>
-    <b>"""+requester+"""</b> has requested to add <b>"""+ userEmail +"""</b> to his group <b>("""+groupName+""")</b><br>
-    <br>
-    Reason: """+reason+"""
-    <br>
-    <center>
-    <a href='https://enigma.browserstack.com/access/pendingRequests' class="button button2" style="color:white;">Go to access-approve Dashboard</a>
-    </center>"""
-    return ret
+def generateUserAddToGroupEmailBody(user_email, primary_approver, other_approver, requester, group_name, reason):
+    return helpers.generateStringFromTemplate(filename="add_user_to_group_mail.html", 
+                                            user_email = user_email,
+                                            primary_approver = primary_approver, 
+                                            other_approver = other_approver, 
+                                            requester = requester,
+                                            group_name = group_name,
+                                            reason = reason)
 
 def generateNewGroupCreationEmailBody(request, requestId, groupName, memberList, reason, needsAccessApprove):
     return helpers.generateStringFromTemplate(filename="groupCreationEmailBody.html", 
