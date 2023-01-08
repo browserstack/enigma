@@ -152,7 +152,7 @@ Format: `<type>(<scope>): <subject>`
 - `test`: adding missing tests, refactoring tests; no production code change
 - `chore`: updating grunt tasks etc; no production code change
 - `bump`: increase the version of something e.g. dependency
-- `build`: changes that affect the build system or external dependencies 
+- `build`: changes that affect the build system or external dependencies
 - `ci`: changes to our CI configuration files and scripts
 - `perf`: a code change that improves performance
 - `revert`: revert to a commit
@@ -185,8 +185,8 @@ References:
 ### Setup for Commit Message Linting using commitlint
 initialize new project
 ```
-npm init 
-or 
+npm init
+or
 yarn init
 ```
 
@@ -199,8 +199,8 @@ yarn add -D @commitlint/cli @commitlint/config-conventional
 
 install husky to run commitlint as a pre-commit hook
 ```
-npm install husky --save-dev 
-or 
+npm install husky --save-dev
+or
 yarn add -D husky
 ```
 
@@ -213,7 +213,7 @@ yarn husky install
 
 add a pre-commit hook to run commitlint before the code is committed
 ```
-npx husky add .husky/commit-msg "npx --no -- commitlint --edit $1" 
+npx husky add .husky/commit-msg "npx --no -- commitlint --edit $1"
 or
 yarn husky add .husky/commit-msg "npx --no -- commitlint --edit $1"
 ```
