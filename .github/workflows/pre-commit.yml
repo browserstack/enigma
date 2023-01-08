@@ -1,5 +1,5 @@
 # github action to run commit-msg hook on pull request commits and push commits to master branch
-name: commit-msg
+name: Pre Commit Hook
 on: [push, pull_request]
 jobs:
   commit-msg-hook:
