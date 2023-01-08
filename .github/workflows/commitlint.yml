@@ -1,5 +1,5 @@
-name: Lint Commit Messages
-on: [push]
+name: Check Commit Messages with Commitlint
+on: [push, pull_request]
 
 jobs:
   commitlint:
