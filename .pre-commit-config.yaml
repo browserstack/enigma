@@ -18,7 +18,3 @@ repos:
         types: [file]  # override `types: [json]`
         files: \.(json|json.sample)$
         args: [--autofix, --no-sort-keys]
-  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-    rev: v9.3.0
-    hooks:
-    - id: commitlint
