@@ -1,0 +1,24 @@
+{
+  "name": "enigma-public-central",
+  "version": "1.0.0",
+  "description": "Central Codebase for access management tool",
+  "main": "commitlint.config.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/browserstack/enigma-public-central.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/browserstack/enigma-public-central/issues"
+  },
+  "homepage": "https://github.com/browserstack/enigma-public-central#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^17.4.0",
+    "@commitlint/config-conventional": "^17.4.0",
+    "husky": "^8.0.3"
+  }
+}
