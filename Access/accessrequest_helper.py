@@ -56,11 +56,8 @@ def getGrantFailedRequests(request):
         }
         return context
     except Exception as e:
-        logger.debug("Error in request not found OR Invalid request type")
-        logger.exception(e)
-        json_response = {}
-        json_response['error'] = {'error_msg': str(e), 'msg': "Error in request not found OR Invalid request type"}
-        return json_response
+        return process_error_response(request, e)
+
     
 
 def getPendingRevokeFailures(request):
