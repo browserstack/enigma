@@ -25,20 +25,18 @@
         }
       }
     },
-    "properties": {
-      "celery": {
-        "description": "Celery configuration",
-        "type": "object",
-        "additionalProperties": false,
-        "properties": {
-          "broker": {
-            "description": "Celery broker url",
-            "type": "string"
-          },
-          "backend": {
-            "description": "Celery backend url",
-            "type": "string"
-          }
+    "celery": {
+      "description": "Celery configuration",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "broker": {
+          "description": "Celery broker url",
+          "type": "string"
+        },
+        "backend": {
+          "description": "Celery backend url",
+          "type": "string"
         }
       }
     },
