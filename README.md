@@ -152,6 +152,10 @@ Format: `<type>(<scope>): <subject>`
 - `test`: adding missing tests, refactoring tests; no production code change
 - `chore`: updating grunt tasks etc; no production code change
 - `bump`: increase the version of something e.g. dependency
+- `build`: changes that affect the build system or external dependencies
+- `ci`: changes to our CI configuration files and scripts
+- `perf`: a code change that improves performance
+- `revert`: revert to a commit
 
 ## Example
 
@@ -177,6 +181,42 @@ References:
 - https://www.conventionalcommits.org/
 - https://seesparkbox.com/foundry/semantic_commit_messages
 - http://karma-runner.github.io/1.0/dev/git-commit-msg.html
+
+### Setup for Commit Message Linting using commitlint
+initialize new project
+```
+npm init
+or
+yarn init
+```
+
+install commitlint
+```
+npm install @commitlint/cli @commitlint/config-conventional --save-dev
+or
+yarn add -D @commitlint/cli @commitlint/config-conventional
+```
+
+install husky to run commitlint as a pre-commit hook
+```
+npm install husky --save-dev
+or
+yarn add -D husky
+```
+
+enable the husky hooks
+```
+npx husky install
+or
+yarn husky install
+```
+
+add a pre-commit hook to run commitlint before the code is committed
+```
+npx husky add .husky/commit-msg "npx --no -- commitlint --edit $1"
+or
+yarn husky add .husky/commit-msg "npx --no -- commitlint --edit $1"
+```
 
 ##  License
 See [LICENSE.md](.github/LICENSE.md)
