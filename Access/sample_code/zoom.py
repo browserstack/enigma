@@ -2,6 +2,20 @@ from time import sleep
 
 class Zoom:
   def __init__(self):
+    self.register_module = {
+        "Zoom": {
+        "grant": {
+              "exec": "grant",
+              "success": "on_success_grant",
+              "fail": "on_fail_grant"
+          },
+          "revoke": {
+              "exec": "revoke",
+              "success": "on_success_revoke",
+              "fail": "on_fail_revoke"
+          }
+      }
+    }
     self.name = "zoom"
 
   def grant(self, arg1):
