@@ -5,6 +5,7 @@ import logging
 import time, datetime
 from Access.access_modules import *
 from django.template import loader
+from Access.models import UserAccessMapping
 
 logger = logging.getLogger(__name__)
 available_accesses = []
@@ -49,16 +50,7 @@ def getAccessDetails(eachAccess):
     logger.debug(accessDetails)
     for eachAccessModule in getAccessModules():
         if eachAccess.access_tag == eachAccessModule.tag():
-            accessDetails['accessType'] = eachAccessModule.access_desc()
-            accessDetails['accessCategory'] = eachAccessModule.get_label_desc(access_label)
-            accessDetails['accessMeta'] = eachAccessModule.get_label_meta(access_label)
-
-            if eachAccess.access_tag == "other" and "grant_emails" in eachAccess.access_label and type(eachAccess.access_label["grant_emails"])==list:
-                accessDetails['revokeOwner'] = ",".join(eachAccess.access_label["grant_emails"])
-                accessDetails['grantOwner']  = accessDetails['revokeOwner']
-            else:
-                accessDetails['revokeOwner'] = ",".join(eachAccessModule.revoke_owner())
-                accessDetails['grantOwner'] = ",".join(eachAccessModule.grant_owner())
+            accessDetails = UserAccessMapping().getAccessRequestDetails(eachAccess)
     logger.debug(accessDetails)
     return accessDetails
     
