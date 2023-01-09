@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    'django_celery_results',
     "bootprocess.apps.BootprocessConfig",
     "social_django",
     "Access",
@@ -178,6 +179,10 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = data["googleapi"]["SOCIAL_AUTH_GOOGLE_OAUTH2_
 SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = data["googleapi"][
     "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS"
 ]
+
+CELERY_BROKER_URL = data["celery"]["broker"]
+# CELERY_RESULT_BACKEND = "redis://localhost:6379"
+CELERY_RESULT_BACKEND = data["celery"]["backend"]
 
 USER_STATUS_CHOICES = [
     ("1", "active"),
