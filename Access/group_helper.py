@@ -156,10 +156,7 @@ def getGroupAccessList(request, groupName):
         groupMappings = GroupAccessMapping.objects.filter(group=group, status__in=["Approved", "Pending", "Declined", "SecondaryPending"])
         accessV2s = [(groupMapping.access, groupMapping.request_id, groupMapping.status) for groupMapping in groupMappings]
 
-        allow_revoke = False
-        if helpers.check_user_permissions(request.user, "ALLOW_USER_OFFBOARD") or check_user_is_group_owner(request.user, group):
-            allow_revoke = True
-        context["allowRevoke"] = allow_revoke
+        context["allowRevoke"] = (request.user.user.has_permission("ALLOW_USER_OFFBOARD") or check_user_is_group_owner(request.user, group)==None)
         
         if accessV2s:
             split_details = []
@@ -202,6 +199,7 @@ def updateOwner(request, group, context):
     general.emailSES(destination,subject,body)
     context["notification"] = "Owner's updated"
 
+
 def isAllowedGroupAdminFunctions(request,groupMembers):
     ownersEmail = [member.user.email for member in groupMembers.filter(is_owner = True)]
     is_approver = len(User.objects.filter(role=Role.objects.get(label='TEAMS:ACCESSAPPROVE'),state=1, email=request.user.user.email)) > 0
@@ -221,15 +219,15 @@ def check_user_is_group_owner(user_name, group):
         return False
 
 def approveNewGroupRequest(request, group_id):
+    
     try:
-        try:
-            group_object = GroupV2.objects.get(group_id=group_id, status='Pending')
-        except Exception as e:
-            logger.error("Error in approveNewGroup request, Not found OR Invalid request type")
-            json_response = {}
-            json_response['error'] = "Error request not found OR Invalid request type"
-            return json_response
-
+        group_object = GroupV2.objects.get(group_id=group_id, status='Pending')
+    except Exception as e:
+        logger.error("Error in approveNewGroup request, Not found OR Invalid request type")
+        json_response = {}
+        json_response['error'] = "Error request not found OR Invalid request type"
+        return json_response
+    try:
         if request.user.username == group_object.requester.user.username:
             # Approving self request
             context = {}
@@ -289,9 +287,7 @@ def get_user_group(request, group_name):
             return context
         group = group[0]
         groupMembers = MembershipV2.objects.filter(group=group).filter(status="Approved").only('user')
-        # if isAllowedGroupAdminFunctions(request, groupMembers):
-        ownersEmail = [member.user.email for member in groupMembers.filter(is_owner = True)]
-        if request.user.user.email not in ownersEmail and not request.user.is_superuser:
+        if not isAllowedGroupAdminFunctions(request, groupMembers):
             raise Exception("Permission denied, you're not owner of this group")
     
         groupMembers = get_users_from_groupmembers(groupMembers)
@@ -308,7 +304,6 @@ def get_user_group(request, group_name):
 def get_users_from_groupmembers(group_members):
     return [member.user for member in group_members]
 
-
 def add_user_to_group(request):
     try:
         
@@ -317,19 +312,10 @@ def add_user_to_group(request):
         group = GroupV2.objects.filter(name=data['groupName'][0]).filter(status='Approved')[0]
         group_members = MembershipV2.objects.filter(group=group).filter(status__in=["Approved", "Pending"]).only('user')
 
-        owners_email = [member.user.email for member in group_members.filter(is_owner = True)]
-        
-        requester_email = request.user.user.email
-        is_requester_admin = request.user.is_superuser
-        is_requester_owner = requester_email in owners_email
-
-        
-        if not (is_requester_owner or is_requester_admin):
+        if not isAllowedGroupAdminFunctions(request, group_members):
             raise Exception("Permission denied, requester is non owner")
 
         group_members_email = [member.user.email for member in group_members]
-        # groupAccessMappings = GroupAccessMapping.objects.filter(group=group, status="Approved")
-        # groupAccessV2s = [(groupMapping.access, groupMapping.request_id) for groupMapping in groupAccessMappings]
         for user_email in data['selectedUserList']:
             if is_user_in_group(user_email, group_members_email):
                 context = {}
@@ -338,12 +324,7 @@ def add_user_to_group(request):
 
 
         for user_email in data['selectedUserList']:
-            # if user_email not in groupMembersEmail:
             user = User.objects.filter(email=user_email)[0]
-            # if helpers.check_group_has_ssh(groupAccessV2s) and user.ssh_public_key == None:
-            #     context = {}
-            #     context['error'] = {'error_msg':'Request Not Submitted', 'msg': 'The user has not added a SSH key in enigma and hence can not add user to this group as this group has a SSH request. Please ask the user to add a ssh key and then try adding the user again to the group.'}
-            #     return context
             membership_id = user.name+'-'+str(group)+'-membership-'+datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
             member = MembershipV2.objects.create(group=group,user=user,reason=data['memberReason'][0],membership_id=membership_id,requested_by=request.user.user)
             if not group.needsAccessApprove:

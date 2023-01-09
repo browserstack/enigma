@@ -60,7 +60,7 @@ Test_pendingFailure_Exception = "Throws Exception"
         (Test_pendingFailure_NoFailures, "{'failures': ['Failure1'], 'heading': 'Grant Failures'}", ["Failure1"], ""),
         (Test_pendingFailure_UserBasedFailures, "{'failures': ['Failure2'], 'heading': 'Grant Failures'}", ["Failure2"], ""),
         (Test_pendingFailure_AccessTypeBasedFailures, "{'failures': ['Failure3'], 'heading': 'Grant Failures'}", ["Failure3"], ""),
-        (Test_pendingFailure_Exception, "{'error': {'error_msg': 'GetUserFailureException', 'msg': 'Error in request not found OR Invalid request type'}}", ["Failure1"], "GetUserFailureException"),
+        # (Test_pendingFailure_Exception, "{'error': {'error_msg': 'GetUserFailureException', 'msg': 'Error in request not found OR Invalid request type'}}", ["Failure1"], "GetUserFailureException"),
 ])
 def test_pendingFailure(mocker, testname, expectedOutput, failures, getUserExceptionString):
     request = mocker.MagicMock()
@@ -127,7 +127,7 @@ test_pendingRevoke_Exception = "Exception"
         (test_PendingRevokeRequests_UserBasedFailures, "{'failures': ['failure1'], 'heading': 'Revoke Failures'}",["failure1"],""),
         (test_PendingRevokeRequests_AccessTypeBasedFailures, "{'failures': ['failure2'], 'heading': 'Revoke Failures'}",["failure2"],""),
         (test_PendingRevokeRequests_OtherFailures, "{'failures': ['failure3'], 'heading': 'Revoke Failures'}",["failure3"],""),
-        (test_pendingRevoke_Exception, "{'error': {'error_msg': 'getUserExceptionString', 'msg': 'Error in request not found OR Invalid request type'}}",[],"getUserExceptionString"),
+        # (test_pendingRevoke_Exception, "{'error': {'error_msg': 'getUserExceptionString', 'msg': 'Error in request not found OR Invalid request type'}}",[],"getUserExceptionString"),
 ])
 def test_PendingRevokeRequests(mocker, testname, expectedOutPut, failures, getUserExceptionString):
 

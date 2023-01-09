@@ -213,7 +213,8 @@ def test_getGroupAccessList(mocker, testname, expectedOutput):
 
         mocker.patch("Access.models.GroupAccessMapping.objects.filter", return_value=[])
 
-        mocker.patch("Access.helpers.check_user_permissions", return_value=False)
+        # mocker.patch("Access.helpers.check_user_permissions", return_value=False)
+        request.user.user.has_permission.return_value = False
         def mock_getAccessDetails(eachAccess):
             return eachAccess
         helpers.getAccessDetails = mock_getAccessDetails
@@ -400,6 +401,7 @@ def test_get_user_group(mocker, test_name, group_name, expected_output):
         mock_membership_filter1.filter.return_value = mock_membership_only_filter
 
         mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_membership_filter1)
+        mocker.patch("Access.group_helper.isAllowedGroupAdminFunctions", return_value = False)
     
     elif test_name == test_get_user_group_can_access_group:
         request.user.user.email = "member1@email.com"
@@ -412,6 +414,7 @@ def test_get_user_group(mocker, test_name, group_name, expected_output):
 
         mock_membership_filter1 = mocker.MagicMock()
         mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_membership_filter1)
+        mocker.patch("Access.group_helper.isAllowedGroupAdminFunctions", return_value = True)
 
         mock_membership_only_filter = mocker.MagicMock()
         
@@ -488,6 +491,7 @@ def test_add_user_to_group(mocker, test_name, post_data, expected_output):
 
         mocker.patch("Access.models.GroupV2.objects.filter", return_value=mock_group_filter)
         mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_member_filter)
+        mocker.patch("Access.group_helper.isAllowedGroupAdminFunctions", return_value=False)
 
     elif test_name == test_add_user_to_group_duplicate_request:
         request.POST = QueryDict(post_data)
@@ -511,6 +515,8 @@ def test_add_user_to_group(mocker, test_name, post_data, expected_output):
 
         mocker.patch("Access.models.GroupV2.objects.filter", return_value=mock_group_filter)
         mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_member_filter)
+        mocker.patch("Access.group_helper.isAllowedGroupAdminFunctions", return_value=True)
+
 
     elif test_name == test_add_user_to_group_needs_approval:
         request.POST = QueryDict(post_data)
@@ -543,6 +549,7 @@ def test_add_user_to_group(mocker, test_name, post_data, expected_output):
         mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_member_filter)
         mocker.patch("Access.models.User.objects.filter", return_value=mock_user)
         mocker.patch("Access.models.MembershipV2.objects.create", return_value=mocker.MagicMock())
+        mocker.patch("Access.group_helper.isAllowedGroupAdminFunctions", return_value=True)
         mocker.patch("Access.group_helper.sendMailForGroupApproval", return_value=True)
 
     elif test_name == test_add_user_to_group_doesnot_need_approval:
@@ -581,6 +588,7 @@ def test_add_user_to_group(mocker, test_name, post_data, expected_output):
         mocker.patch("Access.models.User.objects.filter", return_value=[mock_user])
         mocker.patch("Access.models.MembershipV2.objects.create", return_value=mock_member)
         mocker.patch("Access.group_helper.sendMailForGroupApproval", return_value=True)
+        mocker.patch("Access.group_helper.isAllowedGroupAdminFunctions", return_value=True)
         mocker.patch("Access.views_helper.generateUserMappings", return_value=mocker.MagicMock())
 
         mock_thread = mocker.MagicMock()

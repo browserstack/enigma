@@ -64,27 +64,20 @@ def getGrantFailedRequests(request):
     
 
 def getPendingRevokeFailures(request):
-    try:
-        if request.GET.get('username'):
-            user = User.objects.get(user__username=request.GET.get('username'))
-            failures = UserAccessMapping.objects.filter(status__in=['revokefailed'], user=user).order_by('-requested_on')
-        if request.GET.get('access_type'):
-            access_tag = request.GET.get('access_type')
-            failures = UserAccessMapping.objects.filter(status__in=['revokefailed'], access__access_tag=access_tag).order_by('-requested_on')
-        else:
-            failures = UserAccessMapping.objects.filter(status__in=['revokefailed']).order_by('-requested_on')
+    if request.GET.get('username'):
+        user = User.objects.get(user__username=request.GET.get('username'))
+        failures = UserAccessMapping.objects.filter(status__in=['revokefailed'], user=user).order_by('-requested_on')
+    if request.GET.get('access_type'):
+        access_tag = request.GET.get('access_type')
+        failures = UserAccessMapping.objects.filter(status__in=['revokefailed'], access__access_tag=access_tag).order_by('-requested_on')
+    else:
+        failures = UserAccessMapping.objects.filter(status__in=['revokefailed']).order_by('-requested_on')
 
-        context = {
-            'failures': failures,
-            'heading': "Revoke Failures"
-        }
-        return context
-    except Exception as e:
-        logger.debug("Error in request not found OR Invalid request type")
-        logger.exception(e)
-        json_response = {}
-        json_response['error'] = {'error_msg': str(e), 'msg': "Error in request not found OR Invalid request type"}
-        return json_response
+    context = {
+        'failures': failures,
+        'heading': "Revoke Failures"
+    }
+    return context
 
 def getPendingRequests(request):
     logger.info("Pending Request call initiated")

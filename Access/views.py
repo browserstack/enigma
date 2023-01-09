@@ -81,9 +81,10 @@ def groupRequestAccess(request):
 def groupAccessList(request, groupName):
     context = group_helper.getGroupAccessList(request, groupName)
     if context['error']:
-        return render(request,"BSOps/groupAccessList.html",context)
-    
-    return render(request,"BSOps/accessStatus.html",context)
+        return render(request,"BSOps/accessStatus.html",context)
+        
+    return render(request,"BSOps/groupAccessList.html",context)
+
 
 def approveNewGroup(request, group_id):
     return group_helper.approveNewGroupRequest(request, group_id)
