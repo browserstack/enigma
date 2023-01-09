@@ -25,6 +25,23 @@
         }
       }
     },
+    "properties": {
+      "celery": {
+        "description": "Celery configuration",
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "broker": {
+            "description": "Celery broker url",
+            "type": "string"
+          },
+          "backend": {
+            "description": "Celery backend url",
+            "type": "string"
+          }
+        }
+      }
+    },
     "access_modules": {
       "description": "List of access modules attached to this tool",
       "type": "object",
