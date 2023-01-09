@@ -6,104 +6,70 @@ from celery.result import AsyncResult
 import json
 from json.decoder import JSONDecodeError
 
-class register_module:
+class module_initialisation:
   def __init__(self):
-    try:
-      with open("modules.json", "r") as f:
-      # Load the contents of the file as a JSON object
-        self.modules = json.load(f)
-      f.close()
-    except JSONDecodeError:
-      self.modules = {}
-  
-  def register(self, module_name, functions, on_success_functions, on_fail_functions):
-    if module_name not in self.modules:
-      new_module = {}
-      new_module[module_name] = {}
-      for i in range(len(functions)):
-        new_module[module_name][functions[i]] = {}
-        new_module[module_name][functions[i]]["exec"] = functions[i]
-        new_module[module_name][functions[i]]["success"] = on_success_functions[i]
-        new_module[module_name][functions[i]]["fail"] = on_fail_functions[i]
-      
-      self.modules.update(new_module)
-      json_str = json.dumps(self.modules)
-      with open("modules.json", "w") as f:
-        # Write the JSON string to the file
-        f.write(json_str)
-      f.close()
-    else:
-      print("Module is already registered.")
-    return
-  
-  def add_func(self, module_name, functions, on_success_functions, on_fail_functions):
+    self.modules = {
+        "Zoom": {
+        "module": Zoom(),
+        "grant": {
+              "exec": "grant",
+              "success": "on_success_grant",
+              "fail": "on_fail_grant"
+          },
+          "revoke": {
+              "exec": "revoke",
+              "success": "on_success_revoke",
+              "fail": "on_fail_revoke"
+          }
+      }
+    }
+
+  def func(self, module_name):
     if module_name in self.modules:
-      for i in range(len(functions)):
-        if functions[i] not in self.modules[module_name]:
-          self.modules[module_name][functions[i]] = {}
-          self.modules[module_name][functions[i]]["exec"] = functions[i]
-          self.modules[module_name][functions[i]]["success"] = on_success_functions[i]
-          self.modules[module_name][functions[i]]["fail"] = on_fail_functions[i]
-        else:
-          print(functions[i], " is already present in the module")
-      json_str = json.dumps(self.modules)
-      with open("modules.json", "w") as f:
-        # Write the JSON string to the file
-        f.write(json_str)
+      return self.modules[module_name]
     else:
-      print("Please enter correct module name")
-    return
+      print("Module is not present")
+      return {}
+
 
 class coordinator:
-  def __init__(self):
-    try:
-      with open("modules.json", "r") as f:
-      # Load the contents of the file as a JSON object
-        self.modules = json.load(f)
-      f.close()
-    except JSONDecodeError:
-      self.modules = {}
+  def __init__(self, module_name):
+    self.modules = module_initialisation()
 
   def exec_func(self, module_name, func_name, args):
     print("you are in coordinator exec_func")
-    if module_name in self.modules:
-      if func_name in self.modules[module_name]:
-        obj = globals()[module_name]
-        method = getattr(obj, self.modules[module_name][func_name]["exec"])
-        method(obj,*args)
-      else:
-        print(func_name, " doesn't exists in ", module_name)
+    target_module = self.modules.func(module_name)
+    if func_name in target_module:
+      obj = target_module["module"]
+      method = getattr(obj, target_module[func_name]["exec"])
+      method(*args)
     else:
-      print("module doesn't exists")
+      print(func_name, " doesn't exists in ", module_name)
 
   def success_func(self, module_name, func_name):
     print("you are in coordinator success_func")
-    if module_name in self.modules:
-      if func_name in self.modules[module_name]:
-        obj = globals()[module_name]
-        method = getattr(obj, self.modules[module_name][func_name]["success"])
-        method(obj)
-      else:
-        print(func_name, " doesn't exists in ", module_name)
+    target_module = self.modules.func(module_name)
+    if func_name in target_module:
+      obj = target_module["module"]
+      method = getattr(obj, target_module[func_name]["success"])
+      method()
     else:
-      print("module doesn't exists")
+      print(func_name, " doesn't exists in ", module_name)
   
   def fail_func(self, module_name, func_name):
     print("you are in coordinator fail_func")
-    if module_name in self.modules:
-      if func_name in self.modules[module_name]:
-        obj = globals()[module_name]
-        method = getattr(obj, self.modules[module_name][func_name]["fail"])
-        method(obj)
-      else:
-        print(func_name, " doesn't exists in ", module_name)
+    target_module = self.modules.func(module_name)
+    if func_name in target_module:
+      obj = target_module["module"]
+      method = getattr(obj, target_module[func_name]["fail"])
+      method()
     else:
-      print("module doesn't exists")
+      print(func_name, " doesn't exists in ", module_name)
 
 
 @shared_task(autoretry_for=(Exception,), retry_kwargs={'max_retries': 3, 'countdown': 5})
 def celery_task(module,command,args):
-  c = coordinator()
+  c = coordinator(module)
   c.exec_func(module, command, args)
   print("you are in middleman")
   return
@@ -114,7 +80,7 @@ def task_success(sender=None, **kwargs):
   task_data = task.args
   module = task_data[0]
   command = task_data[1]
-  c = coordinator()
+  c = coordinator(module)
   c.success_func(module, command)
   print("you are in task success middleman")
   return
@@ -125,7 +91,7 @@ def task_failure(sender=None, **kwargs):
   task_data = task.args
   module = task_data[0]
   command = task_data[1]
-  c = coordinator()
+  c = coordinator(module)
   c.fail_func(module, command)
   print("you are in task fail middleman")
   return
