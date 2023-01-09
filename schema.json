@@ -4,10 +4,12 @@
   "title": "Config",
   "description": "The config file schema",
   "type": "object",
+  "additionalProperties": false,
   "properties": {
     "googleapi": {
       "description": "Config keys related to Google SSO",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": {
           "description": "Google OAuth2 Key",
@@ -26,6 +28,7 @@
     "access_modules": {
       "description": "List of access modules attached to this tool",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "git_urls": {
           "description": "List of git URLs of access modules",
@@ -36,10 +39,22 @@
     "enigmaGroup": {
       "description": "Config related of enigma groups",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "MAIL_APPROVER_GROUPS": {
           "description": "List of mail approvers",
           "type": "array"
+        }
+      }
+    },
+    "emails": {
+      "description": "List of emails used across the repo",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "access-approve": {
+          "description": "Access approve email",
+          "type": "string"
         }
       }
     }

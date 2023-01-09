@@ -3,20 +3,20 @@ version: '3'
 services:
   web:
     container_name: dev
-    image: "${DOCKERIMAGE}"
+    image: ${DOCKERIMAGE}
     build:
       context: .
       dockerfile: Dockerfile
       target: web
     env_file:
-      - ./secrets/ops_app_dev.env
+    - ./secrets/ops_app_dev.env
     volumes:
-      - .:/srv/code/dev
-      - ./mounts/logs/:/ebs/logs/
+    - .:/srv/code/dev
+    - ./mounts/logs/:/ebs/logs/
     ports:
-      - "8000:8000"
+    - 8000:8000
     depends_on:
-      - db
+    - db
     command: >
       /bin/bash -c "
         while ! nc -z db 3306;
@@ -29,11 +29,11 @@ services:
     container_name: db
     image: mysql/mysql-server:8.0.31
     ports:
-      - "3306:3306"
+    - 3306:3306
     env_file:
-      - ./secrets/ops_mysql_dev.env
+    - ./secrets/ops_mysql_dev.env
     volumes:
-      - ./dbs:/var/lib/mysql --socket=/tmp/mysql.sock
+    - ./dbs:/var/lib/mysql --socket=/tmp/mysql.sock
   test:
     container_name: test
     build:
@@ -41,7 +41,7 @@ services:
       dockerfile: Dockerfile
       target: test
     env_file:
-      - ./secrets/ops_app_test.env
+    - ./secrets/ops_app_test.env
     volumes:
-      - .:/srv/code/dev
-      - ./mounts/logs/:/ebs/logs/
+    - .:/srv/code/dev
+    - ./mounts/logs/:/ebs/logs/
