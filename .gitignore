@@ -2,8 +2,23 @@ config.json
 __pycache__/
 *.py[cod]
 db.sqlite3
+.env
+
+# Mac OS X files
+.DS_Store
+
+# VS Code files
+.vscode/
+
+# Coverage files from pytest-cov plugin for pytest
 .coverage
+
+# Dependency directories
+node_modules/
+
+# Folders created by Docker Compose
 mounts/
 public/
+
+# make lint sideeffect
 lint_issues
-.env
