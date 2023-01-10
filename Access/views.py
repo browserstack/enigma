@@ -1,13 +1,15 @@
 from django.contrib.auth.decorators import login_required
-import logging
-from . import helpers as helper
-from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
+from django.shortcuts import render
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
-from django.shortcuts import render
-from Access.userlist_helper import getAllUserList
-from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRequests
+import logging
+
+from . import helpers as helper
+from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from Access import group_helper
+from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRequests
+from Access.userlist_helper import getAllUserList
+from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +79,7 @@ def groupRequestAccess(request):
 
 @api_view(["GET"])
 @login_required
-@user_with_permission(["ACCESS_APPROVE"])
+@user_with_permission([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])
 def pendingRequests(request):
     context = getPendingRequests(request)
     return render(request, 'BSOps/pendingRequests.html', context)

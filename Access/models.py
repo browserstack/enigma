@@ -2,6 +2,7 @@ from BrowserStackAutomation.settings import USER_STATUS_CHOICES
 from django.contrib.auth.models import User as user
 from django.db import models
 
+
 class Permission(models.Model):
     """
     Permission to perform actions on enigma
@@ -240,6 +241,7 @@ class GroupV2(models.Model):
     def __str__(self):
         return self.name
 
+
 class UserAccessMapping(models.Model):
     """
     Model to map access to user. Requests are broken down
@@ -327,7 +329,6 @@ class UserAccessMapping(models.Model):
 
     def getAccessRequestDetails(self, access_module):
         access_request_data = {}
-        access = [self.access]
         access_tags = [self.access.access_tag]
         access_labels = [self.access.access_label]
 
@@ -339,7 +340,6 @@ class UserAccessMapping(models.Model):
         access_request_data["requestId"] = self.request_id
         access_request_data['accessReason'] = self.request_reason
         access_request_data['requested_on'] = self.requested_on
-
 
         access_request_data["accessType"] = access_module.access_desc()
         access_request_data["accessCategory"] = access_module.combine_labels_desc(access_labels)
@@ -423,7 +423,6 @@ class GroupAccessMapping(models.Model):
 
     def getAccessRequestDetails(self, access_module):
         access_request_data = {}
-        access = [self.access]
         access_tags = [self.access.access_tag]
         access_labels = [self.access.access_label]
 

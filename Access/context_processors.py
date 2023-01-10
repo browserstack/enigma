@@ -2,6 +2,7 @@ import datetime, json
 
 from Access.models import (User, GroupAccessMapping, UserAccessMapping, GroupV2, MembershipV2)
 from Access.helpers import check_user_permissions, getAvailableAccessModules, getPossibleApproverPermissions
+from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 def add_variables_to_context(request):
     pendingCount = 0
@@ -15,7 +16,7 @@ def add_variables_to_context(request):
     context['currentYear'] = now.year
     context["users"] = User.objects.filter().only('user')
 
-    if check_user_permissions(request.user, "ACCESS_APPROVE"):
+    if check_user_permissions(request.user, PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]):
         pendingCount += MembershipV2.objects.filter(status='pending', group__status="Approved").count()
         pendingCount += GroupAccessMapping.objects.filter(status='pending').count()
         pendingCount += GroupV2.objects.filter(status='pending').count()
@@ -28,7 +29,7 @@ def add_variables_to_context(request):
             module_permissions = each_access_module.fetch_approver_permissions()
         except:
             module_permissions = {
-                "1": "ACCESS_APPROVE"
+                "1": PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]
             }
         access_tag = each_access_module.tag()
         requests = []

@@ -1,10 +1,12 @@
+from django.template import loader
 from os.path import dirname, basename, isfile, join
 import glob
-import re
 import logging
+import re
 import time, datetime
+
 from Access.access_modules import *
-from django.template import loader
+from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
 available_accesses = []
@@ -62,5 +64,5 @@ def getPossibleApproverPermissions():
             approver_permissions = each_module.fetch_approver_permissions()
             all_approver_permissions.extend(approver_permissions.values())
         else:
-            all_approver_permissions.extend(["ACCESS_APPROVE"])
+            all_approver_permissions.extend([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])
     return list(set(all_approver_permissions))

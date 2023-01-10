@@ -187,6 +187,10 @@ USER_STATUS_CHOICES = [
     ("3", "offboarded"),
 ]
 
+PERMISSION_CONSTANTS = {
+        "DEFAULT_APPROVER_PERMISSION": "ACCESS_APPROVE"
+}
+
 DEFAULT_ACCESS_GROUP = "default_access_group"
 MAIL_APPROVER_GROUPS = data['enigmaGroup']['MAIL_APPROVER_GROUPS']
 

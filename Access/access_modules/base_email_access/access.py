@@ -1,11 +1,11 @@
-import traceback
 from django.shortcuts import render, redirect
-import logging
 import json
+import logging
+import traceback
 
-from bootprocess.general import emailSES
-from BrowserStackAutomation.settings import ACCESS_APPROVE_EMAIL
 from Access.models import UserAccessMapping, GroupAccessMapping
+from BrowserStackAutomation.settings import ACCESS_APPROVE_EMAIL, PERMISSION_CONSTANTS
+from bootprocess.general import emailSES
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,7 @@ class BaseEmailAccess(object):
 
     def fetch_approver_permissions(self):
         return {
-            "1": "ACCESS_APPROVE"
+            "1": PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]
         }
 
     def get_pending_accesses(self, request, user_permissions):
