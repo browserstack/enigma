@@ -44,16 +44,6 @@ def check_user_permissions(user, permissions):
                 return True
     return False
 
-def getAccessDetails(eachAccess):
-    accessDetails = {}
-    access_label = eachAccess.access_label
-    logger.debug(accessDetails)
-    for eachAccessModule in getAccessModules():
-        if eachAccess.access_tag == eachAccessModule.tag():
-            accessDetails = UserAccessMapping().getAccessRequestDetails(eachAccess)
-    logger.debug(accessDetails)
-    return accessDetails
-    
 def sla_breached(requested_on):
     diff = datetime.datetime.now().replace(tzinfo=None) - requested_on.replace(tzinfo=None)
     duration_in_s = diff.total_seconds()
