@@ -9,7 +9,6 @@ from .decorators import user_admin_or_ops, authentication_classes, user_with_per
 from Access import group_helper
 from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRequests
 from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRevokeFailures, getPendingRequests
-from Access.userlist_helper import getAllUserList
 from Access.userlist_helper import getallUserList
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 from django.shortcuts import render
