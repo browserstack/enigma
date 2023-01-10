@@ -28,7 +28,7 @@ try:
             os.rmdir(os.path.join(root, dir))
         os.rmdir(folder_path)
 
-      print("Clonning successful!")
+      print("Cloning successful!")
 
     except Exception as e:
       print(e)
