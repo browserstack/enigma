@@ -128,51 +128,7 @@ def createGroup(request):
         return context
 
 def getGroupAccessList(request, groupName):
-    try:
-        context = {}
-        group = GroupV2.objects.filter(name=groupName).filter(status='Approved')
-        #check if the groupName is valid.
-        if len(group) == 0:
-            #there does not exist no such group.
-            logger.debug("groupAccessList-- url received a bad group name request-"+request.user.username)
-            context = {}
-            context['error'] = {'title':'Invalid Group','msg':'There is no group named '+groupName+'. Please contact admin for any queries.'}
-            return context
-
-        group = group[0]
-        groupMembers = MembershipV2.objects.filter(group=group).filter(status="Approved")
-        
-        if not isAllowedGroupAdminFunctions(request, groupMembers):
-            raise Exception("Permission denied, requester is non owner")
-        # updating owner
-        if request.POST:
-            context["notification"] = updateOwner(request, group, context)
-        
-        groupMembers = getGroupMembers(groupMembers)
-        
-        context["userList"] = groupMembers
-        context["groupName"] = groupName
-
-        groupMappings = GroupAccessMapping.objects.filter(group=group, status__in=["Approved", "Pending", "Declined", "SecondaryPending"])
-        accessV2s = [(groupMapping.access, groupMapping.request_id, groupMapping.status) for groupMapping in groupMappings]
-
-        context["allowRevoke"] = (request.user.user.has_permission("ALLOW_USER_OFFBOARD") or check_user_is_group_owner(request.user, group)==None)
-        
-        if accessV2s:
-            split_details = []
-            access_details = list(map(helpers.getAccessDetails, [access[0] for access in accessV2s]))
-            for idx,each_access in enumerate(access_details):
-                each_access["request_id"] = accessV2s[idx][1]
-                each_access["status"] = accessV2s[idx][2]
-                split_details.append(each_access)
-            context["genericAccesses"] = split_details
-        return context
-    except Exception as e:
-        logger.exception(e)
-        logger.error("Error in Group Access List request.")
-        context = {}
-        context['error'] = {'error_msg': 'Internal Error', 'msg': "Error Occured while loading the page. Please contact admin, "+str(e)}
-        return context
+    return {}
 
 def updateOwner(request, group, context):
     logger.debug("updating owners for group "+ group.name + " requested by "+ request.user.username)
