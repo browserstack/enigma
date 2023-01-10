@@ -6,6 +6,7 @@ import re
 import time, datetime
 
 from Access.access_modules import *
+from Access.models import UserAccessMapping
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
