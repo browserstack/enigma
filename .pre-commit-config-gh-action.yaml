@@ -23,7 +23,3 @@ repos:
   hooks:
   - id: pretty-format-yaml
     args: [--autofix]
-- repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-  rev: v9.3.0
-  hooks:
-  - id: commitlint
