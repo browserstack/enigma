@@ -170,7 +170,7 @@ test_approveNewGroupRequest_ThrowsException = "ThrowsException"
             test_approveNewGroupRequest_ThrowsException,
             "{'error': 'Error Occured while Approving group creation. Please contact admin - sendEmailError'}",
             "grp1", False, True,
-        ),        
+        ),
     ]
 )
 
@@ -186,7 +186,7 @@ def test_approveNewGroupRequest(mocker, testname, expectedoutput,groupID, reques
         mock_groupObject.status="Declined"
         mock_groupObject.approver.user.username = "username2"
         mocker.patch("Access.models.GroupV2.objects.get", return_value=mock_groupObject)
-        
+
     elif testname == test_approveNewGroupRequest_UserApprovingHisOwn:
         request.user.username = "username1"
         mock_groupObject = mocker.MagicMock()
@@ -204,7 +204,7 @@ def test_approveNewGroupRequest(mocker, testname, expectedoutput,groupID, reques
         mock_groupObject.requester.user.username = "username3"
         mock_groupObject.save.return_value = True
         mock_groupObject.requester.email = "requester@email.com"
-        
+
         mock_membership_update = mocker.MagicMock()
         mock_membership_update.update.return_value = True
         mock_membership_update.values_list.return_value = ["member1"]
@@ -222,7 +222,7 @@ def test_approveNewGroupRequest(mocker, testname, expectedoutput,groupID, reques
         mock_groupObject.requester.user.username = "username3"
         mock_groupObject.save.return_value = True
         mock_groupObject.requester.email = "requester@email.com"
-        
+
         mock_membership_update = mocker.MagicMock()
         mock_membership_update.update.return_value = True
         mock_membership_update.values_list.return_value = ["member1"]
@@ -246,7 +246,7 @@ def test_approveNewGroupRequest(mocker, testname, expectedoutput,groupID, reques
         assert models.MembershipV2.objects.filter.call_count == 2
         assert general.emailSES.call_count == 1
         assert helpers.generateStringFromTemplate.call_count == 2
-        
+
 
 test_get_user_group_group_not_found = "GroupNotFound"
 test_get_user_group_cannot_access_group = "UserIsNotOwnerOfGroupOrSuperUser"
@@ -267,7 +267,7 @@ test_get_user_group_can_access_group = "UserCanAccessGroup"
             test_get_user_group_can_access_group,
             "TestGroupName1",
             "{'groupMembers': 'user1', 'groupName': 'TestGroupName1'}",
-        ),        
+        ),
     ]
 )
 def test_get_user_group(mocker, test_name, group_name, expected_output):
@@ -289,12 +289,12 @@ def test_get_user_group(mocker, test_name, group_name, expected_output):
         mock_membership_filter1 = mocker.MagicMock()
         mock_group_member = mocker.MagicMock()
         mock_group_member.filter.return_value = ["member1@email.com"]
-        
+
         mock_membership_filter1.filter.return_value = mock_membership_only_filter
 
         mocker.patch("Access.models.MembershipV2.objects.filter", return_value=mock_membership_filter1)
         mocker.patch("Access.group_helper.isAllowedGroupAdminFunctions", return_value = False)
-    
+
     elif test_name == test_get_user_group_can_access_group:
         request.user.user.email = "member1@email.com"
         request.user.is_superuser = True
@@ -309,7 +309,7 @@ def test_get_user_group(mocker, test_name, group_name, expected_output):
         mocker.patch("Access.group_helper.isAllowedGroupAdminFunctions", return_value = True)
 
         mock_membership_only_filter = mocker.MagicMock()
-        
+
         def mock_get_users_from_groupmembers(groupMembers):
             return "user1"
 
@@ -319,10 +319,10 @@ def test_get_user_group(mocker, test_name, group_name, expected_output):
 
         mock_group_member = mocker.MagicMock()
         mock_group_member.filter.return_value = [mock_member]
-        mock_membership_only_filter.only.return_value = mock_group_member        
+        mock_membership_only_filter.only.return_value = mock_group_member
         mock_membership_filter1.filter.return_value = mock_membership_only_filter
 
-        
+
     context = group_helper.get_user_group(request, group_name)
     assert str(context) == expected_output
 
@@ -353,7 +353,7 @@ test_add_user_to_group_doesnot_need_approval= "DoesNotNeedApproval"
             test_add_user_to_group_doesnot_need_approval,
             "groupName=TestGroupName&selectedUserList=member2@member2.com&memberReason=somereason",
             "is now being processed', 'desc': 'A email will be sent after the requested access are granted'}}",
-        ),    
+        ),
 ]
 )
 def test_add_user_to_group(mocker, test_name, post_data, expected_output):
@@ -414,7 +414,7 @@ def test_add_user_to_group(mocker, test_name, post_data, expected_output):
         request.POST = QueryDict(post_data)
         request.user.email = "member1@member1.com"
         request.user.is_superuser = True
-        
+
 
         mock_member = mocker.MagicMock()
         mock_member.user.email = "member2@member2.com"
@@ -487,7 +487,7 @@ def test_add_user_to_group(mocker, test_name, post_data, expected_output):
         mock_thread.start.return_value = True
 
         mocker.patch("threading.Thread", return_value = mock_thread)
-    
+
 
     context = group_helper.add_user_to_group(request)
     assert expected_output in str(context)

@@ -134,7 +134,7 @@ def updateOwner(request, group, context):
     logger.debug("updating owners for group "+ group.name + " requested by "+ request.user.username)
     data=request.POST
     data=dict(data.lists())
-    
+
     if "owners" not in data:
         data["owners"] = []
     destination = [request.user.user.email]
@@ -159,7 +159,7 @@ def updateOwner(request, group, context):
 def isAllowedGroupAdminFunctions(request,groupMembers):
     ownersEmail = [member.user.email for member in groupMembers.filter(is_owner = True)]
     is_approver = len(User.objects.filter(role=Role.objects.get(label='TEAMS:ACCESSAPPROVE'),state=1, email=request.user.user.email)) > 0
-    
+
     if request.user.user.email not in ownersEmail and not (request.user.is_superuser or request.user.user.is_ops or is_approver):
         return False
     return True
@@ -175,7 +175,7 @@ def check_user_is_group_owner(user_name, group):
         return False
 
 def approveNewGroupRequest(request, group_id):
-    
+
     try:
         group_object = GroupV2.objects.get(group_id=group_id, status='Pending')
     except Exception as e:
@@ -196,7 +196,7 @@ def approveNewGroupRequest(request, group_id):
             group_object.approver = request.user.user
             group_object.status = 'Approved'
             group_object.save()
-            
+
             MembershipV2.objects.filter(group=group_object, status="Pending").update(status="Approved", approver=request.user.user)
             initial_members = list(MembershipV2.objects.filter(group=group_object).values_list("user__user__username", flat=True))
 
@@ -228,7 +228,7 @@ def approveNewGroupRequest(request, group_id):
         logger.error("Error in Approving New Group request.")
         context = {}
         context['error'] = "Error Occured while Approving group creation. Please contact admin - "+str(e)
-        return context    
+        return context
 
 def get_user_group(request, group_name):
     try:
@@ -245,7 +245,7 @@ def get_user_group(request, group_name):
         groupMembers = MembershipV2.objects.filter(group=group).filter(status="Approved").only('user')
         if not isAllowedGroupAdminFunctions(request, groupMembers):
             raise Exception("Permission denied, you're not owner of this group")
-    
+
         groupMembers = get_users_from_groupmembers(groupMembers)
         context['groupMembers'] = groupMembers
         context['groupName'] = group_name
@@ -255,14 +255,14 @@ def get_user_group(request, group_name):
         logger.error("Error in Add New User to Group request.")
         context = {}
         context['error'] = {'error_msg': 'Internal Error', 'msg': "Error Occured while loading the page. Please contact admin, " + str(e)}
-        return context        
+        return context
 
 def get_users_from_groupmembers(group_members):
     return [member.user for member in group_members]
 
 def add_user_to_group(request):
     try:
-        
+
         data = request.POST
         data = dict(data.lists())
         group = GroupV2.objects.filter(name=data['groupName'][0]).filter(status='Approved')[0]
@@ -297,7 +297,7 @@ def add_user_to_group(request):
                 return json_response
 
             sendMailForGroupApproval(membership_id, user_email, str(request.user), data['groupName'][0], request.META['HTTP_HOST'], data['memberReason'][0])
-        
+
         context = {}
         context['status'] = {'title':'Request Submitted', 'msg': 'Once Approved the newly added members will be granted the same permissions as the group'}
         return context
@@ -309,7 +309,7 @@ def add_user_to_group(request):
         return context
 
 def is_user_in_group(user_email, group_members_email):
-    return user_email in group_members_email    
+    return user_email in group_members_email
 
 def sendMailForGroupApproval(membership_id, userEmail, requester, group_name, http_host, reason ):
     primary_approver , otherApprover = helpers.getApprovers()
@@ -320,10 +320,10 @@ def sendMailForGroupApproval(membership_id, userEmail, requester, group_name, ht
 
 
 def generateUserAddToGroupEmailBody(user_email, primary_approver, other_approver, requester, group_name, reason):
-    return helpers.generateStringFromTemplate(filename="add_user_to_group_mail.html", 
+    return helpers.generateStringFromTemplate(filename="add_user_to_group_mail.html",
                                             user_email = user_email,
-                                            primary_approver = primary_approver, 
-                                            other_approver = other_approver, 
+                                            primary_approver = primary_approver,
+                                            other_approver = other_approver,
                                             requester = requester,
                                             group_name = group_name,
                                             reason = reason)
