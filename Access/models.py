@@ -139,7 +139,7 @@ class User(models.Model):
           user = json_data[self.user.email]
         except KeyError:
           return {}
-        
+
         return json_data[self.user.email]
 
     def update_module_credentials(self, key, value):

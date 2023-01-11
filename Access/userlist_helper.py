@@ -63,7 +63,7 @@ def bulk_approve(request, access_tag):
           requestid = access.request_id
           requestObject =  UserAccessMapping.objects.get(request_id=access.request_id,user=user)
           accessAcceptThread = threading.Thread(target=views_helper.run_access_grant, args=(requestid, requestObject, requestObject.access.access_tag, requestObject.user, requestObject.approver_1.user.username))
-          accessAcceptThread.start() 
+          accessAcceptThread.start()
 
     if len(accesses) >= 1:
       list = []
@@ -71,10 +71,10 @@ def bulk_approve(request, access_tag):
         if (len(tags.split('_')[0])>3): list.append(tags.split('_')[0].capitalize())
         else: list.append(tags.split('_')[0].upper())
 
-      context['status'] = {'title':'Regranted all the previous requests for: ' + ','.join(list) , 'msg': 'Details updated.'} 
+      context['status'] = {'title':'Regranted all the previous requests for: ' + ','.join(list) , 'msg': 'Details updated.'}
     else:
-      context['status'] = {'title':'No granted accesses found. Please request access for required modules. ' , 'msg': 'Request access. No details found.'} 
-       
+      context['status'] = {'title':'No granted accesses found. Please request access for required modules. ' , 'msg': 'Request access. No details found.'}
+
     return context
 
 
@@ -90,7 +90,7 @@ def update_user(request):
         userInfo.append(('gcpusername', request.POST.get("gcpusername")))
         userInfo.append(('gitusername', request.POST.get("gitusername")))
         userInfo.append(('ssh_public_key', request.POST.get("ssh_pub_key")))
-        
+
         user=User.objects.get(user__username=request.user)
         msg = ''
         for info in userInfo:
@@ -104,8 +104,8 @@ def update_user(request):
     except Exception as e:
         logger.exception(e)
         context['error'] = {'error':'Error ocurred while updating details.'}
-        return context 
-        
+        return context
+
 def update(user, key, value, msg):
     if key=='ssh_public_key':
       if not user.has_module_credentials[key] or value != user.has_module_credentials[key]['key']:
@@ -128,5 +128,5 @@ def update(user, key, value, msg):
           else:  key = key.split('username')[0].upper()
 
           msg += key + " Username updated.\n"
-    
+
     return msg

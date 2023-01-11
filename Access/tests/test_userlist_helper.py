@@ -35,7 +35,7 @@ class MockUserAccessMapping:
         self.access_type = access_type
         self.status = status
         self.request_id = MockRequestId()
-    
+
     def save(self):
       return True
 
@@ -43,10 +43,10 @@ class MockSshPublicKey:
   def __init__(self, key="", status=""):
         self.key = key
         self.status = status
-  
+
   def save(self):
       return True
-        
+
 #TESTCASE NAMES
 UserIsNotAuthorized = "UserIsNotAuthorized"
 UserIsAuthorized = "UserIsAuthorized"
@@ -122,7 +122,7 @@ def test_getallUserList(mocker, testname ,UserHasPermission, UserHasOffboardPerm
             status="status1",
         )], 'Details updated.'),
       ("test_bulk_approve_noAccess", [], 'Request access. No details found.'),
-    ] 
+    ]
 )
 def test_bulk_approve(mocker, testname, userMapping, expectedMessage):
   request = mocker.MagicMock()
@@ -182,21 +182,21 @@ def test_bulk_approve(mocker, testname, userMapping, expectedMessage):
         'confluenceusername=user2&slackusername=user2&zoomusername=user2&awsusername=user2&opsgenieusername=user2&gcpusername=user2&gitusername=user2&ssh_pub_key=ssh-rsa',
         True,
       ),
-    ] 
+    ]
 )
 def test_update_user(mocker,testname,userMapping,expectedMessage,postData,expectedError):
   request = HttpRequest()
   request.user = "username"
   request.POST = QueryDict(postData)
- 
+
   MockUserModelobj.has_module_credentials = {
     'gitusername': 'user2',
-    'confluenceusername': 'user2', 
-    'awsusername': 'user2', 
-    'opsgenieusername': 'user2', 
-    'gcpusername': 'user2', 
-    'slackusername': 'user2', 
-    'zoomusername': 'user2', 
+    'confluenceusername': 'user2',
+    'awsusername': 'user2',
+    'opsgenieusername': 'user2',
+    'gcpusername': 'user2',
+    'slackusername': 'user2',
+    'zoomusername': 'user2',
     'ssh_public_key': {
       'key': 'ssh-rsa2'
     }
@@ -207,12 +207,11 @@ def test_update_user(mocker,testname,userMapping,expectedMessage,postData,expect
   mocker.patch("Access.models.UserAccessMapping.objects.filter", return_value=userMapping)
   if expectedError:
     MockSshPublicKey.save = False
-    
+
   context = update_user(request)
   print(context)
 
   if expectedError:
     assert context["error"]["error"]  == expectedMessage
-  else:      
+  else:
     assert context["status"]["msg"]  == expectedMessage
-
