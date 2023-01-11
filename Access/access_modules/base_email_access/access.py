@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 # Use this base module when the access requires only sending a mail
 # to multiple dedicated emails
-# for super to work in python 2 
+# for super to work in python 2
 class BaseEmailAccess(object):
     available = True
     group_access_allowed = True
@@ -37,7 +37,7 @@ class BaseEmailAccess(object):
     def combine_labels_desc(self,access_labels):
         label_desc_array = [self.get_label_desc(access_label) for access_label in access_labels]
         return ", ".join(label_desc_array)
-    
+
     def get_label_meta(self, request_params):
         return {}
 
@@ -66,14 +66,14 @@ class BaseEmailAccess(object):
 
     def __get_pending_group_accesses(self, user_permissions):
         return self.__get_pending_accesses_from_mapping(GroupAccessMapping, user_permissions)
-        
+
     def __query_pending_accesses(self, mapping, pending_status):
         access_tag = self.tag()
         pending_accesses = []
 
         for pending_request in mapping.objects.filter(status=pending_status, access__access_tag=access_tag):
             pending_accesses.append(pending_request.getAccessRequestDetails(self))
-        
+
         return pending_accesses
 
     def __get_pending_accesses_from_mapping(self, mapping, user_permissions):

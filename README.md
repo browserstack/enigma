@@ -25,11 +25,11 @@ colima start
 ```bash
 make dev
 ```
-3. Check logs with 
+3. Check logs with
 ```bash
 make logs
 ```
-4. After seeing migration output in the logs (or waiting a minute after the containers come up), 
+4. After seeing migration output in the logs (or waiting a minute after the containers come up),
  create superuser with
 ```bash
 # Access the container with:
@@ -66,6 +66,78 @@ Docker should be running for linter tool:
    docker exec dev make lint
 ```
 
+### Pre-requisistes
+
+- Install Docker
+```bash
+brew install docker docker-compose
+```
+
+- Install Docker Container Runtime
+https://github.com/abiosoft/colima
+```bash
+brew install colima
+colima start
+```
+
+### Setup
+
+1. Create .env file from .env.sample file. Edit the DOCKERIMAGE to the latest image URL.
+
+2. Start the service
+```bash
+make dev
+```
+3. Check logs with
+```bash
+make logs
+```
+4. After seeing migration output in the logs (or waiting a minute after the containers come up),
+ create superuser with
+```bash
+# Access the container with:
+docker exec -it dev bash
+#In the container:
+python manage.py createsuperuser
+# Set email to your email id, and password to anything you want
+```
+5. Access the db container with below commands. Password for db container is testtest
+```bash
+docker exec -it db bash
+mysql -u root -p
+create database enigma;
+```
+6. Restart the server by runing below commands
+```bash
+docker-compose -f docker-compose.yml restart
+```
+Enigma should be up and running on port 8000!
+  - Login at localhost:8000/admin
+  - Login here with your superuser credentials, and click the View Site button on the top right after logging in.
+
+### How to run tests
+
+1. Tests:
+If Web service is not running, the command will first load up the service and then run the tests.
+```bash
+make test
+```
+
+2. Linter:
+Docker should be running for linter tool:
+```bash
+   docker exec dev make lint
+```
+
+### For contributing code
+
+- Python 3.11.0
+- pre-commit (see rules [below](#rules-enforced-by-the-pre-commit-hooks))
+  - run: `pip install pre-commit==2.21.0`
+  - run: `pre-commit install --install-hooks --overwrite` in the base directory of this project
+  - run: `pre-commit autoupdate`
+  - run: `pre-commit run --all-files --show-diff-on-failure --color always`
+
 ## Commit Message Guideline
 
 Format: `<type>(<scope>): <subject>`
@@ -82,6 +154,10 @@ Format: `<type>(<scope>): <subject>`
 - `test`: adding missing tests, refactoring tests; no production code change
 - `chore`: updating grunt tasks etc; no production code change
 - `bump`: increase the version of something e.g. dependency
+- `build`: changes that affect the build system or external dependencies
+- `ci`: changes to our CI configuration files and scripts
+- `perf`: a code change that improves performance
+- `revert`: revert to a commit
 
 ## Example
 
@@ -107,6 +183,7 @@ References:
 - https://www.conventionalcommits.org/
 - https://seesparkbox.com/foundry/semantic_commit_messages
 - http://karma-runner.github.io/1.0/dev/git-commit-msg.html
+
 
 ##  License
 See [LICENSE.md](.github/LICENSE.md)

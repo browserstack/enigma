@@ -18,13 +18,13 @@ PERMISSION_ALLOW_USER_OFFBOARD = "ALLOW_USER_OFFBOARD"
 EXCEPTION_USER_UNAUTHORIZED = "Unauthorized to list users"
 ERROR_MESSAGE = "Error in request not found OR Invalid request type"
 
-def getAllUserList(request):
+def getallUserList(request):
     try:
         if not (helpers.check_user_permissions(request.user, PERMISSION_VIEW_USER_LIST)):
             raise Exception(EXCEPTION_USER_UNAUTHORIZED)
-        
+
         allowOffboarding = request.user.user.has_permission(PERMISSION_ALLOW_USER_OFFBOARD)
-        
+
         dataList = []
         for each_user in User.objects.all():
             dataList.append({

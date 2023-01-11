@@ -23,7 +23,7 @@ logs:
 
 ## Run tests with coverage
 .PHONY: test
-test: 
+test:
 	@if [ $$(docker ps -a -f name=dev | wc -l) -eq 2 ]; then \
 		docker exec dev python -m pytest --version; \
 	else \
@@ -43,7 +43,7 @@ lint_issues:
 ## Lint code using pylama skipping files in env (if pyenv created)
 .PHONY: lint
 lint: lint_issues
-	@python -m pylama --version
+	@python3 -m pylama --version
 	@pylama --skip "./env/*" -r lint_issues || echo "Linter run returned errors. Check lint_issues file for details." && false
 
 schema_validate:
@@ -51,4 +51,3 @@ schema_validate:
 
 run_semgrep:
 	$(shell semgrep --error --config "p/cwe-top-25" --config "p/owasp-top-ten" --config "p/r2c-security-audit")
-

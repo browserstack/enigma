@@ -21,7 +21,7 @@ def requestAccessGet(request):
                         extra_fields = []
                     try:
                         notice = each_access.get_notice()
-                            
+
                     except Exception:
                         notice = ""
                     context['accesses'].append({
@@ -32,7 +32,7 @@ def requestAccessGet(request):
                             'extraFields': extra_fields,
                             'notice': notice,
                             'accessRequestPath': each_access.fetch_access_request_form_path()
-                        })    
+                        })
     except Exception as e:
         logger.exception(e)
         context = {}
@@ -58,6 +58,23 @@ def getGrantFailedRequests(request):
     except Exception as e:
         return process_error_response(request, e)
 
+
+
+def getPendingRevokeFailures(request):
+    if request.GET.get('username'):
+        user = User.objects.get(user__username=request.GET.get('username'))
+        failures = UserAccessMapping.objects.filter(status__in=['revokefailed'], user=user).order_by('-requested_on')
+    if request.GET.get('access_type'):
+        access_tag = request.GET.get('access_type')
+        failures = UserAccessMapping.objects.filter(status__in=['revokefailed'], access__access_tag=access_tag).order_by('-requested_on')
+    else:
+        failures = UserAccessMapping.objects.filter(status__in=['revokefailed']).order_by('-requested_on')
+
+    context = {
+        'failures': failures,
+        'heading': "Revoke Failures"
+    }
+    return context
 
 def getPendingRequests(request):
     logger.info("Pending Request call initiated")

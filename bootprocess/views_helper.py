@@ -16,7 +16,8 @@ logger = logging.getLogger(__name__)
 
 def getDashboardData(request):
     user = access_user.objects.get(user__username=request.user)
-    # Add users to DEFAULT_ACCESS_GROUP
+
+    # Add users to DEFAULT_ACCESS_GROUP if the user is not already on the group
     user_membership = str(
         MembershipV2.objects.filter(user=user).filter(status="Approved")
     )
@@ -42,7 +43,7 @@ def getDashboardData(request):
             member = MembershipV2.objects.create(
                 group=group,
                 user=user,
-                reason="New joiner added to BrowserStack defaut access group.",
+                reason="New joiner added to Org defaut access group.",
                 membership_id=membership_id,
                 requested_by=group_owner[0].user,
             )
@@ -52,6 +53,7 @@ def getDashboardData(request):
             user_mappings_list = generateUserMappings(user, group, member)
             member.save()
             group_name = member.group.name
+
             access_accept_thread = threading.Thread(
                 target=executeGroupAccess,
                 args=(request, group_name, user_mappings_list),

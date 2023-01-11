@@ -1,7 +1,7 @@
 from BrowserStackAutomation.settings import USER_STATUS_CHOICES
 from django.contrib.auth.models import User as user
-from django.db import models
 import json
+from django.db import models, transaction
 
 
 class Permission(models.Model):
@@ -62,7 +62,7 @@ class User(models.Model):
 
     email = models.EmailField(null=True, blank=False)
     phone = models.IntegerField(null=True, blank=True)
-    
+
     is_bot = models.BooleanField(null=False, blank=False, default=False)
     BOT_TYPES = (
         ("None", "none"),
@@ -331,6 +331,7 @@ class UserAccessMapping(models.Model):
         related_name="user_access_revoker",
         on_delete=models.PROTECT,
     )
+    meta_data = models.JSONField(default=dict, blank=True, null=True)
 
     def __str__(self):
         return self.request_id
@@ -365,6 +366,14 @@ class UserAccessMapping(models.Model):
         access_request_data["accessMeta"] = access_module.combine_labels_meta(access_labels)
 
         return access_request_data
+
+    def updateMetaData(self, key, data):
+        with transaction.atomic():
+            mapping = UserAccessMapping.objects.select_for_update().get(request_id=self.request_id)
+            mapping.meta_data[key] = data
+            mapping.save()
+        return True
+
 
 
 class GroupAccessMapping(models.Model):

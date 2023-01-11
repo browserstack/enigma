@@ -1,9 +1,8 @@
-from Access.views_helper import generateUserMappings, executeGroupAccess
+# from Access.views_helper import generateUserMappings, executeGroupAccess, run_access_grant, all_access_modules
 from Access import models
 import pytest
 from Access import views_helper
 from bootprocess import general
-import logging
 
 
 class MockAuthUser:
@@ -103,7 +102,7 @@ def test_generateUserMappings(mocker):
     )
     userAccessMappingCreateSpy = mocker.spy(models.UserAccessMapping.objects, "create")
 
-    usermappingList = generateUserMappings(
+    usermappingList = views_helper.generateUserMappings(
         User(user="username1"),
         MemberShipObj(),
         MemberShipObj(membership_id="1", reason="reason"),
@@ -140,78 +139,167 @@ def test_executeGroupAccess(
     mappingObj.user = userMock
     mappingObj.approver_1.user = userMock
     mappingObj.request_id = requestid
-    executeGroupAccess([mappingObj])
+    views_helper.executeGroupAccess([mappingObj])
+
     assert mappingObj.status == expectedStatus
     assert mappingObj.decline_reason == expected_decline_reason
 
 
+# @pytest.mark.parametrize(
+#     """testName, userstate, requestid,user_state,
+#     approvalResponse ,expectedStatus, emailSesCallCount,""",
+#     [
+#         (
+#             "User is Active, request is not other, user.state not 1",
+#             "active",
+#             "reqid",
+#             "2",
+#             None,
+#             "Declined",
+#             0,
+#         ),
+#         (
+#             "User is Active, request is not other, user.state is 1, Approval Returns true",
+#             "active",
+#             "reqid",
+#             "1",
+#             True,
+#             "Approved",
+#             0,
+#         ),
+#         (
+#             "User is Active, request is not other, user.state is 1, Approval Fails",
+#             "active",
+#             "reqid",
+#             "1",
+#             [False, "Failure Message"],
+#             "GrantFailed",
+#             1,
+#         ),
+#     ],
+# )
+# def test_executeGroupAccess_run_access_grant(
+#     mocker,
+#     testName,
+#     userstate,
+#     approvalResponse,
+#     requestid,
+#     user_state,
+#     expectedStatus,
+#     emailSesCallCount,
+# ):
+#     views_helper.logger = logging.getLogger(__name__)
+#     mockAccessModule = mocker.MagicMock()
+#     mockAccessModule.tag.return_value = "tagname"
+#     mockAccessModule.approve.return_value = approvalResponse
+#     mockAccessModule.access_mark_revoke_permission.return_value = "destination"
+
+#     userMock = mocker.MagicMock()
+#     userMock.username = "username"
+#     userMock.current_state.return_value = userstate
+#     userMock.state = user_state
+
+#     mappingObj = mocker.MagicMock()
+#     mappingObj.access.access_tag = "tagname"
+#     mappingObj.user = userMock
+#     mappingObj.approver_1.user = userMock
+#     mappingObj.request_id = requestid
+#     mappingObj.status = ""
+#     mappingObj.decline_reason = ""
+
+#     mocker.patch("bootprocess.general.emailSES", return_value="")
+#     emailSES_Spy = mocker.spy(general, "emailSES")
+
+#     views_helper.all_access_modules = [mockAccessModule]
+
+#     executeGroupAccess([mappingObj])
+#     assert mappingObj.status == expectedStatus
+#     assert emailSES_Spy.call_count == emailSesCallCount
+
+test_run_access_grant_accessDeclined = "StatusDeclined"
+test_run_access_grant_accessApproved = "AccessApproved"
+test_run_access_grant_grantFailed = "GrantFailed"
+test_run_access_grant_approveException = "approveException"
+
 @pytest.mark.parametrize(
-    """testName, userstate, requestid,user_state,
-    approvalResponse ,expectedStatus, emailSesCallCount,""",
+    "testName, userState, accessType ,response,response_status",
     [
         (
-            "User is Active, request is not other, user.state not 1",
-            "active",
-            "reqid",
+            test_run_access_grant_accessDeclined,
             "2",
-            None,
+            "",
+            False,
             "Declined",
-            0,
         ),
         (
-            "User is Active, request is not other, user.state is 1, Approval Returns true",
-            "active",
-            "reqid",
+            test_run_access_grant_accessApproved,
             "1",
+            "mod1",
             True,
             "Approved",
-            0,
         ),
         (
-            "User is Active, request is not other, user.state is 1, Approval Fails",
-            "active",
-            "reqid",
+            test_run_access_grant_grantFailed,
             "1",
-            [False, "Failure Message"],
+            "mod1",
+            True,
             "GrantFailed",
-            1,
+        ),
+        (
+            test_run_access_grant_approveException,
+            "1",
+            "mod1",
+            True,
+            "GrantFailed",
         ),
     ],
 )
-def test_executeGroupAccess_run_access_grant(
-    mocker,
-    testName,
-    userstate,
-    approvalResponse,
-    requestid,
-    user_state,
-    expectedStatus,
-    emailSesCallCount,
-):
-    views_helper.logger = logging.getLogger(__name__)
-    mockAccessModule = mocker.MagicMock()
-    mockAccessModule.tag.return_value = "tagname"
-    mockAccessModule.approve.return_value = approvalResponse
-    mockAccessModule.access_mark_revoke_permission.return_value = "destination"
 
-    userMock = mocker.MagicMock()
-    userMock.username = "username"
-    userMock.current_state.return_value = userstate
-    userMock.state = user_state
+def test_run_access_grant(mocker, testName, accessType ,userState, response, response_status):
+    requestID = "1"
+    if testName == test_run_access_grant_accessDeclined:
+        requestObject = mocker.MagicMock()
+        requestObject.user.state = userState
+        requestObject.save.return_value = True
 
-    mappingObj = mocker.MagicMock()
-    mappingObj.access.access_tag = "tagname"
-    mappingObj.user = userMock
-    mappingObj.approver_1.user = userMock
-    mappingObj.request_id = requestid
-    mappingObj.status = ""
-    mappingObj.decline_reason = ""
+    elif testName == test_run_access_grant_accessApproved:
+        requestObject = mocker.MagicMock()
+        requestObject.user.state = userState
+        requestObject.save.return_value = True
 
-    mocker.patch("bootprocess.general.emailSES", return_value="")
-    emailSES_Spy = mocker.spy(general, "emailSES")
+        mockAccessModule1 = mocker.MagicMock()
+        mockAccessModule1.tag.return_value = accessType
+        mockAccessModule1.approve.return_value = True
+        views_helper.all_access_modules = [mockAccessModule1]
 
-    views_helper.all_access_modules = [mockAccessModule]
+    elif testName == test_run_access_grant_grantFailed:
+        requestObject = mocker.MagicMock()
+        requestObject.user.state = userState
+        requestObject.save.return_value = True
 
-    executeGroupAccess([mappingObj])
-    assert mappingObj.status == expectedStatus
-    assert emailSES_Spy.call_count == emailSesCallCount
+        mockAccessModule1 = mocker.MagicMock()
+        mockAccessModule1.tag.return_value = accessType
+        mockAccessModule1.approve.return_value = [False, "Cannot be approved"]
+        mockAccessModule1.access_mark_revoke_permission.return_value = "destination"
+        mocker.patch("bootprocess.general.emailSES", return_value=True)
+        views_helper.all_access_modules = [mockAccessModule1]
+
+    elif testName == test_run_access_grant_approveException:
+        requestObject = mocker.MagicMock()
+        requestObject.user.state = userState
+        requestObject.save.return_value = True
+
+        mockAccessModule1 = mocker.MagicMock()
+        mockAccessModule1.tag.return_value = accessType
+        mockAccessModule1.approve.return_value = True
+        mockAccessModule1.approve.side_effect = Exception("Approve Exception")
+        mockAccessModule1.access_mark_revoke_permission.return_value = "destination"
+        mocker.patch("bootprocess.general.emailSES", return_value=True)
+        views_helper.all_access_modules = [mockAccessModule1]
+
+    val = views_helper.run_access_grant(requestID, requestObject, accessType, None, None)
+
+    assert val == response
+    assert requestObject.status == response_status
+    if response_status == "GrantFailed":
+        general.emailSES.call_count == 1
