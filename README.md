@@ -152,6 +152,10 @@ Format: `<type>(<scope>): <subject>`
 - `test`: adding missing tests, refactoring tests; no production code change
 - `chore`: updating grunt tasks etc; no production code change
 - `bump`: increase the version of something e.g. dependency
+- `build`: changes that affect the build system or external dependencies
+- `ci`: changes to our CI configuration files and scripts
+- `perf`: a code change that improves performance
+- `revert`: revert to a commit
 
 ## Example
 
@@ -177,6 +181,7 @@ References:
 - https://www.conventionalcommits.org/
 - https://seesparkbox.com/foundry/semantic_commit_messages
 - http://karma-runner.github.io/1.0/dev/git-commit-msg.html
+
 
 ##  License
 See [LICENSE.md](.github/LICENSE.md)

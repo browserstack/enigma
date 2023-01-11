@@ -1,13 +1,14 @@
 # github action to run commit-msg hook on pull request commits and push commits to master branch
-name: commit-msg
-on: [push, pull_request]
+name: Pre Commit Hook
+on: [pull_request]
 jobs:
   commit-msg-hook:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - name: Run commit-msg hook
-        run: |
-            pip install pre-commit==2.21.0
-            pre-commit install
-            pre-commit run --all-files
+    - uses: actions/checkout@v3
+    - name: Run commit-msg hook
+      run: |
+        pip install pre-commit==2.21.0
+        pre-commit install --install-hooks --overwrite --config .pre-commit-config-gh-action.yaml
+        pre-commit autoupdate --config .pre-commit-config-gh-action.yaml
+        pre-commit run --all-files --show-diff-on-failure --color always --config .pre-commit-config-gh-action.yaml

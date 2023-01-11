@@ -5,6 +5,7 @@ import logging
 import time, datetime
 from Access.access_modules import *
 from django.template import loader
+from Access.models import UserAccessMapping
 
 logger = logging.getLogger(__name__)
 available_accesses = []
