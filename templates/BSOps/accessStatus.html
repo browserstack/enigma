@@ -14,65 +14,67 @@
 
 <div class="container" style="color:white;">
 
-{% if bulk_approve %}
+  {% if bulk_approve %}
   {% for dict_item in response %}
-   {% for key, value in dict_item.items %}
-     {% if value.error %}
-       <div class="alert alert-danger" role="alert">
-         <h4>Error Occured {{ key }} </h4>
-         <p>Error: {{value.error.error_msg}}<br><br>{{value.error.msg}}</p>
-        </div>
-    {% elif value.accessStatus %}
-      <h4>{{value.accessStatus.msg}}</h4>
-      <p>{{value.accessStatus.desc}}</p>
-    {% elif value.status %}
-      <h4>{{value.status.title}} {{ key }} </h4>
-      <p>{{value.status.msg}}</p>
-    {% endif %}
-    {% endfor %}
-  {% endfor %}
-
-{% elif bulk_resolve %}
-  Request resolving in process 
-  {% for requestId in requestIds %}
-    <p> Request ID : {{ requestId }} </p>
-  {% endfor %}
-
-{% else %}
-  {% if error %}
-    <div class="alert alert-danger" role="alert">
-      <h4>Error Occured</h4>
-      <p>Error: {{error.error_msg}}<br><br>{{error.msg}}</p>
-    </div>
-  {% elif accessStatus %}
-    <h4>{{accessStatus.msg}}</h4>
-    <p>{{accessStatus.desc}}</p>
-  {% elif status %}
-      <div class="alert alert-primary" role="alert">
-        <h4>{{status.title}}</h4>
-        <p>{{status.msg}}</p>
-      </div>
-  {% elif status_list %}
-    {% for each_status in status_list %}
-      <h4>{{each_status.title}}</h4>
-      <p>{{each_status.msg}}</p>
-    {% endfor %}
-  {% else %}
-    {% if git %}
-      <h4>Git Request</h4>
-      {% if git.gitType %}
-          <p>Request ID : {{git.requestId}} created at {{git.dateTime}} <br> Onboarding Request Submitted</p>
-      {% else %}
-          <p>Request ID : {{git.requestId}} created at {{git.dateTime}} <br>Access Level:  {{git.accessLevel}} <br> Repositories : {{git.selectedRepoList}} has been submitted</p>
-      {% endif %}
-    {% endif %}
-    {% if ssh %}
-      <br>
-      <h4>SSH Request</h4>
-      <p>Request ID = {{ssh.requestId}} created at {{ssh.dateTime}} <br>Access Level:  {{ssh.accessLevel}} <br> Machines - {{ssh.selectedMachineList}} has been submitted</p>
-    {% endif %}
+  {% for key, value in dict_item.items %}
+  {% if value.error %}
+  <div class="alert alert-danger" role="alert">
+    <h4>Error Occured {{ key }} </h4>
+    <p>Error: {{value.error.error_msg}}<br><br>{{value.error.msg}}</p>
+  </div>
+  {% elif value.accessStatus %}
+  <h4>{{value.accessStatus.msg}}</h4>
+  <p>{{value.accessStatus.desc}}</p>
+  {% elif value.status %}
+  <h4>{{value.status.title}} {{ key }} </h4>
+  <p>{{value.status.msg}}</p>
   {% endif %}
-{% endif %}
+  {% endfor %}
+  {% endfor %}
+
+  {% elif bulk_resolve %}
+  Request resolving in process
+  {% for requestId in requestIds %}
+  <p> Request ID : {{ requestId }} </p>
+  {% endfor %}
+
+  {% else %}
+  {% if error %}
+  <div class="alert alert-danger" role="alert">
+    <h4>Error Occured</h4>
+    <p>Error: {{error.error_msg}}<br><br>{{error.msg}}</p>
+  </div>
+  {% elif accessStatus %}
+  <h4>{{accessStatus.msg}}</h4>
+  <p>{{accessStatus.desc}}</p>
+  {% elif status %}
+  <div class="alert alert-primary" role="alert">
+    <h4>{{status.title}}</h4>
+    <pre>{{status.msg|linebreaks}}</pre>
+  </div>
+  {% elif status_list %}
+  {% for each_status in status_list %}
+  <h4>{{each_status.title}}</h4>
+  <p>{{each_status.msg}}</p>
+  {% endfor %}
+  {% else %}
+  {% if git %}
+  <h4>Git Request</h4>
+  {% if git.gitType %}
+  <p>Request ID : {{git.requestId}} created at {{git.dateTime}} <br> Onboarding Request Submitted</p>
+  {% else %}
+  <p>Request ID : {{git.requestId}} created at {{git.dateTime}} <br>Access Level: {{git.accessLevel}} <br> Repositories
+    : {{git.selectedRepoList}} has been submitted</p>
+  {% endif %}
+  {% endif %}
+  {% if ssh %}
+  <br>
+  <h4>SSH Request</h4>
+  <p>Request ID = {{ssh.requestId}} created at {{ssh.dateTime}} <br>Access Level: {{ssh.accessLevel}} <br> Machines -
+    {{ssh.selectedMachineList}} has been submitted</p>
+  {% endif %}
+  {% endif %}
+  {% endif %}
 </div>
 
 {% endblock %}

@@ -4,12 +4,13 @@ from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from Access.userlist_helper import getAllUserList
 from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRequests
-from Access import group_helper
+from Access import group_helper, userlist_helper
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 # Create your views here.
 all_access_modules = helper.getAvailableAccessModules()
@@ -38,7 +39,23 @@ def pendingRevoke(request):
 
 @login_required
 def updateUserInfo(request):
-    return False
+    if request.POST:
+        if 'state' in request.POST:
+          context = userlist_helper.update_user(request)
+          if "status" in context:
+            return render(request, 'BSOps/accessStatus.html',context)
+          else:
+            return render(request,"BSOps/updateUser.html", context)
+        else:
+          access_tags = ["ssh", "github_access", "confluence_access", "slack_access", "zoom_access", "aws_access", "gcp_access", "opsgenie_access"]
+          context = userlist_helper.bulk_approve(request,access_tags)
+          if context["status"]:
+              return render(request, 'BSOps/accessStatus.html',context)
+          else:
+              return render(request, 'BSOps/updateUser.html',context)
+    else:
+        ##### update for disallowing change
+        return render(request,"BSOps/updateUser.html")
 
 
 @login_required

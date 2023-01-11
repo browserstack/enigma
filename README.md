@@ -15,6 +15,8 @@ brew install colima
 colima start
 ```
 
+- Create credentials.json file from credentials.sample.json file. Edit the file according to your setup.
+
 ### Setup
 
 1. Create .env file from .env.sample file. Edit the DOCKERIMAGE to the latest image URL.

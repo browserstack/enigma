@@ -1,6 +1,7 @@
 from BrowserStackAutomation.settings import USER_STATUS_CHOICES
 from django.contrib.auth.models import User as user
 from django.db import models
+import json
 
 
 class Permission(models.Model):
@@ -129,10 +130,32 @@ class User(models.Model):
         self.state = state_key
         self.save()
 
+    @property
+    def has_module_credentials(self):
+        with open('./credentials.json') as f:
+          json_data = json.load(f)
+
+        try:
+          user = json_data[self.user.email]
+        except KeyError:
+          return {}
+        
+        return json_data[self.user.email]
+
+    def update_module_credentials(self, key, value):
+       with open('./credentials.json', "r+") as f:
+          json_data = json.load(f)
+          if key == 'ssh_public_key':
+            keys = 'key'
+            json_data[self.user.email][key][keys] = value
+          else:
+            json_data[self.user.email][key] = value
+          f.seek(0)  # rewind
+          json.dump(json_data, f)
+          f.truncate()
+
     def __str__(self):
         return "%s" % (self.user)
-
-
 class MembershipV2(models.Model):
     """
     Membership of user in a GroupV2

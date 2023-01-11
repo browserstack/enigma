@@ -1,0 +1,132 @@
+{% extends 'global_layout.html' %}
+
+{% block content_body %}
+<!-- Content Wrapper. Contains page content -->
+<div class="page-header">
+  <div class="container-fluid">
+    <h2 class="h5 no-margin-bottom">Update User Info: {{request.user.name}}</h2>
+  </div>
+</div>
+<div class="container">
+
+  <!-- Main content -->
+  <section class="content">
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <!-- Horizontal Form -->
+    <div class="box box-danger">
+      <form class="form-horizontal" action="{% url 'updateUserInfo' %}" method="post" id="usrform" name="usrform">
+        {% csrf_token %}
+        <div class="box-body">
+          <div class="form-group">
+            <label for="confluenceusername">Confluence Username</label><br>
+            {% if request.user.user.has_module_credentials.confluenceusername %}
+            <input placeholder="Confluence UserName " type="text" class="form-control" id="confluenceusername"
+              name="confluenceusername" required style="background-color:white;color:black;width:70%;width:66.66%;"
+              value="{{ request.user.user.has_module_credentials.confluenceusername }}">
+            {% else %}
+            <input placeholder="Confluence UserName " type="text" class="form-control" id="confluenceusername"
+              name="confluenceusername" required style="background-color:white;color:black;width:70%;width:66.66%;">
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            <label for="slackusername">Slack Username</label><br>
+            {% if request.user.user.has_module_credentials.slackusername %}
+            <input placeholder="Slack UserName " type="text" class="form-control" id="slackusername"
+              name="slackusername" required style="background-color:white;color:black;width:70%;width:66.66%;"
+              value="{{ request.user.user.has_module_credentials.slackusername }}">
+            {% else %}
+            <input placeholder="Slack UserName " type="text" class="form-control" id="slackusername"
+              name="slackusername" required style="background-color:white;color:black;width:70%;width:66.66%;">
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label for="zoomusername">Zoom Username</label><br>
+            {% if request.user.user.has_module_credentials.zoomusername %}
+            <input placeholder="Zoom UserName " type="text" class="form-control" id="zoomusername" name="zoomusername"
+              required style="background-color:white;color:black;width:70%;width:66.66%;"
+              value="{{ request.user.user.has_module_credentials.zoomusername }}">
+            {% else %}
+            <input placeholder="Zoom UserName " type="text" class="form-control" id="zoomusername" name="zoomusername"
+              required style="background-color:white;color:black;width:70%;width:66.66%;">
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label for="awsusername">AWS Username</label><br>
+            {% if request.user.user.has_module_credentials.awsusername %}
+            <input placeholder="AWS UserName " type="text" class="form-control" id="awsusername" name="awsusername"
+              required style="background-color:white;color:black;width:66.66%;"
+              value="{{ request.user.user.has_module_credentials.awsusername }}">
+            {% else %}
+            <input placeholder="AWS UserName " type="text" class="form-control" id="awsusername" name="awsusername"
+              required style="background-color:white;color:black;width:66.66%;">
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label for="opsgenieusername">OpsGenie Username</label><br>
+            {% if request.user.user.has_module_credentials.opsgenieusername %}
+            <input placeholder="OpsGenie UserName " type="text" class="form-control" id="opsgenieusername"
+              name="opsgenieusername" required style="background-color:white;color:black;width:66.66%;"
+              value="{{ request.user.user.has_module_credentials.opsgenieusername }}">
+            {% else %}
+            <input placeholder="OpsGenie UserName " type="text" class="form-control" id="opsgenieusername"
+              name="opsgenieusername" required style="background-color:white;color:black;width:66.66%;">
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label for="gcpusername">GCP Username</label><br>
+            {% if request.user.user.has_module_credentials.gcpusername %}
+            <input placeholder="GCP UserName " type="text" class="form-control" id="gcpusername" name="gcpusername"
+              required style="background-color:white;color:black;width:66.66%;"
+              value="{{ request.user.user.has_module_credentials.gcpusername }}">
+            {% else %}
+            <input placeholder="GCP UserName " type="text" class="form-control" id="gcpusername" name="gcpusername"
+              required style="background-color:white;color:black;width:66.66%;">
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label for="gitusername">Git Username</label><br>
+            {% if request.user.user.has_module_credentials.gitusername %}
+            <input placeholder="Github UserName " type="text" class="form-control" id="gitusername" name="gitusername"
+              required style="background-color:white;color:black;width:66.66%;"
+              value="{{ request.user.user.has_module_credentials.gitusername }}">
+            {% else %}
+            <input placeholder="Github UserName " type="text" class="form-control" id="gitusername" name="gitusername"
+              required style="background-color:white;color:black;width:66.66%;">
+            {% endif %}
+          </div>
+          <div class="form-group">
+            <label for="ssh_pub_key" class="control-label">SSH Public Key (Only rsa format key)</label><br>
+            <textarea class="form-control" rows="5" placeholder=" Paste your SSH Public Key. Run the command 'ssh-keygen -b 2048 -t rsa'
+                    " id="ssh_pub_key" name="ssh_pub_key" required
+              style="background-color:white;color:black;width:66.66%;">{{ request.user.user.has_module_credentials.ssh_public_key.key }}</textarea>
+            <p><b>Use the command 'ssh-keygen -b 2048 -t rsa' to generate SSH key</b>.</p>
+            <p>It is recommended to keep a backup of private key at a <b>Secure</b> location. Ensure that no one apart
+              from you had access to the backup.</p>
+          </div>
+          <div class="form-group">
+            <button type="submit" value="stop" name="state" class="btn btn-primary"
+              style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;margin-left: 5px;width: 30%">Update
+              Info</button>
+          </div>
+
+          <div class="form-group">
+            <button type="submit" value="bulk_approve" name="bulk_approve" class="btn btn-primary"
+              style="border: none;color: white;text-align: center;text-decoration: none;display:inline-block;font-size: 16px;margin-left: 5px;width: 30%">Regrant
+              Access</button>
+          </div>
+
+        </div>
+        <!-- /.box-body -->
+        <!-- /.box-footer -->
+      </form>
+
+    </div>
+    <!-- /.box -->
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+{% endblock %}
