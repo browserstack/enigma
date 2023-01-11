@@ -1,5 +1,6 @@
 import json
 import sys
+import shutil
 from git import Repo
 import os
 
@@ -20,13 +21,13 @@ try:
           if os.path.isdir(folder_path+"/"+file) and file != ".git" and file != ".github" and file != "secrets":
             os.rename(folder_path+"/"+file, "./Access/access_modules/"+file)
 
-        # remove the cloned repo folder entirely with all its contents which includes folders and files
-        for root, dirs, files in os.walk(folder_path, topdown=False):
-          for file in files:
-            os.remove(os.path.join(root, file))
-          for dir in dirs:
-            os.rmdir(os.path.join(root, dir))
-        os.rmdir(folder_path)
+        # remove the cloned repo folder entirely with all its contents which includes folders and files using shutil.rmtree()
+        # shutil.rmtree() sometimes throws an error on windows, so we use try and except to ignore the error
+        try:
+          shutil.rmtree(folder_path)
+        except Exception as e:
+          print(e)
+          print("failed to remove "+folder_path+" folder.")
 
       print("Cloning successful!")
 
