@@ -343,7 +343,7 @@ class UserAccessMapping(models.Model):
         access_request_data["accessMeta"] = access_module.combine_labels_meta(access_labels)
 
         return access_request_data
-    
+
     def updateMetaData(self, key, data):
         with transaction.atomic():
             mapping = UserAccessMapping.objects.select_for_update().get(request_id=self.request_id)
