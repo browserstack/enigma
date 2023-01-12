@@ -1,5 +1,5 @@
 from Access.models import User, GroupV2, MembershipV2, Role
-from Access import helpers, views_helper, notifications, constants
+from Access import helpers, views_helper, notifications
 import datetime
 import logging
 from bootprocess import general
@@ -29,23 +29,25 @@ def create_group(request):
         base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")        
         data = request.POST
         data = dict(data.lists())
-        new_group_name = (data["newGroupName"][0]).lower()
+        new_group_name = (data["newGroupName"][0])
         if GroupV2.group_exists(new_group_name):
             # the group name is not unique.
             context = {}
             context["error"] = {
                 "error_msg": NEW_GROUP_CREATE_ERROR_GROUP_EXISTS["error_msg"],
-                "msg": NEW_GROUP_CREATE_ERROR_GROUP_EXISTS["msg"].format(group_name= new_group_name),
+                "msg": NEW_GROUP_CREATE_ERROR_GROUP_EXISTS["msg"].format(group_name = new_group_name),
             }
-            return context            
-
-        new_group = GroupV2.Create(
+            return context
+        
+        new_group_name = new_group_name.lower()
+        
+        new_group = GroupV2.create(
             name=new_group_name,
             requester=request.user.user,
             description=data["newGroupReason"][0],
             needsAccessApprove = (not(not "requiresAccessApprove" in data or data["requiresAccessApprove"][0] != "true")),
         )
-
+        
         new_group.add_member(user=request.user.user, 
                                 is_owner=True, 
                                 requested_by=request.user.user, 
@@ -67,7 +69,7 @@ def create_group(request):
         else:
             initial_members = [request.user.email]
 
-        notifications.sendNewGroupCreateNotification(request.user, base_datetime_prefix, new_group, initial_members)
+        notifications.send_new_group_create_notification(request.user, base_datetime_prefix, new_group, initial_members)
 
         context = {}
         context["status"] = {

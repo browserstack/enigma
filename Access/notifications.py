@@ -6,7 +6,7 @@ logger = logging.getLogger(__name__)
 
 NEW_GROUP_EMAIL_SUBJECT = "Request for creation of new group from:"
 
-def sendNewGroupCreateNotification(auth_user, date_time, new_group, member_list):
+def send_new_group_create_notification(auth_user, date_time, new_group, member_list):
     subject = NEW_GROUP_EMAIL_SUBJECT + auth_user.email + " -- " + date_time
     body = helpers.generateStringFromTemplate(filename="groupCreationEmailBody.html",
                             user = str(auth_user.user),
