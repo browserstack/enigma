@@ -1,5 +1,5 @@
-from Access.models import User, GroupV2, MembershipV2, GroupAccessMapping, Role
-from Access import helpers, views_helper
+from Access.models import User, GroupV2, MembershipV2, Role
+from Access import helpers, views_helper, notifications, constants
 import datetime
 import logging
 from bootprocess import general
@@ -8,113 +8,71 @@ import threading
 
 logger = logging.getLogger(__name__)
 
+NEW_GROUP_CREATE_SUCCESS_MESSAGE = {
+            "title": "New Group Request submitted",
+            "msg": "A request for New Group with name {group_name} has been submitted for approval. You will be notified for any changes in request status.",
+        }
 
-def createGroup(request):
+NEW_GROUP_CREATE_ERROR_MESSAGE = {
+            "error_msg": "Internal Error",
+            "msg": "Error Occured while loading the page. Please contact admin",
+        }
+
+NEW_GROUP_CREATE_ERROR_GROUP_EXISTS = {
+            "error_msg": "Invalid Group Name",
+            "msg": "A group with name {group_name} already exists. Please choose a new name.",
+        }
+
+
+def create_group(request):
     try:
+        base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")        
         data = request.POST
         data = dict(data.lists())
-        newGroupName = (data["newGroupName"][0]).lower()
-        # Group name has to be unique.
-        existing_groups = GroupV2.objects.filter(name=newGroupName).filter(
-            status__in=["Approved", "Pending"])
-        if len(existing_groups):
+        new_group_name = (data["newGroupName"][0]).lower()
+        if GroupV2.group_exists(new_group_name):
             # the group name is not unique.
             context = {}
             context["error"] = {
-                "error_msg": "Invalid Group Name",
-                "msg": "A group with name "
-                + newGroupName
-                + " already exists. Please choose a new name.",
+                "error_msg": NEW_GROUP_CREATE_ERROR_GROUP_EXISTS["error_msg"],
+                "msg": NEW_GROUP_CREATE_ERROR_GROUP_EXISTS["msg"].format(group_name= new_group_name),
             }
-            return context
+            return context            
 
-        base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        group_id = newGroupName + "-group-" + base_datetime_prefix
-
-        needsAccessApprove = True
-        if (
-            not "requiresAccessApprove" in data
-            or data["requiresAccessApprove"][0] != "true"
-        ):
-            needsAccessApprove = False
-
-        group = GroupV2.objects.create(
-            name=newGroupName,
-            group_id=group_id,
+        new_group = GroupV2.Create(
+            name=new_group_name,
             requester=request.user.user,
             description=data["newGroupReason"][0],
-            needsAccessApprove=needsAccessApprove,
+            needsAccessApprove = (not(not "requiresAccessApprove" in data or data["requiresAccessApprove"][0] != "true")),
         )
 
-        membership_id = (
-            str(request.user.user.user.username)
-            + "-"
-            + newGroupName
-            + "-membership-"
-            + base_datetime_prefix
-        )
-        MembershipV2.objects.create(
-            membership_id=membership_id,
-            user=request.user.user,
-            group=group,
-            is_owner=True,
-            requested_by=request.user.user,
-            reason="Group Owner. Added as initial group member by requester.",
-        )
+        new_group.add_member(user=request.user.user, 
+                                is_owner=True, 
+                                requested_by=request.user.user, 
+                                reason="Group Owner. Added as initial group member by requester.", 
+                                date_time = base_datetime_prefix)
 
         if "selectedUserList" in data:
-            initialMembers = list(map(str, data["selectedUserList"]))
-            for memberEmail in initialMembers:
-                user = User.objects.filter(email=memberEmail)
+            initial_members = list(map(str, data["selectedUserList"]))
+            for member_email in initial_members:
+                user = User.objects.filter(email=member_email)
                 if len(user):
                     user = user[0]
-                    membership_id = (
-                        str(user.user.username)
-                        + "-"
-                        + newGroupName
-                        + "-membership-"
-                        + base_datetime_prefix
-                    )
-                    MembershipV2.objects.create(
-                        membership_id=membership_id,
+                    new_group.add_member(
                         user=user,
-                        group=group,
                         requested_by=request.user.user,
                         reason="Added as initial group member by requester.",
+                        date_time = base_datetime_prefix
                     )
         else:
-            initialMembers = [request.user.email]
+            initial_members = [request.user.email]
 
-        # Create a email for it.
-        subject = (
-            "Request for creation of new group from "
-            + request.user.email
-            + " -- "
-            + base_datetime_prefix
-        )
-        body = helpers.generateStringFromTemplate(filename="email.html",emailBody=
-            generateNewGroupCreationEmailBody(
-                request,
-                group_id,
-                newGroupName,
-                initialMembers,
-                data["newGroupReason"][0],
-                needsAccessApprove,
-            )
-        )
+        notifications.sendNewGroupCreateNotification(request.user, base_datetime_prefix, new_group, initial_members)
 
-        # Send the email to the approvers.
-        # TODO remove email references
-        general.emailSES(MAIL_APPROVER_GROUPS, subject, body)
-        logger.debug("Email sent for " + subject + " to " + str(MAIL_APPROVER_GROUPS))
-
-        # Ack the user.
         context = {}
         context["status"] = {
-            "title": "New Group Request submitted",
-            "msg": "A request for New Group with name "
-            + newGroupName
-            + " has been submitted for approval. You will be notified for any changes in request status.",
+            "title": NEW_GROUP_CREATE_SUCCESS_MESSAGE["title"],
+            "msg": NEW_GROUP_CREATE_SUCCESS_MESSAGE["msg"].format(group_name = new_group.name),
         }
         return context
     except Exception as e:
@@ -122,13 +80,15 @@ def createGroup(request):
         logger.error("Error in Create New Group request.")
         context = {}
         context["error"] = {
-            "error_msg": "Internal Error",
-            "msg": "Error Occured while loading the page. Please contact admin",
+            "error_msg": NEW_GROUP_CREATE_ERROR_MESSAGE["error_msg"],
+            "msg": NEW_GROUP_CREATE_ERROR_MESSAGE["msg"],
         }
         return context
 
+
 def getGroupAccessList(request, groupName):
     return {}
+
 
 def updateOwner(request, group, context):
     logger.debug("updating owners for group "+ group.name + " requested by "+ request.user.username)
@@ -204,7 +164,7 @@ def approveNewGroupRequest(request, group_id):
             body = "New group with name "+group_object.name+" has been created with owner being "+group_object.requester.user.username+"<br>"
             if initial_members:
                 body += "The following members have been added to this team<br>"
-                body += generateGroupMemberTable(initial_members)
+                body += notifications.generateGroupMemberTable(initial_members)
             body = helpers.generateStringFromTemplate(filename="email.html",emailBody=body)
             destination = []
             destination += MAIL_APPROVER_GROUPS[:]
@@ -328,19 +288,4 @@ def generateUserAddToGroupEmailBody(user_email, primary_approver, other_approver
                                             group_name = group_name,
                                             reason = reason)
 
-def generateNewGroupCreationEmailBody(request, requestId, groupName, memberList, reason, needsAccessApprove):
-    return helpers.generateStringFromTemplate(filename="groupCreationEmailBody.html",
-                            user = str(request.user.user),
-                            first_name=request.user.first_name,
-                            last_name = request.user.last_name,
-                            email = request.user.email,
-                            groupName = groupName,
-                            memberList = generateGroupMemberTable(memberList),
-                            reason = reason,
-                            needsAccessApprove = needsAccessApprove)
 
-
-def generateGroupMemberTable(memberList):
-    if len(memberList) <= 0:
-        return "No members are being added initially"
-    return helpers.generateStringFromTemplate("listToTable.html", memberList=memberList)

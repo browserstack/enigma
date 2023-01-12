@@ -233,6 +233,38 @@ class GroupV2(models.Model):
     decline_reason = models.TextField(null=True, blank=True)
     needsAccessApprove = models.BooleanField(null=False, blank=False, default=True)
 
+    @staticmethod
+    def group_exists(group_name):
+        if len(GroupV2.objects.filter(name=group_name).filter(status__in=["Approved", "Pending"])):
+            return True
+        return False
+
+    @staticmethod
+    def create(name="", requester=None, description="", needsAccessApprove=True, date_time = ""):
+        return GroupV2.objects.create(
+                    name = name,
+                    group_id = name + "-group-" + date_time,
+                    requester = requester,
+                    description = description,
+                    needsAccessApprove = needsAccessApprove,
+                )
+
+    def add_member(self, user=None, is_owner=False, requested_by=None, reason="", date_time = ""):
+        membership_id = (
+                str(user.user.username)
+                + "-"
+                + self.name
+                + "-membership-"
+                + date_time
+            )
+        return self.membership_group.create(
+            membership_id = membership_id,
+            user = user,
+            is_owner = is_owner,
+            requested_by = requested_by,
+            reason = reason,
+        )
+
     def __str__(self):
         return self.name
 
