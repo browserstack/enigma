@@ -2,10 +2,8 @@ from os.path import dirname, basename, isfile, join
 import glob
 import re
 import logging
-import time, datetime
-from Access.access_modules import *
+import datetime
 from django.template import loader
-from Access.models import UserAccessMapping
 
 logger = logging.getLogger(__name__)
 available_accesses = []
@@ -29,12 +27,16 @@ def getAccessModules():
         if re.search(r"/(base_|__pycache__)", each_dir):
             access_modules_dirs.remove(each_dir)
     access_modules_dirs.sort()
-    cached_accesses = \
-        [globals()[basename(f)].access.get_object() for f in access_modules_dirs if not isfile(f)]
+    cached_accesses = [
+        globals()[basename(f)].access.get_object()
+        for f in access_modules_dirs
+        if not isfile(f)
+    ]
     return cached_accesses
 
+
 def check_user_permissions(user, permissions):
-    if hasattr(user, 'user'):
+    if hasattr(user, "user"):
         permission_labels = [permission.label for permission in user.user.permissions]
         if type(permissions) == list:
             if len(set(permissions).intersection(permission_labels)) > 0:
@@ -44,11 +46,15 @@ def check_user_permissions(user, permissions):
                 return True
     return False
 
+
 def sla_breached(requested_on):
-    diff = datetime.datetime.now().replace(tzinfo=None) - requested_on.replace(tzinfo=None)
+    diff = datetime.datetime.now().replace(tzinfo=None) - requested_on.replace(
+        tzinfo=None
+    )
     duration_in_s = diff.total_seconds()
     hours = divmod(duration_in_s, 3600)[0]
     return hours >= 24
+
 
 def generateStringFromTemplate(filename, **kwargs):
     template = loader.get_template(filename)

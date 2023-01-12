@@ -128,7 +128,9 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        ),
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -153,7 +155,11 @@ USE_I18N = True
 
 USE_TZ = True
 
-DECLINE_REASONS = json.load(open('constants.json',))['declineReasons']
+DECLINE_REASONS = json.load(
+    open(
+        "constants.json",
+    )
+)["declineReasons"]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
@@ -186,8 +192,8 @@ USER_STATUS_CHOICES = [
 ]
 
 DEFAULT_ACCESS_GROUP = "default_access_group"
-MAIL_APPROVER_GROUPS = data['enigmaGroup']['MAIL_APPROVER_GROUPS']
+MAIL_APPROVER_GROUPS = data["enigmaGroup"]["MAIL_APPROVER_GROUPS"]
 
-ACCESS_APPROVE_EMAIL = data['emails']['access-approve']
+ACCESS_APPROVE_EMAIL = data["emails"]["access-approve"]
 
 ACCESS_MODULES = data["access_modules"]

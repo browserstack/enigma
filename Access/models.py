@@ -236,6 +236,7 @@ class GroupV2(models.Model):
     def __str__(self):
         return self.name
 
+
 class UserAccessMapping(models.Model):
     """
     Model to map access to user. Requests are broken down
@@ -334,23 +335,27 @@ class UserAccessMapping(models.Model):
         # ui metadata
         access_request_data["userEmail"] = self.user.email
         access_request_data["requestId"] = self.request_id
-        access_request_data['accessReason'] = self.request_reason
-        access_request_data['requested_on'] = self.requested_on
-
+        access_request_data["accessReason"] = self.request_reason
+        access_request_data["requested_on"] = self.requested_on
 
         access_request_data["accessType"] = access_module.access_desc()
-        access_request_data["accessCategory"] = access_module.combine_labels_desc(access_labels)
-        access_request_data["accessMeta"] = access_module.combine_labels_meta(access_labels)
+        access_request_data["accessCategory"] = access_module.combine_labels_desc(
+            access_labels
+        )
+        access_request_data["accessMeta"] = access_module.combine_labels_meta(
+            access_labels
+        )
 
         return access_request_data
 
     def updateMetaData(self, key, data):
         with transaction.atomic():
-            mapping = UserAccessMapping.objects.select_for_update().get(request_id=self.request_id)
+            mapping = UserAccessMapping.objects.select_for_update().get(
+                request_id=self.request_id
+            )
             mapping.meta_data[key] = data
             mapping.save()
         return True
-
 
 
 class GroupAccessMapping(models.Model):
@@ -439,12 +444,16 @@ class GroupAccessMapping(models.Model):
         access_request_data["userEmail"] = self.requested_by.email
         access_request_data["groupName"] = self.group.name
         access_request_data["requestId"] = self.request_id
-        access_request_data['accessReason'] = self.request_reason
-        access_request_data['requested_on'] = self.requested_on
+        access_request_data["accessReason"] = self.request_reason
+        access_request_data["requested_on"] = self.requested_on
 
         access_request_data["accessType"] = access_module.access_desc()
-        access_request_data["accessCategory"] = access_module.combine_labels_desc(access_labels)
-        access_request_data["accessMeta"] = access_module.combine_labels_meta(access_labels)
+        access_request_data["accessCategory"] = access_module.combine_labels_desc(
+            access_labels
+        )
+        access_request_data["accessMeta"] = access_module.combine_labels_meta(
+            access_labels
+        )
 
         return access_request_data
 
@@ -458,13 +467,16 @@ class AccessV2(models.Model):
         try:
             if self.access_tag == "aws":
                 label = self.access_label["data"]
-                return "{}: Team- {} | Access: {} | Level: {} | Service: {} | Resource: {}".format(
-                    self.access_tag,
-                    label["team"],
-                    label["awsAccessType"],
-                    label["levelAccessType"],
-                    label["awsService"],
-                    label["awsResource"],
+                return (
+                    "{}: Team- {} | Access: {} | Level: {} | Service: {} | Resource: {}"
+                    .format(
+                        self.access_tag,
+                        label["team"],
+                        label["awsAccessType"],
+                        label["levelAccessType"],
+                        label["awsService"],
+                        label["awsResource"],
+                    )
                 )
             if self.access_tag == "other":
                 return self.access_tag + " - " + self.access_label["request"]
