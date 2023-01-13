@@ -18,7 +18,6 @@ def test_create_group_error():
 
 @scenario('./features/create_group.feature', 'Create a new Group Success')
 def test_create_group_success():
-    print("\n-------------------herere-----------")
     pass
 
 

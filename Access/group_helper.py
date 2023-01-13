@@ -56,16 +56,7 @@ def create_group(request):
 
         if "selectedUserList" in data:
             initial_members = list(map(str, data["selectedUserList"]))
-            for member_email in initial_members:
-                user = User.objects.filter(email=member_email)
-                if len(user):
-                    user = user[0]
-                    new_group.add_member(
-                        user=user,
-                        requested_by=request.user.user,
-                        reason="Added as initial group member by requester.",
-                        date_time = base_datetime_prefix
-                    )
+            new_group.add_members(users=User.objects.filter(email__in=initial_members))
         else:
             initial_members = [request.user.email]
 

@@ -264,6 +264,15 @@ class GroupV2(models.Model):
             requested_by = requested_by,
             reason = reason,
         )
+    def add_members(self, users=None, requested_by=None, reason="", date_time = ""):
+        if users:
+            for user in users:
+                self.add_member(
+                    user=user,
+                    requested_by=requested_by,
+                    reason=reason,
+                    date_time = date_time
+                )
 
     def __str__(self):
         return self.name
