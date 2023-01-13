@@ -58,7 +58,7 @@ def getGrantFailedRequests(request):
     except Exception as e:
         return process_error_response(request, e)
 
-    
+
 
 def getPendingRevokeFailures(request):
     if request.GET.get('username'):

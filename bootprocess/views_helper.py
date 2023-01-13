@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def getDashboardData(request):
     user = access_user.objects.get(user__username=request.user)
-    
+
     # Add users to DEFAULT_ACCESS_GROUP if the user is not already on the group
     user_membership = str(
         MembershipV2.objects.filter(user=user).filter(status="Approved")
