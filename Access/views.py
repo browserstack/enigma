@@ -7,7 +7,6 @@ import logging
 from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from Access import group_helper
-from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRequests
 from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRevokeFailures, getPendingRequests
 from Access.userlist_helper import getallUserList
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
@@ -84,10 +83,15 @@ def groupRequestAccess(request):
 @login_required
 def groupAccessList(request, groupName):
     context = group_helper.getGroupAccessList(request, groupName)
-    if context['error']:
-        return render(request,"BSOps/accessStatus.html",context)
+    if 'error' in context:
+        return render(request,"BSOps/accessStatus.html", context)
         
-    return render(request,"BSOps/groupAccessList.html",context)
+    return render(request,"BSOps/groupAccessList.html", context)
+
+
+@login_required
+def groupDashboard(request):
+    return render(request, 'BSOps/createNewGroup.html')
 
 
 def approveNewGroup(request, group_id):
@@ -101,6 +105,7 @@ def add_user_to_group(request, groupName):
     else:
         context =  group_helper.get_user_group(request, groupName)
         return render(request, 'BSOps/accessStatus.html',context)
+
 @api_view(["GET"])
 @login_required
 @user_with_permission([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])

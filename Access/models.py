@@ -1,6 +1,7 @@
-from BrowserStackAutomation.settings import USER_STATUS_CHOICES
 from django.contrib.auth.models import User as user
 from django.db import models
+
+from BrowserStackAutomation.settings import USER_STATUS_CHOICES, PERMISSION_CONSTANTS
 
 
 class Permission(models.Model):
@@ -134,6 +135,56 @@ class User(models.Model):
         approver_permissions = allApproverPermissions
         return len(list(set(permission_labels) & set(approver_permissions))) > 0
 
+    def isPrimaryApproverForModule(self, accessModule):
+        module_permissions = {}
+        try:
+            module_permissions = accessModule.fetch_approver_permissions()
+        except:
+            module_permissions = {
+                "1": PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]
+            }
+        return self.has_permission(module_permissions["1"])
+
+    def isSecondaryApproverForModule(self, accessModule):
+        module_permissions = {}
+        try:
+            module_permissions = accessModule.fetch_approver_permissions()
+        except:
+            return False
+        return "2" in module_permissions and self.has_permission(module_permissions["2"])
+
+    def getPendingApprovalsCount(self, all_access_modules):
+        pendingCount = 0
+        if self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]):
+            pendingCount += GroupV2.getPendingMemberships().count()
+            pendingCount += GroupAccessMapping.objects.filter(status='Pending').count()
+            pendingCount += len(GroupV2.getPendingCreation())
+
+        for each_access_module in all_access_modules:
+            access_tag = each_access_module.tag()
+            if self.isPrimaryApproverForModule(each_access_module):
+                pendingCount += UserAccessMapping.objects.filter(status='Pending', access__access_tag=access_tag).count()
+            elif self.isSecondaryApproverForModule(each_access_module):
+                pendingCount += UserAccessMapping.objects.filter(status='SecondaryPending', access__access_tag=access_tag).count()
+
+        return pendingCount
+
+    def getFailedGrantsCount(self):
+        return UserAccessMapping.objects.filter(status__in=["grantfailed"]).count() if self.isAdminOrOps() else 0
+
+    def getFailedRevokesCount(self):
+        return UserAccessMapping.objects.filter(status__in=["revokefailed"]).count() if self.isAdminOrOps() else 0
+
+    def getOwnedGroups(self):
+        if self.isAdminOrOps():
+            return GroupV2.objects.all().filter(status='Approved')
+
+        groupOwnerMembership = MembershipV2.objects.filter(is_owner=True, user=currentUser)
+        return [ membership_obj.group for membership_obj in groupOwnerMembership ]
+
+    def isAdminOrOps(self):
+        return self.is_ops or self.user.is_superuser
+
     def __str__(self):
         return "%s" % (self.user)
 
@@ -237,6 +288,22 @@ class GroupV2(models.Model):
     )
     decline_reason = models.TextField(null=True, blank=True)
     needsAccessApprove = models.BooleanField(null=False, blank=False, default=True)
+
+    @staticmethod
+    def getPendingMemberships():
+        return MembershipV2.objects.filter(status="Pending", group__status="Approved")
+
+    @staticmethod
+    def getPendingCreation():
+        new_group_pending = GroupV2.objects.filter(status="Pending")
+        new_group_pending_data = []
+        for new_group in new_group_pending:
+            initial_members = ", ".join(list(new_group.membership_group.values_list("user__user__username", flat=True)))
+            new_group_pending_data.append({
+                "groupRequest": new_group,
+                "initialMembers": initial_members
+            })
+        return new_group_pending_data
 
     def __str__(self):
         return self.name

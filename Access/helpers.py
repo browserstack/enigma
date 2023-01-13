@@ -6,7 +6,6 @@ import re
 import time, datetime
 
 from Access.access_modules import *
-from Access.models import UserAccessMapping
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
@@ -27,7 +26,7 @@ def getAccessModules():
         return cached_accesses
     access_modules_dirs = glob.glob(join(dirname(__file__), "access_modules", "*"))
     for each_dir in access_modules_dirs:
-        if re.search(r"/(base_|__pycache__)", each_dir):
+        if re.search(r"/(base_|__pycache__|secrets)", each_dir):
             access_modules_dirs.remove(each_dir)
     access_modules_dirs.sort()
     cached_accesses = \

@@ -55,7 +55,7 @@ class BaseEmailAccess(object):
             "1": PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]
         }
 
-    def get_pending_accesses(self, request, user_permissions):
+    def get_pending_accesses(self, user_permissions):
         return {
             "individual_requests": self.__get_pending_individual_accesses(user_permissions),
             "group_requests": self.__get_pending_group_accesses(user_permissions),
