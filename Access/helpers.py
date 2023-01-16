@@ -25,7 +25,9 @@ def getAccessModules():
     if len(cached_accesses) > 0:
         return cached_accesses
     access_modules_dirs = glob.glob(join(dirname(__file__), "access_modules", "*"))
-    for each_dir in access_modules_dirs:
+    # create a deepcopy copy of the list so we can remove items from the original list
+    access_modules_dirs_copy = access_modules_dirs[:]
+    for each_dir in access_modules_dirs_copy:
         if re.search(r"/(base_|__pycache__|secrets)", each_dir):
             access_modules_dirs.remove(each_dir)
     access_modules_dirs.sort()
