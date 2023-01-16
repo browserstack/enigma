@@ -135,23 +135,22 @@ class User(models.Model):
         approver_permissions = allApproverPermissions
         return len(list(set(permission_labels) & set(approver_permissions))) > 0
 
-    def isPrimaryApproverForModule(self, accessModule):
-        module_permissions = {}
-        try:
-            module_permissions = accessModule.fetch_approver_permissions()
-        except:
-            module_permissions = {
-                "1": PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]
-            }
+    def isPrimaryApproverForModule(self, accessModule, accessLabel=None):
+        module_permissions = accessModule.fetch_approver_permissions(accessLabel)
         return self.has_permission(module_permissions["1"])
 
-    def isSecondaryApproverForModule(self, accessModule):
-        module_permissions = {}
-        try:
-            module_permissions = accessModule.fetch_approver_permissions()
-        except:
-            return False
+    def isSecondaryApproverForModule(self, accessModule, accessLabel=None):
+        module_permissions = accessModule.fetch_approver_permissions(accessLabel)
         return "2" in module_permissions and self.has_permission(module_permissions["2"])
+
+    def isAnApproverForModule(self, accessModule, accessLabel=None, approverType="Primary"):
+        if approverType == "Secondary":
+            return self.isSecondaryApproverForModule(accessModule, accessLabel)
+
+        return self.isPrimaryApproverForModule(accessModule, accessLabel)
+
+    def getPendingApprovals(self, all_access_modules):
+        return self.__query_pending_accesses()
 
     def getPendingApprovalsCount(self, all_access_modules):
         pendingCount = 0
@@ -161,11 +160,9 @@ class User(models.Model):
             pendingCount += len(GroupV2.getPendingCreation())
 
         for each_access_module in all_access_modules:
-            access_tag = each_access_module.tag()
-            if self.isPrimaryApproverForModule(each_access_module):
-                pendingCount += UserAccessMapping.objects.filter(status='Pending', access__access_tag=access_tag).count()
-            elif self.isSecondaryApproverForModule(each_access_module):
-                pendingCount += UserAccessMapping.objects.filter(status='SecondaryPending', access__access_tag=access_tag).count()
+            all_requests = each_access_module.get_pending_access_objects(self)
+            pendingCount += len(all_requests["individual_requests"])
+            pendingCount += len(all_requests["group_requests"])
 
         return pendingCount
 

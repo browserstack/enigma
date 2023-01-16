@@ -100,8 +100,6 @@ def getPendingRequests(request):
 
 
 def get_pending_accesses_from_modules(accessUser):
-    user_permissions = [permission.label for permission in accessUser.permissions]
-
     individual_requests = []
     group_requests = {}
 
@@ -110,7 +108,7 @@ def get_pending_accesses_from_modules(accessUser):
         access_module_start_time = time.time()
 
         try:
-            pending_accesses = access_module.get_pending_accesses(user_permissions)
+            pending_accesses = access_module.get_pending_accesses(accessUser)
         except Exception as e:
             logger.exception(e)
             pending_accesses = {

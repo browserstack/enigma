@@ -60,9 +60,6 @@ def generateStringFromTemplate(filename, **kwargs):
 def getPossibleApproverPermissions():
     all_approver_permissions = []
     for each_module in getAvailableAccessModules():
-        if hasattr(each_module, 'fetch_approver_permissions'):
-            approver_permissions = each_module.fetch_approver_permissions()
-            all_approver_permissions.extend(approver_permissions.values())
-        else:
-            all_approver_permissions.extend([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])
+        approver_permissions = each_module.fetch_approver_permissions()
+        all_approver_permissions.extend(approver_permissions.values())
     return list(set(all_approver_permissions))
