@@ -29,7 +29,7 @@ def create_group(request):
         base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")        
         data = request.POST
         data = dict(data.lists())
-        new_group_name = (data["newGroupName"][0])
+        new_group_name = (data["newGroupName"][0]).lower()
         if GroupV2.group_exists(new_group_name):
             # the group name is not unique.
             context = {}
@@ -39,13 +39,11 @@ def create_group(request):
             }
             return context
         
-        new_group_name = new_group_name.lower()
-        
         new_group = GroupV2.create(
             name=new_group_name,
             requester=request.user.user,
             description=data["newGroupReason"][0],
-            needsAccessApprove = (not(not "requiresAccessApprove" in data or data["requiresAccessApprove"][0] != "true")),
+            needsAccessApprove = ("requiresAccessApprove" in data and data["requiresAccessApprove"][0] == "true"),
         )
         
         new_group.add_member(user=request.user.user, 
