@@ -1,6 +1,7 @@
 from Access import helpers
 from Access.models import User
 import logging
+from . import helpers as helper
 
 logger = logging.getLogger(__name__)
 
@@ -9,6 +10,35 @@ PERMISSION_ALLOW_USER_OFFBOARD = "ALLOW_USER_OFFBOARD"
 
 EXCEPTION_USER_UNAUTHORIZED = "Unauthorized to list users"
 ERROR_MESSAGE = "Error in request not found OR Invalid request type"
+
+NEW_IDENTITY_CREATE_SUCCESS_MESSAGE  = {
+    "title" : "Identity Updated",
+    "msg": "Identity Updated for {modulename}",
+}
+
+all_access_modules = helper.getAvailableAccessModules()
+
+def get_identity_templates():
+    context = {}
+    templates = []    
+    for mod in all_access_modules:
+            templates.append(mod.get_identity_template())
+    context["identity_templates"] = templates
+    return context
+
+def create_identity(request):
+    for mod in all_access_modules:
+        if mod.tag() == request.POST.get("modname"):
+            identity = mod.update_identity(request.POST, request.user.user.email)
+            user=request.user.user
+            user.create_module_identity(access_tag = mod.tag(), identity = identity)
+            context = {}
+            context["status"] = {
+                "title": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["title"],
+                "msg": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["msg"].format(modulename = mod.tag()),
+            }            
+            return context
+
 
 def getallUserList(request):
     try:

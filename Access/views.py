@@ -5,9 +5,12 @@ from .decorators import user_admin_or_ops, authentication_classes, user_with_per
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
 from django.shortcuts import render
-from Access.userlist_helper import getallUserList
+from Access.userlist_helper import getallUserList, get_identity_templates, create_identity
 from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRevokeFailures, getPendingRequests
 from Access import group_helper
+from rest_framework.decorators import api_view
+from django.http import JsonResponse
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +43,19 @@ def pendingRevoke(request):
 
 @login_required
 def updateUserInfo(request):
-    return False
+    context = get_identity_templates()
+    return render(request,'updateUser.html',context)
 
+
+@api_view(['POST'])
+@login_required
+def saveIdentity(request):
+    try:
+        if request.POST:
+            context = create_identity(request)
+            return JsonResponse(json.dumps(context), safe=False, status=200)
+    except:
+        return JsonResponse("", safe=False, status=400)
 
 @login_required
 def createNewGroup(request):

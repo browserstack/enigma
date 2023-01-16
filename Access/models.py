@@ -128,6 +128,9 @@ class User(models.Model):
                 state_key = key
         self.state = state_key
         self.save()
+    
+    def create_module_identity(self, access_tag = "", identity =""):
+        self.user_module_identity.create(access_tag = access_tag, identity=identity)
 
     def __str__(self):
         return "%s" % (self.user)
@@ -490,22 +493,29 @@ class AccessV2(models.Model):
         try:
             if self.access_tag == "aws":
                 label = self.access_label["data"]
-                return "{}: Team- {} | Access: {} | Level: {} | Service: {} | Resource: {}".format(
+                return "access_tag- {} | access_label: {} | is_auto_approved: {}".format(
                     self.access_tag,
-                    label["team"],
-                    label["awsAccessType"],
-                    label["levelAccessType"],
-                    label["awsService"],
-                    label["awsResource"],
+                    self.access_label,
+                    self.is_auto_approved,
                 )
-            if self.access_tag == "other":
-                return self.access_tag + " - " + self.access_label["request"]
-            details_arr = []
-            for data in list(self.access_label.values()):
-                try:
-                    details_arr.append(data.decode("utf-8"))
-                except Exception:
-                    details_arr.append(data)
-            return self.access_tag + " - " + ", ".join(details_arr)
         except Exception:
             return self.access_tag
+
+
+class UserIdentity(models.Model):
+    access_tag = models.CharField(max_length=255)
+    user = models.ForeignKey(
+        "User",
+        null=False,
+        blank=False,
+        related_name="user_module_identity",
+        on_delete=models.PROTECT,
+    )
+    identity = models.JSONField(default=dict)
+
+    def __str__(self):
+        return "access_tag - {} | user: {} | identity: {} ".format (
+            self.access_tag,
+            self.user,
+            self.identity,
+        )
