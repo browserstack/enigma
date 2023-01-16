@@ -25,47 +25,11 @@ NEW_GROUP_CREATE_ERROR_GROUP_EXISTS = {
 
 
 def create_group(request):
+    base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")        
     try:
-        base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")        
         data = request.POST
         data = dict(data.lists())
         new_group_name = (data["newGroupName"][0]).lower()
-        if GroupV2.group_exists(new_group_name):
-            # the group name is not unique.
-            context = {}
-            context["error"] = {
-                "error_msg": NEW_GROUP_CREATE_ERROR_GROUP_EXISTS["error_msg"],
-                "msg": NEW_GROUP_CREATE_ERROR_GROUP_EXISTS["msg"].format(group_name = new_group_name),
-            }
-            return context
-        
-        new_group = GroupV2.create(
-            name=new_group_name,
-            requester=request.user.user,
-            description=data["newGroupReason"][0],
-            needsAccessApprove = ("requiresAccessApprove" in data and data["requiresAccessApprove"][0] == "true"),
-        )
-        
-        new_group.add_member(user=request.user.user, 
-                                is_owner=True, 
-                                requested_by=request.user.user, 
-                                reason="Group Owner. Added as initial group member by requester.", 
-                                date_time = base_datetime_prefix)
-
-        if "selectedUserList" in data:
-            initial_members = list(map(str, data["selectedUserList"]))
-            new_group.add_members(users=User.objects.filter(email__in=initial_members))
-        else:
-            initial_members = [request.user.email]
-
-        notifications.send_new_group_create_notification(request.user, base_datetime_prefix, new_group, initial_members)
-
-        context = {}
-        context["status"] = {
-            "title": NEW_GROUP_CREATE_SUCCESS_MESSAGE["title"],
-            "msg": NEW_GROUP_CREATE_SUCCESS_MESSAGE["msg"].format(group_name = new_group.name),
-        }
-        return context
     except Exception as e:
         logger.exception(e)
         logger.error("Error in Create New Group request.")
@@ -75,6 +39,43 @@ def create_group(request):
             "msg": NEW_GROUP_CREATE_ERROR_MESSAGE["msg"],
         }
         return context
+
+    if GroupV2.group_exists(new_group_name):
+        # the group name is not unique.
+        context = {}
+        context["error"] = {
+            "error_msg": NEW_GROUP_CREATE_ERROR_GROUP_EXISTS["error_msg"],
+            "msg": NEW_GROUP_CREATE_ERROR_GROUP_EXISTS["msg"].format(group_name = new_group_name),
+        }
+        return context
+    
+    new_group = GroupV2.create(
+        name=new_group_name,
+        requester=request.user.user,
+        description=data["newGroupReason"][0],
+        needsAccessApprove = ("requiresAccessApprove" in data and data["requiresAccessApprove"][0] == "true"),
+    )
+    
+    new_group.add_member(user=request.user.user, 
+                            is_owner=True, 
+                            requested_by=request.user.user, 
+                            reason="Group Owner. Added as initial group member by requester.", 
+                            date_time = base_datetime_prefix)
+
+    if "selectedUserList" in data:
+        initial_members = list(map(str, data["selectedUserList"]))
+        new_group.add_members(users=User.objects.filter(email__in=initial_members))
+    else:
+        initial_members = [request.user.email]
+
+    notifications.send_new_group_create_notification(request.user, base_datetime_prefix, new_group, initial_members)
+
+    context = {}
+    context["status"] = {
+        "title": NEW_GROUP_CREATE_SUCCESS_MESSAGE["title"],
+        "msg": NEW_GROUP_CREATE_SUCCESS_MESSAGE["msg"].format(group_name = new_group.name),
+    }
+    return context
 
 
 def getGroupAccessList(request, groupName):
