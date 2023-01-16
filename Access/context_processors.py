@@ -5,6 +5,9 @@ from Access.helpers import getAvailableAccessModules, getPossibleApproverPermiss
 
 
 def add_variables_to_context(request):
+    if request.headers['Content-Type'] == "application/json":
+        return {}
+
     try:
         currentUser = User.objects.get(user__username=request.user)
     except User.DoesNotExist:
