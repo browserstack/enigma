@@ -31,6 +31,7 @@ from Access.views import (
     groupAccessList,
     approveNewGroup,
     add_user_to_group,
+    groupDashboard,
 )
 
 urlpatterns = [
@@ -45,6 +46,7 @@ urlpatterns = [
     re_path(r"^resolve/pendingRevoke", pendingRevoke, name="pendingRevoke"),
     re_path(r"^user/updateUserInfo/", updateUserInfo, name="updateUserInfo"),
     re_path(r"^group/create$", createNewGroup, name="createNewGroup"),
+    re_path(r'^group/dashboard/$', groupDashboard, name='groupDashboard'),
     re_path(r"^access/userAccesses$", allUserAccessList, name="allUserAccessList"),
     re_path(r"^access/usersList$", allUsersList, name="allUsersList"),
     re_path(r"^access/requestAccess$", requestAccess, name="requestAccess"),

@@ -1,9 +1,9 @@
-from Access.models import User, GroupV2, MembershipV2, GroupAccessMapping, Role
+from Access.models import User, GroupV2, MembershipV2, Role
 from Access import helpers, views_helper
 import datetime
 import logging
 from bootprocess import general
-from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS
+from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 import threading
 
 logger = logging.getLogger(__name__)
@@ -156,10 +156,10 @@ def updateOwner(request, group, context):
     context["notification"] = "Owner's updated"
 
 
-def isAllowedGroupAdminFunctions(request,groupMembers):
+def isAllowedGroupAdminFunctions(request, groupMembers):
     ownersEmail = [member.user.email for member in groupMembers.filter(is_owner = True)]
-    is_approver = len(User.objects.filter(role=Role.objects.get(label='TEAMS:ACCESSAPPROVE'),state=1, email=request.user.user.email)) > 0
-
+    is_approver = request.user.user.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"])
+    
     if request.user.user.email not in ownersEmail and not (request.user.is_superuser or request.user.user.is_ops or is_approver):
         return False
     return True
