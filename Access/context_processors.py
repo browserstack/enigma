@@ -5,6 +5,7 @@ from Access.helpers import getAvailableAccessModules, getPossibleApproverPermiss
 
 
 def add_variables_to_context(request):
+    # Skip adding context variables in case of API request
     if request.headers['Content-Type'] == "application/json":
         return {}
 

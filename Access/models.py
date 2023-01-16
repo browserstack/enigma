@@ -156,7 +156,6 @@ class User(models.Model):
         pendingCount = 0
         if self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]):
             pendingCount += GroupV2.getPendingMemberships().count()
-            pendingCount += GroupAccessMapping.objects.filter(status='Pending').count()
             pendingCount += len(GroupV2.getPendingCreation())
 
         for each_access_module in all_access_modules:
