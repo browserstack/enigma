@@ -2,7 +2,6 @@ import pytest
 from django.http import QueryDict
 from Access import models, helpers
 from Access import group_helper
-from unittest.mock import ANY
 from bootprocess import general
 
 testGroupName = "testgroupname"
@@ -78,7 +77,8 @@ test_approveNewGroupRequest_ThrowsException = "ThrowsException"
         ),
         (
             test_approveNewGroupRequest_ThrowsException,
-            "{'error': 'Error Occured while Approving group creation. Please contact admin - sendEmailError'}",
+            "{'error': 'Error Occured while Approving group creation. " +
+            "Please contact admin - sendEmailError'}",
             "grp1",
             False,
             True,
@@ -190,12 +190,16 @@ test_get_user_group_can_access_group = "UserCanAccessGroup"
         (
             test_get_user_group_group_not_found,
             "TestGroupName1",
-            "{'status': {'title': 'Invalid Group', 'msg': 'There is no group named TestGroupName1. Please contact admin for any queries.'}}",
+            "{'status': {'title': 'Invalid Group'," +
+            " 'msg': 'There is no group named TestGroupName1." +
+            " Please contact admin for any queries.'}}",
         ),
         (
             test_get_user_group_cannot_access_group,
             "TestGroupName1",
-            "{'error': {'error_msg': 'Internal Error', 'msg': \"Error Occured while loading the page. Please contact admin, Permission denied, you're not owner of this group\"}}",
+            "{'error': {'error_msg': 'Internal Error'," +
+            " 'msg': \"Error Occured while loading the page. Please contact admin," +
+            " Permission denied, you're not owner of this group\"}}",
         ),
         (
             test_get_user_group_can_access_group,
@@ -288,23 +292,29 @@ test_add_user_to_group_doesnot_need_approval = "DoesNotNeedApproval"
         (
             test_add_user_to_group_permission_denied,
             "groupName=TestGroupName",
-            "{'error': {'error_msg': 'Internal Error', 'msg': 'Error Occured while loading the page. Please contact admin, Permission denied, requester is non owner'}}",
+            "{'error': {'error_msg': 'Internal Error'," +
+            " 'msg': 'Error Occured while loading the page." +
+            " Please contact admin, Permission denied, requester is non owner'}}",
         ),
         (
             test_add_user_to_group_duplicate_request,
             "groupName=TestGroupName&selectedUserList=member2@member2.com",
-            "{'error': {'error_msg': 'Duplicate Request', 'msg': 'User member2@member2.com is already added to group/or pending approval for group addition'}}",
+            "{'error': {'error_msg': 'Duplicate Request'," +
+            " 'msg': 'User member2@member2.com is already added to group/or" +
+            " pending approval for group addition'}}",
         ),
         (
             test_add_user_to_group_needs_approval,
             "groupName=TestGroupName&selectedUserList=member2@member2.com&memberReason=somereason",
-            "{'status': {'title': 'Request Submitted', 'msg': 'Once Approved the newly added members will be granted" + 
+            "{'status': {'title': 'Request Submitted'," +
+            " 'msg': 'Once Approved the newly added members will be granted" +
             " the same permissions as the group'}}",
         ),
         (
             test_add_user_to_group_doesnot_need_approval,
             "groupName=TestGroupName&selectedUserList=member2@member2.com&memberReason=somereason",
-            "is now being processed', 'desc': 'A email will be sent after the requested access are granted'}}",
+            "is now being processed'," +
+            " 'desc': 'A email will be sent after the requested access are granted'}}",
         ),
     ],
 )
