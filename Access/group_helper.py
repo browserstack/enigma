@@ -3,7 +3,7 @@ from Access import helpers, views_helper, notifications
 import datetime
 import logging
 from bootprocess import general
-from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS
+from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 import threading
 
 logger = logging.getLogger(__name__)
@@ -31,6 +31,12 @@ def create_group(request):
         data = request.POST
         data = dict(data.lists())
         new_group_name = (data["newGroupName"][0]).lower()
+        reason = data["newGroupReason"][0]
+        needs_access_approve=(
+            "requiresAccessApprove" in data
+            and data["requiresAccessApprove"][0] == "true"
+        )
+        selected_users = data["selectedUserList"]
     except Exception as e:
         logger.exception(e)
         logger.error("Error in Create New Group request.")
@@ -55,11 +61,8 @@ def create_group(request):
     new_group = GroupV2.create(
         name=new_group_name,
         requester=request.user.user,
-        description=data["newGroupReason"][0],
-        needsAccessApprove=(
-            "requiresAccessApprove" in data
-            and data["requiresAccessApprove"][0] == "true"
-        ),
+        description=reason,
+        needsAccessApprove=needs_access_approve,
     )
 
     new_group.add_member(
@@ -71,7 +74,7 @@ def create_group(request):
     )
 
     if "selectedUserList" in data:
-        initial_members = list(map(str, data["selectedUserList"]))
+        initial_members = list(map(str, selected_users))
         new_group.add_members(users=User.objects.filter(email__in=initial_members))
     else:
         initial_members = [request.user.email]
@@ -131,21 +134,10 @@ def updateOwner(request, group, context):
 
 
 def isAllowedGroupAdminFunctions(request, groupMembers):
-    ownersEmail = [member.user.email for member in groupMembers.filter(is_owner=True)]
-    is_approver = (
-        len(
-            User.objects.filter(
-                role=Role.objects.get(label="TEAMS:ACCESSAPPROVE"),
-                state=1,
-                email=request.user.user.email,
-            )
-        )
-        > 0
-    )
-
-    if request.user.user.email not in ownersEmail and not (
-        request.user.is_superuser or request.user.user.is_ops or is_approver
-    ):
+    ownersEmail = [member.user.email for member in groupMembers.filter(is_owner = True)]
+    is_approver = request.user.user.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"])
+    
+    if request.user.user.email not in ownersEmail and not (request.user.is_superuser or request.user.user.is_ops or is_approver):
         return False
     return True
 

@@ -9,6 +9,6 @@ jobs:
     - name: Run commit-msg hook
       run: |
         pip install pre-commit==2.21.0
-        pre-commit install --install-hooks --overwrite
-        pre-commit autoupdate
-        pre-commit run --all-files --show-diff-on-failure --color always
+        pre-commit install --install-hooks --overwrite --config .pre-commit-config-gh-action.yaml
+        pre-commit autoupdate --config .pre-commit-config-gh-action.yaml
+        pre-commit run --all-files --show-diff-on-failure --color always --config .pre-commit-config-gh-action.yaml

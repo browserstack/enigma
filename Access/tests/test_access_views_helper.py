@@ -244,14 +244,14 @@ test_run_access_grant_approveException = "approveException"
             "mod1",
             True,
             "GrantFailed",
-        ),        
+        ),
         (
             test_run_access_grant_approveException,
             "1",
             "mod1",
             True,
             "GrantFailed",
-        ),        
+        ),
     ],
 )
 
@@ -261,7 +261,7 @@ def test_run_access_grant(mocker, testName, accessType ,userState, response, res
         requestObject = mocker.MagicMock()
         requestObject.user.state = userState
         requestObject.save.return_value = True
-    
+
     elif testName == test_run_access_grant_accessApproved:
         requestObject = mocker.MagicMock()
         requestObject.user.state = userState
@@ -303,4 +303,3 @@ def test_run_access_grant(mocker, testName, accessType ,userState, response, res
     assert requestObject.status == response_status
     if response_status == "GrantFailed":
         general.emailSES.call_count == 1
-
