@@ -396,7 +396,8 @@ def add_user_to_group(request):
         context = {}
         context["status"] = {
             "title": "Request Submitted",
-            "msg": """Once Approved the newly added members will be granted the same permissions as the group""",
+            "msg": "Once Approved the newly added members will be granted" + 
+            " the same permissions as the group",
         }
         return context
     except Exception as e:

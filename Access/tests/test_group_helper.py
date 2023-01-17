@@ -298,7 +298,8 @@ test_add_user_to_group_doesnot_need_approval = "DoesNotNeedApproval"
         (
             test_add_user_to_group_needs_approval,
             "groupName=TestGroupName&selectedUserList=member2@member2.com&memberReason=somereason",
-            "{'status': {'title': 'Request Submitted', 'msg': 'Once Approved the newly added members will be granted the same permissions as the group'}}",
+            "{'status': {'title': 'Request Submitted', 'msg': 'Once Approved the newly added members will be granted" + 
+            " the same permissions as the group'}}",
         ),
         (
             test_add_user_to_group_doesnot_need_approval,
