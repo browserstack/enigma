@@ -43,7 +43,7 @@ lint_issues:
 ## Lint code using pylama skipping files in env (if pyenv created)
 .PHONY: lint
 lint: lint_issues
-	@python -m pylama --version
+	@python3 -m pylama --version
 	@pylama --skip "./env/*" -r lint_issues || echo "Linter run returned errors. Check lint_issues file for details." && false
 
 schema_validate:

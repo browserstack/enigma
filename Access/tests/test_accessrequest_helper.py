@@ -111,7 +111,7 @@ def test_pendingFailure(mocker, testname, expectedOutput, failures, getUserExcep
         mocker.patch("Access.models.User.objects.get", return_value=mocker.MagicMock())
     elif testname == Test_pendingFailure_Exception:
         mocker.patch("Access.models.UserAccessMapping.objects.filter", return_value=None, side_effect = Exception(getUserExceptionString))
-        
+
     context = accessrequest_helper.getGrantFailedRequests(request)
     assert str(context) == expectedOutput
 
@@ -137,7 +137,7 @@ def test_PendingRevokeRequests(mocker, testname, expectedOutPut, failures, getUs
             if val == 'username':
                 return True
             return False
-        
+
         request.GET.get = requestGet
 
         orderByPatch = mocker.MagicMock()
@@ -150,9 +150,9 @@ def test_PendingRevokeRequests(mocker, testname, expectedOutPut, failures, getUs
             if val == 'access_type':
                 return "request_type"
             return False
-        
+
         request.GET.get = requestGet
-        
+
         orderByPatch = mocker.MagicMock()
         orderByPatch.order_by.return_value = failures
         mocker.patch("Access.models.User.objects.get", return_value=mocker.MagicMock())
@@ -163,12 +163,12 @@ def test_PendingRevokeRequests(mocker, testname, expectedOutPut, failures, getUs
             if val == 'access_type' or val == 'username':
                 return False
             return True
-        
+
         request.GET.get = requestGet
-        
+
         orderByPatch = mocker.MagicMock()
         orderByPatch.order_by.return_value = failures
-        mocker.patch("Access.models.UserAccessMapping.objects.filter", return_value=orderByPatch)        
+        mocker.patch("Access.models.UserAccessMapping.objects.filter", return_value=orderByPatch)
 
     elif testname == test_pendingRevoke_Exception:
         request.GET.get.return_value = True

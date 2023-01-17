@@ -1,6 +1,7 @@
-from BrowserStackAutomation.settings import USER_STATUS_CHOICES
 from django.contrib.auth.models import User as user
-from django.db import models
+from django.db import models, transaction
+
+from BrowserStackAutomation.settings import USER_STATUS_CHOICES, PERMISSION_CONSTANTS
 
 
 class Permission(models.Model):
@@ -132,6 +133,57 @@ class User(models.Model):
     def create_module_identity(self, access_tag = "", identity =""):
         self.user_module_identity.create(access_tag = access_tag, identity=identity)
 
+    def isAnApprover(self, allApproverPermissions):
+        permission_labels = [permission.label for permission in self.permissions]
+        approver_permissions = allApproverPermissions
+        return len(list(set(permission_labels) & set(approver_permissions))) > 0
+
+    def isPrimaryApproverForModule(self, accessModule, accessLabel=None):
+        module_permissions = accessModule.fetch_approver_permissions(accessLabel)
+        return self.has_permission(module_permissions["1"])
+
+    def isSecondaryApproverForModule(self, accessModule, accessLabel=None):
+        module_permissions = accessModule.fetch_approver_permissions(accessLabel)
+        return "2" in module_permissions and self.has_permission(module_permissions["2"])
+
+    def isAnApproverForModule(self, accessModule, accessLabel=None, approverType="Primary"):
+        if approverType == "Secondary":
+            return self.isSecondaryApproverForModule(accessModule, accessLabel)
+
+        return self.isPrimaryApproverForModule(accessModule, accessLabel)
+
+    def getPendingApprovals(self, all_access_modules):
+        return self.__query_pending_accesses()
+
+    def getPendingApprovalsCount(self, all_access_modules):
+        pendingCount = 0
+        if self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]):
+            pendingCount += GroupV2.getPendingMemberships().count()
+            pendingCount += len(GroupV2.getPendingCreation())
+
+        for each_access_module in all_access_modules:
+            all_requests = each_access_module.get_pending_access_objects(self)
+            pendingCount += len(all_requests["individual_requests"])
+            pendingCount += len(all_requests["group_requests"])
+
+        return pendingCount
+
+    def getFailedGrantsCount(self):
+        return UserAccessMapping.objects.filter(status__in=["grantfailed"]).count() if self.isAdminOrOps() else 0
+
+    def getFailedRevokesCount(self):
+        return UserAccessMapping.objects.filter(status__in=["revokefailed"]).count() if self.isAdminOrOps() else 0
+
+    def getOwnedGroups(self):
+        if self.isAdminOrOps():
+            return GroupV2.objects.all().filter(status='Approved')
+
+        groupOwnerMembership = MembershipV2.objects.filter(is_owner=True, user=currentUser)
+        return [ membership_obj.group for membership_obj in groupOwnerMembership ]
+
+    def isAdminOrOps(self):
+        return self.is_ops or self.user.is_superuser
+
     def __str__(self):
         return "%s" % (self.user)
 
@@ -238,47 +290,67 @@ class GroupV2(models.Model):
 
     @staticmethod
     def group_exists(group_name):
-        if len(GroupV2.objects.filter(name=group_name).filter(status__in=["Approved", "Pending"])):
+        if len(
+            GroupV2.objects.filter(name=group_name).filter(
+                status__in=["Approved", "Pending"]
+            )
+        ):
             return True
         return False
 
     @staticmethod
-    def create(name="", requester=None, description="", needsAccessApprove=True, date_time = ""):
+    def create(
+        name="", requester=None, description="", needsAccessApprove=True, date_time=""
+    ):
         return GroupV2.objects.create(
-                    name = name,
-                    group_id = name + "-group-" + date_time,
-                    requester = requester,
-                    description = description,
-                    needsAccessApprove = needsAccessApprove,
-                )
-
-    def add_member(self, user=None, is_owner=False, requested_by=None, reason="", date_time = ""):
-        membership_id = (
-                str(user.user.username)
-                + "-"
-                + self.name
-                + "-membership-"
-                + date_time
-            )
-        return self.membership_group.create(
-            membership_id = membership_id,
-            user = user,
-            is_owner = is_owner,
-            requested_by = requested_by,
-            reason = reason,
+            name=name,
+            group_id=name + "-group-" + date_time,
+            requester=requester,
+            description=description,
+            needsAccessApprove=needsAccessApprove,
         )
-    def add_members(self, users=None, requested_by=None, reason="", date_time = ""):
+
+    def add_member(
+        self, user=None, is_owner=False, requested_by=None, reason="", date_time=""
+    ):
+        membership_id = (
+            str(user.user.username) + "-" + self.name + "-membership-" + date_time
+        )
+        return self.membership_group.create(
+            membership_id=membership_id,
+            user=user,
+            is_owner=is_owner,
+            requested_by=requested_by,
+            reason=reason,
+        )
+
+    def add_members(self, users=None, requested_by=None, reason="", date_time=""):
         if users:
-            for user in users:
+            for usr in users:
                 self.add_member(
-                    user=user,
+                    user=usr,
                     requested_by=requested_by,
                     reason=reason,
-                    date_time = date_time
+                    date_time=date_time,
                 )
+    def getPendingMemberships():
+        return MembershipV2.objects.filter(status="Pending", group__status="Approved")
+
+    @staticmethod
+    def getPendingCreation():
+        new_group_pending = GroupV2.objects.filter(status="Pending")
+        new_group_pending_data = []
+        for new_group in new_group_pending:
+            initial_members = ", ".join(list(new_group.membership_group.values_list("user__user__username", flat=True)))
+            new_group_pending_data.append({
+                "groupRequest": new_group,
+                "initialMembers": initial_members
+            })
+        return new_group_pending_data
 
     def __str__(self):
         return self.name
+
 
 class UserAccessMapping(models.Model):
     """
@@ -352,6 +424,7 @@ class UserAccessMapping(models.Model):
         related_name="user_access_revoker",
         on_delete=models.PROTECT,
     )
+    meta_data = models.JSONField(default=dict, blank=True, null=True)
 
     def __str__(self):
         return self.request_id
@@ -367,7 +440,6 @@ class UserAccessMapping(models.Model):
 
     def getAccessRequestDetails(self, access_module):
         access_request_data = {}
-        access = [self.access]
         access_tags = [self.access.access_tag]
         access_labels = [self.access.access_label]
 
@@ -377,15 +449,26 @@ class UserAccessMapping(models.Model):
         # ui metadata
         access_request_data["userEmail"] = self.user.email
         access_request_data["requestId"] = self.request_id
-        access_request_data['accessReason'] = self.request_reason
-        access_request_data['requested_on'] = self.requested_on
-
+        access_request_data["accessReason"] = self.request_reason
+        access_request_data["requested_on"] = self.requested_on
 
         access_request_data["accessType"] = access_module.access_desc()
-        access_request_data["accessCategory"] = access_module.combine_labels_desc(access_labels)
-        access_request_data["accessMeta"] = access_module.combine_labels_meta(access_labels)
+        access_request_data["accessCategory"] = access_module.combine_labels_desc(
+            access_labels
+        )
+        access_request_data["accessMeta"] = access_module.combine_labels_meta(
+            access_labels
+        )
 
         return access_request_data
+
+    def updateMetaData(self, key, data):
+        with transaction.atomic():
+            mapping = UserAccessMapping.objects.select_for_update().get(request_id=self.request_id)
+            mapping.meta_data[key] = data
+            mapping.save()
+        return True
+
 
 
 class GroupAccessMapping(models.Model):
@@ -463,7 +546,6 @@ class GroupAccessMapping(models.Model):
 
     def getAccessRequestDetails(self, access_module):
         access_request_data = {}
-        access = [self.access]
         access_tags = [self.access.access_tag]
         access_labels = [self.access.access_label]
 
@@ -474,12 +556,16 @@ class GroupAccessMapping(models.Model):
         access_request_data["userEmail"] = self.requested_by.email
         access_request_data["groupName"] = self.group.name
         access_request_data["requestId"] = self.request_id
-        access_request_data['accessReason'] = self.request_reason
-        access_request_data['requested_on'] = self.requested_on
+        access_request_data["accessReason"] = self.request_reason
+        access_request_data["requested_on"] = self.requested_on
 
         access_request_data["accessType"] = access_module.access_desc()
-        access_request_data["accessCategory"] = access_module.combine_labels_desc(access_labels)
-        access_request_data["accessMeta"] = access_module.combine_labels_meta(access_labels)
+        access_request_data["accessCategory"] = access_module.combine_labels_desc(
+            access_labels
+        )
+        access_request_data["accessMeta"] = access_module.combine_labels_meta(
+            access_labels
+        )
 
         return access_request_data
 
