@@ -49,7 +49,7 @@ def updateUserInfo(request):
 @login_required
 def createNewGroup(request):
     if request.POST:
-        context = group_helper.createGroup(request)
+        context = group_helper.create_group(request)
         if "status" in context or "error" in context:
             return render(request, 'BSOps/accessStatus.html',context)
         return render(request,'BSOps/createNewGroup.html',context)

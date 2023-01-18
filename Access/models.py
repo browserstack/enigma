@@ -286,6 +286,50 @@ class GroupV2(models.Model):
     needsAccessApprove = models.BooleanField(null=False, blank=False, default=True)
 
     @staticmethod
+    def group_exists(group_name):
+        if len(
+            GroupV2.objects.filter(name=group_name).filter(
+                status__in=["Approved", "Pending"]
+            )
+        ):
+            return True
+        return False
+
+    @staticmethod
+    def create(
+        name="", requester=None, description="", needsAccessApprove=True, date_time=""
+    ):
+        return GroupV2.objects.create(
+            name=name,
+            group_id=name + "-group-" + date_time,
+            requester=requester,
+            description=description,
+            needsAccessApprove=needsAccessApprove,
+        )
+
+    def add_member(
+        self, user=None, is_owner=False, requested_by=None, reason="", date_time=""
+    ):
+        membership_id = (
+            str(user.user.username) + "-" + self.name + "-membership-" + date_time
+        )
+        return self.membership_group.create(
+            membership_id=membership_id,
+            user=user,
+            is_owner=is_owner,
+            requested_by=requested_by,
+            reason=reason,
+        )
+
+    def add_members(self, users=None, requested_by=None, reason="", date_time=""):
+        if users:
+            for usr in users:
+                self.add_member(
+                    user=usr,
+                    requested_by=requested_by,
+                    reason=reason,
+                    date_time=date_time,
+                )
     def getPendingMemberships():
         return MembershipV2.objects.filter(status="Pending", group__status="Approved")
 
@@ -402,12 +446,16 @@ class UserAccessMapping(models.Model):
         # ui metadata
         access_request_data["userEmail"] = self.user.email
         access_request_data["requestId"] = self.request_id
-        access_request_data['accessReason'] = self.request_reason
-        access_request_data['requested_on'] = self.requested_on
+        access_request_data["accessReason"] = self.request_reason
+        access_request_data["requested_on"] = self.requested_on
 
         access_request_data["accessType"] = access_module.access_desc()
-        access_request_data["accessCategory"] = access_module.combine_labels_desc(access_labels)
-        access_request_data["accessMeta"] = access_module.combine_labels_meta(access_labels)
+        access_request_data["accessCategory"] = access_module.combine_labels_desc(
+            access_labels
+        )
+        access_request_data["accessMeta"] = access_module.combine_labels_meta(
+            access_labels
+        )
 
         return access_request_data
 
@@ -505,12 +553,16 @@ class GroupAccessMapping(models.Model):
         access_request_data["userEmail"] = self.requested_by.email
         access_request_data["groupName"] = self.group.name
         access_request_data["requestId"] = self.request_id
-        access_request_data['accessReason'] = self.request_reason
-        access_request_data['requested_on'] = self.requested_on
+        access_request_data["accessReason"] = self.request_reason
+        access_request_data["requested_on"] = self.requested_on
 
         access_request_data["accessType"] = access_module.access_desc()
-        access_request_data["accessCategory"] = access_module.combine_labels_desc(access_labels)
-        access_request_data["accessMeta"] = access_module.combine_labels_meta(access_labels)
+        access_request_data["accessCategory"] = access_module.combine_labels_desc(
+            access_labels
+        )
+        access_request_data["accessMeta"] = access_module.combine_labels_meta(
+            access_labels
+        )
 
         return access_request_data
 
