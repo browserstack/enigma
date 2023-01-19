@@ -1,7 +1,8 @@
 from Access import helpers
 from Access.models import User
-import logging
+import logging, datetime
 from . import helpers as helper
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -16,30 +17,46 @@ NEW_IDENTITY_CREATE_SUCCESS_MESSAGE  = {
     "msg": "Identity Updated for {modulename}",
 }
 
-all_access_modules = helper.getAvailableAccessModules()
+all_access_modules = helper.get_available_access_modules()
 
 def get_identity_templates():
     context = {}
     templates = []    
-    for mod in all_access_modules:
-            templates.append(mod.get_identity_template())
+    for mod in all_access_modules.values():
+        templates.append(mod.get_identity_template())
+        
     context["identity_templates"] = templates
     return context
 
+
 def create_identity(request):
-    for mod in all_access_modules:
+    user=request.user.user
+    for mod in all_access_modules.values():
+        new_module_identity = mod.verify_identity(request.POST, user.email)    
         if mod.tag() == request.POST.get("modname"):
-            identity = mod.update_identity(request.POST, request.user.user.email)
-            user=request.user.user
-            user.create_module_identity(access_tag = mod.tag(), identity = identity)
-            context = {}
-            context["status"] = {
-                "title": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["title"],
-                "msg": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["msg"].format(modulename = mod.tag()),
-            }            
-            return context
+            #create identity json  # call this verify identity     
+            new_access_memberships = __change_identity_and_transfer_membership(user=user, access_tag = mod.tag(), new_module_identity=new_module_identity)
+            
+            for membership in new_access_memberships:
+                #Create celery task for approval
+                # mod.approve(membership)
+                raise Exception("Not Implemented")
+                                
+    context = {}
+    context["status"] = {
+        "title": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["title"],
+        "msg": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["msg"].format(modulename = mod.tag()),
+    }            
+    return context
 
-
+@transaction.atomic            
+def __change_identity_and_transfer_membership(user, access_tag, new_module_identity):
+    #deactivate old identity and create new
+    old_identity = user.deactivate_identity(access_tag = access_tag)
+    new_identity = user.create_new_identity(access_tag = access_tag, identity = new_module_identity)
+    #replicate the memberships with new identity
+    return user.replicate_active_access_membership_for_module(old_module_identity = old_identity, new_module_identity = new_identity ,access_tag = access_tag)            
+            
 def getallUserList(request):
     try:
         if not (helpers.check_user_permissions(request.user, PERMISSION_VIEW_USER_LIST)):

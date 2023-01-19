@@ -9,8 +9,22 @@ from Access.access_modules import *
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
+
 available_accesses = []
 cached_accesses = []
+
+modules = {}
+
+def get_available_access_modules():
+    global modules
+    if len(modules) > 0:
+        return modules
+    available_accesses = [access for access in getAccessModules() if access.available]
+    for access in available_accesses:
+        print(access.tag())
+        modules.update({access.tag(): access})
+    return modules
+
 
 
 def getAvailableAccessModules():
@@ -35,6 +49,7 @@ def getAccessModules():
         [globals()[basename(f)].access.get_object() for f in access_modules_dirs if not isfile(f)]
     return cached_accesses
 
+#TO DO needs to be moved
 def check_user_permissions(user, permissions):
     if hasattr(user, 'user'):
         permission_labels = [permission.label for permission in user.user.permissions]

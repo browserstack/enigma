@@ -1,8 +1,7 @@
 from django.contrib.auth.models import User as user
 from django.db import models, transaction
-
 from BrowserStackAutomation.settings import USER_STATUS_CHOICES, PERMISSION_CONSTANTS
-
+import datetime
 
 class Permission(models.Model):
     """
@@ -130,9 +129,6 @@ class User(models.Model):
         self.state = state_key
         self.save()
     
-    def create_module_identity(self, access_tag = "", identity =""):
-        self.user_module_identity.create(access_tag = access_tag, identity=identity)
-
     def isAnApprover(self, allApproverPermissions):
         permission_labels = [permission.label for permission in self.permissions]
         approver_permissions = allApproverPermissions
@@ -183,6 +179,46 @@ class User(models.Model):
 
     def isAdminOrOps(self):
         return self.is_ops or self.user.is_superuser
+    
+    def create_new_identity(self, access_tag = "", identity =""):
+        return self.module_identity.create(access_tag = access_tag, identity=identity)
+
+
+    def replicate_active_access_membership_for_module(self, old_module_identity ,new_module_identity, access_tag):
+        existing_active_access_memberships = old_module_identity.user_access.filter(status__in=["Approved", "Pending"],access__access_tag=access_tag)
+        print("done")
+        print(existing_active_access_memberships)
+        new_access_memberships = []
+        
+        for i, membership in enumerate(existing_active_access_memberships):
+            base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+            request_id = self.user.username + "-" + membership.access_type + "-" + base_datetime_prefix + "-" + str(i)
+            new_access_memberships.append(new_module_identity.user_access.create(
+                                    request_id=request_id, user=self, access=membership.access,
+                                    approver_1=membership.approver_1, approver_2=membership.approver_2,
+                                    request_reason=membership.request_reason, access_type=membership.access_type, 
+                                    status=membership.status)
+                )
+            self.deactivate_access_membership(membership)
+        return new_access_memberships
+
+
+    def deactivate_access_membership(self, membership):
+        membership.status = "Revoked"
+        membership.save()
+
+
+    def get_identity(self, access_tag):
+        return self.module_identity.filter(access_tag = access_tag, status = "Active").first()
+
+
+    def deactivate_identity(self,access_tag):
+        identity = self.get_identity(access_tag = access_tag)
+        if identity:
+            identity.status = "Inactive"
+            identity.save()
+        return identity
+
 
     def __str__(self):
         return "%s" % (self.user)
@@ -231,8 +267,7 @@ class MembershipV2(models.Model):
     )
     status = models.CharField(
         max_length=255, null=False, blank=False, choices=STATUS, default="Pending"
-    )
-
+        )
     reason = models.TextField(null=True, blank=True)
 
     approver = models.ForeignKey(
@@ -364,7 +399,11 @@ class UserAccessMapping(models.Model):
     approved_on = models.DateTimeField(null=True, blank=True)
     updated_on = models.DateTimeField(auto_now=True)
 
-    user = models.ForeignKey("User", null=False, blank=False, on_delete=models.PROTECT)
+    user = models.ForeignKey("User", 
+                            null=False, 
+                            blank=False, 
+                            on_delete=models.PROTECT,
+                            related_name="access_membership")
 
     request_reason = models.TextField(null=False, blank=False)
 
@@ -426,8 +465,18 @@ class UserAccessMapping(models.Model):
     )
     meta_data = models.JSONField(default=dict, blank=True, null=True)
 
+    user_identity = models.ForeignKey(
+        "UserIdentity",
+        null=True,
+        blank=True,
+        related_name="user_access",
+        on_delete=models.PROTECT,
+    )
+
+
     def __str__(self):
         return self.request_id
+
 
     # Wrote the override version of save method in order to update the
     # "approved_on" field whenever the request is marked "Approved"
@@ -437,6 +486,7 @@ class UserAccessMapping(models.Model):
         if self.status.lower() == "approved" and self.approved_on in [None, ""]:
             self.approved_on = self.updated_on
             super(UserAccessMapping, self).save(*args, **kwargs)
+
 
     def getAccessRequestDetails(self, access_module):
         access_request_data = {}
@@ -462,6 +512,7 @@ class UserAccessMapping(models.Model):
 
         return access_request_data
 
+
     def updateMetaData(self, key, data):
         with transaction.atomic():
             mapping = UserAccessMapping.objects.select_for_update().get(request_id=self.request_id)
@@ -470,6 +521,8 @@ class UserAccessMapping(models.Model):
         return True
 
 
+    def is_approved(self):
+        return self.status == "Approved"
 
 class GroupAccessMapping(models.Model):
     """
@@ -589,15 +642,42 @@ class AccessV2(models.Model):
 
 
 class UserIdentity(models.Model):
+    class Meta:
+       constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'access_tag', 'status'],
+                condition=models.Q(status="Active"),
+                name='one_active_identity_per_access_module_per_user'
+            )
+        ]
     access_tag = models.CharField(max_length=255)
+    
     user = models.ForeignKey(
         "User",
         null=False,
         blank=False,
-        related_name="user_module_identity",
+        related_name="module_identity",
         on_delete=models.PROTECT,
     )
     identity = models.JSONField(default=dict)
+
+    STATUS_CHOICES = (
+        ("Active", "active"),
+        ("Inactive", "inactive"),
+    )
+
+    status = models.CharField(
+        max_length=100,
+        null=False,
+        blank=False,
+        choices=STATUS_CHOICES,
+        default="Active",
+    )
+
+
+    def deactivate(self):
+        self.status=0
+        self.save()
 
     def __str__(self):
         return "access_tag - {} | user: {} | identity: {} ".format (

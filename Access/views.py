@@ -3,7 +3,6 @@ from django.shortcuts import render
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
 import logging
-
 from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from Access import group_helper
@@ -11,6 +10,8 @@ from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests
 from Access.userlist_helper import getallUserList, getallUserList, get_identity_templates, create_identity
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 from django.shortcuts import render
+from django.http import JsonResponse
+import json
 
 logger = logging.getLogger(__name__)
 
