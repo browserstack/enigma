@@ -100,3 +100,4 @@ pytest-cov==4.0.0
 pytest-mock==3.10.0
 pylama==8.4.1
 semgrep==1.2.1
+mysql-connector-python==8.0.26

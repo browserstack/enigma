@@ -13,7 +13,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
   && apt-get autoremove -y
 
 # Set env variables used in this Dockerfile (add a unique prefix, such as DEV)
-RUN apt update && apt install -y netcat dnsutils
+RUN apt update && apt install -y netcat dnsutils libmariadbclient-dev
 
 RUN useradd -rm -d /home/app -s /bin/bash -g root -G sudo -u 1001 app
 USER app

@@ -8,9 +8,10 @@ from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from Access import group_helper
 from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRevokeFailures, getPendingRequests
+from Access.models import User, UserAccessMapping
 from Access.userlist_helper import getallUserList
+from Access.views_helper import render_error_message
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
-from django.shortcuts import render
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,47 @@ all_access_modules = helper.getAvailableAccessModules()
 
 @login_required
 def showAccessHistory(request):
-    return False
+    if request.method == 'POST':
+        return render_error_message(
+            request,
+            "POST for showAccessHistory not supported",
+            "Invalid Request",
+            "Error request not found OR Invalid request type"
+        )
+
+    try:
+        access_user = User.objects.get(email=request.user.email)
+    except Exception as e:
+        return render_error_message(
+            request,
+            "Access user with email %s not found. Error: %s" % (request.user.email, str(e)),
+            "Invalid Request",
+            "Please login again"
+        )
+
+    dataList = []
+    genericAccessRequests = access_user.useraccessmapping_set.prefetch_related('access', 'approver_1', 'approver_2')
+    for access_request_mapping in genericAccessRequests:
+        access_details = access_request_mapping.getAccessRequestDetails(access_request_mapping)
+
+        temp = {}
+        temp['id'] = access_request_mapping.request_id
+        temp['type'] = access_details["accessType"]
+        temp['access'] = "%s details: %s" % (access_details["accessCategory"], json.dumps(access_details["accessMeta"]))
+        temp['status'] = access_request_mapping.status
+        temp['reason'] = access_request_mapping.request_reason
+        temp['decline_reason'] = access_request_mapping.decline_reason
+        temp['approver'] = ""
+        if access_request_mapping.approver_1:
+            temp["approver"] = access_request_mapping.approver_1.user.username
+        if access_request_mapping.approver_2:
+            temp["approver"] = "1: %s\n2: %s" % (access_request_mapping.approver_1.user.username, access_request_mapping.approver_2.user.username)
+
+        dataList.append(temp)
+
+    context = {}
+    context['dataList'] = dataList
+    return render(request, 'BSOps/showAccessHistory.html', context)
 
 
 @login_required
