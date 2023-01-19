@@ -36,7 +36,8 @@ def create_group(request):
             "requiresAccessApprove" in data
             and data["requiresAccessApprove"][0] == "true"
         )
-        selected_users = data["selectedUserList"]
+        if "selectedUserList" in data:
+            selected_users = data["selectedUserList"]
     except Exception as e:
         logger.exception(e)
         logger.error("Error in Create New Group request.")
