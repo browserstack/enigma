@@ -24,6 +24,7 @@ USER app
 #WORKDIR /srv/code/dev
 # Copy just requirements.txt
 COPY requirements.txt /tmp/requirements.txt
+COPY config.json.sample config.json
 
 # Install Python dependencies
 RUN pip install -r /tmp/requirements.txt --no-cache-dir --ignore-installed
