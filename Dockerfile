@@ -43,6 +43,6 @@ RUN whoami
 RUN python manage.py collectstatic --clear --noinput \
     && python manage.py collectstatic --noinput
 
-FROM nginx:1.23.3
+FROM nginx:1.23.3 as nginx
 COPY --from=static_resource_builder /srv/code/dev/public /etc/nginx/html/
 COPY --from=static_resource_builder /srv/code/dev/public /usr/share/nginx/html/
