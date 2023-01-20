@@ -137,7 +137,7 @@ def updateOwner(request, group, context):
 def isAllowedGroupAdminFunctions(request, groupMembers):
     ownersEmail = [member.user.email for member in groupMembers.filter(is_owner = True)]
     is_approver = request.user.user.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"])
-    
+
     if request.user.user.email not in ownersEmail and not (request.user.is_superuser or request.user.user.is_ops or is_approver):
         return False
     return True
@@ -389,7 +389,7 @@ def add_user_to_group(request):
         context = {}
         context["status"] = {
             "title": "Request Submitted",
-            "msg": "Once Approved the newly added members will be granted" + 
+            "msg": "Once Approved the newly added members will be granted" +
             " the same permissions as the group",
         }
         return context
