@@ -29,9 +29,9 @@ def showAccessHistory(request):
 def pendingFailure(request):
     response = getGrantFailedRequests(request)
     if type(response) is dict:
-        return render(request, 'BSOps/accessStatus.html', response)
+        return render(request, "BSOps/accessStatus.html", response)
 
-    return render(request,'BSOps/failureAdminRequests.html',response)
+    return render(request, "BSOps/failureAdminRequests.html", response)
 
 
 @login_required
@@ -39,8 +39,9 @@ def pendingFailure(request):
 def pendingRevoke(request):
     response = getPendingRevokeFailures(request)
     if type(response) is dict:
-        return render(request, 'BSOps/accessStatus.html', response)
-    return render(request,'BSOps/failureAdminRequests.html',response)
+        return render(request, "BSOps/accessStatus.html", response)
+    return render(request, "BSOps/failureAdminRequests.html", response)
+
 
 @login_required
 def updateUserInfo(request):
@@ -63,10 +64,11 @@ def createNewGroup(request):
     if request.POST:
         context = group_helper.create_group(request)
         if "status" in context or "error" in context:
-            return render(request, 'BSOps/accessStatus.html',context)
-        return render(request,'BSOps/createNewGroup.html',context)
+            return render(request, "BSOps/accessStatus.html", context)
+        return render(request, "BSOps/createNewGroup.html", context)
     else:
-        return render(request,'BSOps/createNewGroup.html',{})
+        return render(request, "BSOps/createNewGroup.html", {})
+
 
 @api_view(["GET"])
 @login_required
@@ -79,48 +81,51 @@ def allUserAccessList(request, load_ui=True):
 @login_required
 def allUsersList(request):
     context = getallUserList(request)
-    return render(request, 'BSOps/allUsersList.html', context)
+    return render(request, "BSOps/allUsersList.html", context)
 
 
 @login_required
 def requestAccess(request):
     context = requestAccessGet(request)
-    return render(request, 'BSOps/accessRequestForm.html', context)
+    return render(request, "BSOps/accessRequestForm.html", context)
 
 
 @login_required
 def groupRequestAccess(request):
     return False
 
+
 @login_required
 def groupAccessList(request, groupName):
     context = group_helper.getGroupAccessList(request, groupName)
-    if 'error' in context:
-        return render(request,"BSOps/accessStatus.html", context)
-        
-    return render(request,"BSOps/groupAccessList.html", context)
+    if "error" in context:
+        return render(request, "BSOps/accessStatus.html", context)
+
+    return render(request, "BSOps/groupAccessList.html", context)
 
 
 @login_required
 def groupDashboard(request):
-    return render(request, 'BSOps/createNewGroup.html')
+    return render(request, "BSOps/createNewGroup.html")
 
 
 def approveNewGroup(request, group_id):
     return group_helper.approveNewGroupRequest(request, group_id)
 
+
 @login_required
 def add_user_to_group(request, groupName):
     if request.POST:
-        context =  group_helper.add_user_to_group(request)
-        return render(request, 'BSOps/accessStatus.html',context)
+        context = group_helper.add_user_to_group(request)
+        return render(request, "BSOps/accessStatus.html", context)
     else:
-        context =  group_helper.get_user_group(request, groupName)
-        return render(request, 'BSOps/accessStatus.html',context)
+        context = group_helper.get_user_group(request, groupName)
+        return render(request, "BSOps/accessStatus.html", context)
+
 
 @api_view(["GET"])
 @login_required
 @user_with_permission([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])
 def pendingRequests(request):
     context = getPendingRequests(request)
-    return render(request, 'BSOps/pendingRequests.html', context)
+    return render(request, "BSOps/pendingRequests.html", context)
