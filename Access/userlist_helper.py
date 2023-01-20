@@ -35,9 +35,14 @@ def create_identity(request):
         new_module_identity = mod.verify_identity(request.POST, user.email)    
         if mod.tag() == request.POST.get("modname"):
             #create identity json  # call this verify identity     
-            new_access_memberships = __change_identity_and_transfer_membership(user=user, access_tag = mod.tag(), new_module_identity=new_module_identity)
+            old_user_access, new_user_access = __change_identity_and_transfer_membership(user=user, access_tag = mod.tag(), new_module_identity=new_module_identity)
             
-            for membership in new_access_memberships:
+            for membership in old_user_access:
+                #Create celery task for revoking old access
+                # mod.revoke(membership)
+                raise Exception("Not Implemented")
+
+            for membership in new_user_access:
                 #Create celery task for approval
                 # mod.approve(membership)
                 raise Exception("Not Implemented")
@@ -52,10 +57,13 @@ def create_identity(request):
 @transaction.atomic            
 def __change_identity_and_transfer_membership(user, access_tag, new_module_identity):
     #deactivate old identity and create new
-    old_identity = user.deactivate_identity(access_tag = access_tag)
-    new_identity = user.create_new_identity(access_tag = access_tag, identity = new_module_identity)
+    existing_user_identity = user.get_identity(access_tag = access_tag)
+    existing_access = existing_user_identity.get_active_access(user_identity = existing_user_identity)
+    existing_user_identity.deactivate()
+    
+    new_user_identity = user.create_new_identity(access_tag = access_tag, identity = new_module_identity)
     #replicate the memberships with new identity
-    return user.replicate_active_access_membership_for_module(old_module_identity = old_identity, new_module_identity = new_identity ,access_tag = access_tag)            
+    return  existing_user_identity, new_user_identity.replicate_active_access_membership_for_module(existing_access = existing_access)
             
 def getallUserList(request):
     try:

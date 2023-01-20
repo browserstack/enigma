@@ -184,25 +184,6 @@ class User(models.Model):
         return self.module_identity.create(access_tag = access_tag, identity=identity)
 
 
-    def replicate_active_access_membership_for_module(self, old_module_identity ,new_module_identity, access_tag):
-        existing_active_access_memberships = old_module_identity.user_access.filter(status__in=["Approved", "Pending"],access__access_tag=access_tag)
-        print("done")
-        print(existing_active_access_memberships)
-        new_access_memberships = []
-        
-        for i, membership in enumerate(existing_active_access_memberships):
-            base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
-            request_id = self.user.username + "-" + membership.access_type + "-" + base_datetime_prefix + "-" + str(i)
-            new_access_memberships.append(new_module_identity.user_access.create(
-                                    request_id=request_id, user=self, access=membership.access,
-                                    approver_1=membership.approver_1, approver_2=membership.approver_2,
-                                    request_reason=membership.request_reason, access_type=membership.access_type, 
-                                    status=membership.status)
-                )
-            self.deactivate_access_membership(membership)
-        return new_access_memberships
-
-
     def deactivate_access_membership(self, membership):
         membership.status = "Revoked"
         membership.save()
@@ -211,7 +192,7 @@ class User(models.Model):
     def get_identity(self, access_tag):
         return self.module_identity.filter(access_tag = access_tag, status = "Active").first()
 
-
+    
     def deactivate_identity(self,access_tag):
         identity = self.get_identity(access_tag = access_tag)
         if identity:
@@ -678,6 +659,26 @@ class UserIdentity(models.Model):
     def deactivate(self):
         self.status=0
         self.save()
+
+    def get_active_access(self):
+        return self.user_access.filter(status__in=["Approved", "Pending"],access__access_tag=self.access_tag)
+
+
+    def replicate_active_access_membership_for_module(self, existing_access_membership):
+        new_access_memberships = []
+        
+        for i, membership in enumerate(existing_access_membership):
+            base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+            request_id = self.user.username + "-" + membership.access_type + "-" + base_datetime_prefix + "-" + str(i)
+            new_access_memberships.append(self.user_access.create(
+                                    request_id=request_id, user=self, access=membership.access,
+                                    approver_1=membership.approver_1, approver_2=membership.approver_2,
+                                    request_reason=membership.request_reason, access_type=membership.access_type, 
+                                    status=membership.status)
+                )
+            self.deactivate_access_membership(membership)
+        return new_access_memberships
+
 
     def __str__(self):
         return "access_tag - {} | user: {} | identity: {} ".format (
