@@ -30,7 +30,7 @@ class coordinator:
       method(obj)
     else:
       print(func_name, " doesn't exists in ", module_name)
-  
+
   def fail_func(self, module_name, func_name):
     print("you are in coordinator fail_func")
     obj = globals()[module_name]

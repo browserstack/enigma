@@ -85,7 +85,7 @@ def groupAccessList(request, groupName):
     context = group_helper.getGroupAccessList(request, groupName)
     if 'error' in context:
         return render(request,"BSOps/accessStatus.html", context)
-        
+
     return render(request,"BSOps/groupAccessList.html", context)
 
 
