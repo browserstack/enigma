@@ -22,18 +22,25 @@ from Access.tests.helper_mocks import MockPermission
         ),
         (
             "user is approver for multiple types of accesses",
-            ["APPROVER PERMISSION 1", "APPROVER PERMISSION 2", "PERMISSION 1", "PERMISSION 2"],
+            [
+                "APPROVER PERMISSION 1",
+                "APPROVER PERMISSION 2",
+                "PERMISSION 1",
+                "PERMISSION 2",
+            ],
             [
                 "APPROVER PERMISSION 1",
                 "APPROVER PERMISSION 2",
                 "APPROVER PERMISSION 3",
-                "APPROVER PERMISSION 4"
+                "APPROVER PERMISSION 4",
             ],
             True,
         ),
     ],
 )
-def test_isAnApprover(mocker, testName, permissionLabels, approverPermissions, expectedAnswer):
+def test_isAnApprover(
+    mocker, testName, permissionLabels, approverPermissions, expectedAnswer
+):
     mocker.patch("Access.models.User.user", return_value=Mock())
     mocker.patch("Access.models.User.permissions", return_value=Mock())
 

@@ -141,9 +141,13 @@ class User(models.Model):
 
     def isSecondaryApproverForModule(self, accessModule, accessLabel=None):
         module_permissions = accessModule.fetch_approver_permissions(accessLabel)
-        return "2" in module_permissions and self.has_permission(module_permissions["2"])
+        return "2" in module_permissions and self.has_permission(
+            module_permissions["2"]
+        )
 
-    def isAnApproverForModule(self, accessModule, accessLabel=None, approverType="Primary"):
+    def isAnApproverForModule(
+        self, accessModule, accessLabel=None, approverType="Primary"
+    ):
         if approverType == "Secondary":
             return self.isSecondaryApproverForModule(accessModule, accessLabel)
 
@@ -166,17 +170,27 @@ class User(models.Model):
         return pendingCount
 
     def getFailedGrantsCount(self):
-        return UserAccessMapping.objects.filter(status__in=["grantfailed"]).count() if self.isAdminOrOps() else 0
+        return (
+            UserAccessMapping.objects.filter(status__in=["grantfailed"]).count()
+            if self.isAdminOrOps()
+            else 0
+        )
 
     def getFailedRevokesCount(self):
-        return UserAccessMapping.objects.filter(status__in=["revokefailed"]).count() if self.isAdminOrOps() else 0
+        return (
+            UserAccessMapping.objects.filter(status__in=["revokefailed"]).count()
+            if self.isAdminOrOps()
+            else 0
+        )
 
     def getOwnedGroups(self):
         if self.isAdminOrOps():
-            return GroupV2.objects.all().filter(status='Approved')
+            return GroupV2.objects.all().filter(status="Approved")
 
-        groupOwnerMembership = MembershipV2.objects.filter(is_owner=True, user=currentUser)
-        return [ membership_obj.group for membership_obj in groupOwnerMembership ]
+        groupOwnerMembership = MembershipV2.objects.filter(
+            is_owner=True, user=currentUser
+        )
+        return [membership_obj.group for membership_obj in groupOwnerMembership]
 
     def isAdminOrOps(self):
         return self.is_ops or self.user.is_superuser
@@ -330,6 +344,7 @@ class GroupV2(models.Model):
                     reason=reason,
                     date_time=date_time,
                 )
+
     def getPendingMemberships():
         return MembershipV2.objects.filter(status="Pending", group__status="Approved")
 
@@ -338,11 +353,16 @@ class GroupV2(models.Model):
         new_group_pending = GroupV2.objects.filter(status="Pending")
         new_group_pending_data = []
         for new_group in new_group_pending:
-            initial_members = ", ".join(list(new_group.membership_group.values_list("user__user__username", flat=True)))
-            new_group_pending_data.append({
-                "groupRequest": new_group,
-                "initialMembers": initial_members
-            })
+            initial_members = ", ".join(
+                list(
+                    new_group.membership_group.values_list(
+                        "user__user__username", flat=True
+                    )
+                )
+            )
+            new_group_pending_data.append(
+                {"groupRequest": new_group, "initialMembers": initial_members}
+            )
         return new_group_pending_data
 
     def __str__(self):
@@ -461,11 +481,12 @@ class UserAccessMapping(models.Model):
 
     def updateMetaData(self, key, data):
         with transaction.atomic():
-            mapping = UserAccessMapping.objects.select_for_update().get(request_id=self.request_id)
+            mapping = UserAccessMapping.objects.select_for_update().get(
+                request_id=self.request_id
+            )
             mapping.meta_data[key] = data
             mapping.save()
         return True
-
 
 
 class GroupAccessMapping(models.Model):
@@ -576,13 +597,16 @@ class AccessV2(models.Model):
         try:
             if self.access_tag == "aws":
                 label = self.access_label["data"]
-                return "{}: Team- {} | Access: {} | Level: {} | Service: {} | Resource: {}".format(
-                    self.access_tag,
-                    label["team"],
-                    label["awsAccessType"],
-                    label["levelAccessType"],
-                    label["awsService"],
-                    label["awsResource"],
+                return (
+                    "{}: Team- {} | Access: {} | Level: {} | Service: {} | Resource: {}"
+                    .format(
+                        self.access_tag,
+                        label["team"],
+                        label["awsAccessType"],
+                        label["levelAccessType"],
+                        label["awsService"],
+                        label["awsResource"],
+                    )
                 )
             if self.access_tag == "other":
                 return self.access_tag + " - " + self.access_label["request"]
