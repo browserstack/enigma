@@ -59,6 +59,23 @@ def getGrantFailedRequests(request):
         return process_error_response(request, e)
 
 
+
+def getPendingRevokeFailures(request):
+    if request.GET.get('username'):
+        user = User.objects.get(user__username=request.GET.get('username'))
+        failures = UserAccessMapping.objects.filter(status__in=['revokefailed'], user=user).order_by('-requested_on')
+    if request.GET.get('access_type'):
+        access_tag = request.GET.get('access_type')
+        failures = UserAccessMapping.objects.filter(status__in=['revokefailed'], access__access_tag=access_tag).order_by('-requested_on')
+    else:
+        failures = UserAccessMapping.objects.filter(status__in=['revokefailed']).order_by('-requested_on')
+
+    context = {
+        'failures': failures,
+        'heading': "Revoke Failures"
+    }
+    return context
+
 def getPendingRequests(request):
     logger.info("Pending Request call initiated")
 
@@ -69,8 +86,8 @@ def getPendingRequests(request):
         }
         start_time = time.time()
 
-        context["membershipPending"] = get_pending_membership()
-        context["newGroupPending"] = get_pending_group_creation()
+        context["membershipPending"] = GroupV2.getPendingMemberships()
+        context["newGroupPending"] = GroupV2.getPendingCreation()
 
         context["genericRequests"], context["groupGenericRequests"] = get_pending_accesses_from_modules(request)
 
@@ -81,24 +98,8 @@ def getPendingRequests(request):
     except Exception as e:
         return process_error_response(request, e)
 
-def get_pending_membership():
-    return MembershipV2.objects.filter(status="Pending", group__status="Approved")
 
-def get_pending_group_creation():
-    new_group_pending = GroupV2.objects.filter(status="Pending")
-    new_group_pending_data = []
-    for new_group in new_group_pending:
-        initial_members = ", ".join(list(MembershipV2.objects.filter(group=new_group).values_list("user__user__username", flat=True)))
-        new_group_pending_data.append({
-            "groupRequest": new_group,
-            "initialMembers": initial_members
-        })
-
-    return new_group_pending_data
-
-def get_pending_accesses_from_modules(request):
-    user_permissions = [permission.label for permission in request.user.user.permissions]
-
+def get_pending_accesses_from_modules(accessUser):
     individual_requests = []
     group_requests = {}
 
@@ -107,7 +108,7 @@ def get_pending_accesses_from_modules(request):
         access_module_start_time = time.time()
 
         try:
-            pending_accesses = access_module.get_pending_accesses(request, user_permissions)
+            pending_accesses = access_module.get_pending_accesses(accessUser)
         except Exception as e:
             logger.exception(e)
             pending_accesses = {

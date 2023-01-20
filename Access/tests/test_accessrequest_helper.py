@@ -49,5 +49,130 @@ def test_requestAccessGet(mocker, contextoutput, getAvailableAccessModulesThrows
     else:
         assert context['status'] == context['status']
 
-def test_pendingFailure(mocker):
+
+Test_pendingFailure_NoFailures = "NoFailures"
+Test_pendingFailure_UserBasedFailures = "UserBasedFailures"
+Test_pendingFailure_AccessTypeBasedFailures = "AccessTypeBasedFailures"
+Test_pendingFailure_Exception = "Throws Exception"
+@pytest.mark.parametrize("testname, expectedOutput, failures, getUserExceptionString",
+[
+        # no exceptions are thrown
+        (Test_pendingFailure_NoFailures, "{'failures': ['Failure1'], 'heading': 'Grant Failures'}", ["Failure1"], ""),
+        (Test_pendingFailure_UserBasedFailures, "{'failures': ['Failure2'], 'heading': 'Grant Failures'}", ["Failure2"], ""),
+        (Test_pendingFailure_AccessTypeBasedFailures, "{'failures': ['Failure3'], 'heading': 'Grant Failures'}", ["Failure3"], ""),
+        # (Test_pendingFailure_Exception, "{'error': {'error_msg': 'GetUserFailureException', 'msg': 'Error in request not found OR Invalid request type'}}", ["Failure1"], "GetUserFailureException"),
+])
+def test_pendingFailure(mocker, testname, expectedOutput, failures, getUserExceptionString):
     request = mocker.MagicMock()
+    if testname == Test_pendingFailure_NoFailures:
+        request.GET.get.return_value = False
+        orderByPatch = mocker.MagicMock()
+        orderByPatch.order_by.return_value = failures
+        mocker.patch("Access.models.UserAccessMapping.objects.filter", return_value=orderByPatch)
+
+    elif testname == Test_pendingFailure_UserBasedFailures:
+        def requestGet(val):
+            if val == 'username':
+                return True
+            return False
+        request.GET.get = requestGet
+
+        mockFailuresOrderBy = mocker.MagicMock()
+        mockFailuresOrderBy.order_by.return_value = failures
+
+        mockFailures = mocker.MagicMock()
+        mockFailures.filter.return_value = mockFailuresOrderBy
+
+        accessmappingfailure_orderBy = mocker.MagicMock()
+        accessmappingfailure_orderBy.order_by.return_value = mockFailures
+
+
+        mocker.patch("Access.models.UserAccessMapping.objects.filter", return_value=accessmappingfailure_orderBy)
+        mocker.patch("Access.models.User.objects.get", return_value=mocker.MagicMock())
+
+    elif testname == Test_pendingFailure_AccessTypeBasedFailures:
+        def requestGet(val):
+            if val == 'access_type':
+                return True
+            return False
+        request.GET.get = requestGet
+
+        mockFailuresOrderBy = mocker.MagicMock()
+        mockFailuresOrderBy.order_by.return_value = failures
+
+        mockFailures = mocker.MagicMock()
+        mockFailures.filter.return_value = mockFailuresOrderBy
+
+        accessmappingfailure_orderBy = mocker.MagicMock()
+        accessmappingfailure_orderBy.order_by.return_value = mockFailures
+
+
+        mocker.patch("Access.models.UserAccessMapping.objects.filter", return_value=accessmappingfailure_orderBy)
+        mocker.patch("Access.models.User.objects.get", return_value=mocker.MagicMock())
+    elif testname == Test_pendingFailure_Exception:
+        mocker.patch("Access.models.UserAccessMapping.objects.filter", return_value=None, side_effect = Exception(getUserExceptionString))
+
+    context = accessrequest_helper.getGrantFailedRequests(request)
+    assert str(context) == expectedOutput
+
+
+test_PendingRevokeRequests_UserBasedFailures = "UserBasedFailured"
+test_PendingRevokeRequests_AccessTypeBasedFailures = "AccessTypeBasedFailures"
+test_PendingRevokeRequests_OtherFailures = "OtherFailures"
+test_pendingRevoke_Exception = "Exception"
+
+@pytest.mark.parametrize("testname, expectedOutPut, failures, getUserExceptionString",
+[
+        # no exceptions are thrown
+        (test_PendingRevokeRequests_UserBasedFailures, "{'failures': ['failure1'], 'heading': 'Revoke Failures'}",["failure1"],""),
+        (test_PendingRevokeRequests_AccessTypeBasedFailures, "{'failures': ['failure2'], 'heading': 'Revoke Failures'}",["failure2"],""),
+        (test_PendingRevokeRequests_OtherFailures, "{'failures': ['failure3'], 'heading': 'Revoke Failures'}",["failure3"],""),
+        # (test_pendingRevoke_Exception, "{'error': {'error_msg': 'getUserExceptionString', 'msg': 'Error in request not found OR Invalid request type'}}",[],"getUserExceptionString"),
+])
+def test_PendingRevokeRequests(mocker, testname, expectedOutPut, failures, getUserExceptionString):
+
+    request = mocker.MagicMock()
+    if testname == test_PendingRevokeRequests_UserBasedFailures:
+        def requestGet(val):
+            if val == 'username':
+                return True
+            return False
+
+        request.GET.get = requestGet
+
+        orderByPatch = mocker.MagicMock()
+        orderByPatch.order_by.return_value = failures
+        mocker.patch("Access.models.User.objects.get", return_value=mocker.MagicMock())
+        mocker.patch("Access.models.UserAccessMapping.objects.filter", return_value=orderByPatch)
+
+    elif testname == test_PendingRevokeRequests_AccessTypeBasedFailures:
+        def requestGet(val):
+            if val == 'access_type':
+                return "request_type"
+            return False
+
+        request.GET.get = requestGet
+
+        orderByPatch = mocker.MagicMock()
+        orderByPatch.order_by.return_value = failures
+        mocker.patch("Access.models.User.objects.get", return_value=mocker.MagicMock())
+        mocker.patch("Access.models.UserAccessMapping.objects.filter", return_value=orderByPatch)
+
+    elif testname == test_PendingRevokeRequests_OtherFailures:
+        def requestGet(val):
+            if val == 'access_type' or val == 'username':
+                return False
+            return True
+
+        request.GET.get = requestGet
+
+        orderByPatch = mocker.MagicMock()
+        orderByPatch.order_by.return_value = failures
+        mocker.patch("Access.models.UserAccessMapping.objects.filter", return_value=orderByPatch)
+
+    elif testname == test_pendingRevoke_Exception:
+        request.GET.get.return_value = True
+        mocker.patch("Access.models.User.objects.get", return_value=None, side_effect = Exception(getUserExceptionString))
+
+    context = accessrequest_helper.getPendingRevokeFailures(request)
+    assert str(context) == expectedOutPut

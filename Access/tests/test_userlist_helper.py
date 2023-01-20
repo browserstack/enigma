@@ -1,5 +1,5 @@
 import pytest
-from Access.userlist_helper import getAllUserList, ERROR_MESSAGE, EXCEPTION_USER_UNAUTHORIZED
+from Access.userlist_helper import getallUserList, ERROR_MESSAGE, EXCEPTION_USER_UNAUTHORIZED
 
 #TESTCASE NAMES
 UserIsNotAuthorized = "UserIsNotAuthorized"
@@ -15,7 +15,7 @@ UserIsAuthorized = "UserIsAuthorized"
         # user is authorized, but does not have offboard access
         (UserIsAuthorized, True, False, False)
     ])
-def test_getAllUserList(mocker, testname ,UserHasPermission, UserHasOffboardPermission, expectedError):
+def test_getallUserList(mocker, testname ,UserHasPermission, UserHasOffboardPermission, expectedError):
     request = mocker.MagicMock()
     userMock = mocker.MagicMock()
     if testname == UserIsNotAuthorized:
@@ -42,7 +42,7 @@ def test_getAllUserList(mocker, testname ,UserHasPermission, UserHasOffboardPerm
         mocker.patch("Access.helpers.check_user_permissions", return_value=UserHasPermission)
         mocker.patch("Access.models.User.objects.all", return_value=[userMock])
 
-    context = getAllUserList(request)
+    context = getallUserList(request)
     if expectedError:
         assert context["error"]["msg"]  == ERROR_MESSAGE
         assert context["error"]["error_msg"]  == EXCEPTION_USER_UNAUTHORIZED

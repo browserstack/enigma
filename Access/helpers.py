@@ -1,10 +1,12 @@
+from django.template import loader
 from os.path import dirname, basename, isfile, join
 import glob
-import re
 import logging
+import re
 import time, datetime
+
 from Access.access_modules import *
-from django.template import loader
+from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
 available_accesses = []
@@ -18,14 +20,15 @@ def getAvailableAccessModules():
     available_accesses = [access for access in getAccessModules() if access.available]
     return available_accesses
 
-
 def getAccessModules():
     global cached_accesses
     if len(cached_accesses) > 0:
         return cached_accesses
     access_modules_dirs = glob.glob(join(dirname(__file__), "access_modules", "*"))
-    for each_dir in access_modules_dirs:
-        if re.search(r"/(base_|__pycache__)", each_dir):
+    # create a deepcopy copy of the list so we can remove items from the original list
+    access_modules_dirs_copy = access_modules_dirs[:]
+    for each_dir in access_modules_dirs_copy:
+        if re.search(r"/(base_|__pycache__|secrets)", each_dir):
             access_modules_dirs.remove(each_dir)
     access_modules_dirs.sort()
     cached_accesses = \
@@ -55,3 +58,10 @@ def generateStringFromTemplate(filename, **kwargs):
     for key, value in kwargs.items():
         vals[key] = value
     return template.render(vals)
+
+def getPossibleApproverPermissions():
+    all_approver_permissions = []
+    for each_module in getAvailableAccessModules():
+        approver_permissions = each_module.fetch_approver_permissions()
+        all_approver_permissions.extend(approver_permissions.values())
+    return list(set(all_approver_permissions))

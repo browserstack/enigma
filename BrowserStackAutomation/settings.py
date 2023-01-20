@@ -92,7 +92,8 @@ SOCIAL_AUTH_DISCONNECT_PIPELINE = (
 
 ROOT_URLCONF = "BrowserStackAutomation.urls"
 
-template_dirs = glob.glob(join(BASE_DIR, "templates"))
+template_dirs = glob.glob(join(BASE_DIR, "Access", "access_modules", "*", "templates"))
+template_dirs.extend(glob.glob(join(BASE_DIR, "templates")))
 
 TEMPLATES = [
     {
@@ -105,6 +106,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                'Access.context_processors.add_variables_to_context',
             ],
         },
     },
@@ -190,7 +192,13 @@ USER_STATUS_CHOICES = [
     ("3", "offboarded"),
 ]
 
+PERMISSION_CONSTANTS = {
+        "DEFAULT_APPROVER_PERMISSION": "ACCESS_APPROVE"
+}
+
 DEFAULT_ACCESS_GROUP = "default_access_group"
 MAIL_APPROVER_GROUPS = data['enigmaGroup']['MAIL_APPROVER_GROUPS']
 
 ACCESS_APPROVE_EMAIL = data['emails']['access-approve']
+
+ACCESS_MODULES = data["access_modules"]

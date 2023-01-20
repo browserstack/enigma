@@ -81,12 +81,12 @@ function inputRegion(e) {
           {% if user.is_superuser or is_ops %}
           <div class="list-inline-item" style="padding-right:15px">
             <a href="{% url 'pendingFailure' %}" title="Grant Failures"><i class="fas fa-exclamation" style="font-size:25px;color:white"></i><span
-                class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ failureCount }}</span></a>
+                class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ grantFailureCount }}</span></a>
           </div>
 
           <div class="list-inline-item" style="padding-right:15px">
             <a href="{% url 'pendingRevoke' %}" title="Revoke Failures"><i class="fas fa-exclamation-triangle" style="font-size:25px;color:white"></i><span
-                class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ revokefailureCount }}</span></a>
+                class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ revokeFailureCount }}</span></a>
           </div>
 
           {% endif %}

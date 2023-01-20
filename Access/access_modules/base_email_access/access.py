@@ -1,11 +1,11 @@
-import traceback
 from django.shortcuts import render, redirect
-import logging
 import json
+import logging
+import traceback
 
-from bootprocess.general import emailSES
-from BrowserStackAutomation.settings import ACCESS_APPROVE_EMAIL
 from Access.models import UserAccessMapping, GroupAccessMapping
+from BrowserStackAutomation.settings import ACCESS_APPROVE_EMAIL, PERMISSION_CONSTANTS
+from bootprocess.general import emailSES
 
 logger = logging.getLogger(__name__)
 
@@ -47,58 +47,49 @@ class BaseEmailAccess(object):
     def access_request_data(self, request, is_group=False):
         return {}
 
-    def is_custom_secondary_approval_flow(self):
-        return False
-
-    def fetch_approver_permissions(self):
+    def fetch_approver_permissions(self, access_label=None):
         return {
-            "1": "ACCESS_APPROVE"
+            "1": PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]
         }
 
-    def get_pending_accesses(self, request, user_permissions):
+    def get_pending_accesses(self, accessUser):
+        pending_access_objects = self.get_pending_access_objects(accessUser)
+        return { request_type: [request.getAccessRequestDetails(self) for request in all_requests] for request_type, all_requests in pending_access_objects.items()}
+
+    def get_pending_access_objects(self, accessUser):
         return {
-            "individual_requests": self.__get_pending_individual_accesses(user_permissions),
-            "group_requests": self.__get_pending_group_accesses(user_permissions),
+            "individual_requests": self.__get_pending_individual_access_objects(accessUser),
+            "group_requests": self.__get_pending_group_access_objects(accessUser)
         }
 
-    def __get_pending_individual_accesses(self, user_permissions):
-        return self.__get_pending_accesses_from_mapping(UserAccessMapping, user_permissions)
+    def __get_pending_individual_access_objects(self, accessUser):
+        return self.__get_pending_access_objects_from_mapping(UserAccessMapping, accessUser)
 
-    def __get_pending_group_accesses(self, user_permissions):
-        return self.__get_pending_accesses_from_mapping(GroupAccessMapping, user_permissions)
+    def __get_pending_group_access_objects(self, accessUser):
+        return self.__get_pending_access_objects_from_mapping(GroupAccessMapping, accessUser)
 
     def __query_pending_accesses(self, mapping, pending_status):
-        access_tag = self.tag()
-        pending_accesses = []
+        return mapping.objects.filter(status=pending_status, access__access_tag=self.tag())
 
-        for pending_request in mapping.objects.filter(status=pending_status, access__access_tag=access_tag):
-            pending_accesses.append(pending_request.getAccessRequestDetails(self))
+    def __query_pending_accesses_for_user(self, accessUser, mapping, pending_status):
+        user_pending_requests = []
+        all_pending_requests = self.__query_pending_accesses(mapping, pending_status)
 
-        return pending_accesses
+        for each_pending_request in all_pending_requests:
+            approverType = "Primary" if pending_status == "Pending" else "Secondary"
 
-    def __get_pending_accesses_from_mapping(self, mapping, user_permissions):
-        pending_requests = []
-        module_permissions = self.fetch_approver_permissions()
+            if accessUser.isAnApproverForModule(self, each_pending_request.access.access_label, approverType):
+                user_pending_requests.append(each_pending_request)
 
-        status = None
-        if module_permissions["1"] in user_permissions:
-            status = "Pending"
-        elif "2" in module_permissions and module_permissions["2"] in user_permissions and not self.is_custom_secondary_approval_flow():
-            status = "SecondaryPending"
+        return user_pending_requests
 
-        if status: pending_requests = self.__query_pending_accesses(mapping, status)
+    def __get_pending_access_objects_from_mapping(self, mapping, accessUser):
+        user_pending_requests = []
 
-        if self.is_custom_secondary_approval_flow():
-            secondary_pending_requests = self.__query_pending_accesses(mapping, "SecondaryPending")
+        user_pending_requests.extend(self.__query_pending_accesses_for_user(accessUser, mapping, "Pending"))
+        user_pending_requests.extend(self.__query_pending_accesses_for_user(accessUser, mapping, "SecondaryPending"))
 
-            for secondary_pending_request in secondary_pending_requests:
-                req_obj = mapping.objects.get(request_id=secondary_pending_request["requestId"])
-                access_label = req_obj.access.access_label
-                request_specific_approver_permissions = self.fetch_approver_permissions(access_label) if access_label is not None else self.fetch_approver_permissions()
-                if "2" in request_specific_approver_permissions and request_specific_approver_permissions["2"] in user_permissions and req_obj.status == "SecondaryPending":
-                    pending_requests.append(secondary_pending_request)
-
-        return pending_requests
+        return user_pending_requests
 
     def approve(self, user, labels, approver, requestId, is_group=False, auto_approve_rules = None):
         try:
