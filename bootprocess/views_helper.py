@@ -69,7 +69,8 @@ def getDashboardData(request):
 
     if not user.gitusername:
         logger.debug(
-            "Redirecting User to Fill out git username and his public key for ssh access."
+            "Redirecting User to Fill out git username and his public key for ssh"
+            " access."
         )
         # return redirect('updateUserInfo')
 

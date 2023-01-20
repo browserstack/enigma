@@ -221,6 +221,7 @@ test_run_access_grant_accessApproved = "AccessApproved"
 test_run_access_grant_grantFailed = "GrantFailed"
 test_run_access_grant_approveException = "approveException"
 
+
 @pytest.mark.parametrize(
     "testName, userState, accessType ,response,response_status",
     [
@@ -254,8 +255,9 @@ test_run_access_grant_approveException = "approveException"
         ),
     ],
 )
-
-def test_run_access_grant(mocker, testName, accessType ,userState, response, response_status):
+def test_run_access_grant(
+    mocker, testName, accessType, userState, response, response_status
+):
     requestID = "1"
     if testName == test_run_access_grant_accessDeclined:
         requestObject = mocker.MagicMock()
@@ -297,7 +299,9 @@ def test_run_access_grant(mocker, testName, accessType ,userState, response, res
         mocker.patch("bootprocess.general.emailSES", return_value=True)
         views_helper.all_access_modules = [mockAccessModule1]
 
-    val = views_helper.run_access_grant(requestID, requestObject, accessType, None, None)
+    val = views_helper.run_access_grant(
+        requestID, requestObject, accessType, None, None
+    )
 
     assert val == response
     assert requestObject.status == response_status
