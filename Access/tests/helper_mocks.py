@@ -2,19 +2,22 @@ from unittest.mock import Mock
 
 
 class MockAccessModule:
-    def __init__(self,
-                 name="",
-                 primaryApproverPermissionLabel="",
-                 secondaryApproverPermissionLabel=""):
+    def __init__(
+        self,
+        name="",
+        primaryApproverPermissionLabel="",
+        secondaryApproverPermissionLabel="",
+    ):
         self.name = name
         self.available = True
+        permissions = {}
         if primaryApproverPermissionLabel != "":
             permissions = {
                 "1": primaryApproverPermissionLabel,
             }
             if secondaryApproverPermissionLabel != "":
                 permissions["2"] = secondaryApproverPermissionLabel
-            self.fetch_approver_permissions = Mock(return_value=permissions)
+        self.fetch_approver_permissions = Mock(return_value=permissions)
 
 
 class MockPermission:

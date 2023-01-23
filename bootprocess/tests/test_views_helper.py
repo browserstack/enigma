@@ -17,7 +17,10 @@ class MockRequest:
 
 
 @pytest.mark.parametrize(
-    "testName, userIsInDefaultAccessGroup, gitcount, dashboardCount, sshMachineCount, groupCount",
+    (
+        "testName, userIsInDefaultAccessGroup, gitcount, dashboardCount,"
+        " sshMachineCount, groupCount"
+    ),
     [
         # user is not part of default group and has respective count of git repo,
         # dashboard, ssh machines and group accesses

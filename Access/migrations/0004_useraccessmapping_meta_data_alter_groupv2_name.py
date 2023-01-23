@@ -6,18 +6,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('Access', '0003_user_is_manager_user_is_ops'),
+        ("Access", "0003_user_is_manager_user_is_ops"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='useraccessmapping',
-            name='meta_data',
+            model_name="useraccessmapping",
+            name="meta_data",
             field=models.JSONField(blank=True, default=dict, null=True),
         ),
         migrations.AlterField(
-            model_name='groupv2',
-            name='name',
+            model_name="groupv2",
+            name="name",
             field=models.CharField(max_length=128, unique=True),
         ),
     ]
