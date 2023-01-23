@@ -254,6 +254,36 @@ class MembershipV2(models.Model):
         on_delete=models.PROTECT,
     )
     decline_reason = models.TextField(null=True, blank=True)
+    
+    def approve(self, approver):
+        self.status = 'Approved'
+        self.approver = approver
+        self.save()
+
+    def unapprove(self):
+        self.status = "Pending"
+        self.approver = None
+        self.save()
+
+    def get_status(self):
+        return self.status
+    
+    def is_self_approval(self, approver):
+        return self.requested_by == approver
+    
+    def is_already_processed(self):
+        return self.status in ['Declined','Approved','Processing','Revoked']
+
+    @staticmethod
+    def approve_membership(membership_id, approver):
+        membership = MembershipV2.objects.get(membership_id=membership_id)
+        membership.status = 'Approved'
+        membership.approver = approver
+        membership.save()
+    
+    @staticmethod
+    def get_membership(membership_id):
+        return MembershipV2.objects.get(membership_id=membership_id)
 
     def __str__(self):
         return self.group.name + "-" + self.user.email + "-" + self.status
@@ -364,6 +394,46 @@ class GroupV2(models.Model):
                 {"groupRequest": new_group, "initialMembers": initial_members}
             )
         return new_group_pending_data
+    
+    @staticmethod
+    def get_pending_group(group_id):
+        return GroupV2.objects.get(group_id=group_id, status="Pending")
+    
+    @staticmethod
+    def get_approved_group(group_id):
+        try:
+            return GroupV2.objects.get(group_id=group_id, status="Approved")
+        except GroupV2.DoesNotExist:
+            return None
+    
+    def approve_all_pending_users(self, approved_by):
+        self.membership_group.filter(group=self, status="Pending").update(
+            status="Approved", approver=approved_by
+        )
+        
+    def get_all_members(self):
+        group_members = list(
+            self.membership_group.filter(group=self).values_list(
+                "user__user__username", flat=True
+            )
+        )
+        return group_members
+    
+    def is_self_approval(self, approver):
+        return self.requester==approver
+    
+    def approve(self, approved_by):
+        self.approver = approved_by
+        self.status = "Approved"
+        self.save()
+        
+    def unapprove(self):
+        self.approver = None
+        self.status = "Pending"
+        self.save()
+        
+    def unapprove_memberships(self):
+        self.membership_group.filter(status="Approved").update(status="Pending", approver=None)
 
     def __str__(self):
         return self.name

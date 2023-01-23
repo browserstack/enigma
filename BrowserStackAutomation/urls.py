@@ -32,6 +32,7 @@ from Access.views import (
     approveNewGroup,
     add_user_to_group,
     groupDashboard,
+    accept_bulk
 )
 
 urlpatterns = [
@@ -64,4 +65,5 @@ urlpatterns = [
         add_user_to_group,
         name="addUserToGroup",
     ),
+    re_path(r'^accept_bulk/(?P<selector>[\w-]+)',accept_bulk,name='accept_bulk'),
 ]

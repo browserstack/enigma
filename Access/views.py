@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
+from django.http import JsonResponse
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
 import logging
@@ -122,3 +123,34 @@ def add_user_to_group(request, groupName):
 def pendingRequests(request):
     context = getPendingRequests(request)
     return render(request, "BSOps/pendingRequests.html", context)
+
+@login_required
+def accept_bulk(request, selector):
+    try:
+        context = {"response": {}}
+        inputVals = request.GET.getlist('requestId')
+        requestIds = []
+        returnIds = []
+        user = request.user.user
+        is_access_approver = user.has_permission("ACCESS_APPROVE")
+        requestIds = inputVals
+        for value in requestIds:
+            requestType, requestId = selector, value
+            if selector == "groupNew" and is_access_approver:
+                json_response = group_helper.approveNewGroupRequest(request, requestId)
+            elif selector == "groupMember" and is_access_approver:
+                json_response = group_helper.acceptMember(request, requestId, False)
+            if "error" in json_response:
+                context['response'][requestId] = {"error": json_response["error"], "success": False}
+            else:
+                context['response'][requestId] = {"msg": json_response["msg"], "success": True}
+        context['bulk_approve'] = True
+        context["returnIds"] = returnIds
+        return JsonResponse(context, status = 200)
+    except Exception as e:
+        logger.debug("Error in request not found OR Invalid request type - "+str(str(e)))
+        json_response = {}
+        json_response['error'] = "Error in request not found OR Invalid request type - "+str(str(e))
+        json_response["success"] = False
+        json_response["status_code"] = 401
+        return JsonResponse(json_response, status = json_response["status_code"])
