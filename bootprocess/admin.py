@@ -1,6 +1,14 @@
 from django.contrib import admin
 
-from Access.models import User, Permission, UserAccessMapping, Role, AccessV2, GroupV2, MembershipV2
+from Access.models import (
+    User,
+    Permission,
+    UserAccessMapping,
+    Role,
+    AccessV2,
+    GroupV2,
+    MembershipV2,
+)
 
 admin.site.register(Permission)
 admin.site.register(UserAccessMapping)

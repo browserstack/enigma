@@ -6,7 +6,7 @@ from Access.helpers import getAvailableAccessModules, getPossibleApproverPermiss
 
 def add_variables_to_context(request):
     # Skip adding context variables in case of API request
-    if request.headers['Content-Type'] == "application/json":
+    if request.headers["Content-Type"] == "application/json":
         return {}
 
     try:
@@ -18,17 +18,17 @@ def add_variables_to_context(request):
 
     context = {}
     context["currentYear"] = datetime.datetime.now().year
-    context["users"] = User.objects.filter().only('user')
+    context["users"] = User.objects.filter().only("user")
     context["anyApprover"] = currentUser.isAnApprover(getPossibleApproverPermissions())
     context["is_ops"] = currentUser.is_ops
-    context["access_list"] = [{
-        'tag': each_module.tag(),
-        'desc': each_module.access_desc()
-    } for each_module in all_access_modules]
+    context["access_list"] = [
+        {"tag": each_module.tag(), "desc": each_module.access_desc()}
+        for each_module in all_access_modules
+    ]
 
-    context['pendingCount'] = currentUser.getPendingApprovalsCount(all_access_modules)
-    context['grantFailureCount'] = currentUser.getFailedGrantsCount()
-    context['revokeFailureCount'] = currentUser.getFailedRevokesCount()
+    context["pendingCount"] = currentUser.getPendingApprovalsCount(all_access_modules)
+    context["grantFailureCount"] = currentUser.getFailedGrantsCount()
+    context["revokeFailureCount"] = currentUser.getFailedRevokesCount()
 
     context["groups"] = sorted([group.name for group in currentUser.getOwnedGroups()])
 
