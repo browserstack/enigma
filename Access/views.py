@@ -15,7 +15,7 @@ from Access.accessrequest_helper import (
 )
 from Access.models import User
 from Access.userlist_helper import getallUserList
-from Access.views_helper import render_error_message
+from Access.views_helper import render_error_message, get_user_access_history
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
@@ -44,29 +44,9 @@ def showAccessHistory(request):
             "Please login again"
         )
 
-    dataList = []
-    genericAccessRequests = access_user.useraccessmapping_set.prefetch_related('access', 'approver_1', 'approver_2')
-    for access_request_mapping in genericAccessRequests:
-        access_details = access_request_mapping.getAccessRequestDetails(access_request_mapping)
-
-        temp = {}
-        temp['id'] = access_request_mapping.request_id
-        temp['type'] = access_details["accessType"]
-        temp['access'] = "%s details: %s" % (access_details["accessCategory"], json.dumps(access_details["accessMeta"]))
-        temp['status'] = access_request_mapping.status
-        temp['reason'] = access_request_mapping.request_reason
-        temp['decline_reason'] = access_request_mapping.decline_reason
-        temp['approver'] = ""
-        if access_request_mapping.approver_1:
-            temp["approver"] = access_request_mapping.approver_1.user.username
-        if access_request_mapping.approver_2:
-            temp["approver"] = "1: %s\n2: %s" % (access_request_mapping.approver_1.user.username, access_request_mapping.approver_2.user.username)
-
-        dataList.append(temp)
-
-    context = {}
-    context['dataList'] = dataList
-    return render(request, 'BSOps/showAccessHistory.html', context)
+    return render(request, 'BSOps/showAccessHistory.html', {
+        'dataList': get_user_access_history(access_user)
+    })
 
 
 @login_required

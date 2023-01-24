@@ -8,7 +8,6 @@ from .models import UserAccessMapping, GroupAccessMapping
 from bootprocess import general
 
 logger = logging.getLogger(__name__)
-all_access_modules = helper.getAvailableAccessModules()
 
 
 def generateUserMappings(user, group, membershipObj):
@@ -117,7 +116,7 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             }
         )
         return False
-    for each_access_module in all_access_modules:
+    for each_access_module in helper.getAvailableAccessModules():
         if accessType == each_access_module.tag():
             try:
                 response = each_access_module.approve(
@@ -212,3 +211,12 @@ def render_error_message(request, log_message, user_message, user_message_descri
             "msg": user_message_description,
         }
     })
+
+def get_user_access_history(access_user):
+    access_request_mappings = access_user.useraccessmapping_set.prefetch_related('access', 'approver_1', 'approver_2')
+    access_history = []
+    for request_mapping in access_request_mappings:
+        for eachAccessModule in helper.getAvailableAccessModules():
+            if request_mapping.accessType == each_access_module.tag():
+                access_history.append(request_mapping.getAccessRequestDetails(eachAccessModule))
+    return access_history

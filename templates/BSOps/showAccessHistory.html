@@ -66,6 +66,8 @@ $(function() {
         'form-control', // select needs custom class names :(
         'form-control',
         'form-control',
+        'form-control',
+        'form-control',
         'form-control'
       ]
 
@@ -135,14 +137,19 @@ $(function() {
   	<tbody>
       {% for item in dataList %}
       <tr >
-        <td>{{item.id}}</td>
-        <td>{{item.type}}</td>
-        <td>{{item.access}}</td>
-        <td>{{item.approver}}</td>
-        <td>{{item.status}}</td>
-        <td>{{item.reason}}</td>
-        <td>{{item.decline_reason}}</td>
-        <td><a class="btn btn-primary" target="_blank"  href="/individual_resolve?requestId={{ item.id }}">ReGrant</a></td>
+        <td>{{ item.requestId }}</td>
+        <td>{{ item.accessType }}</td>
+        <td>{{ item.accessCategory }} details: {{ item.accessMeta | pprint }}</td>
+        {% if item.approver_1 %}
+        <td>{{ item.approver_1.user.username }}</td>
+        {% elif item.approver_2 %}
+        <td>1: {{ item.approver_1.user.username }}
+          2: {{ item.approver_2.user.username }}</td>
+        {% endif %}
+        <td>{{ item.status }}</td>
+        <td>{{ item.accessReason }}</td>
+        <td>{{ item.decline_reason }}</td>
+        <td><a class="btn btn-primary" target="_blank"  href="/individual_resolve?requestId={{ item.requestId }}">ReGrant</a></td>
       </tr>
       {% endfor %}
   	</tbody>
