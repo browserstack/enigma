@@ -1,11 +1,15 @@
 from Access import helpers
 import logging
 import time
+from . import helpers as helper
 
 from BrowserStackAutomation.settings import DECLINE_REASONS
-from Access.models import UserAccessMapping, User, GroupV2, MembershipV2
+from Access.models import UserAccessMapping, User, GroupV2, AccessV2
+import datetime
+import json
 
 logger = logging.getLogger(__name__)
+all_access_modules = helper.get_available_access_modules()
 
 
 def requestAccessGet(request):
@@ -15,29 +19,29 @@ def requestAccessGet(request):
             if "access_" + each_access.tag() in request.GET.getlist("accesses"):
                 if "accesses" not in context:
                     context["accesses"] = []
-                    context["genericForm"] = True
-                    try:
-                        extra_fields = each_access.get_extra_fields()
-                    except:
-                        extra_fields = []
-                    try:
-                        notice = each_access.get_notice()
+                context["genericForm"] = True
+                try:
+                    extra_fields = each_access.get_extra_fields()
+                except:
+                    extra_fields = []
+                try:
+                    notice = each_access.get_notice()
 
-                    except Exception:
-                        notice = ""
-                    context["accesses"].append(
-                        {
-                            "formDesc": each_access.access_desc(),
-                            "accessTag": each_access.tag(),
-                            "accessTypes": each_access.access_types(),
-                            "accessRequestData": each_access.access_request_data(
-                                request, is_group=False
-                            ),
-                            "extraFields": extra_fields,
-                            "notice": notice,
-                            "accessRequestPath": each_access.fetch_access_request_form_path(),
-                        }
-                    )
+                except Exception:
+                    notice = ""
+                context["accesses"].append(
+                    {
+                        "formDesc": each_access.access_desc(),
+                        "accessTag": each_access.tag(),
+                        "accessTypes": each_access.access_types(),
+                        "accessRequestData": each_access.access_request_data(
+                            request, is_group=False
+                        ),
+                        "extraFields": extra_fields,
+                        "notice": notice,
+                        "accessRequestPath": each_access.fetch_access_request_form_path(),
+                    }                    
+                )
     except Exception as e:
         logger.exception(e)
         context = {}
@@ -221,3 +225,98 @@ def process_error_response(request, e):
         "msg": "Error in request not found OR Invalid request type",
     }
     return json_response
+
+def create_request(user, access_request_form):
+    def _validate_access_request(access_request_form, user):
+        if not access_request_form:
+            json_response = {}
+            json_response['error'] = {'error_msg': 'Invalid Request', 'msg': 'Please Contact Admin'}
+            logger.debug("Tried a direct Access to accessRequest by-"+user.username)
+            return json_response
+        
+        access_request=dict(access_request_form.lists())
+        
+        if 'accessRequests' not in access_request:
+            json_response['error'] = {
+                'error_msg': 'The submitted form is empty. Tried direct access to requstAccess page',
+                'msg': 'Error Occured while submitting your Request. Please contact the Admin'
+            }
+            return json_response
+        return {}, access_request
+    
+    json_response, access_request = _validate_access_request(access_request_form=access_request_form, user=user)
+    
+    current_date_time=datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")+'  UTC'
+    json_response = {}
+    json_response['status'] = []
+    json_response['status_list'] = []
+    extra_fields = []
+    if "extraFields" in access_request:
+        extra_fields = access_request["extraFields"]
+    
+    for index, access_type in enumerate(access_request['accessRequests']):        
+        access_labels = _validate_access_labels(access_labels_json=access_request['accessLabel'][index], access_type=access_type)
+        
+        request_id = user.username + '-' + access_type + '-' + datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        json_response[access_type] = {'requestId':request_id,'dateTime':current_date_time}
+        
+        access_module = all_access_modules[access_type]
+        
+        generic_request_data = _create_generic_request(access_module = access_module, 
+                                                     access_reason = access_request['accessReason'][index],
+                                                     access_labels = access_labels,
+                                                     user = user)
+        
+        try:
+            extra_field_labels = access_module.get_extra_fields()
+        except:
+            extra_field_labels = []
+        
+        if extra_fields and extra_field_labels:
+            for field in extra_field_labels:
+                generic_request_data['accessLabel'][0][field] = extra_fields[0]
+                extra_fields =  extra_fields[1:]
+
+        for index, access_label in enumerate(generic_request_data['accessLabel']):
+            access = AccessV2.get(access_tag=access_type, access_label=access_label)
+            if not access:
+                access = AccessV2.objects.create(access_tag=access_type, access_label=access_label)
+            else:    
+                existing_individual_access = UserAccessMapping.objects.filter(
+                        user=User.objects.get(user__username=user),
+                        access=access,
+                        status__in=["Approved", "Pending"]
+                )
+                
+                if existing_individual_access:
+                    json_response['status_list'].append({'title': access.access_tag+' - Duplicate Request not submitted', 'msg': 'Access already granted or request in pending state. '+json.dumps(access.access_label)})
+                    continue 
+            request_id = request_id + "_" + str(index)
+            UserAccessMapping.objects.create(request_id=request_id,
+                                user=User.objects.get(user__username=user.user),
+                                request_reason=generic_request_data['accessReason'],
+                                access=access)
+            if access_module.can_auto_approve():
+                #start approval in celery
+                raise Exception("Implementation pending")
+            else:
+                json_response['status_list'].append({'title': request_id +' Request Submitted', 'msg': 'Once approved you will receive the update ' +json.dumps(access.access_label)})
+            
+    return json_response
+    
+def _validate_access_labels(access_labels_json, access_type):
+    if access_labels_json is None or access_labels_json == "":
+        raise Exception('No fields were selected in the request. Please try again.')
+    access_labels = json.loads(access_labels_json)
+    if len(access_labels) == 0:
+        raise Exception("No fields were selected in the request for {}. Please try again.".format(access_type))
+    return access_labels    
+
+def _create_generic_request(access_module, access_reason, access_labels, user):
+    generic_request_data = {}        
+    generic_request_data['accessLabel'] = access_module.validate_request(access_labels,user,is_group=False)
+    generic_request_data['accessCategory'] = access_module.combine_labels_desc(generic_request_data['accessLabel'])
+    generic_request_data['accessMeta'] = access_module.combine_labels_meta(generic_request_data['accessLabel'])
+    generic_request_data['accessDesc'] = access_module.access_desc()
+    generic_request_data['accessReason'] = access_reason
+    return generic_request_data

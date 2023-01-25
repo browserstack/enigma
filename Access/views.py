@@ -6,7 +6,7 @@ import logging
 from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from Access import group_helper
-from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRevokeFailures, getPendingRequests
+from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRevokeFailures, getPendingRequests, create_request
 from Access.userlist_helper import getallUserList, getallUserList, get_identity_templates, create_identity
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 from django.shortcuts import render
@@ -86,8 +86,12 @@ def allUsersList(request):
 
 @login_required
 def requestAccess(request):
-    context = requestAccessGet(request)
-    return render(request, "BSOps/accessRequestForm.html", context)
+    if request.POST:
+        context = create_request(user = request.user, access_request_form = request.POST)
+        return render(request, "BSOps/accessStatus.html", context)
+    else:
+        context = requestAccessGet(request)
+        return render(request, "BSOps/accessRequestForm.html", context)
 
 
 @login_required
