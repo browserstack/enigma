@@ -410,13 +410,9 @@ class GroupV2(models.Model):
         self.membership_group.filter(group=self, status="Pending").update(
             status="Approved", approver=approved_by
         )
-        
+    
     def get_all_members(self):
-        group_members = list(
-            self.membership_group.filter(group=self).values_list(
-                "user__user__username", flat=True
-            )
-        )
+        group_members = self.membership_group.filter(group=self)
         return group_members
     
     def is_self_approval(self, approver):

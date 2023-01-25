@@ -12,7 +12,7 @@ from Access import group_helper
 from Access.accessrequest_helper import (
     requestAccessGet,
     getGrantFailedRequests,
-    getPendingRevokeFailures,
+    get_pending_revoke_failures,
     getPendingRequests,
 )
 from Access.userlist_helper import getallUserList
@@ -48,9 +48,9 @@ def pendingFailure(request):
 
 @login_required
 @user_admin_or_ops
-def pendingRevoke(request):
+def pending_revoke(request):
     try:
-        response = getPendingRevokeFailures(request)
+        response = get_pending_revoke_failures(request)
         return render(request, "BSOps/failureAdminRequests.html", response)
     except Exception as e:
         logger.debug("Error in request not found OR Invalid request type")
@@ -116,7 +116,7 @@ def groupDashboard(request):
 
 
 def approveNewGroup(request, group_id):
-    return group_helper.approveNewGroupRequest(request, group_id)
+    return group_helper.approve_new_group_request(request, group_id)
 
 
 @login_required
@@ -149,9 +149,9 @@ def accept_bulk(request, selector):
         for value in requestIds:
             requestType, requestId = selector, value
             if selector == "groupNew" and is_access_approver:
-                json_response = group_helper.approveNewGroupRequest(request, requestId)
+                json_response = group_helper.approve_new_group_request(request, requestId)
             elif selector == "groupMember" and is_access_approver:
-                json_response = group_helper.acceptMember(request, requestId, False)
+                json_response = group_helper.accept_member(request, requestId, False)
             else:
                 raise ValidationError("Invalid request")
             if "error" in json_response:

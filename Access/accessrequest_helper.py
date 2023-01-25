@@ -71,7 +71,7 @@ def getGrantFailedRequests(request):
         return process_error_response(request, e)
 
 
-def getPendingRevokeFailures(request):
+def get_pending_revoke_failures(request):
     if request.GET.get("username"):
         user = User.objects.get(user__username=request.GET.get("username"))
         failures = UserAccessMapping.objects.filter(

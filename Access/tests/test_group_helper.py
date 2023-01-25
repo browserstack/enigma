@@ -44,25 +44,25 @@ def test_updateOwner(mocker):
     assert context["notification"] == "Owner's updated"
 
 
-test_approveNewGroupRequest_GroupNotFound = "GroupNotFound"
-test_approveNewGroupRequest_ReqNotInPending = "ReuestNotInPendingState"
-test_approveNewGroupRequest_UserApprovingHisOwn = "UserApprovingHisOwnRequest"
-test_approveNewGroupRequest_ProcessReq = "ProcessReq"
-test_approveNewGroupRequest_ThrowsException = "ThrowsException"
+test_approve_new_group_request_GroupNotFound = "GroupNotFound"
+test_approve_new_group_request_ReqNotInPending = "ReuestNotInPendingState"
+test_approve_new_group_request_UserApprovingHisOwn = "UserApprovingHisOwnRequest"
+test_approve_new_group_request_ProcessReq = "ProcessReq"
+test_approve_new_group_request_ThrowsException = "ThrowsException"
 
 
 @pytest.mark.parametrize(
     "testname,expectedoutput, groupID, requestApproved, throwsException",
     [
         (
-            test_approveNewGroupRequest_GroupNotFound,
+            test_approve_new_group_request_GroupNotFound,
             "{'error': 'Error request not found OR Invalid request type'}",
             "1",
             False,
             False,
         ),
         (
-            test_approveNewGroupRequest_UserApprovingHisOwn,
+            test_approve_new_group_request_UserApprovingHisOwn,
             (
                 "{'error': 'You cannot approve your own request. Please ask other"
                 " admins to do that'}"
@@ -72,14 +72,14 @@ test_approveNewGroupRequest_ThrowsException = "ThrowsException"
             False,
         ),
         (
-            test_approveNewGroupRequest_ProcessReq,
+            test_approve_new_group_request_ProcessReq,
             "{'msg': 'The Request (grp1) is now being processed'}",
             "grp1",
             True,
             False,
         ),
         (
-            test_approveNewGroupRequest_ThrowsException,
+            test_approve_new_group_request_ThrowsException,
             "{'error': 'Error Occured while Approving group creation. "
             + "Please contact admin - sendEmailError'}",
             "grp1",
@@ -88,26 +88,26 @@ test_approveNewGroupRequest_ThrowsException = "ThrowsException"
         ),
     ],
 )
-def test_approveNewGroupRequest(
+def test_approve_new_group_request(
     mocker, testname, expectedoutput, groupID, requestApproved, throwsException
 ):
     request = mocker.MagicMock()
 
-    if testname == test_approveNewGroupRequest_GroupNotFound:
+    if testname == test_approve_new_group_request_GroupNotFound:
         mocker.patch(
             "Access.models.GroupV2.objects.get",
             return_value=[],
             side_effect=Exception("GroupNotFound"),
         )
 
-    elif testname == test_approveNewGroupRequest_ReqNotInPending:
+    elif testname == test_approve_new_group_request_ReqNotInPending:
         request.user.username = "username1"
         mock_groupObject = mocker.MagicMock()
         mock_groupObject.status = "Declined"
         mock_groupObject.approver.user.username = "username2"
         mocker.patch("Access.models.GroupV2.objects.get", return_value=mock_groupObject)
 
-    elif testname == test_approveNewGroupRequest_UserApprovingHisOwn:
+    elif testname == test_approve_new_group_request_UserApprovingHisOwn:
         request.user.username = "username1"
         mock_groupObject = mocker.MagicMock()
         mock_groupObject.status = "Pending"
@@ -115,7 +115,7 @@ def test_approveNewGroupRequest(
         mock_groupObject.requester.user.username = "username1"
         mocker.patch("Access.models.GroupV2.objects.get", return_value=mock_groupObject)
 
-    elif testname == test_approveNewGroupRequest_ProcessReq:
+    elif testname == test_approve_new_group_request_ProcessReq:
         request.user.username = "username1"
         request.user.user = mocker.MagicMock()
         mock_groupObject = mocker.MagicMock()
@@ -138,7 +138,7 @@ def test_approveNewGroupRequest(
         )
         mocker.patch("bootprocess.general.emailSES", return_value=True)
 
-    elif testname == test_approveNewGroupRequest_ThrowsException:
+    elif testname == test_approve_new_group_request_ThrowsException:
         request.user.username = "username1"
         request.user.user = mocker.MagicMock()
         mock_groupObject = mocker.MagicMock()
@@ -166,7 +166,7 @@ def test_approveNewGroupRequest(
         )
         mocker.patch("Access.models.GroupV2.objects.filter", return_value=[])
 
-    response = group_helper.approveNewGroupRequest(request, groupID)
+    response = group_helper.approve_new_group_request(request, groupID)
 
     assert str(response) == expectedoutput
     assert models.GroupV2.objects.get.call_count == 1

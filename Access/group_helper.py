@@ -30,6 +30,7 @@ SELF_APPROVAL_ERROR = "You cannot approve your own request. Please ask other adm
 GROUP_APPROVAL_ERROR = "Error Occured while Approving group creation. Please contact admin - "
 APPROVAL_ERROR = "Error Occured while Approving the request. Please contact admin - "
 REQUEST_PROCESSING = "The Request {requestId} is now being processed"
+REQUEST_PROCESSED_BY = "The Request {requestId} is already Processed By : {user}"
 
 def create_group(request):
     base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
@@ -175,7 +176,7 @@ def check_user_is_group_owner(user_name, group):
     except Exception:
         return False
 
-def approveNewGroupRequest(request, group_id):
+def approve_new_group_request(request, group_id):
 
     try:
         group = GroupV2.get_pending_group(group_id=group_id)
@@ -200,9 +201,12 @@ def approveNewGroupRequest(request, group_id):
                 group.approve(approved_by=request.user.user)
                 group.approve_all_pending_users(approved_by=request.user.user)
             initial_members = group.get_all_members()
-            notifications.send_new_group_approved_notification(group=group, group_id=group_id)
-
-
+            initial_member_names = [user.user.name for user in initial_members]
+            try:
+                notifications.send_new_group_approved_notification(group=group, group_id=group_id, initial_member_names=initial_member_names)
+            except Exception as e:
+                logger.exception(e)
+                logger.error("Group approved, but Error is sending group approval notification")
             logger.debug(
                 "Approved group creation for - "
                 + group_id
@@ -214,7 +218,7 @@ def approveNewGroupRequest(request, group_id):
                     "Members added to group - "
                     + group_id
                     + " ="
-                    + ", ".join(initial_members) 
+                    + ", ".join(initial_member_names) 
                 )
             return json_response
     except Exception as e:
@@ -424,7 +428,7 @@ def generateUserAddToGroupEmailBody(
         reason=reason,
     )
 
-def acceptMember(request,requestId, shouldRender = True):
+def accept_member(request,requestId, shouldRender = True):
     try:
         membership = MembershipV2.get_membership(membership_id=requestId)
     except Exception as e:
@@ -436,7 +440,7 @@ def acceptMember(request,requestId, shouldRender = True):
         if membership.is_already_processed():
             logger.warning("An Already Approved/Declined/Processing Request was accessed by - "+request.user.username)
             json_response = {}
-            json_response['error'] = 'The Request ('+requestId+') is already Processed By : '+membership.approver.user.username
+            json_response['error'] = REQUEST_PROCESSED_BY.format(requestId=requestId, user=membership.approver.user.username)
             return json_response
         elif membership.is_self_approval(approver=request.user.user):
             context = {}
