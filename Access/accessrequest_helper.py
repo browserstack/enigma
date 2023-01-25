@@ -54,7 +54,7 @@ def requestAccessGet(request):
 def getGrantFailedRequests(request):
     try:
         failures = UserAccessMapping.objects.filter(
-            status__in=["grantfailed"]
+            status__in=["GrantFailed"]
         ).order_by("-requested_on")
         if request.GET.get("username"):
             user = User.objects.get(user__username=request.GET.get("username"))
@@ -64,7 +64,7 @@ def getGrantFailedRequests(request):
             failures = failures.filter(access__access_tag=access_tag).order_by(
                 "-requested_on"
             )
-
+            
         context = {"failures": failures, "heading": "Grant Failures"}
         return context
     except Exception as e:
@@ -75,18 +75,18 @@ def getPendingRevokeFailures(request):
     if request.GET.get("username"):
         user = User.objects.get(user__username=request.GET.get("username"))
         failures = UserAccessMapping.objects.filter(
-            status__in=["revokefailed"], user=user
+            status__in=["RevokeFailed"], user=user
         ).order_by("-requested_on")
     if request.GET.get("access_type"):
         access_tag = request.GET.get("access_type")
         failures = UserAccessMapping.objects.filter(
-            status__in=["revokefailed"], access__access_tag=access_tag
+            status__in=["RevokeFailed"], access__access_tag=access_tag
         ).order_by("-requested_on")
     else:
         failures = UserAccessMapping.objects.filter(
-            status__in=["revokefailed"]
+            status__in=["RevokeFailed"]
         ).order_by("-requested_on")
-
+        
     context = {"failures": failures, "heading": "Revoke Failures"}
     return context
 

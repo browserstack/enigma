@@ -35,20 +35,29 @@ def showAccessHistory(request):
 @login_required
 @user_admin_or_ops
 def pendingFailure(request):
-    response = getGrantFailedRequests(request)
-    if type(response) is dict:
-        return render(request, "BSOps/accessStatus.html", response)
-
-    return render(request, "BSOps/failureAdminRequests.html", response)
+    try:
+        response = getGrantFailedRequests(request)
+        return render(request, "BSOps/failureAdminRequests.html", response)
+    except Exception as e:
+        logger.debug("Error in request not found OR Invalid request type")
+        logger.exception(e)
+        json_response = {}
+        json_response['error'] = {'error_msg': str(e), 'msg': INVALID_REQUEST_MESSAGE}
+        return render(request, 'BSOps/accessStatus.html', json_response)
 
 
 @login_required
 @user_admin_or_ops
 def pendingRevoke(request):
-    response = getPendingRevokeFailures(request)
-    if type(response) is dict:
-        return render(request, "BSOps/accessStatus.html", response)
-    return render(request, "BSOps/failureAdminRequests.html", response)
+    try:
+        response = getPendingRevokeFailures(request)
+        return render(request, "BSOps/failureAdminRequests.html", response)
+    except Exception as e:
+        logger.debug("Error in request not found OR Invalid request type")
+        logger.exception(e)
+        json_response = {}
+        json_response['error'] = {'error_msg': str(e), 'msg': INVALID_REQUEST_MESSAGE}
+        return render(request, 'BSOps/accessStatus.html', json_response)
 
 
 @login_required
