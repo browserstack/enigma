@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ValidationError
 from django.shortcuts import render
 from django.http import JsonResponse
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
@@ -17,6 +18,8 @@ from Access.accessrequest_helper import (
 from Access.userlist_helper import getallUserList
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 from django.shortcuts import render
+
+INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type - "
 
 logger = logging.getLogger(__name__)
 
@@ -140,6 +143,8 @@ def accept_bulk(request, selector):
                 json_response = group_helper.approveNewGroupRequest(request, requestId)
             elif selector == "groupMember" and is_access_approver:
                 json_response = group_helper.acceptMember(request, requestId, False)
+            else:
+                raise ValidationError("Invalid request")
             if "error" in json_response:
                 context['response'][requestId] = {"error": json_response["error"], "success": False}
             else:
@@ -148,9 +153,9 @@ def accept_bulk(request, selector):
         context["returnIds"] = returnIds
         return JsonResponse(context, status = 200)
     except Exception as e:
-        logger.debug("Error in request not found OR Invalid request type - "+str(str(e)))
+        logger.debug(INVALID_REQUEST_MESSAGE+str(str(e)))
         json_response = {}
-        json_response['error'] = "Error in request not found OR Invalid request type - "+str(str(e))
+        json_response['error'] = INVALID_REQUEST_MESSAGE+str(str(e))
         json_response["success"] = False
         json_response["status_code"] = 401
         return JsonResponse(json_response, status = json_response["status_code"])

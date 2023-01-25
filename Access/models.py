@@ -405,7 +405,7 @@ class GroupV2(models.Model):
             return GroupV2.objects.get(group_id=group_id, status="Approved")
         except GroupV2.DoesNotExist:
             return None
-    
+
     def approve_all_pending_users(self, approved_by):
         self.membership_group.filter(group=self, status="Pending").update(
             status="Approved", approver=approved_by
