@@ -5,7 +5,7 @@
     "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS": ""
   },
   "database": {
-    "engine": "sqlite3",
+    "engine": "sqlite3"
   },
   "access_modules": {
     "git_urls": [
