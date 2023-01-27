@@ -3,10 +3,9 @@ from os.path import dirname, basename, isfile, join
 import glob
 import logging
 import re
-import time, datetime
+import datetime
 
-from Access.access_modules import *
-from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
+from Access.access_modules import * # NOQA
 
 logger = logging.getLogger(__name__)
 
@@ -15,12 +14,12 @@ cached_accesses = []
 
 modules = {}
 
+
 def get_available_access_modules():
     available_accesses = getAvailableAccessModules()
     for access in available_accesses:
         modules.update({access.tag(): access})
     return modules
-
 
 
 def getAvailableAccessModules():
@@ -48,6 +47,7 @@ def getAccessModules():
         if not isfile(f)
     ]
     return cached_accesses
+
 
 def check_user_permissions(user, permissions):
     if hasattr(user, "user"):

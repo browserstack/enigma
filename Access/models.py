@@ -266,7 +266,6 @@ class MembershipV2(models.Model):
         self.status = "Revoked"
         self.save()
 
-
     def __str__(self):
         return self.group.name + "-" + self.user.email + "-" + self.status
 
@@ -627,9 +626,9 @@ class AccessV2(models.Model):
             for data in list(self.access_label.values()):
                 try:
                     details_arr.append(data.decode("utf-8"))
-                except:
+                except Exception:
                     details_arr.append(data)
-            return self.access_tag+" - "+", ".join(details_arr)
+            return self.access_tag + " - " + ", ".join(details_arr)
         except Exception:
             return self.access_tag
 
@@ -677,7 +676,9 @@ class UserIdentity(models.Model):
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
 
-    def replicate_active_access_membership_for_module(self, existing_user_access_mapping):
+    def replicate_active_access_membership_for_module(
+        self, existing_user_access_mapping
+    ):
         new_user_access_mapping = []
 
         for i, user_access in enumerate(existing_user_access_mapping):
@@ -694,7 +695,7 @@ class UserIdentity(models.Model):
             access_status = user_access.status
             if user_access.status.lower() == "approved":
                 access_status = "Processing"
-            
+
             new_user_access_mapping.append(
                 self.user_access_mapping.create(
                     request_id=request_id,
@@ -709,5 +710,6 @@ class UserIdentity(models.Model):
             )
             user_access.deactivate()
         return new_user_access_mapping
+
     def __str__(self):
         return "%s" % (self.identity)
