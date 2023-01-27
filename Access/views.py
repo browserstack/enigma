@@ -7,7 +7,7 @@ from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from Access import group_helper
 from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, getPendingRevokeFailures, getPendingRequests, create_request
-from Access.userlist_helper import getallUserList, getallUserList, get_identity_templates, create_identity
+from Access.userlist_helper import getallUserList, get_identity_templates, create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -53,11 +53,17 @@ def updateUserInfo(request):
 @login_required
 def saveIdentity(request):
     try:
+        modname = request.POST.get("modname")
         if request.POST:
-            context = create_identity(request)
+            context = create_identity(user_identity_form = request.POST, auth_user=request.user)
             return JsonResponse(json.dumps(context), safe=False, status=200)
     except:
-        return JsonResponse("", safe=False, status=400)
+        context = {}
+        context["error"] = {
+            "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
+            "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename = modname),
+        }            
+        return JsonResponse(json.dumps(context), safe=False, status=400)
 
 @login_required
 def createNewGroup(request):

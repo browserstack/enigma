@@ -41,23 +41,33 @@
     }
     
     function create_post(formId) {
+      modName = $('#' + formId + " input[name='modname']").val()
+      $('#' + formId).find('#error-msg').text("")
+      $('#' + formId).find('#success-msg').text("")
+      error_message = "There was an error in updating User Identity for module " + modName + ". Please contact Admin"
       $.ajax({
           url : "{% url 'saveIdentity' %}/", // the endpoint
           type : "POST", // http method
           data : $('#' + formId).serialize(),
 
           // handle a successful response
-          success : function(json) {
-              var msg = jQuery.parseJSON(json);
-              modName = $('#' + formId + " input[name='modname']").val()
-              $('#' + formId).find('#success-msg').text(msg.status.msg)
+          success : function(json, textStatus, jqXHR) {
+              if (jqXHR.status == 200){
+                var msg = jQuery.parseJSON(json);
+                modName = $('#' + formId + " input[name='modname']").val()
+                $('#' + formId).find('#success-msg').text(msg.status.msg)
+              } 
+              else {
+                modName = $('#' + formId + " input[name='modname']").val()
+                $('#' + formId).find('#error-msg').text("Error: Identity for " + modName + " could not saved.")                  
+              }
           },  
 
           // handle a non-successful response
-          error : function(xhr,errmsg,err) {
-            alert("failure")
+          error : function(jqXHR, status, err) {
+            errorObj = JSON.parse(jqXHR.responseJSON);
             modName = $('#' + formId + " input[name='modname']").val()
-            $('#' + formId).find('#error-msg').text("Identity for " + modName + " could not saved.")              
+            $('#' + formId).find('#error-msg').text(errorObj.error.msg)
           }
       });
     };
