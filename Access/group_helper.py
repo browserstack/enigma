@@ -158,10 +158,12 @@ def getGroupAccessList(request, groupName):
             for groupMapping in groupMappings
         ]
 
+        user = User.objects.get(email=request.user.user.email)
+
         allow_revoke = False
         if (
-            request.user.user.email in ownerEmails
-            or request.user.check_user_permissions("ALLOW_USER_OFFBOARD")
+            user.email in ownerEmails
+            or user.has_permission("ALLOW_USER_OFFBOARD")
         ):
             allow_revoke = True
         context["allowRevoke"] = allow_revoke

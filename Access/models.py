@@ -199,17 +199,6 @@ class User(models.Model):
     def is_approver(email):
         return User.objects.filter(role=Role.objects.get(label='TEAMS:ACCESSAPPROVE'),state=1, email=email).count() > 0
     
-    def check_user_permissions(self, permissions):
-        if hasattr(self, 'user'):
-            permission_labels = [permission.label for permission in self.user.permissions]
-            if type(permissions) == list:
-                if len(set(permissions).intersection(permission_labels)) > 0:
-                    return True
-            else:
-                if permissions in permission_labels:
-                    return True
-        return False
-    
     def get_all_memberships(self):
         return self.membership_user.all()
 
