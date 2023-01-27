@@ -187,6 +187,7 @@ class User(models.Model):
         if self.isAdminOrOps():
             return GroupV2.objects.all().filter(status="Approved")
 
+        # TODO: address undefined currentUser issue
         groupOwnerMembership = MembershipV2.objects.filter(
             is_owner=True, user=currentUser
         )
