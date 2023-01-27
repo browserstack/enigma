@@ -1,5 +1,4 @@
-from django.shortcuts import render, redirect
-import json
+from django.shortcuts import render
 import logging
 import traceback
 
@@ -8,6 +7,7 @@ from BrowserStackAutomation.settings import ACCESS_APPROVE_EMAIL, PERMISSION_CON
 from bootprocess.general import emailSES
 
 logger = logging.getLogger(__name__)
+
 
 # Use this base module when the access requires only sending a mail
 # to multiple dedicated emails
@@ -24,9 +24,11 @@ class BaseEmailAccess(object):
 
     # Override in module for specific person who should mark access as revoked
     def access_mark_revoke_permission(self, access_type):
+        # TODO: define ACCESS_REVOKE_PERMISSIONS_MAPPING
         return ACCESS_REVOKE_PERMISSIONS_MAPPING["security"]
 
-    # module's tag() method should return a tag present in hash returned by access_types() "type" key
+    # module's tag() method should return a tag present in
+    # hash returned by access_types() "type" key
     def get_label_desc(self, access_label):
         data = next(
             (
@@ -154,6 +156,7 @@ class BaseEmailAccess(object):
             logger.error(
                 "Could not send email for error %s", str(traceback.format_exc())
             )
+            logger.error(e)
             return False, str(traceback.format_exc())
 
     def revoke(self, user, label):
