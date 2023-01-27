@@ -198,21 +198,10 @@ class User(models.Model):
     def create_new_identity(self, access_tag="", identity=""):
         return self.module_identity.create(access_tag=access_tag, identity=identity)
 
-    def deactivate_access_membership(self, membership):
-        membership.status = "Revoked"
-        membership.save()
-
-    def get_identity(self, access_tag):
+    def get_active_identity(self, access_tag):
         return self.module_identity.filter(
             access_tag=access_tag, status="Active"
         ).first()
-
-    def deactivate_identity(self, access_tag):
-        identity = self.get_identity(access_tag=access_tag)
-        if identity:
-            identity.status = "Inactive"
-            identity.save()
-        return identity
 
     def __str__(self):
         return "%s" % (self.user)
@@ -272,6 +261,11 @@ class MembershipV2(models.Model):
         on_delete=models.PROTECT,
     )
     decline_reason = models.TextField(null=True, blank=True)
+
+    def deactivate(self):
+        self.status = "Revoked"
+        self.save()
+
 
     def __str__(self):
         return self.group.name + "-" + self.user.email + "-" + self.status
@@ -404,7 +398,6 @@ class UserAccessMapping(models.Model):
         null=False,
         blank=False,
         on_delete=models.PROTECT,
-        related_name="access_membership",
     )
 
     request_reason = models.TextField(null=False, blank=False)
@@ -471,7 +464,7 @@ class UserAccessMapping(models.Model):
         "UserIdentity",
         null=True,
         blank=True,
-        related_name="user_access",
+        related_name="user_access_mapping",
         on_delete=models.PROTECT,
     )
 
@@ -630,15 +623,13 @@ class AccessV2(models.Model):
 
     def __str__(self):
         try:
-            if self.access_tag == "aws":
-                label = self.access_label["data"]
-                return (
-                    "access_tag- {} | access_label: {} | is_auto_approved: {}".format(
-                        self.access_tag,
-                        self.access_label,
-                        self.is_auto_approved,
-                    )
-                )
+            details_arr = []
+            for data in list(self.access_label.values()):
+                try:
+                    details_arr.append(data.decode("utf-8"))
+                except:
+                    details_arr.append(data)
+            return self.access_tag+" - "+", ".join(details_arr)
         except Exception:
             return self.access_tag
 
@@ -682,42 +673,41 @@ class UserIdentity(models.Model):
         self.save()
 
     def get_active_access(self):
-        return self.user_access.filter(
+        return self.user_access_mapping.filter(
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
 
-    def replicate_active_access_membership_for_module(self, existing_access_membership):
-        new_access_memberships = []
+    def replicate_active_access_membership_for_module(self, existing_user_access_mapping):
+        new_user_access_mapping = []
 
-        for i, membership in enumerate(existing_access_membership):
+        for i, user_access in enumerate(existing_user_access_mapping):
             base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
             request_id = (
                 self.user.username
                 + "-"
-                + membership.access_type
+                + user_access.access_type
                 + "-"
                 + base_datetime_prefix
                 + "-"
                 + str(i)
             )
-            new_access_memberships.append(
-                self.user_access.create(
+            access_status = user_access.status
+            if user_access.status.lower() == "approved":
+                access_status = "Processing"
+            
+            new_user_access_mapping.append(
+                self.user_access_mapping.create(
                     request_id=request_id,
                     user=self,
-                    access=membership.access,
-                    approver_1=membership.approver_1,
-                    approver_2=membership.approver_2,
-                    request_reason=membership.request_reason,
-                    access_type=membership.access_type,
-                    status=membership.status,
+                    access=user_access.access,
+                    approver_1=user_access.approver_1,
+                    approver_2=user_access.approver_2,
+                    request_reason=user_access.request_reason,
+                    access_type=user_access.access_type,
+                    status=access_status,
                 )
             )
-            self.deactivate_access_membership(membership)
-        return new_access_memberships
-
+            user_access.deactivate()
+        return new_user_access_mapping
     def __str__(self):
-        return "access_tag - {} | user: {} | identity: {} ".format(
-            self.access_tag,
-            self.user,
-            self.identity,
-        )
+        return "%s" % (self.identity)

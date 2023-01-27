@@ -16,12 +16,8 @@ cached_accesses = []
 modules = {}
 
 def get_available_access_modules():
-    global modules
-    if len(modules) > 0:
-        return modules
-    available_accesses = [access for access in getAccessModules() if access.available]
+    available_accesses = getAvailableAccessModules()
     for access in available_accesses:
-        print(access.tag())
         modules.update({access.tag(): access})
     return modules
 
