@@ -195,6 +195,24 @@ class User(models.Model):
     def isAdminOrOps(self):
         return self.is_ops or self.user.is_superuser
 
+    @staticmethod
+    def is_approver(email):
+        return User.objects.filter(role=Role.objects.get(label='TEAMS:ACCESSAPPROVE'),state=1, email=email).count() > 0
+    
+    def check_user_permissions(self, permissions):
+        if hasattr(self, 'user'):
+            permission_labels = [permission.label for permission in self.user.permissions]
+            if type(permissions) == list:
+                if len(set(permissions).intersection(permission_labels)) > 0:
+                    return True
+            else:
+                if permissions in permission_labels:
+                    return True
+        return False
+    
+    def get_all_memberships(self):
+        return self.membership_user.all()
+
     def __str__(self):
         return "%s" % (self.user)
 
@@ -419,6 +437,13 @@ class GroupV2(models.Model):
         )
         return group_members
     
+    def get_group_members(self):
+        approved_members = self.membership_group.filter(status="Approved")
+        return approved_members
+    
+    def get_all_accesses(self):
+        return self.groupaccessmapping_set.filter(status__in=["Approved", "Pending", "Declined", "SecondaryPending"])
+
     def is_self_approval(self, approver):
         return self.requester==approver
     

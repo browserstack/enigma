@@ -97,6 +97,13 @@ def groupAccessList(request, groupName):
 
     return render(request, "BSOps/groupAccessList.html", context)
 
+@login_required
+def updatedGroupOwners(request, groupName):
+    context = group_helper.updateOwner(request, groupName)
+    if "error" in context:
+        return JsonResponse(context, status=500)
+
+    return JsonResponse(context, status=200)
 
 @login_required
 def groupDashboard(request):

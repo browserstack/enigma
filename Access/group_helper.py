@@ -16,7 +16,7 @@ NEW_GROUP_CREATE_SUCCESS_MESSAGE = {
 
 NEW_GROUP_CREATE_ERROR_MESSAGE = {
     "error_msg": "Internal Error",
-    "msg": "Error Occured while load    ing the page. Please contact admin",
+    "msg": "Error Occured while loading the page. Please contact admin",
 }
 
 NEW_GROUP_CREATE_ERROR_GROUP_EXISTS = {
@@ -76,7 +76,10 @@ def create_group(request):
 
     if "selectedUserList" in data:
         initial_members = list(map(str, selected_users))
-        new_group.add_members(users=User.objects.filter(email__in=initial_members), requested_by=request.user.user)
+        new_group.add_members(
+            users=User.objects.filter(email__in=initial_members),
+            requested_by=request.user.user,
+        )
     else:
         initial_members = [request.user.email]
 
@@ -94,44 +97,145 @@ def create_group(request):
     return context
 
 
+def getAccessDetails(eachAccess):
+    accessDetails = {}
+    access_label = eachAccess.access_label
+    logger.debug(accessDetails)
+    for eachAccessModule in helpers.getAvailableAccessModules():
+        if eachAccess.access_tag == eachAccessModule.tag():
+            accessDetails["accessType"] = eachAccessModule.access_desc()
+            accessDetails["accessCategory"] = eachAccessModule.get_label_desc(
+                access_label
+            )
+            accessDetails["accessMeta"] = eachAccessModule.get_label_meta(access_label)
+
+            if (
+                eachAccess.access_tag == "other"
+                and "grant_emails" in eachAccess.access_label
+                and type(eachAccess.access_label["grant_emails"]) == list
+            ):
+                accessDetails["revokeOwner"] = ",".join(
+                    eachAccess.access_label["grant_emails"]
+                )
+                accessDetails["grantOwner"] = accessDetails["revokeOwner"]
+            else:
+                accessDetails["revokeOwner"] = ",".join(eachAccessModule.revoke_owner())
+                accessDetails["grantOwner"] = ",".join(eachAccessModule.grant_owner())
+    logger.debug(accessDetails)
+    return accessDetails
+
+
 def getGroupAccessList(request, groupName):
-    return {}
+    try:
+        context = {}
+        group = GroupV2.objects.get(name=groupName, status="Approved")
+        groupMembers = group.get_group_members()
+        ownerEmails = groupMembers.filter(is_owner=True).values_list(
+            "user__user__email", flat=True
+        )
+        is_approver = User.is_approver(request.user.user.email)
+        if request.user.user.email not in ownerEmails and not (
+            request.user.is_superuser or request.user.user.is_ops or is_approver
+        ):
+            raise Exception("Permission denied, requester is non owner")
+
+        groupMembers = [
+            {
+                "name": member.user.name,
+                "email": member.user.email,
+                "is_owner": member.is_owner,
+                "current_state": member.user.current_state(),
+                "membership_id": member.membership_id,
+            }
+            for member in groupMembers
+        ]
+        context["userList"] = groupMembers
+        context["groupName"] = groupName
+
+        groupMappings = group.get_all_accesses()
+        accessV2s = [
+            (groupMapping.access, groupMapping.request_id, groupMapping.status)
+            for groupMapping in groupMappings
+        ]
+
+        allow_revoke = False
+        if (
+            request.user.user.email in ownerEmails
+            or request.user.check_user_permissions("ALLOW_USER_OFFBOARD")
+        ):
+            allow_revoke = True
+        context["allowRevoke"] = allow_revoke
+        if accessV2s:
+            split_details = []
+            access_details = list(
+                map(getAccessDetails, [access[0] for access in accessV2s])
+            )
+            for idx, each_access in enumerate(access_details):
+                each_access["request_id"] = accessV2s[idx][1]
+                each_access["status"] = accessV2s[idx][2]
+                split_details.append(each_access)
+            context["genericAccesses"] = split_details
+    except Exception as e:
+        logger.error(f"Error while getting the users and access of the group: {str(e)}")
+        context = {
+            "error": {
+                "error_msg": "Internal Error",
+                "msg": f"Error while getting the users and access of the group: {str(e)}",
+            }
+        }
+
+    return context
 
 
-def updateOwner(request, group, context):
-    logger.debug(
-        "updating owners for group "
-        + group.name
-        + " requested by "
-        + request.user.username
-    )
-    data = request.POST
-    data = dict(data.lists())
+def updateOwner(request, groupName):
+    try:
+        context = {}
+        group = GroupV2.objects.get(name=groupName, status="Approved")
+        logger.debug(
+            "updating owners for group "
+            + group.name
+            + " requested by "
+            + request.user.username
+        )
+        data = request.POST
+        data = dict(data.lists())
 
-    if "owners" not in data:
-        data["owners"] = []
-    destination = [request.user.user.email]
+        if "owners" not in data:
+            data["owners"] = []
+        destination = [request.user.user.email]
 
-    # we will only get data["owners"] as owners who are checked in UI
-    # (exluding disabled checkbox owner who requested the change)
-    for membership_obj in MembershipV2.objects.filter(
-        group=group, status="Approved"
-    ).exclude(user=request.user.user):
-        if membership_obj.user.email in data["owners"]:
-            membership_obj.is_owner = True
-            destination.append(membership_obj.user.email)
-        else:
-            membership_obj.is_owner = False
-        membership_obj.save()
+        groupMembers = group.get_group_members().exclude(user=request.user.user)
 
-    logger.debug("Owners changed to " + ", ".join(destination))
-    subject = "Enigma Group '" + group.name + "' owners changed"
-    body = "\nGroup Name :- {} \nupdated owners :- {} \nupdated by :- {}".format(
-        group.name, ", ".join(destination), request.user.user.email
-    )
-    destination.extend(MAIL_APPROVER_GROUPS)
-    general.emailSES(destination, subject, body)
-    context["notification"] = "Owner's updated"
+        # we will only get data["owners"] as owners who are checked in UI
+        # (exluding disabled checkbox owner who requested the change)
+        for membership_obj in groupMembers:
+            if membership_obj.user.email is request.user.user.email:
+                continue
+            if membership_obj.user.email in data["owners"]:
+                membership_obj.is_owner = True
+                destination.append(membership_obj.user.email)
+            else:
+                membership_obj.is_owner = False
+            membership_obj.save()
+
+        logger.debug("Owners changed to " + ", ".join(destination))
+        subject = "Enigma Group '" + group.name + "' owners changed"
+        body = "\nGroup Name :- {} \nupdated owners :- {} \nupdated by :- {}".format(
+            group.name, ", ".join(destination), request.user.user.email
+        )
+        destination.extend(MAIL_APPROVER_GROUPS)
+        general.emailSES(destination, subject, body)
+        context["notification"] = "Owner's updated"
+    except Exception as e:
+        logger.error(f"Error occured while updating the owners: {e}")
+        context = {
+            "error": {
+                "error_msg": "Internal Error",
+                "msg": f"Error occured while updating the owners: {e}",
+            }
+        }
+
+    return context
 
 
 def isAllowedGroupAdminFunctions(request, groupMembers):
@@ -199,8 +303,9 @@ def approveNewGroupRequest(request, group_id):
             group.approve(approved_by=request.user.user)
             group.approve_all_pending_users(approved_by=request.user.user)
             initial_members = group.get_all_members()
-            notifications.send_new_group_approved_notification(group=group, group_id=group_id)
-
+            notifications.send_new_group_approved_notification(
+                group=group, group_id=group_id
+            )
 
             logger.debug(
                 "Approved group creation for - "
@@ -427,43 +532,71 @@ def generateUserAddToGroupEmailBody(
         reason=reason,
     )
 
-def acceptMember(request,requestId, shouldRender = True):
+
+def acceptMember(request, requestId, shouldRender=True):
     try:
         membership = MembershipV2.get_membership(membership_id=requestId)
     except Exception as e:
         logger.error("Error request not found OR Invalid request type")
         json_response = {}
-        json_response['error'] = "Error request not found OR Invalid request type - "+str(e)
+        json_response[
+            "error"
+        ] = "Error request not found OR Invalid request type - " + str(e)
         return json_response
     try:
         if membership.is_already_processed():
-            logger.warning("An Already Approved/Declined/Processing Request was accessed by - "+request.user.username)
+            logger.warning(
+                "An Already Approved/Declined/Processing Request was accessed by - "
+                + request.user.username
+            )
             json_response = {}
-            json_response['error'] = 'The Request ('+requestId+') is already Processed By : '+membership.approver.user.username
+            json_response["error"] = (
+                "The Request ("
+                + requestId
+                + ") is already Processed By : "
+                + membership.approver.user.username
+            )
             return json_response
         elif membership.is_self_approval(approver=request.user.user):
             context = {}
-            context["error"] = "You cannot approve your own request. Please ask other admins to do that"
+            context[
+                "error"
+            ] = "You cannot approve your own request. Please ask other admins to do that"
             return context
         else:
             json_response = {}
-            json_response['msg'] = 'The Request ('+requestId+') is now being processed'
+            json_response["msg"] = (
+                "The Request (" + requestId + ") is now being processed"
+            )
             membership.approve(request.user.user)
             group = membership.group
             user = membership.user
-            userMappingsList = views_helper.generateUserMappings(user, group, membership)
-            
+            userMappingsList = views_helper.generateUserMappings(
+                user, group, membership
+            )
+
             # TODO: Add celery task for executeGroupAccess
             # accessAcceptThread = threading.Thread(target=executeGroupAccess, args=(request, group.name, userMappingsList))
             # accessAcceptThread.start()
-        
-            notifications.send_membership_accepted_notification(user=user, group=group, membership=membership)
-            logger.debug("Process has been started for the Approval of request - "+requestId+" - Approver="+request.user.username)
+
+            notifications.send_membership_accepted_notification(
+                user=user, group=group, membership=membership
+            )
+            logger.debug(
+                "Process has been started for the Approval of request - "
+                + requestId
+                + " - Approver="
+                + request.user.username
+            )
             return json_response
     except Exception as e:
         logger.exception(e)
         logger.error("Error in Accept of New Member in Group request.")
         membership.unapprove()
         context = {}
-        context['error'] = "Error Occured while approving the request. Please contact admin - "+str(e)
+        context[
+            "error"
+        ] = "Error Occured while approving the request. Please contact admin - " + str(
+            e
+        )
         return context
