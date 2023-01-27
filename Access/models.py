@@ -412,18 +412,14 @@ class GroupV2(models.Model):
             return GroupV2.objects.get(group_id=group_id, status="Approved")
         except GroupV2.DoesNotExist:
             return None
-    
+
     def approve_all_pending_users(self, approved_by):
         self.membership_group.filter(group=self, status="Pending").update(
             status="Approved", approver=approved_by
         )
-        
+    
     def get_all_members(self):
-        group_members = list(
-            self.membership_group.filter(group=self).values_list(
-                "user__user__username", flat=True
-            )
-        )
+        group_members = self.membership_group.filter(group=self)
         return group_members
     
     def get_group_members(self):

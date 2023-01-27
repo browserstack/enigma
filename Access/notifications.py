@@ -24,8 +24,7 @@ def send_new_group_create_notification(auth_user, date_time, new_group, member_l
     general.emailSES(MAIL_APPROVER_GROUPS, subject, body)
     logger.debug("Email sent for " + subject + " to " + str(MAIL_APPROVER_GROUPS))
     
-def send_new_group_approved_notification(group, group_id):
-    initial_members = group.get_all_members()
+def send_new_group_approved_notification(group, group_id, initial_member_names):
     subject = "New Group Created (" + group.name + ")"
     body = (
         "New group with name "
@@ -34,9 +33,9 @@ def send_new_group_approved_notification(group, group_id):
         + group.requester.user.username
         + "<br>"
     )
-    if initial_members:
+    if initial_member_names:
         body += "The following members have been added to this team<br>"
-        body += generateGroupMemberTable(initial_members)
+        body += generateGroupMemberTable(initial_member_names)
     body = helpers.generateStringFromTemplate(
         filename="email.html", emailBody=body
     )
