@@ -1,4 +1,4 @@
-from Access.models import User, GroupV2, MembershipV2, Role
+from Access.models import User, GroupV2, MembershipV2
 from Access import helpers, views_helper, notifications
 import datetime
 import logging

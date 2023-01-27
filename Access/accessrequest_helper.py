@@ -3,7 +3,7 @@ import logging
 import time
 
 from BrowserStackAutomation.settings import DECLINE_REASONS
-from Access.models import UserAccessMapping, User, GroupV2, MembershipV2
+from Access.models import UserAccessMapping, User, GroupV2
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +18,7 @@ def requestAccessGet(request):
                     context["genericForm"] = True
                     try:
                         extra_fields = each_access.get_extra_fields()
-                    except:
+                    except Exception:
                         extra_fields = []
                     try:
                         notice = each_access.get_notice()
