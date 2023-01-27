@@ -32,11 +32,12 @@ def create_group(request):
         data = dict(data.lists())
         new_group_name = (data["newGroupName"][0]).lower()
         reason = data["newGroupReason"][0]
-        needs_access_approve=(
+        needs_access_approve = (
             "requiresAccessApprove" in data
             and data["requiresAccessApprove"][0] == "true"
         )
-        selected_users = data["selectedUserList"]
+        if "selectedUserList" in data:
+            selected_users = data["selectedUserList"]
     except Exception as e:
         logger.exception(e)
         logger.error("Error in Create New Group request.")
@@ -134,10 +135,14 @@ def updateOwner(request, group, context):
 
 
 def isAllowedGroupAdminFunctions(request, groupMembers):
-    ownersEmail = [member.user.email for member in groupMembers.filter(is_owner = True)]
-    is_approver = request.user.user.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"])
+    ownersEmail = [member.user.email for member in groupMembers.filter(is_owner=True)]
+    is_approver = request.user.user.has_permission(
+        PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]
+    )
 
-    if request.user.user.email not in ownersEmail and not (request.user.is_superuser or request.user.user.is_ops or is_approver):
+    if request.user.user.email not in ownersEmail and not (
+        request.user.is_superuser or request.user.user.is_ops or is_approver
+    ):
         return False
     return True
 
@@ -171,7 +176,8 @@ def approveNewGroupRequest(request, group_id):
         group_object = GroupV2.objects.get(group_id=group_id, status="Pending")
     except Exception as e:
         logger.error(
-            "Error in approveNewGroup request, Not found OR Invalid request type" + str(e)
+            "Error in approveNewGroup request, Not found OR Invalid request type"
+            + str(e)
         )
         json_response = {}
         json_response["error"] = "Error request not found OR Invalid request type"
@@ -180,9 +186,10 @@ def approveNewGroupRequest(request, group_id):
         if request.user.username == group_object.requester.user.username:
             # Approving self request
             context = {}
-            context[
-                "error"
-            ] = "You cannot approve your own request. Please ask other admins to do that"
+            context["error"] = (
+                "You cannot approve your own request. Please ask other admins to do"
+                " that"
+            )
             return context
         else:
             json_response = {}
@@ -330,7 +337,8 @@ def add_user_to_group(request):
                     "error_msg": "Duplicate Request",
                     "msg": "User "
                     + user_email
-                    + " is already added to group/or pending approval for group addition",
+                    + " is already added to group/or pending approval for group"
+                    " addition",
                 }
                 return context
 
@@ -354,7 +362,9 @@ def add_user_to_group(request):
                 json_response = {}
                 json_response["accessStatus"] = {
                     "msg": "The Request (" + membership_id + ") is now being processed",
-                    "desc": "A email will be sent after the requested access are granted",
+                    "desc": (
+                        "A email will be sent after the requested access are granted"
+                    ),
                 }
                 member.approver = request.user.user
                 member.status = "Approved"
@@ -388,8 +398,8 @@ def add_user_to_group(request):
         context = {}
         context["status"] = {
             "title": "Request Submitted",
-            "msg": "Once Approved the newly added members will be granted" +
-            " the same permissions as the group",
+            "msg": "Once Approved the newly added members will be granted"
+            + " the same permissions as the group",
         }
         return context
     except Exception as e:
