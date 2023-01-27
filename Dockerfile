@@ -20,8 +20,6 @@ RUN mkdir -p logs
 RUN chown -R app /srv/code/dev
 USER app
 
-# Create application subdirectories
-#WORKDIR /srv/code/dev
 # Copy just requirements.txt
 COPY requirements.txt /tmp/requirements.txt
 COPY config.json.sample config.json
@@ -40,7 +38,6 @@ COPY ./docker-entrypoint.sh /tmp/entrypoint.sh
 ENTRYPOINT ["/tmp/entrypoint.sh"]
 
 FROM base as static_resource_builder
-RUN whoami
 RUN python manage.py collectstatic --clear --noinput \
     && python manage.py collectstatic --noinput
 
