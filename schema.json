@@ -30,7 +30,10 @@
       "properties": {
         "engine": {
           "type": "string",
-          "enum": ["sqlite3", "mysql"]
+          "enum": [
+            "sqlite3",
+            "mysql"
+          ]
         },
         "dbname": {
           "type": "string"
