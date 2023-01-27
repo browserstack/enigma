@@ -39,7 +39,7 @@ def requestAccessGet(request):
                 context["genericForm"] = True
                 try:
                     extra_fields = each_access.get_extra_fields()
-                except:
+                except Exception:
                     extra_fields = []
                 try:
                     notice = each_access.get_notice()
