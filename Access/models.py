@@ -675,6 +675,9 @@ class UserIdentity(models.Model):
         return self.user_access_mapping.filter(
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
+    
+    # def get_active_access(self, access):
+    #     return self.
 
     def replicate_active_access_membership_for_module(
         self, existing_user_access_mapping

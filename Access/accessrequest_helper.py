@@ -244,7 +244,7 @@ def process_error_response(request, e):
     return json_response
 
 
-def create_request(user, access_request_form):
+def create_request(auth_user, access_request_form):
     json_response, access_request = _validate_access_request(
         access_request_form=access_request_form, user=user
     )
@@ -266,7 +266,7 @@ def create_request(user, access_request_form):
         )
 
         request_id = (
-            user.username
+            auth_user.username
             + "-"
             + access_type
             + "-"
@@ -283,7 +283,7 @@ def create_request(user, access_request_form):
             access_module=access_module,
             access_reason=access_request["accessReason"][index],
             access_labels=access_labels,
-            user=user,
+            user=auth_user,
         )
 
         try:
@@ -304,10 +304,11 @@ def create_request(user, access_request_form):
                 )
             else:
                 existing_individual_access = UserAccessMapping.objects.filter(
-                    user=User.objects.get(user__username=user),
+                    user=User.objects.get(user__username=auth_user),
                     access=access,
                     status__in=["Approved", "Pending"],
                 )
+                #identity = auth_user.user.get_active_identity(access_tag = access_type)
 
                 if existing_individual_access:
                     json_response["status_list"].append(
@@ -320,7 +321,7 @@ def create_request(user, access_request_form):
             request_id = request_id + "_" + str(index)
             UserAccessMapping.objects.create(
                 request_id=request_id,
-                user=User.objects.get(user__username=user.user),
+                user=User.objects.get(user__username=auth_user.user),
                 request_reason=generic_request_data["accessReason"],
                 access=access,
             )
