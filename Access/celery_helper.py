@@ -1,7 +1,5 @@
 from celery import shared_task
 from celery.signals import task_prerun, task_postrun, task_success, task_failure
-from time import sleep
-from Access.sample_code.zoom import Zoom
 from celery.result import AsyncResult
 
 
