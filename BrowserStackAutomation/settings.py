@@ -41,7 +41,6 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    "django_celery_results",
     "bootprocess.apps.BootprocessConfig",
     "social_django",
     "Access",
@@ -188,9 +187,13 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = data["googleapi"][
     "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS"
 ]
 
-CELERY_BROKER_URL = data["celery"]["broker"]
-# CELERY_RESULT_BACKEND = "redis://localhost:6379"
-CELERY_RESULT_BACKEND = data["celery"]["backend"]
+if data["background_task_manager"]["type"] == "celery":
+    background_task_manager_config = data["background_task_manager"]["config"]
+    CELERY_BROKER_URL = background_task_manager_config["broker"]
+    CELERY_RESULT_BACKEND = background_task_manager_config["backend"]
+
+    if background_task_manager_config["need_monitoring"]:
+        INSTALLED_APPS.append(background_task_manager_config["monitoring_apps"])
 
 USER_STATUS_CHOICES = [
     ("1", "active"),
