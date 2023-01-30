@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from Access.models import (
-    User,
+    # User,
     Permission,
     UserAccessMapping,
     Role,
@@ -10,7 +10,8 @@ from Access.models import (
     MembershipV2,
 )
 
-admin.site.register(User)
+# User is already registered in the admin site
+# admin.site.register(User)
 admin.site.register(Permission)
 admin.site.register(UserAccessMapping)
 admin.site.register(Role)
