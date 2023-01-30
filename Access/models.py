@@ -392,13 +392,6 @@ class UserAccessMapping(models.Model):
     approved_on = models.DateTimeField(null=True, blank=True)
     updated_on = models.DateTimeField(auto_now=True)
 
-    user = models.ForeignKey(
-        "User",
-        null=False,
-        blank=False,
-        on_delete=models.PROTECT,
-    )
-
     request_reason = models.TextField(null=False, blank=False)
 
     approver_1 = models.ForeignKey(
@@ -631,8 +624,14 @@ class AccessV2(models.Model):
             return self.access_tag + " - " + ", ".join(details_arr)
         except Exception:
             return self.access_tag
-
-
+    
+    @staticmethod
+    def get(access_type, access_label):
+        try:
+            return AccessV2.objects.get(access_tag=access_type, access_label=access_label)
+        except:
+            return None
+        
 class UserIdentity(models.Model):
     class Meta:
         constraints = [
@@ -676,8 +675,13 @@ class UserIdentity(models.Model):
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
     
-    # def get_active_access(self, access):
-    #     return self.
+    def get_active_access(self, access):
+        return self.user_access_mapping.filter(access=access, status__in=["Approved", "Pending"])
+    
+    def access_exists(self, access):
+        if self.get_active_access(access=access):
+            return True
+        return False
 
     def replicate_active_access_membership_for_module(
         self, existing_user_access_mapping

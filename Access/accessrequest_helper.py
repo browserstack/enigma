@@ -7,6 +7,7 @@ from BrowserStackAutomation.settings import DECLINE_REASONS
 from Access.models import UserAccessMapping, User, GroupV2, AccessV2
 import datetime
 import json
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 all_access_modules = helper.get_available_access_modules()
@@ -23,9 +24,23 @@ CREATE_REQUEST_EMPTY_REQUEST_ERROR_MESSAGE = {
     "error_msg": "Invalid Request",
     "msg": "Please Contact Admin",
 }
-CREATE_REQUEST_EMPTY_ACCESS_REQUEST_FORM = {
+CREATE_REQUEST_EMPTY_ACCESS_REQUEST_FORM_ERROR_MESSAGE = {
     "error_msg": "The submitted form is empty. Tried direct access to reqeust access page",
     "msg": "Error Occured while submitting your Request. Please contact the Admin",
+}
+
+CREATE_REQUEST_ACCESS_AUTO_APPROVED_MESSAGE = {
+    "title": "{request_id}  Request Approved",
+    "msg": "Once granted you will receive the update",
+}
+
+CREATE_REQUEST_DB_ERROR_MESSAGE = {
+    "error_msg": "Error Saving Request",
+    "msg": "Please Contact Admin",
+}
+CREATE_REQUEST_IDENTITY_NOT_SETUP_ERROR_MESSAGE = {
+    "error_msg": "Identity not setup",
+    "msg": "User Identity for module {access_tag} not setup by the user",
 }
 
 
@@ -246,7 +261,7 @@ def process_error_response(request, e):
 
 def create_request(auth_user, access_request_form):
     json_response, access_request = _validate_access_request(
-        access_request_form=access_request_form, user=user
+        access_request_form=access_request_form, user=auth_user
     )
 
     current_date_time = (
@@ -255,15 +270,14 @@ def create_request(auth_user, access_request_form):
     json_response = {}
     json_response["status"] = []
     json_response["status_list"] = []
-    extra_fields = []
-    if "extraFields" in access_request:
-        extra_fields = access_request["extraFields"]
+    extra_fields = _get_extra_fields(access_request=access_request)
 
-    for index, access_type in enumerate(access_request["accessRequests"]):
+    for index1, access_type in enumerate(access_request["accessRequests"]):
         access_labels = _validate_access_labels(
-            access_labels_json=access_request["accessLabel"][index],
+            access_labels_json=access_request["accessLabel"][index1],
             access_type=access_type,
         )
+        access_reason = access_request["accessReason"][index1]
 
         request_id = (
             auth_user.username
@@ -279,77 +293,152 @@ def create_request(auth_user, access_request_form):
 
         access_module = all_access_modules[access_type]
 
-        generic_request_data = _create_generic_request(
-            access_module=access_module,
-            access_reason=access_request["accessReason"][index],
-            access_labels=access_labels,
-            user=auth_user,
+        ##########
+        module_access_labels = access_module.validate_request(
+            access_labels, auth_user, is_group=False
         )
+        ##########
+        # generic_request_data = _create_generic_request(
+        #     access_module=access_module,
+        #     access_reason=access_request["accessReason"][index1],
+        #     access_labels=access_labels,
+        #     user=auth_user,
+        # )
 
-        try:
-            extra_field_labels = access_module.get_extra_fields()
-        except:
-            extra_field_labels = []
+        extra_field_labels = _get_extra_field_labels(access_module)
 
         if extra_fields and extra_field_labels:
             for field in extra_field_labels:
-                generic_request_data["accessLabel"][0][field] = extra_fields[0]
+                module_access_labels[0][field] = extra_fields[0]
                 extra_fields = extra_fields[1:]
 
-        for index, access_label in enumerate(generic_request_data["accessLabel"]):
-            access = AccessV2.get(access_tag=access_type, access_label=access_label)
-            if not access:
-                access = AccessV2.objects.create(
-                    access_tag=access_type, access_label=access_label
-                )
-            else:
-                existing_individual_access = UserAccessMapping.objects.filter(
-                    user=User.objects.get(user__username=auth_user),
-                    access=access,
-                    status__in=["Approved", "Pending"],
-                )
-                #identity = auth_user.user.get_active_identity(access_tag = access_type)
-
-                if existing_individual_access:
-                    json_response["status_list"].append(
-                        CREATE_REQUEST_DUPLICATE_ERROR_MESSAGE.format(
-                            access_tag=access.access_tag,
-                            access_label=json.dumps(access.access_label),
-                        )
-                    )
-                    continue
-            request_id = request_id + "_" + str(index)
-            UserAccessMapping.objects.create(
+        for index2, access_label in enumerate(module_access_labels):
+            request_id = request_id + "_" + str(index2)
+            access_create_error = _create_access(
+                auth_user=auth_user,
+                access_label=access_label,
+                access_type=access_type,
                 request_id=request_id,
-                user=User.objects.get(user__username=auth_user.user),
-                request_reason=generic_request_data["accessReason"],
-                access=access,
+                access_reason=access_reason,
             )
+            if access_create_error:
+                json_response["status_list"].append(access_create_error)
+                continue
+
             if access_module.can_auto_approve():
                 # start approval in celery
-                raise Exception("Implementation pending")
-            else:
                 json_response["status_list"].append(
-                    CREATE_REQUEST_SUCCESS_MESSAGE.format(
-                        request_id=request_id,
-                        access_label=json.dumps(access.access_label),
-                    )
+                    {
+                        "title": CREATE_REQUEST_ACCESS_AUTO_APPROVED_MESSAGE[
+                            "title"
+                        ].format(request_id),
+                        "msg": CREATE_REQUEST_ACCESS_AUTO_APPROVED_MESSAGE["msg"],
+                    }
                 )
+                raise Exception("Implementation pending")
+                continue
+
+            json_response["status_list"].append(
+                {
+                    "title": CREATE_REQUEST_SUCCESS_MESSAGE["title"].format(
+                        request_id=request_id
+                    ),
+                    "msg": CREATE_REQUEST_SUCCESS_MESSAGE["msg"].format(
+                        access_label=json.dumps(access_label)
+                    ),
+                }
+            )
 
     return json_response
+
+
+def _create_access(auth_user, access_label, access_type, request_id, access_reason):
+    user_identity = auth_user.user.get_active_identity(access_tag=access_type)
+    if not user_identity:
+        return {
+            "title": CREATE_REQUEST_IDENTITY_NOT_SETUP_ERROR_MESSAGE["error_msg"],
+            "msg": CREATE_REQUEST_IDENTITY_NOT_SETUP_ERROR_MESSAGE["msg"].format(
+                access_tag=access_type
+            ),
+        }
+
+    access = AccessV2.get(access_type=access_type, access_label=access_label)
+    if access:
+        if user_identity.access_exists(access):
+            return {
+                "title": CREATE_REQUEST_DUPLICATE_ERROR_MESSAGE["title"].format(
+                    access_tag=access.access_tag
+                ),
+                "msg": CREATE_REQUEST_DUPLICATE_ERROR_MESSAGE["msg"].format(
+                    access_label=json.dumps(access.access_label)
+                ),
+            }
+
+    try:
+
+        access = _create_access_mapping(
+            access=access,
+            user_identity=user_identity,
+            request_id=request_id,
+            access_label=access_label,
+            access_type=access_type,
+            access_reason=access_reason,
+        )
+    except Exception:
+        return {
+            "error_msg": CREATE_REQUEST_DB_ERROR_MESSAGE["error_msg"],
+            "msg": CREATE_REQUEST_DB_ERROR_MESSAGE["msg"],
+        }
+
+
+@transaction.atomic
+def _create_access_mapping(
+    user_identity, access, request_id, access_type, access_label, access_reason
+):
+    if not access:
+        access = AccessV2.objects.create(
+            access_tag=access_type, access_label=access_label
+        )
+
+    user_identity.user_access_mapping.create(
+        request_id=request_id, request_reason=access_reason, access=access
+    )
+    return access
+
+
+def _get_extra_field_labels(access_module):
+    try:
+        return access_module.get_extra_fields()
+    except Exception:
+        return []
+
+
+def _get_extra_fields(access_request):
+    if "extraFields" in access_request:
+        return access_request["extraFields"]
+    return []
 
 
 def _validate_access_request(access_request_form, user):
     if not access_request_form:
         json_response = {}
-        json_response["error"] = CREATE_REQUEST_EMPTY_REQUEST_ERROR_MESSAGE
+        json_response["error"] = {
+            "error_msg": CREATE_REQUEST_EMPTY_REQUEST_ERROR_MESSAGE["error_msg"],
+            "msg": CREATE_REQUEST_EMPTY_REQUEST_ERROR_MESSAGE["msg"],
+        }
+
         logger.debug("Tried a direct Access to accessRequest by-" + user.username)
         return json_response
 
     access_request = dict(access_request_form.lists())
 
     if "accessRequests" not in access_request:
-        json_response["error"] = CREATE_REQUEST_EMPTY_ACCESS_REQUEST_FORM
+        json_response["error"] = {
+            "error_msg": CREATE_REQUEST_EMPTY_ACCESS_REQUEST_FORM_ERROR_MESSAGE[
+                "error_msg"
+            ],
+            "msg": CREATE_REQUEST_EMPTY_ACCESS_REQUEST_FORM_ERROR_MESSAGE["msg"],
+        }
         return json_response
     return {}, access_request
 
@@ -367,17 +456,17 @@ def _validate_access_labels(access_labels_json, access_type):
     return access_labels
 
 
-def _create_generic_request(access_module, access_reason, access_labels, user):
-    generic_request_data = {}
-    generic_request_data["accessLabel"] = access_module.validate_request(
-        access_labels, user, is_group=False
-    )
-    generic_request_data["accessCategory"] = access_module.combine_labels_desc(
-        generic_request_data["accessLabel"]
-    )
-    generic_request_data["accessMeta"] = access_module.combine_labels_meta(
-        generic_request_data["accessLabel"]
-    )
-    generic_request_data["accessDesc"] = access_module.access_desc()
-    generic_request_data["accessReason"] = access_reason
-    return generic_request_data
+# def _create_generic_request(access_module, access_reason, access_labels, user):
+#     generic_request_data = {}
+#     generic_request_data["accessLabel"] = access_module.validate_request(
+#         access_labels, user, is_group=False
+#     )
+#     generic_request_data["accessCategory"] = access_module.combine_labels_desc(
+#         generic_request_data["accessLabel"]
+#     )
+#     generic_request_data["accessMeta"] = access_module.combine_labels_meta(
+#         generic_request_data["accessLabel"]
+#     )
+#     generic_request_data["accessDesc"] = access_module.access_desc()
+#     generic_request_data["accessReason"] = access_reason
+#     return generic_request_data

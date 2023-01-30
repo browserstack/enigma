@@ -93,7 +93,7 @@ def allUsersList(request):
 @login_required
 def requestAccess(request):
     if request.POST:
-        context = create_request(user = request.user, access_request_form = request.POST)
+        context = create_request(auth_user = request.user, access_request_form = request.POST)
         return render(request, "BSOps/accessStatus.html", context)
     else:
         context = requestAccessGet(request)
