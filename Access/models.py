@@ -198,7 +198,7 @@ class User(models.Model):
     @staticmethod
     def is_approver(email):
         return User.objects.filter(role=Role.objects.get(label='TEAMS:ACCESSAPPROVE'),state=1, email=email).count() > 0
-    
+
     def get_all_memberships(self):
         return self.membership_user.all()
 
@@ -261,7 +261,7 @@ class MembershipV2(models.Model):
         on_delete=models.PROTECT,
     )
     decline_reason = models.TextField(null=True, blank=True)
-    
+
     def approve(self, approver):
         self.status = 'Approved'
         self.approver = approver
@@ -274,10 +274,10 @@ class MembershipV2(models.Model):
 
     def get_status(self):
         return self.status
-    
+
     def is_self_approval(self, approver):
         return self.requested_by == approver
-    
+
     def is_already_processed(self):
         return self.status in ['Declined','Approved','Processing','Revoked']
 
@@ -287,7 +287,7 @@ class MembershipV2(models.Model):
         membership.status = 'Approved'
         membership.approver = approver
         membership.save()
-    
+
     @staticmethod
     def get_membership(membership_id):
         return MembershipV2.objects.get(membership_id=membership_id)
@@ -401,18 +401,18 @@ class GroupV2(models.Model):
                 {"groupRequest": new_group, "initialMembers": initial_members}
             )
         return new_group_pending_data
-    
+
     @staticmethod
     def get_pending_group(group_id):
         return GroupV2.objects.get(group_id=group_id, status="Pending")
-    
+
     @staticmethod
     def get_approved_group(group_id):
         try:
             return GroupV2.objects.get(group_id=group_id, status="Approved")
         except GroupV2.DoesNotExist:
             return None
-    
+
     @staticmethod
     def get_active_group_by_name(group_name):
         try:
@@ -424,27 +424,27 @@ class GroupV2(models.Model):
         self.membership_group.filter(status="Pending").update(
             status="Approved", approver=approved_by
         )
-    
+
     def get_all_members(self):
         group_members = self.membership_group.all()
         return group_members
-    
+
     def get_active_accesses(self):
         return self.groupaccessmapping_set.filter(status__in=["Approved", "Pending", "Declined", "SecondaryPending"])
 
     def is_self_approval(self, approver):
         return self.requester==approver
-    
+
     def approve(self, approved_by):
         self.approver = approved_by
         self.status = "Approved"
         self.save()
-        
+
     def unapprove(self):
         self.approver = None
         self.status = "Pending"
         self.save()
-        
+
     def unapprove_memberships(self):
         self.membership_group.filter(status="Approved").update(status="Pending", approver=None)
 

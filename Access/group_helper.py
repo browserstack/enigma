@@ -223,7 +223,7 @@ def update_owners(request, group_name):
             "msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["msg"]
         }}
         return context
-    
+
     logger.debug(
         "updating owners for group "
         + group.name
@@ -254,7 +254,7 @@ def update_owners(request, group_name):
             else:
                 membership.is_owner = False
             membership.save()
-    
+
     logger.debug("Owners changed to " + ", ".join(destination))
     destination.extend(MAIL_APPROVER_GROUPS)
     notifications.send_group_owners_update_mail(destination, group_name, auth_user.user.email)
@@ -340,7 +340,7 @@ def approve_new_group_request(request, group_id):
                     "Members added to group - "
                     + group_id
                     + " ="
-                    + ", ".join(initial_member_names) 
+                    + ", ".join(initial_member_names)
                 )
             return json_response
     except Exception as e:
@@ -579,7 +579,7 @@ def accept_member(request,requestId, shouldRender = True):
                 group = membership.group
                 user = membership.user
                 userMappingsList = views_helper.generateUserMappings(user, group, membership)
-            
+
             # TODO: Add celery task for executeGroupAccess
             # accessAcceptThread = threading.Thread(target=executeGroupAccess, args=(request, group.name, userMappingsList))
             # accessAcceptThread.start()

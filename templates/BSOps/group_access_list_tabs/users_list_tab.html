@@ -112,7 +112,7 @@ function userRemoveConfirm(membership_id){
       <tbody>
         {% for user in userList %}
         <tr>
-          <td style="width:10%; text-align: center;"> 
+          <td style="width:10%; text-align: center;">
             {% if request.user.email == user.email %}
             <input type="checkbox" name="owners" value="{{ user.is_owner }}" checked disabled="true"></input>
             {% else %}
@@ -120,7 +120,7 @@ function userRemoveConfirm(membership_id){
             <input type="checkbox" name="owners" value="{{ user.email }}" checked></input>
             {% else %}
             <input type="checkbox" name="owners" value="{{ user.email }}" > </input>
-            {% endif %} 
+            {% endif %}
             {% endif %}
           </td>
           <td>{{user.name}}</td>
@@ -183,7 +183,7 @@ function userRemoveConfirm(membership_id){
   </form>
   {% if notification %}
   <div class="alert alert-success alert-dismissible fade show">
-    {{ notification }} 
+    {{ notification }}
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
