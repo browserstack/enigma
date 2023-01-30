@@ -218,7 +218,7 @@ def approve_new_group_request(request, group_id):
                     "Members added to group - "
                     + group_id
                     + " ="
-                    + ", ".join(initial_member_names) 
+                    + ", ".join(initial_member_names)
                 )
             return json_response
     except Exception as e:
@@ -454,11 +454,11 @@ def accept_member(request,requestId, shouldRender = True):
                 group = membership.group
                 user = membership.user
                 userMappingsList = views_helper.generateUserMappings(user, group, membership)
-            
+
             # TODO: Add celery task for executeGroupAccess
             # accessAcceptThread = threading.Thread(target=executeGroupAccess, args=(request, group.name, userMappingsList))
             # accessAcceptThread.start()
-        
+
             notifications.send_membership_accepted_notification(user=user, group=group, membership=membership)
             logger.debug("Process has been started for the Approval of request - "+requestId+" - Approver="+request.user.username)
             return json_response

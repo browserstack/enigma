@@ -64,7 +64,7 @@ def getGrantFailedRequests(request):
             failures = failures.filter(access__access_tag=access_tag).order_by(
                 "-requested_on"
             )
-            
+
         context = {"failures": failures, "heading": "Grant Failures"}
         return context
     except Exception as e:
@@ -86,7 +86,7 @@ def get_pending_revoke_failures(request):
         failures = UserAccessMapping.objects.filter(
             status__in=["RevokeFailed"]
         ).order_by("-requested_on")
-        
+
     context = {"failures": failures, "heading": "Revoke Failures"}
     return context
 
