@@ -1,10 +1,10 @@
 from Access.models import User, GroupV2, MembershipV2, Role
-from Access import helpers, views_helper, notifications
+from Access import helpers, notifications
 import datetime
 import logging
 from bootprocess import general
+from Access.views_helper import generateUserMappings, executeGroupAccess
 from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
-import threading
 
 logger = logging.getLogger(__name__)
 
@@ -368,16 +368,14 @@ def add_user_to_group(request):
                 }
                 member.approver = request.user.user
                 member.status = "Approved"
-                userMappingsList = views_helper.generateUserMappings(
+                user_mappings_list = generateUserMappings(
                     user, group, member
                 )
                 member.save()
-                group_name = member.group.name
-                accessAcceptThread = threading.Thread(
-                    target=views_helper.executeGroupAccess,
-                    args=(request, group_name, userMappingsList),
-                )
-                accessAcceptThread.start()
+                # group_name = member.group.name
+
+                executeGroupAccess(user_mappings_list)
+
                 logger.debug(
                     "Process has been started for the Approval of request - "
                     + membership_id

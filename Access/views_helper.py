@@ -4,6 +4,7 @@ import traceback
 import logging
 from . import helpers as helper
 from bootprocess import general
+from Access.background_task_manager import background_task
 
 logger = logging.getLogger(__name__)
 all_access_modules = helper.getAvailableAccessModules()
@@ -68,9 +69,7 @@ def executeGroupAccess(userMappingsList):
             if "other" in mappingObj.request_id:
                 decline_group_other_access(mappingObj)
             else:
-                run_access_grant(
-                    mappingObj.request_id, mappingObj, accessType, user, approver
-                )
+                background_task("run_access_grant", (mappingObj.request_id, mappingObj, accessType, user, approver))
                 logger.debug(
                     "Successful group access grant for " + mappingObj.request_id
                 )
