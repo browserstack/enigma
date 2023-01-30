@@ -392,13 +392,6 @@ class UserAccessMapping(models.Model):
     approved_on = models.DateTimeField(null=True, blank=True)
     updated_on = models.DateTimeField(auto_now=True)
 
-    user = models.ForeignKey(
-        "User",
-        null=False,
-        blank=False,
-        on_delete=models.PROTECT,
-    )
-
     request_reason = models.TextField(null=False, blank=False)
 
     approver_1 = models.ForeignKey(
