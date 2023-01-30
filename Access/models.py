@@ -412,21 +412,24 @@ class GroupV2(models.Model):
             return GroupV2.objects.get(group_id=group_id, status="Approved")
         except GroupV2.DoesNotExist:
             return None
+    
+    @staticmethod
+    def get_active_group_by_name(group_name):
+        try:
+            return GroupV2.objects.get(name=group_name, status="Approved")
+        except Exception:
+            return None
 
     def approve_all_pending_users(self, approved_by):
-        self.membership_group.filter(group=self, status="Pending").update(
+        self.membership_group.filter(status="Pending").update(
             status="Approved", approver=approved_by
         )
     
     def get_all_members(self):
-        group_members = self.membership_group.filter(group=self)
+        group_members = self.membership_group.all()
         return group_members
     
-    def get_group_members(self):
-        approved_members = self.membership_group.filter(status="Approved")
-        return approved_members
-    
-    def get_all_accesses(self):
+    def get_active_accesses(self):
         return self.groupaccessmapping_set.filter(status__in=["Approved", "Pending", "Declined", "SecondaryPending"])
 
     def is_self_approval(self, approver):

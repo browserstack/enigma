@@ -40,13 +40,13 @@ $(document).on("submit", "#updateOwners", function(e){
     type: "POST",
     url: actionUrl,
     data: form.serialize(),
-    error: () => {
-      alert("Failed to Update");
+    error: (xhr, status, error) => {
+      alert("Failed to Update Owners");
     }
   }).done(function(data, statusText, xhr){
     let status = xhr.status;
     if(status !== 200) {
-      alert("Failed to update Owners")
+      alert(data["error"] || "Failed to update Owners")
     }
     else {
       location.reload(true);

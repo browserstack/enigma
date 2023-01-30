@@ -58,3 +58,15 @@ def generateGroupMemberTable(memberList):
     if len(memberList) <= 0:
         return "No members are being added initially"
     return helpers.generateStringFromTemplate("listToTable.html", memberList=memberList)
+
+def send_group_owners_update_mail(destination, group_name, updated_by):
+    try:
+        subject = "Enigma Group '" + group_name + "' owners changed"
+        body = "\nGroup Name :- {} \nupdated owners :- {} \nupdated by :- {}".format(
+            group_name, ", ".join(destination), updated_by
+        )
+
+        general.emailSES(destination, subject, body)
+    except Exception as e:
+        logger.exception(str(e))
+        logger.error("Something when wrong while sending Email.")

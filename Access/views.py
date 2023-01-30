@@ -102,20 +102,34 @@ def groupRequestAccess(request):
 
 
 @login_required
-def groupAccessList(request, groupName):
-    context = group_helper.getGroupAccessList(request, groupName)
-    if "error" in context:
-        return render(request, "BSOps/accessStatus.html", context)
+def group_access_list(request, groupName):
+    try:
+        context = group_helper.get_group_access_list(request, groupName)
+        if "error" in context:
+            return render(request, "BSOps/accessStatus.html", context)
 
-    return render(request, "BSOps/groupAccessList.html", context)
+        return render(request, "BSOps/groupAccessList.html", context)
+    except Exception as e:
+        logger.debug("Error in request not found OR Invalid request type")
+        logger.exception(e)
+        json_response = {}
+        json_response['error'] = {'error_msg': str(e), 'msg': INVALID_REQUEST_MESSAGE}
+        return render(request, 'BSOps/accessStatus.html', json_response)
 
 @login_required
-def updatedGroupOwners(request, groupName):
-    context = group_helper.updateOwner(request, groupName)
-    if "error" in context:
-        return JsonResponse(context, status=500)
+def update_group_owners(request, groupName):
+    try:
+        context = group_helper.update_owners(request, groupName)
+        if "error" in context:
+            return JsonResponse(context, status=400)
 
-    return JsonResponse(context, status=200)
+        return JsonResponse(context, status=200)
+    except Exception as e:
+        logger.debug("Error in request not found OR Invalid request type")
+        logger.exception(e)
+        json_response = {}
+        json_response['error'] = INVALID_REQUEST_MESSAGE
+        return JsonResponse(json_response, status=400)
 
 @login_required
 def groupDashboard(request):
