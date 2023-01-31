@@ -3,14 +3,23 @@ from os.path import dirname, basename, isfile, join
 import glob
 import logging
 import re
-import time, datetime
+import datetime
 
-from Access.access_modules import *
-from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
+from Access.access_modules import * # NOQA
 
 logger = logging.getLogger(__name__)
+
 available_accesses = []
 cached_accesses = []
+
+modules = {}
+
+
+def get_available_access_modules():
+    available_accesses = getAvailableAccessModules()
+    for access in available_accesses:
+        modules.update({access.tag(): access})
+    return modules
 
 
 def getAvailableAccessModules():
@@ -19,6 +28,7 @@ def getAvailableAccessModules():
         return available_accesses
     available_accesses = [access for access in getAccessModules() if access.available]
     return available_accesses
+
 
 def getAccessModules():
     global cached_accesses
@@ -31,12 +41,16 @@ def getAccessModules():
         if re.search(r"/(base_|__pycache__|secrets)", each_dir):
             access_modules_dirs.remove(each_dir)
     access_modules_dirs.sort()
-    cached_accesses = \
-        [globals()[basename(f)].access.get_object() for f in access_modules_dirs if not isfile(f)]
+    cached_accesses = [
+        globals()[basename(f)].access.get_object()
+        for f in access_modules_dirs
+        if not isfile(f)
+    ]
     return cached_accesses
 
+
 def check_user_permissions(user, permissions):
-    if hasattr(user, 'user'):
+    if hasattr(user, "user"):
         permission_labels = [permission.label for permission in user.user.permissions]
         if type(permissions) == list:
             if len(set(permissions).intersection(permission_labels)) > 0:
@@ -46,11 +60,15 @@ def check_user_permissions(user, permissions):
                 return True
     return False
 
+
 def sla_breached(requested_on):
-    diff = datetime.datetime.now().replace(tzinfo=None) - requested_on.replace(tzinfo=None)
+    diff = datetime.datetime.now().replace(tzinfo=None) - requested_on.replace(
+        tzinfo=None
+    )
     duration_in_s = diff.total_seconds()
     hours = divmod(duration_in_s, 3600)[0]
     return hours >= 24
+
 
 def generateStringFromTemplate(filename, **kwargs):
     template = loader.get_template(filename)
@@ -58,6 +76,7 @@ def generateStringFromTemplate(filename, **kwargs):
     for key, value in kwargs.items():
         vals[key] = value
     return template.render(vals)
+
 
 def getPossibleApproverPermissions():
     all_approver_permissions = []

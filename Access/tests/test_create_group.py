@@ -70,7 +70,9 @@ def add_group(new_request, new_group_name):
     new_request.POST = QueryDict(
         "newGroupName="
         + new_group_name
-        + "&requiresAccessApprove=true&newGroupReason=['test reason']&selectedUserList=[]"
+        + "&requiresAccessApprove=true"
+        + "&newGroupReason=['test reason']"
+        + "&selectedUserList=[]"
     )
     return create_group(new_request)
 

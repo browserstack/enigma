@@ -2,10 +2,12 @@ from unittest.mock import Mock
 
 
 class MockAccessModule:
-    def __init__(self,
-                 name="",
-                 primaryApproverPermissionLabel="",
-                 secondaryApproverPermissionLabel=""):
+    def __init__(
+        self,
+        name="",
+        primaryApproverPermissionLabel="",
+        secondaryApproverPermissionLabel="",
+    ):
         self.name = name
         self.available = True
         permissions = {}

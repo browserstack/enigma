@@ -132,7 +132,8 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
                     message = str(response[1])
             except Exception:
                 logger.exception(
-                    "Error while running approval module: " + str(traceback.format_exc())
+                    "Error while running approval module: "
+                    + str(traceback.format_exc())
                 )
                 approve_success = False
                 message = str(traceback.format_exc())

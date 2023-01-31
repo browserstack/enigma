@@ -69,7 +69,8 @@ def getDashboardData(request):
 
     if not user.gitusername:
         logger.debug(
-            "Redirecting User to Fill out git username and his public key for ssh access."
+            "Redirecting User to Fill out git username and his public key for ssh"
+            " access."
         )
         # return redirect('updateUserInfo')
 
@@ -78,38 +79,13 @@ def getDashboardData(request):
     ec2_regions = list(data.keys())
 
     context = {}
-    dataList = []
-
-    gitCount = 0
-    dashboardCount = 0
-    sshMachineCount = 0
-    groupCount = 0
-
-    dashboardCount = len(
-        UserAccessMapping.objects.filter(
-            user=request.user.user, status="Approved", access__access_tag="other"
-        )
-    )
-    sshMachineCount = len(
-        UserAccessMapping.objects.filter(
-            user=request.user.user, status="Approved", access__access_tag="ssh"
-        )
-    )
-    gitCount = len(
-        UserAccessMapping.objects.filter(
-            user=request.user.user,
-            status="Approved",
-            access__access_tag="github_access",
-        )
-    )
+   
+   
     groupCount = len(
         MembershipV2.objects.filter(user=request.user.user, status="Approved")
     )
 
     context["regions"] = ec2_regions
-    context["gitCount"] = gitCount
-    context["dashboardCount"] = dashboardCount
-    context["sshMachineCount"] = sshMachineCount
     context["groupCount"] = groupCount
 
     return context
