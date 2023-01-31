@@ -65,5 +65,5 @@ urlpatterns = [
         add_user_to_group,
         name="addUserToGroup",
     ),
-    re_path(r'^accept_bulk/(?P<selector>[\w-]+)',accept_bulk,name='accept_bulk'),
+    re_path(r'^accept_bulk/(?P<selector>[\w-]+)', accept_bulk, name='accept_bulk'),
 ]

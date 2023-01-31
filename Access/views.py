@@ -17,7 +17,6 @@ from Access.accessrequest_helper import (
 )
 from Access.userlist_helper import getallUserList
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
-from django.shortcuts import render
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type - "
 
@@ -136,6 +135,7 @@ def pendingRequests(request):
     context = getPendingRequests(request)
     return render(request, "BSOps/pendingRequests.html", context)
 
+
 @login_required
 def accept_bulk(request, selector):
     try:
@@ -160,11 +160,11 @@ def accept_bulk(request, selector):
                 context['response'][requestId] = {"msg": json_response["msg"], "success": True}
         context['bulk_approve'] = True
         context["returnIds"] = returnIds
-        return JsonResponse(context, status = 200)
+        return JsonResponse(context, status=200)
     except Exception as e:
-        logger.debug(INVALID_REQUEST_MESSAGE+str(str(e)))
+        logger.debug(INVALID_REQUEST_MESSAGE + str(str(e)))
         json_response = {}
-        json_response['error'] = INVALID_REQUEST_MESSAGE+str(str(e))
+        json_response['error'] = INVALID_REQUEST_MESSAGE + str(str(e))
         json_response["success"] = False
         json_response["status_code"] = 401
-        return JsonResponse(json_response, status = json_response["status_code"])
+        return JsonResponse(json_response, status=json_response["status_code"])
