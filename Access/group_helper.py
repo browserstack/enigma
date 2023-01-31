@@ -1,5 +1,6 @@
 from Access.models import User, GroupV2, MembershipV2, Role
 from Access import helpers, views_helper, notifications
+from django.db import transaction
 import datetime
 import logging
 from bootprocess import general
@@ -23,6 +24,13 @@ NEW_GROUP_CREATE_ERROR_GROUP_EXISTS = {
     "error_msg": "Invalid Group Name",
     "msg": "A group with name {group_name} already exists. Please choose a new name.",
 }
+
+REQUEST_NOT_FOUND_ERROR = "Error request not found OR Invalid request type"
+SELF_APPROVAL_ERROR = "You cannot approve your own request. Please ask other admins to do that"
+GROUP_APPROVAL_ERROR = "Error Occured while Approving group creation. Please contact admin - "
+APPROVAL_ERROR = "Error Occured while Approving the request. Please contact admin - "
+REQUEST_PROCESSING = "The Request {requestId} is now being processed"
+REQUEST_PROCESSED_BY = "The Request {requestId} is already Processed By : {user}"
 
 
 def create_group(request):
@@ -76,7 +84,8 @@ def create_group(request):
 
     if "selectedUserList" in data:
         initial_members = list(map(str, selected_users))
-        new_group.add_members(users=User.objects.filter(email__in=initial_members))
+        new_group.add_members(users=User.objects.filter(email__in=initial_members),
+                              requested_by=request.user.user)
     else:
         initial_members = [request.user.email]
 
@@ -170,67 +179,39 @@ def check_user_is_group_owner(user_name, group):
         return False
 
 
-def approveNewGroupRequest(request, group_id):
+def approve_new_group_request(request, group_id):
 
     try:
-        group_object = GroupV2.objects.get(group_id=group_id, status="Pending")
+        group = GroupV2.get_pending_group(group_id=group_id)
     except Exception as e:
         logger.error(
             "Error in approveNewGroup request, Not found OR Invalid request type"
             + str(e)
         )
-        json_response = {}
-        json_response["error"] = "Error request not found OR Invalid request type"
-        return json_response
+        context = {}
+        context["error"] = REQUEST_NOT_FOUND_ERROR
+        return context
     try:
-        if request.user.username == group_object.requester.user.username:
-            # Approving self request
+        if group.is_self_approval(approver=request.user.user):
             context = {}
-            context["error"] = (
-                "You cannot approve your own request. Please ask other admins to do"
-                " that"
-            )
+            context["error"] = SELF_APPROVAL_ERROR
             return context
         else:
-            json_response = {}
-            json_response["msg"] = (
-                "The Request (" + group_id + ") is now being processed"
-            )
+            context = {}
+            context["msg"] = REQUEST_PROCESSING.format(requestId=group_id)
 
-            group_object.approver = request.user.user
-            group_object.status = "Approved"
-            group_object.save()
-
-            MembershipV2.objects.filter(group=group_object, status="Pending").update(
-                status="Approved", approver=request.user.user
-            )
-            initial_members = list(
-                MembershipV2.objects.filter(group=group_object).values_list(
-                    "user__user__username", flat=True
-                )
-            )
-
-            subject = "New Group Created (" + group_object.name + ")"
-            body = (
-                "New group with name "
-                + group_object.name
-                + " has been created with owner being "
-                + group_object.requester.user.username
-                + "<br>"
-            )
-            if initial_members:
-                body += "The following members have been added to this team<br>"
-                body += notifications.generateGroupMemberTable(initial_members)
-            body = helpers.generateStringFromTemplate(
-                filename="email.html", emailBody=body
-            )
-            destination = []
-            destination += MAIL_APPROVER_GROUPS[:]
-            destination.append(group_object.requester.email)
-            # TODO send a mail to initial members
-            logger.debug(group_id + " -- Approved email sent to - " + str(destination))
-            general.emailSES(destination, subject, body)
-
+            with transaction.atomic():
+                group.approve(approved_by=request.user.user)
+                group.approve_all_pending_users(approved_by=request.user.user)
+            initial_members = group.get_all_members()
+            initial_member_names = [user.user.name for user in initial_members]
+            try:
+                notifications.send_new_group_approved_notification(group=group,
+                                                                   group_id=group_id,
+                                                                   initial_member_names=initial_member_names)
+            except Exception as e:
+                logger.exception(e)
+                logger.error("Group approved, but Error in sending group approval notification")
             logger.debug(
                 "Approved group creation for - "
                 + group_id
@@ -242,23 +223,15 @@ def approveNewGroupRequest(request, group_id):
                     "Members added to group - "
                     + group_id
                     + " ="
-                    + ", ".join(initial_members)
+                    + ", ".join(initial_member_names)
                 )
-            return json_response
+            return context
     except Exception as e:
-        group_object = GroupV2.objects.filter(group_id=group_id, status="Approved")
-        if len(group_object):
-            group_object = group_object[0]
-            group_object.status = "Pending"
-            group_object.save()
-            MembershipV2.objects.filter(group=group_object).update(
-                status="Pending", approver=None
-            )
         logger.exception(e)
         logger.error("Error in Approving New Group request.")
         context = {}
         context["error"] = (
-            "Error Occured while Approving group creation. Please contact admin - "
+            GROUP_APPROVAL_ERROR
             + str(e)
         )
         return context
@@ -359,9 +332,9 @@ def add_user_to_group(request):
                 requested_by=request.user.user,
             )
             if not group.needsAccessApprove:
-                json_response = {}
-                json_response["accessStatus"] = {
-                    "msg": "The Request (" + membership_id + ") is now being processed",
+                context = {}
+                context["accessStatus"] = {
+                    "msg": REQUEST_PROCESSING.format(requestId=membership_id),
                     "desc": (
                         "A email will be sent after the requested access are granted"
                     ),
@@ -384,7 +357,7 @@ def add_user_to_group(request):
                     + " - Approver="
                     + request.user.username
                 )
-                return json_response
+                return context
 
             sendMailForGroupApproval(
                 membership_id,
@@ -459,3 +432,50 @@ def generateUserAddToGroupEmailBody(
         group_name=group_name,
         reason=reason,
     )
+
+
+def accept_member(request, requestId, shouldRender=True):
+    try:
+        membership = MembershipV2.get_membership(membership_id=requestId)
+    except Exception as e:
+        logger.error("Error request not found OR Invalid request type")
+        context = {}
+        context['error'] = REQUEST_NOT_FOUND_ERROR + str(e)
+        return context
+    try:
+        if membership.is_already_processed():
+            logger.warning("An Already Approved/Declined/Processing Request was accessed by - "
+                           + request.user.username)
+            context = {}
+            context['error'] = REQUEST_PROCESSED_BY.format(requestId=requestId,
+                                                           user=membership.approver.user.username)
+            return context
+        elif membership.is_self_approval(approver=request.user.user):
+            context = {}
+            context["error"] = SELF_APPROVAL_ERROR
+            return context
+        else:
+            context = {}
+            context['msg'] = REQUEST_PROCESSING.format(requestId=requestId)
+            with transaction.atomic():
+                membership.approve(request.user.user)
+                group = membership.group
+                user = membership.user
+                userMappingsList = views_helper.generateUserMappings(user, group, membership)
+
+            # TODO: Add celery task for executeGroupAccess
+            # accessAcceptThread = threading.Thread(target=executeGroupAccess,
+            # args=(request, group.name, userMappingsList))
+            # accessAcceptThread.start()
+
+            notifications.send_membership_accepted_notification(user=user,
+                                                                group=group, membership=membership)
+            logger.debug("Process has been started for the Approval of request - "
+                         + requestId + " - Approver=" + request.user.username)
+            return context
+    except Exception as e:
+        logger.exception(e)
+        logger.error("Error in Accept of New Member in Group request.")
+        context = {}
+        context['error'] = APPROVAL_ERROR + str(e)
+        return context
