@@ -326,5 +326,5 @@ def test_PendingRevokeRequests(
             side_effect=Exception(getUserExceptionString),
         )
 
-    context = accessrequest_helper.getPendingRevokeFailures(request)
+    context = accessrequest_helper.get_pending_revoke_failures(request)
     assert str(context) == expectedOutPut
