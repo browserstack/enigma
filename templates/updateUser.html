@@ -10,7 +10,7 @@
   
   <div class="container">
     <b>Update Identity</b>
-    {% for item in identity_templates %}
+    {% for each_access in identity_template %}
     <section class="content">
       <!-- Horizontal Form -->
       <div class="box box-danger">
@@ -20,8 +20,10 @@
               <div style="color: red;" id="error-msg">
               </div>
               <div style="color: green;" id="success-msg">
-              </div>          
-              {{ item|safe }}
+              </div>
+              {% with each_access.accessUserTemplatePath as includePath %}
+                {% include includePath %}
+              {% endwith %}
             <div class="form-group">
                 <button id="update_identity" onclick = "form_post('usrform{{ forloop.counter }}', 'update')" type="submit" value="update" name="state" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Update</button>
                 <button id="git_bulk_approve" onclick = "form_post('usrform{{ forloop.counter }}', 'regrant')" type="submit" value="git_bulk_approve" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Regrant</button>
