@@ -79,7 +79,6 @@ def getDashboardData(request):
     ec2_regions = list(data.keys())
 
     context = {}
-    dataList = []
 
     gitCount = 0
     dashboardCount = 0
