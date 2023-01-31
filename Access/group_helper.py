@@ -119,40 +119,14 @@ def create_group(request):
     return context
 
 
-def get_access_details(access):
+def get_generic_access(group_mapping):
     access_details = {}
-    access_label = access.access_label
-    logger.debug(access_details)
     for each_access_module in helpers.getAvailableAccessModules():
-        if access.access_tag == each_access_module.tag():
-            access_details["accessType"] = each_access_module.access_desc()
-            access_details["accessCategory"] = each_access_module.get_label_desc(
-                access_label
-            )
-            access_details["accessMeta"] = each_access_module.get_label_meta(access_label)
-
-            if (
-                access.access_tag == "other"
-                and "grant_emails" in access.access_label
-                and type(access.access_label["grant_emails"]) == list
-            ):
-                access_details["revokeOwner"] = ",".join(
-                    access.access_label["grant_emails"]
-                )
-                access_details["grantOwner"] = access_details["revokeOwner"]
-            else:
-                access_details["revokeOwner"] = ",".join(each_access_module.revoke_owner())
-                access_details["grantOwner"] = ",".join(each_access_module.grant_owner())
-    logger.debug(access_details)
+        if group_mapping.access.access_tag == each_access_module.tag():
+            access_details = group_mapping.getAccessRequestDetails(each_access_module)
+    
+    logger.debug("Generic access generated: "+str(access_details))
     return access_details
-
-def get_generic_access(access, request_id, status):
-    access_details = get_access_details(access)
-    access_details["request_id"] = request_id
-    access_details["status"] = status
-
-    return access_details
-
 
 def get_group_access_list(request, group_name):
     context = {}
@@ -171,10 +145,7 @@ def get_group_access_list(request, group_name):
     )
     auth_user = request.user
 
-    is_approver = User.is_approver(auth_user.user.email)
-    if auth_user.user.email not in owner_emails and not (
-        auth_user.is_superuser or auth_user.user.is_ops or is_approver
-    ):
+    if auth_user.user.email not in owner_emails and not auth_user.user.is_allowed_admin_actions_on_group(auth_user.is_superuser):
         logger.debug("Permission denied, requester is non owner")
         context = {"error": {
             "error_msg": LIST_GROUP_ACCESSES_PERMISSION_DENIED["error_msg"],
@@ -195,19 +166,17 @@ def get_group_access_list(request, group_name):
     context["userList"] = group_members
     context["groupName"] = group_name
 
-    user = User.objects.get(email=auth_user.user.email)
-
     allow_revoke = False
     if (
-        user.email in owner_emails
-        or user.has_permission("ALLOW_USER_OFFBOARD")
+        auth_user.user.email in owner_emails
+        or auth_user.user.has_permission("ALLOW_USER_OFFBOARD")
     ):
         allow_revoke = True
     context["allowRevoke"] = allow_revoke
 
     group_mappings = group.get_active_accesses()
     context["genericAccesses"] = [
-        get_generic_access(group_mapping.access, group_mapping.request_id, group_mapping.status)
+        get_generic_access(group_mapping)
         for group_mapping in group_mappings
     ]
 

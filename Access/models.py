@@ -195,12 +195,11 @@ class User(models.Model):
     def isAdminOrOps(self):
         return self.is_ops or self.user.is_superuser
 
-    @staticmethod
-    def is_approver(email):
-        return User.objects.filter(role=Role.objects.get(label='TEAMS:ACCESSAPPROVE'),state=1, email=email).count() > 0
-
     def get_all_memberships(self):
         return self.membership_user.all()
+
+    def is_allowed_admin_actions_on_group(self, is_superuser):
+        return (is_superuser or self.is_ops or self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]))
 
     def __str__(self):
         return "%s" % (self.user)
@@ -559,6 +558,19 @@ class UserAccessMapping(models.Model):
         access_request_data["accessMeta"] = access_module.combine_labels_meta(
             access_labels
         )
+        access_request_data["status"] = self.status
+        if (
+            self.access.access_tag == "other"
+            and "grant_emails" in self.access.access_label
+            and type(self.access.access_label["grant_emails"]) == list
+        ):
+            access_request_data["revokeOwner"] = ",".join(
+                self.access.access_label["grant_emails"]
+            )
+            access_request_data["grantOwner"] = access_request_data["revokeOwner"]
+        else:
+            access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
+            access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
 
@@ -667,6 +679,19 @@ class GroupAccessMapping(models.Model):
         access_request_data["accessMeta"] = access_module.combine_labels_meta(
             access_labels
         )
+        access_request_data["status"] = self.status
+        if (
+            self.access.access_tag == "other"
+            and "grant_emails" in self.access.access_label
+            and type(self.access.access_label["grant_emails"]) == list
+        ):
+            access_request_data["revokeOwner"] = ",".join(
+                self.access.access_label["grant_emails"]
+            )
+            access_request_data["grantOwner"] = access_request_data["revokeOwner"]
+        else:
+            access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
+            access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
 

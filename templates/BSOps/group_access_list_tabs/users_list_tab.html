@@ -32,9 +32,7 @@ $(document).on("submit", "#updateOwners", function(e){
   e.preventDefault()
 
   let form = $(this)
-  console.log(form.serialize())
   let actionUrl = form.attr('action');
-  console.log(actionUrl)
 
   $.ajax({
     type: "POST",
@@ -65,7 +63,6 @@ $(document).on('click', '.user-remove-button', function(){
           document.getElementById(id+"-user-state").innerHTML = "revoked";
         },
         error: function(result){
-          console.log(result)
           alert("Error occured while marking revoke! - "+result["responseJSON"]["error"])
         }});
     $("#closeRemoveModal").click()

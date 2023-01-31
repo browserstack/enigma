@@ -11,6 +11,7 @@
       filter_cssFilter: [
         'form-control',
         'form-control',
+        'form-control',
         'form-control'
       ]
     }
@@ -33,7 +34,6 @@ $(document).on('click', '.group-revoke-button', function(){
           document.getElementById("inactive-"+id+"-revoke-button").innerHTML = "Access Marked Revoked";
         },
         error: function(result){
-          console.log(result)
           alert("Error occured while marking revoke! - "+result["responseJSON"]["error"])
         }});
   });
@@ -46,7 +46,6 @@ $(document).on('click', '.group-revoke-button', function(){
           document.getElementById(id+"-revoke-button").innerHTML = "Access Marked Inactive";
         },
         error: function(result){
-          console.log(result)
           alert("Error occured while marking revoke! - "+result["responseJSON"]["error"])
         }});
   });
@@ -67,18 +66,18 @@ $(document).on('click', '.group-revoke-button', function(){
     <tbody>
       {% for eachAccess in genericAccesses %}
       <tr >
-        <td>{{ eachAccess.request_id }}</td>
+        <td>{{ eachAccess.requestId }}</td>
         <td>{{ eachAccess.accessType }}</td>
         <td>{{ eachAccess.accessCategory }}</td>
         <td>{{ eachAccess.status }}</td>
         <td>{{ eachAccess.accessMeta }}</td>
-        <td id="inactive-{{ eachAccess.request_id }}-revoke-button">
+        <td id="inactive-{{ eachAccess.requestId }}-revoke-button">
           {% if user.is_owner %}
-          <button class="btn btn-danger inactive-access-button" id="inactive-{{ eachAccess.request_id }}">Mark Inactive</button><br>(Existing accesses are not revoked)<br><br>
+          <button class="btn btn-danger inactive-access-button" id="inactive-{{ eachAccess.requestId }}">Mark Inactive</button><br>(Existing accesses are not revoked)<br><br>
           {% endif %}
 
           {% if allowRevoke and eachAccess.status == 'Approved' %}
-            <button class="btn btn-danger group-revoke-button" id="{{ eachAccess.request_id }}">Mark Revoked</button><br>(Existing accesses are marked revoked)
+            <button class="btn btn-danger group-revoke-button" id="{{ eachAccess.requestId }}">Mark Revoked</button><br>(Existing accesses are marked revoked)
           {% endif %}
         </td>
       </tr>
