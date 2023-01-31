@@ -1,6 +1,4 @@
 import pytest
-from functools import partial
-
 from Access import helpers
 from Access.helpers import (
     getAvailableAccessModules,

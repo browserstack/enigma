@@ -67,5 +67,5 @@ urlpatterns = [
         name="addUserToGroup",
     ),
     re_path(r"^group/updateOwners/(?P<groupName>[\w -]+)$", update_group_owners, name="updateGroupOwners"),
-    re_path(r'^accept_bulk/(?P<selector>[\w-]+)',accept_bulk,name='accept_bulk'),
+    re_path(r'^accept_bulk/(?P<selector>[\w-]+)', accept_bulk, name='accept_bulk'),
 ]

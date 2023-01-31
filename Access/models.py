@@ -278,14 +278,12 @@ class MembershipV2(models.Model):
         return self.requested_by == approver
 
     def is_already_processed(self):
-        return self.status in ['Declined','Approved','Processing','Revoked']
+        return self.status in ['Declined', 'Approved', 'Processing', 'Revoked']
 
     @staticmethod
     def approve_membership(membership_id, approver):
         membership = MembershipV2.objects.get(membership_id=membership_id)
-        membership.status = 'Approved'
-        membership.approver = approver
-        membership.save()
+        membership.approve(approver=approver)
 
     @staticmethod
     def get_membership(membership_id):
@@ -432,7 +430,7 @@ class GroupV2(models.Model):
         return self.groupaccessmapping_set.filter(status__in=["Approved", "Pending", "Declined", "SecondaryPending"])
 
     def is_self_approval(self, approver):
-        return self.requester==approver
+        return self.requester == approver
 
     def approve(self, approved_by):
         self.approver = approved_by
