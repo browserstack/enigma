@@ -21,7 +21,7 @@ from Access.views import (
     showAccessHistory,
     pendingRequests,
     pendingFailure,
-    pendingRevoke,
+    pending_revoke,
     updateUserInfo,
     saveIdentity,
     createNewGroup,
@@ -33,6 +33,7 @@ from Access.views import (
     approveNewGroup,
     add_user_to_group,
     groupDashboard,
+    accept_bulk
 )
 
 urlpatterns = [
@@ -44,7 +45,7 @@ urlpatterns = [
     re_path(r"^access/showAccessHistory$", showAccessHistory, name="showAccessHistory"),
     re_path(r"^access/pendingRequests$", pendingRequests, name="pendingRequests"),
     re_path(r"^resolve/pendingFailure", pendingFailure, name="pendingFailure"),
-    re_path(r"^resolve/pendingRevoke", pendingRevoke, name="pendingRevoke"),
+    re_path(r"^resolve/pendingRevoke", pending_revoke, name="pendingRevoke"),
     re_path(r"^user/updateUserInfo/", updateUserInfo, name="updateUserInfo"),
     re_path(r"^user/saveIdentity/", saveIdentity, name="saveIdentity"),
     re_path(r"^group/create$", createNewGroup, name="createNewGroup"),
@@ -66,4 +67,5 @@ urlpatterns = [
         add_user_to_group,
         name="addUserToGroup",
     ),
+    re_path(r'^accept_bulk/(?P<selector>[\w-]+)', accept_bulk, name='accept_bulk'),
 ]
