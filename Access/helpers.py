@@ -3,10 +3,9 @@ from os.path import dirname, basename, isfile, join
 import glob
 import logging
 import re
-import time, datetime
+import datetime
 
 from Access.access_modules import *
-from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
 available_accesses = []
@@ -75,3 +74,34 @@ def getPossibleApproverPermissions():
         approver_permissions = each_module.fetch_approver_permissions()
         all_approver_permissions.extend(approver_permissions.values())
     return list(set(all_approver_permissions))
+
+
+def get_access_details(each_access):
+    access_details = {}
+    access_label = each_access.access_label
+    for each_access_module in getAccessModules():
+        if each_access.access_tag == each_access_module.tag():
+            access_details['accessType'] = each_access_module.access_desc()
+            access_details['accessCategory'] = each_access_module.get_label_desc(access_label)
+            access_details['accessMeta'] = each_access_module.get_label_meta(access_label)
+
+            if (each_access.access_tag == "other" and
+                "grant_emails" in each_access.access_label and
+                    type(each_access.access_label["grant_emails"]) == list):
+                access_details['revokeOwner'] = ",".join(each_access.access_label["grant_emails"])
+                access_details['grantOwner'] = access_details['revokeOwner']
+            else:
+                access_details['revokeOwner'] = ",".join(each_access_module.revoke_owner())
+                access_details['grantOwner'] = ",".join(each_access_module.grant_owner())
+    return access_details
+
+
+def split_access_details(original_details):
+    split_details = []
+    for each_category in original_details['accessCategory'].split(';'):
+        split_details.append({
+            'accessType': original_details['accessType'],
+            'accessCategory': each_category,
+            'accessMeta': original_details['accessMeta']
+        })
+    return split_details

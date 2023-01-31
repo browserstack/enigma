@@ -10,7 +10,11 @@ NEW_GROUP_APPROVED_SUBJECT = "New Group Created ({})"
 NEW_GROUP_APPROVED_BODY = "New group with name {} has been created with owner being {} <br>"
 NEW_MEMBERS_ADDED_MESSAGE = "The following members have been added to this team<br>"
 MEMBERSHIP_ACCEPTED_SUBJECT = "Access approved for addition of {} to group - {}"
-MEMBERSHIP_ACCEPTED_BODY = "Access approved for addition of {} to group - {} by {}.<BR/>Automated accesses will be triggered shortly. Access grant mails will be sent to tool owners for manual access. Track your access status <a href='https://enigma.browserstack.com/access/showAccessHistory'>here</a>."
+MEMBERSHIP_ACCEPTED_BODY = "Access approved for addition of {} to group - {} by {}. \
+<BR/>Automated accesses will be triggered shortly. \
+Access grant mails will be sent to tool owners for manual access. \
+Track your access status \
+<a href='https://enigma.browserstack.com/access/showAccessHistory'>here</a>."
 
 
 def send_new_group_create_notification(auth_user, date_time, new_group, member_list):

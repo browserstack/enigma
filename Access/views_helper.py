@@ -1,7 +1,9 @@
 from .models import UserAccessMapping, GroupAccessMapping
+from django.http import HttpResponse
 import datetime
 import traceback
 import logging
+import csv
 from . import helpers as helper
 from bootprocess import general
 
@@ -201,3 +203,72 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             # additional email of "Access approved" is not needed
             return True
     return False
+
+
+def get_filters(request):
+    filters = {}
+    if "accessTag" in request.GET:
+        filters['access__access_tag__icontains'] = request.GET.get('accessTag')
+    if "accessTagExact" in request.GET:
+        filters['access__access_tag'] = request.GET.get('accessTagExact')
+    if "status" in request.GET:
+        filters['status__icontains'] = request.GET.get('status')
+    if "type" in request.GET:
+        filters['access_type__icontains'] = request.GET.get('type')
+    return filters
+
+
+def prepare_datalist(paginator, record_date):
+    data_list = []
+    for each_access_request in paginator:
+        if record_date is not None and record_date != str(each_access_request.updated_on)[:10]:
+            continue
+        access_details = helper.get_access_details(each_access_request.access)
+        for each_access_split in helper.split_access_details(access_details):
+            data_list.append({
+                'request_id': each_access_request.request_id,
+                'user': str(each_access_request.user),
+                'name': [key + " - " + str(value).strip("[]")
+                         for key, value in list(each_access_request.access.access_label.items())
+                         if key != "keySecret"],
+                'details': each_access_split['accessType'] + " => "
+                + each_access_split['accessCategory'],
+                'accessStatus': each_access_request.status,
+                'grantOwner': access_details['grantOwner'],
+                'revokeOwner': access_details['revokeOwner'],
+                'approver': each_access_request.approver_1.user.username
+                if each_access_request.approver_1 else "",
+                'accessType': each_access_request.access.access_tag,
+                'type': each_access_request.access_type,
+                'dateRequested': str(each_access_request.requested_on)[:19] + "UTC",
+                'offboardingDate': str(each_access_request.user.offbaord_date)[:19] + "UTC"
+                if each_access_request.user.offbaord_date else "",
+                'lastUpdated': str(each_access_request.updated_on)[:19] + "UTC",
+                'revoker': each_access_request.revoker.user.username
+                if each_access_request.revoker else "",
+                'approvedOn': str(each_access_request.approved_on)[:19] + "UTC"
+                if each_access_request.approved_on else ""
+            })
+    return data_list
+
+
+def gen_all_user_access_list_csv(data_list):
+    logger.debug("Processing CSV response")
+    response = HttpResponse(content_type='text/csv')
+    filename = "AccessList-" + str(datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')) + ".csv"
+    response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
+
+    writer = csv.writer(response)
+    writer.writerow(['User', 'AccessType', 'Access', 'AccessStatus',
+                     'RequestDate', 'Approver', 'GrantOwner',
+                     'RevokeOwner', 'Type'])
+    for data in data_list:
+        access_status = data["accessStatus"]
+        if len(data["revoker"]) > 0:
+            access_status += " by - " + data["revoker"]
+        writer.writerow([data['user'], data['accessType'],
+                         (", ".join(data["name"])),
+                         access_status, data["dateRequested"],
+                         data["approver"], data["grantOwner"],
+                         data["revokeOwner"], data["type"]])
+    return response

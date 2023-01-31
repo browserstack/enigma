@@ -551,6 +551,25 @@ class UserAccessMapping(models.Model):
             mapping.meta_data[key] = data
             mapping.save()
         return True
+    
+    def revoke(self, revoker):
+        self.status = "Revoked"
+        self.revoker = revoker
+        self.save()
+        
+
+    @staticmethod
+    def get_accesses_not_declined():
+        return UserAccessMapping.objects.exclude(status='Declined')
+
+    @staticmethod
+    def get_accesses_by_username_access_tag_status(username, access_tag, status):
+        return UserAccessMapping.objects.filter(user__user__username=username,
+                                                access__access_tag=access_tag, status__in=status)
+
+    @staticmethod
+    def get_unrevoked_accesses_by_request_id(request_id):
+        return UserAccessMapping.objects.filter(request_id=request_id).exclude(status='Revoked')
 
 
 class GroupAccessMapping(models.Model):

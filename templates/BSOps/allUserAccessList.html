@@ -1,0 +1,346 @@
+{% extends 'global_layout.html' %}
+{% load static %}
+
+{% block content_body %}
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+<link rel="stylesheet" type="text/css" href="{% static "css/theme.bootstrap_4.css" %}">
+
+<script src="{% static "js/jquery.tablesorter.js" %}"></script>
+<script src="{% static "js/jquery.tablesorter.widgets.js" %}"></script>
+<script src="{% static "js/jquery.tablesorter.pager.js" %}"></script>
+<link rel="stylesheet" href="{% static "css/w3.css" %}">
+
+<style id="css">
+
+  table.hover-highlight td:before,
+  table.focus-highlight td:before {
+    background: #fff;
+  }
+
+  body {
+    overflow: visible;
+  }
+
+  a.lia {
+    color: white !important;
+  }
+
+  select.tablesorter-filter {
+    display: block;
+  }
+
+  input[type='search'].tablesorter-filter {
+    background: white;
+  }
+
+  .col.s12 {
+    padding: 0px;
+  }
+
+  .data-search{
+    height: 30px;
+    width: 100%;
+  }
+
+  .tab-button{
+    border-right: 3px solid #22272a !important;
+    background-color: grey;
+    margin-bottom: 5px;
+  }
+</style>
+
+<script id="js">
+$(function() {
+
+  $("table").tablesorter({
+    theme : "bootstrap",
+    widthFixed: true,
+  })
+
+});
+var page_number = 1;
+var access_type = "";
+var current_username = "";
+
+  function decreasePagenum(){
+    if(page_number == 1){
+      alert("Already on first page");
+    }
+    else{
+      page_number -= 1;
+      updateTable();
+    }
+  }
+
+  function increasePagenum(){
+      page_number += 1;
+      updateTable();
+  }
+
+  function buildUrlFromParams(contentType) {
+    fields = document.getElementsByClassName("data-search")
+    reqParams = []
+    var allowTag = true;
+    if(access_type.length){
+      reqParams.push("accessTag="+access_type)
+      reqParams.push("accessTagExact="+access_type)
+      allowTag = false
+    }
+    for(var i = 0; i<fields.length; i++){
+      if(fields[i].value && fields[i].value.trim().length)
+        if(fields[i].id != "accessTag" || allowTag){
+          reqParams.push(fields[i].id+"="+fields[i].value)
+        }
+    }
+    reqParams.push("responseType="+contentType)
+    reqParams.push("page="+String(page_number))
+    url = new URL(window.location.href)
+    if(url.searchParams.get("username")){
+      reqParams.push("username="+url.searchParams.get("username"))
+    }
+    urlBuilder = "userAccesses?" + reqParams.join("&");
+    return urlBuilder;
+  }
+
+  function exportCSV() {
+    urlBuilder = buildUrlFromParams("csv");
+    location.replace(urlBuilder);
+  }
+
+  function revokeConfirm(access_type_or_id, username=null){
+    current_username = username
+    html = "<h4> Revoke Request ID: "+access_type_or_id+"?</h4>"
+    if(access_type_or_id.startsWith("module-")){
+      html = "<h4> Revoke all accesses for user "+username+" for "+access_type_or_id+"?</h4>"
+    }
+    revokeButton = document.getElementsByName("final-revoke-button")[0]
+    revokeButton.id = access_type_or_id
+    $("#revoke-details").html(html)
+  }
+
+  function openType(elem) {
+    access_type = elem.value;
+    page_number = 1;
+    updateTable()
+    var x = document.getElementsByClassName("w3-bar-item");
+    for (i = 0; i < x.length; i++) {
+      x[i].style.background = "grey";
+    }
+    elem.style.background = "#429244";
+    title_line  = $("#access-header-row")
+    title_html = "<h4 id='header-title'>Access List for User {{username}}</h4>"
+    if(access_type.length && access_type != "other"){
+      title_html = `<button class="btn btn-danger" data-toggle="modal" data-target="#revokeModal"
+                    onclick='revokeConfirm("module-`+access_type+`", "{{username}}")'' 
+                    style="float: left;" id=module-`+access_type+`>Revoke all `+ access_type+`</button>
+                    <h4 id="header-title">`+access_type+` Accesses for User {{username}}</h4>`
+    }
+    else if(access_type == "other"){
+      title_html = "<h4 id='header-title'>Other Access List for User {{username}}</h4>"
+    }
+    title_line.html(title_html)
+  }
+
+  function updateTable() {
+    urlBuilder = buildUrlFromParams("json");
+    $.ajax({url: urlBuilder,
+        success: function(result){
+          html_string = "No Results"
+          for(i=0;i<result["dataList"].length;i++){
+            record = result["dataList"][i]
+            html_string += "<tr>"
+            html_string += "<td>"+record["user"]+"</td>"
+            html_string += "<td>"+record["accessType"]+"</td>"
+            html_string += "<td>"
+            for(j=0;j<record["name"].length;j++)
+              html_string += record["name"][j]+"<br>"
+            html_string += "</td>"
+            if(record["accessStatus"] != "Revoked"){
+              html_string += "<td id='"+record["request_id"]+"-access-status'>"+record["accessStatus"]+"</td>"
+            }
+            else{
+              html_string += "<td id='"+record["request_id"]+"-access-status'>"+record["accessStatus"]+"<br>By-"+record["revoker"]+"</td>"
+            }
+            html_string += "<td id='"+record["request_id"]+"-revoke-button'>"
+            if(record["accessStatus"] != "Revoked")
+              html_string += '<button id="'+record["request_id"]+`" class="btn btn-danger" data-toggle="modal" data-target="#revokeModal" onclick='revokeConfirm("`+record["request_id"]+`")'>Mark Revoked</button>`
+            html_string += "</td>"
+            html_string += "<td>"+record["dateRequested"]+"</td>"
+            html_string += "<td>"+record["approver"]+"</td>"
+            html_string += "<td>"+record["lastUpdated"]+"</td>"
+            html_string += "<td>"+record["offboardingDate"]+"</td>"
+            html_string += "<td>"+record["grantOwner"]+"</td>"
+            html_string += "<td>"+record["revokeOwner"]+"</td>"
+            html_string += "<td>{% if is_ops %} <a class=\"btn btn-primary\" target=\"_blank\" href=\"/individual_resolve?requestId="+record["request_id"]+"&ops_resolve=true\">ReGrant</a></td>{% endif %}"
+            html_string += "<td>"+record["type"]+"</td>"
+            html_string += "</tr>"
+          }
+          $("#tableData").html(html_string);
+          page_number = result['current_page'];
+
+          $("#pagedisplay").html("Page "+String(result['current_page'])+" of "+String(result['last_page']))
+        },
+        error: function(result){
+          alert("Error occured while fetching data")
+        }});
+  }
+jQuery(document).ready(function ($) {
+  setTimeout(function() {
+    $(".sidebar-toggle")[0].click();
+  },10);
+
+  $(document).on('click', '.revoke-button', function(){
+    id = $(this).attr("id");
+    urlBuilder = "/access/markRevoked?requestId="+id+"&username="+current_username
+    $.ajax({url: urlBuilder,
+        success: function(result){
+          console.log("yes", id+"-revoke-button", id+"-access-status")
+          console.log(result)
+          request_ids = result["request_ids"]
+          for(i=0; i<request_ids.length;i++){
+            buttonelem =  document.getElementById(request_ids[i]+"-revoke-button")
+            statuselem = document.getElementById(request_ids[i]+"-access-status")
+            if(buttonelem && statuselem){
+              buttonelem.innerHTML = "";
+              statuselem.innerHTML = "Revoked<br>By - {{ request.user }}";
+            }
+          }
+        },
+        error: function(result){
+          console.log(result)
+          alert("Error occured while marking revoke! - "+result["responseJSON"]["error"])
+        }});
+    $("#closeRevokeModal").click()
+  });
+
+  $('.data-search').on('input', function() {
+    updateTable()
+  });
+});
+</script>
+<div class="modal fade" id="revokeModal">
+    <div class="modal-dialog generic-access-modal">
+      <div class="modal-content">
+        <!-- Modal Header -->
+        <div class="modal-header">
+          <h4 class="modal-title">Confirm Access Revoke</h4>
+          <button type="button" id="closeRevokeModal" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <!-- Modal body -->
+        <div class="modal-body generic-access-modal-body">
+          <div id="revoke-details"></div><br>
+          <button class="btn btn-danger revoke-button" name="final-revoke-button" id="">Mark Revoked</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<div class="page-header" style="margin-bottom:0px; padding: 10px;">
+  <div class="container-fluid">
+    <h2 class="h5 no-margin-bottom">Access List <button class="btn btn-primary" style="float: right;" onclick="exportCSV()">Export current selection as CSV</button><br><br><h6 style="float: right;">(Downloading with less filters may take some time)</h6></h2>
+  </div>
+</div>
+{% if show_tabs %}
+  <div class="w3-bar" style=" color: white;">
+      <button class="w3-bar-item w3-button tab-button" style="background-color: #429244;" onclick="openType(this)" value="">All</button>
+      {% for access_type in access_types %}
+        <button class="w3-bar-item w3-button tab-button" onclick="openType(this)" value="{{access_type}}">{{access_type}}</button>
+      {% endfor %}
+  </div>
+{% endif %}
+<div class="wrapper" style="overflow-x: scroll; width: 100%;">
+  <div id="demo">
+    <table class="table table-bordered table-striped"><!-- add materialize classes, as desired -->
+    <thead class="thead-dark">
+      {% if show_tabs %}
+        <tr class="tablesorter-ignoreRow" style="border: 1px solid #343a40; background-color: #343a40;">
+            <th colspan="12" class="ts-pager form-horizontal" style="padding:1%; text-align: center; float: center;" id="access-header-row">
+              <!-- <button class="btn btn-danger" style="float: left;">Revoke All</button> -->
+              <h4 id="header-title">Access List for User {{username}}</h4>
+            </th>
+        </tr>
+      {% endif %}
+  		<tr style="text-align: center;">
+        <th data-placeholder="Search">
+          User<br><br><input class="data-search" id="usersearch" type="text" placeholder="Search">
+        </th>
+        <th class="filter-select filter-exact">
+          Access Type<br><br><input class="data-search" id="accessTag" type="text" placeholder="Search">
+        </th>
+        <th data-placeholder="Search" class="data-search">
+          Access<br><br><input class="data-search" id="accessTag" type="text" placeholder="Search">
+        </th>
+        <th class="filter-select filter-exact">
+          Access Status<br><br><input class="data-search" id="status" type="text" placeholder="Search">
+        </th>
+        <th class="filter-select filter-exact">
+            Action
+        </th>
+        <th>
+          Request Date
+        </th>
+        <th>
+          Approver
+        </th>
+        <th>
+          ARD (Revoked) / Updated
+        </th>
+        <th>
+          LWD (User Offboard Date)
+        </th>
+        <th class="filter-select filter-exact">
+          Grant Owner
+        </th>
+        <th class="filter-select filter-exact">
+          Revoke Owner
+        </th>
+        <th class="filter-select filter-exact">
+          Regrant Button for Ops
+        </th>
+        <th class="filter-select filter-exact">
+          Type<br><br><input class="data-search" id="type" type="text" placeholder="Search">
+        </th>
+      </tr>
+    </thead>
+    <tfoot>
+      <!-- include "tablesorter-ignoreRow" class for pager rows in thead -->
+      <tr class="tablesorter-ignoreRow">
+        <th colspan="12" class="ts-pager form-horizontal" style="padding:1%; text-align: center; float: center;">
+          <!-- <button type="button" class="btn btn-primary first" style="padding: 0px 30px;"><i class="small material-icons">first_page</i></button> -->
+          <button onclick = "decreasePagenum()" type="button" class="btn btn-primary prev" style="padding: 0px 30px;"><i class="small material-icons">navigate_before</i></button>
+          <span class="pagedisplay" id="pagedisplay">Page {{ current_page }} of {{ last_page }}</span>
+          <!-- this can be any element, including an input -->
+          <button onclick = "increasePagenum()" type="button" class="btn btn-primary next" style="padding: 0px 30px;"><i class="small material-icons">navigate_next</i></button>
+          <!-- <button type="button" class="btn btn-primary last" style="padding: 0px 30px;"><i class="small material-icons">last_page</i></button> -->
+        </th>
+      </tr>
+    </tfoot>
+    <tbody id="tableData">
+      {% for item in dataList %}
+      <tr >
+        <td>{{item.user}}</td>
+        <td>{{item.accessType}}</td>
+        <td>
+          {% for pair in item.name %}
+            {{ pair }}<br>
+          {% endfor %}
+        </td>
+        <td id="{{ item.request_id }}-access-status">{{item.accessStatus}}{% if item.accessStatus == "Revoked" %}<br>By - {{ item.revoker }}{% endif %}</td>
+        <td id="{{ item.request_id }}-revoke-button">{% if item.accessStatus != "Revoked" %}<button class="btn btn-danger" data-toggle="modal" data-target="#revokeModal" onclick='revokeConfirm("{{ item.request_id }}")' id="{{ item.request_id }}">Mark Revoked</button>{% endif %}</td>
+        <td>{{item.dateRequested}}</td>
+        <td>{{item.approver}}</td>
+        <td>{{item.lastUpdated}}</td>
+        <td>{{item.offboardingDate}}</td>
+        <td>{{item.grantOwner}}</td>
+        <td>{{item.revokeOwner}}</td>
+        <td>{% if is_ops %}
+          <a class="btn btn-primary" target="_blank" href="/individual_resolve?requestId={{ item.request_id }}&ops_resolve=true">ReGrant</a></td>
+          {% endif %}
+          <td>{{item.type}}</td>
+      </tr>
+      {% endfor %}
+  	</tbody>
+  </table>
+</div>
+
+</div>
+{% endblock %}
