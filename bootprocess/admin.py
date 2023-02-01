@@ -10,7 +10,6 @@ from Access.models import (
     MembershipV2,
 )
 
-admin.site.register(User)
 admin.site.register(Permission)
 admin.site.register(UserAccessMapping)
 admin.site.register(Role)
