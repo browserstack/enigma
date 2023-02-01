@@ -79,37 +79,12 @@ def getDashboardData(request):
     ec2_regions = list(data.keys())
 
     context = {}
+      
+    groupCount = len(
+        MembershipV2.objects.filter(user=request.user.user, status="Approved")
+    )
 
-    gitCount = 0
-    dashboardCount = 0
-    sshMachineCount = 0
-    groupCount = 0
-
-    # dashboardCount = len(
-    #     UserAccessMapping.objects.filter(
-    #         user=request.user.user, status="Approved", access__access_tag="other"
-    #     )
-    # )
-    # sshMachineCount = len(
-    #     UserAccessMapping.objects.filter(
-    #         user=request.user.user, status="Approved", access__access_tag="ssh"
-    #     )
-    # )
-    # gitCount = len(
-    #     UserAccessMapping.objects.filter(
-    #         user=request.user.user,
-    #         status="Approved",
-    #         access__access_tag="github_access",
-    #     )
-    # )
-    # groupCount = len(
-    #     MembershipV2.objects.filter(user=request.user.user, status="Approved")
-    # )
-
-    # context["regions"] = ec2_regions
-    # context["gitCount"] = gitCount
-    # context["dashboardCount"] = dashboardCount
-    # context["sshMachineCount"] = sshMachineCount
-    # context["groupCount"] = groupCount
+    context["regions"] = ec2_regions
+    context["groupCount"] = groupCount
 
     return context

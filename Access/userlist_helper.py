@@ -32,10 +32,11 @@ ERROR_INVALID_ACCESS_MODULE = {
 def get_identity_templates():
     context = {}
     templates = []
+    context['identity_template'] = []
     for mod in helper.get_available_access_modules().values():
-        templates.append(mod.get_identity_template())
-
-    context["identity_templates"] = templates
+        context['identity_template'].append({
+            'accessUserTemplatePath': mod.get_identity_template()
+        })
     return context
 
 
