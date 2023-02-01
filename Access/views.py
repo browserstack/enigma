@@ -74,7 +74,7 @@ def saveIdentity(request):
         context["error"] = {
             "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
             "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename = modname),
-        }            
+        }
         return JsonResponse(json.dumps(context), safe=False, status=400)
 
 @login_required

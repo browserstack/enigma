@@ -208,7 +208,7 @@ class User(models.Model):
 
     def is_allowed_to_offboard_user_from_group(self, group):
         return group.member_is_owner(self) or self.has_permission("ALLOW_USER_OFFBOARD")
-    
+
     def create_new_identity(self, access_tag="", identity=""):
         return self.module_identity.create(access_tag=access_tag, identity=identity)
 

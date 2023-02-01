@@ -79,7 +79,7 @@ def getDashboardData(request):
     ec2_regions = list(data.keys())
 
     context = {}
-      
+
     groupCount = len(
         MembershipV2.objects.filter(user=request.user.user, status="Approved")
     )
