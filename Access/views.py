@@ -40,8 +40,8 @@ def pendingFailure(request):
         logger.debug("Error in request not found OR Invalid request type")
         logger.exception(e)
         json_response = {}
-        json_response['error'] = {'error_msg': str(e), 'msg': INVALID_REQUEST_MESSAGE}
-        return render(request, 'BSOps/accessStatus.html', json_response)
+        json_response["error"] = {"error_msg": str(e), "msg": INVALID_REQUEST_MESSAGE}
+        return render(request, "BSOps/accessStatus.html", json_response)
 
 
 @login_required
@@ -54,8 +54,8 @@ def pending_revoke(request):
         logger.debug("Error in request not found OR Invalid request type")
         logger.exception(e)
         json_response = {}
-        json_response['error'] = {'error_msg': str(e), 'msg': INVALID_REQUEST_MESSAGE}
-        return render(request, 'BSOps/accessStatus.html', json_response)
+        json_response["error"] = {"error_msg": str(e), "msg": INVALID_REQUEST_MESSAGE}
+        return render(request, "BSOps/accessStatus.html", json_response)
 
 
 @login_required
@@ -111,8 +111,9 @@ def group_access_list(request, groupName):
         logger.debug("Error in request not found OR Invalid request type")
         logger.exception(e)
         json_response = {}
-        json_response['error'] = {'error_msg': str(e), 'msg': INVALID_REQUEST_MESSAGE}
-        return render(request, 'BSOps/accessStatus.html', json_response)
+        json_response["error"] = {"error_msg": str(e), "msg": INVALID_REQUEST_MESSAGE}
+        return render(request, "BSOps/accessStatus.html", json_response)
+
 
 @login_required
 def update_group_owners(request, groupName):
@@ -126,8 +127,9 @@ def update_group_owners(request, groupName):
         logger.debug("Error in request not found OR Invalid request type")
         logger.exception(e)
         json_response = {}
-        json_response['error'] = INVALID_REQUEST_MESSAGE
+        json_response["error"] = INVALID_REQUEST_MESSAGE
         return JsonResponse(json_response, status=400)
+
 
 @login_required
 def groupDashboard(request):
@@ -160,7 +162,7 @@ def pendingRequests(request):
 def accept_bulk(request, selector):
     try:
         context = {"response": {}}
-        inputVals = request.GET.getlist('requestId')
+        inputVals = request.GET.getlist("requestId")
         requestIds = []
         returnIds = []
         user = request.user.user
@@ -169,22 +171,30 @@ def accept_bulk(request, selector):
         for value in requestIds:
             requestType, requestId = selector, value
             if selector == "groupNew" and is_access_approver:
-                json_response = group_helper.approve_new_group_request(request, requestId)
+                json_response = group_helper.approve_new_group_request(
+                    request, requestId
+                )
             elif selector == "groupMember" and is_access_approver:
                 json_response = group_helper.accept_member(request, requestId, False)
             else:
                 raise ValidationError("Invalid request")
             if "error" in json_response:
-                context['response'][requestId] = {"error": json_response["error"], "success": False}
+                context["response"][requestId] = {
+                    "error": json_response["error"],
+                    "success": False,
+                }
             else:
-                context['response'][requestId] = {"msg": json_response["msg"], "success": True}
-        context['bulk_approve'] = True
+                context["response"][requestId] = {
+                    "msg": json_response["msg"],
+                    "success": True,
+                }
+        context["bulk_approve"] = True
         context["returnIds"] = returnIds
         return JsonResponse(context, status=200)
     except Exception as e:
         logger.debug(INVALID_REQUEST_MESSAGE + str(str(e)))
         json_response = {}
-        json_response['error'] = INVALID_REQUEST_MESSAGE + str(str(e))
+        json_response["error"] = INVALID_REQUEST_MESSAGE + str(str(e))
         json_response["success"] = False
         json_response["status_code"] = 401
         return JsonResponse(json_response, status=json_response["status_code"])

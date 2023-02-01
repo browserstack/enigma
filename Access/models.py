@@ -198,8 +198,16 @@ class User(models.Model):
     def get_all_memberships(self):
         return self.membership_user.all()
 
-    def is_allowed_admin_actions_on_group(self, is_superuser):
-        return (is_superuser or self.is_ops or self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]))
+    def is_allowed_admin_actions_on_group(self, group):
+        return (
+            group.member_is_owner(self)
+            or self.user.is_superuser
+            or self.is_ops
+            or self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"])
+        )
+
+    def is_allowed_to_offboard_user_from_group(self, group):
+        return group.member_is_owner(self) or self.has_permission("ALLOW_USER_OFFBOARD")
 
     def __str__(self):
         return "%s" % (self.user)
@@ -262,7 +270,7 @@ class MembershipV2(models.Model):
     decline_reason = models.TextField(null=True, blank=True)
 
     def approve(self, approver):
-        self.status = 'Approved'
+        self.status = "Approved"
         self.approver = approver
         self.save()
 
@@ -278,7 +286,7 @@ class MembershipV2(models.Model):
         return self.requested_by == approver
 
     def is_already_processed(self):
-        return self.status in ['Declined', 'Approved', 'Processing', 'Revoked']
+        return self.status in ["Declined", "Approved", "Processing", "Revoked"]
 
     @staticmethod
     def approve_membership(membership_id, approver):
@@ -426,8 +434,13 @@ class GroupV2(models.Model):
         group_members = self.membership_group.all()
         return group_members
 
+    def member_is_owner(self, user):
+        return self.membership_group.get(user=user).is_owner
+
     def get_active_accesses(self):
-        return self.groupaccessmapping_set.filter(status__in=["Approved", "Pending", "Declined", "SecondaryPending"])
+        return self.groupaccessmapping_set.filter(
+            status__in=["Approved", "Pending", "Declined", "SecondaryPending"]
+        )
 
     def is_self_approval(self, approver):
         return self.requester == approver
@@ -443,7 +456,9 @@ class GroupV2(models.Model):
         self.save()
 
     def unapprove_memberships(self):
-        self.membership_group.filter(status="Approved").update(status="Pending", approver=None)
+        self.membership_group.filter(status="Approved").update(
+            status="Pending", approver=None
+        )
 
     def __str__(self):
         return self.name
@@ -557,18 +572,8 @@ class UserAccessMapping(models.Model):
             access_labels
         )
         access_request_data["status"] = self.status
-        if (
-            self.access.access_tag == "other"
-            and "grant_emails" in self.access.access_label
-            and type(self.access.access_label["grant_emails"]) == list
-        ):
-            access_request_data["revokeOwner"] = ",".join(
-                self.access.access_label["grant_emails"]
-            )
-            access_request_data["grantOwner"] = access_request_data["revokeOwner"]
-        else:
-            access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
-            access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
+        access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
+        access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
 
@@ -678,18 +683,8 @@ class GroupAccessMapping(models.Model):
             access_labels
         )
         access_request_data["status"] = self.status
-        if (
-            self.access.access_tag == "other"
-            and "grant_emails" in self.access.access_label
-            and type(self.access.access_label["grant_emails"]) == list
-        ):
-            access_request_data["revokeOwner"] = ",".join(
-                self.access.access_label["grant_emails"]
-            )
-            access_request_data["grantOwner"] = access_request_data["revokeOwner"]
-        else:
-            access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
-            access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
+        access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
+        access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
 
@@ -703,16 +698,13 @@ class AccessV2(models.Model):
         try:
             if self.access_tag == "aws":
                 label = self.access_label["data"]
-                return (
-                    "{}: Team- {} | Access: {} | Level: {} | Service: {} | Resource: {}"
-                    .format(
-                        self.access_tag,
-                        label["team"],
-                        label["awsAccessType"],
-                        label["levelAccessType"],
-                        label["awsService"],
-                        label["awsResource"],
-                    )
+                return "{}: Team- {} | Access: {} | Level: {} | Service: {} | Resource: {}".format(
+                    self.access_tag,
+                    label["team"],
+                    label["awsAccessType"],
+                    label["levelAccessType"],
+                    label["awsService"],
+                    label["awsResource"],
                 )
             if self.access_tag == "other":
                 return self.access_tag + " - " + self.access_label["request"]
