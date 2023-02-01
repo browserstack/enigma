@@ -1,7 +1,6 @@
 import pytest
 from Access import accessrequest_helper
 from django.http import HttpRequest, QueryDict
-import json
 
 
 @pytest.mark.parametrize(
@@ -165,7 +164,6 @@ Test_pendingFailure_Exception = "Throws Exception"
             ["Failure3"],
             "",
         ),
-        # (Test_pendingFailure_Exception, "{'error': {'error_msg': 'GetUserFailureException', 'msg': 'Error in request not found OR Invalid request type'}}", ["Failure1"], "GetUserFailureException"),
     ],
 )
 def test_pendingFailure(
@@ -266,7 +264,6 @@ test_pendingRevoke_Exception = "Exception"
             ["failure3"],
             "",
         ),
-        # (test_pendingRevoke_Exception, "{'error': {'error_msg': 'getUserExceptionString', 'msg': 'Error in request not found OR Invalid request type'}}",[],"getUserExceptionString"),
     ],
 )
 def test_PendingRevokeRequests(
@@ -329,5 +326,5 @@ def test_PendingRevokeRequests(
             side_effect=Exception(getUserExceptionString),
         )
 
-    context = accessrequest_helper.getPendingRevokeFailures(request)
+    context = accessrequest_helper.get_pending_revoke_failures(request)
     assert str(context) == expectedOutPut
