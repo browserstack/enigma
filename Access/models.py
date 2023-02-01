@@ -195,6 +195,20 @@ class User(models.Model):
     def isAdminOrOps(self):
         return self.is_ops or self.user.is_superuser
 
+    def get_all_memberships(self):
+        return self.membership_user.all()
+
+    def is_allowed_admin_actions_on_group(self, group):
+        return (
+            group.member_is_owner(self)
+            or self.user.is_superuser
+            or self.is_ops
+            or self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"])
+        )
+
+    def is_allowed_to_offboard_user_from_group(self, group):
+        return group.member_is_owner(self) or self.has_permission("ALLOW_USER_OFFBOARD")
+    
     def create_new_identity(self, access_tag="", identity=""):
         return self.module_identity.create(access_tag=access_tag, identity=identity)
 
@@ -267,7 +281,7 @@ class MembershipV2(models.Model):
         self.save()
 
     def approve(self, approver):
-        self.status = 'Approved'
+        self.status = "Approved"
         self.approver = approver
         self.save()
 
@@ -283,7 +297,7 @@ class MembershipV2(models.Model):
         return self.requested_by == approver
 
     def is_already_processed(self):
-        return self.status in ['Declined', 'Approved', 'Processing', 'Revoked']
+        return self.status in ["Declined", "Approved", "Processing", "Revoked"]
 
     @staticmethod
     def approve_membership(membership_id, approver):
@@ -415,14 +429,29 @@ class GroupV2(models.Model):
         except GroupV2.DoesNotExist:
             return None
 
+    @staticmethod
+    def get_active_group_by_name(group_name):
+        try:
+            return GroupV2.objects.get(name=group_name, status="Approved")
+        except Exception:
+            return None
+
     def approve_all_pending_users(self, approved_by):
-        self.membership_group.filter(group=self, status="Pending").update(
+        self.membership_group.filter(status="Pending").update(
             status="Approved", approver=approved_by
         )
 
     def get_all_members(self):
-        group_members = self.membership_group.filter(group=self)
+        group_members = self.membership_group.all()
         return group_members
+
+    def member_is_owner(self, user):
+        return self.membership_group.get(user=user).is_owner
+
+    def get_active_accesses(self):
+        return self.groupaccessmapping_set.filter(
+            status__in=["Approved", "Pending", "Declined", "SecondaryPending"]
+        )
 
     def is_self_approval(self, approver):
         return self.requester == approver
@@ -438,7 +467,9 @@ class GroupV2(models.Model):
         self.save()
 
     def unapprove_memberships(self):
-        self.membership_group.filter(status="Approved").update(status="Pending", approver=None)
+        self.membership_group.filter(status="Approved").update(
+            status="Pending", approver=None
+        )
 
     def __str__(self):
         return self.name
@@ -557,6 +588,9 @@ class UserAccessMapping(models.Model):
         access_request_data["accessMeta"] = access_module.combine_labels_meta(
             access_labels
         )
+        access_request_data["status"] = self.status
+        access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
+        access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
 
@@ -668,6 +702,9 @@ class GroupAccessMapping(models.Model):
         access_request_data["accessMeta"] = access_module.combine_labels_meta(
             access_labels
         )
+        access_request_data["status"] = self.status
+        access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
+        access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
 
