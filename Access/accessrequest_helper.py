@@ -12,33 +12,34 @@ from django.db import transaction
 logger = logging.getLogger(__name__)
 all_access_modules = helper.get_available_access_modules()
 
-CREATE_REQUEST_SUCCESS_MESSAGE = {
+
+REQUEST_SUCCESS_MSG = {
     "title": "{request_id}  Request Submitted",
     "msg": "Once approved you will receive the update. {access_label}",
 }
-CREATE_REQUEST_DUPLICATE_ERROR_MESSAGE = {
+REQUEST_DUPLICATE_ERR_MSG = {
     "title": "{access_tag}: Duplicate Request not submitted",
     "msg": "Access already granted or request in pending state. {access_label}",
 }
-CREATE_REQUEST_EMPTY_REQUEST_ERROR_MESSAGE = {
+REQUEST_ERR_MSG = {
     "error_msg": "Invalid Request",
     "msg": "Please Contact Admin",
 }
-CREATE_REQUEST_EMPTY_ACCESS_REQUEST_FORM_ERROR_MESSAGE = {
+REQUEST_EMPTY_FORM_ERR_MSG = {
     "error_msg": "The submitted form is empty. Tried direct access to reqeust access page",
     "msg": "Error Occured while submitting your Request. Please contact the Admin",
 }
 
-CREATE_REQUEST_ACCESS_AUTO_APPROVED_MESSAGE = {
+REQUEST_ACCESS_AUTO_APPROVED_MSG = {
     "title": "{request_id}  Request Approved",
     "msg": "Once granted you will receive the update",
 }
 
-CREATE_REQUEST_DB_ERROR_MESSAGE = {
+REQUEST_DB_ERR_MSG = {
     "error_msg": "Error Saving Request",
     "msg": "Please Contact Admin",
 }
-CREATE_REQUEST_IDENTITY_NOT_SETUP_ERROR_MESSAGE = {
+REQUEST_IDENTITY_NOT_SETUP_ERR_MSG = {
     "error_msg": "Identity not setup",
     "msg": "User Identity for module {access_tag} not setup by the user",
 }
@@ -292,18 +293,9 @@ def create_request(auth_user, access_request_form):
         }
 
         access_module = all_access_modules[access_type]
-
-        ##########
         module_access_labels = access_module.validate_request(
             access_labels, auth_user, is_group=False
         )
-        ##########
-        # generic_request_data = _create_generic_request(
-        #     access_module=access_module,
-        #     access_reason=access_request["accessReason"][index1],
-        #     access_labels=access_labels,
-        #     user=auth_user,
-        # )
 
         extra_field_labels = _get_extra_field_labels(access_module)
 
@@ -329,10 +321,10 @@ def create_request(auth_user, access_request_form):
                 # start approval in celery
                 json_response["status_list"].append(
                     {
-                        "title": CREATE_REQUEST_ACCESS_AUTO_APPROVED_MESSAGE[
+                        "title": REQUEST_ACCESS_AUTO_APPROVED_MSG[
                             "title"
                         ].format(request_id),
-                        "msg": CREATE_REQUEST_ACCESS_AUTO_APPROVED_MESSAGE["msg"],
+                        "msg": REQUEST_ACCESS_AUTO_APPROVED_MSG["msg"],
                     }
                 )
                 raise Exception("Implementation pending")
@@ -340,10 +332,10 @@ def create_request(auth_user, access_request_form):
 
             json_response["status_list"].append(
                 {
-                    "title": CREATE_REQUEST_SUCCESS_MESSAGE["title"].format(
+                    "title": REQUEST_SUCCESS_MSG["title"].format(
                         request_id=request_id
                     ),
-                    "msg": CREATE_REQUEST_SUCCESS_MESSAGE["msg"].format(
+                    "msg": REQUEST_SUCCESS_MSG["msg"].format(
                         access_label=json.dumps(access_label)
                     ),
                 }
@@ -356,8 +348,8 @@ def _create_access(auth_user, access_label, access_type, request_id, access_reas
     user_identity = auth_user.user.get_active_identity(access_tag=access_type)
     if not user_identity:
         return {
-            "title": CREATE_REQUEST_IDENTITY_NOT_SETUP_ERROR_MESSAGE["error_msg"],
-            "msg": CREATE_REQUEST_IDENTITY_NOT_SETUP_ERROR_MESSAGE["msg"].format(
+            "title": REQUEST_IDENTITY_NOT_SETUP_ERR_MSG["error_msg"],
+            "msg": REQUEST_IDENTITY_NOT_SETUP_ERR_MSG["msg"].format(
                 access_tag=access_type
             ),
         }
@@ -366,10 +358,10 @@ def _create_access(auth_user, access_label, access_type, request_id, access_reas
     if access:
         if user_identity.access_exists(access):
             return {
-                "title": CREATE_REQUEST_DUPLICATE_ERROR_MESSAGE["title"].format(
+                "title": REQUEST_DUPLICATE_ERR_MSG["title"].format(
                     access_tag=access.access_tag
                 ),
-                "msg": CREATE_REQUEST_DUPLICATE_ERROR_MESSAGE["msg"].format(
+                "msg": REQUEST_DUPLICATE_ERR_MSG["msg"].format(
                     access_label=json.dumps(access.access_label)
                 ),
             }
@@ -386,8 +378,8 @@ def _create_access(auth_user, access_label, access_type, request_id, access_reas
         )
     except Exception:
         return {
-            "error_msg": CREATE_REQUEST_DB_ERROR_MESSAGE["error_msg"],
-            "msg": CREATE_REQUEST_DB_ERROR_MESSAGE["msg"],
+            "error_msg": REQUEST_DB_ERR_MSG["error_msg"],
+            "msg": REQUEST_DB_ERR_MSG["msg"],
         }
 
 
@@ -423,8 +415,8 @@ def _validate_access_request(access_request_form, user):
     if not access_request_form:
         json_response = {}
         json_response["error"] = {
-            "error_msg": CREATE_REQUEST_EMPTY_REQUEST_ERROR_MESSAGE["error_msg"],
-            "msg": CREATE_REQUEST_EMPTY_REQUEST_ERROR_MESSAGE["msg"],
+            "error_msg": REQUEST_ERR_MSG["error_msg"],
+            "msg": REQUEST_ERR_MSG["msg"],
         }
 
         logger.debug("Tried a direct Access to accessRequest by-" + user.username)
@@ -434,10 +426,10 @@ def _validate_access_request(access_request_form, user):
 
     if "accessRequests" not in access_request:
         json_response["error"] = {
-            "error_msg": CREATE_REQUEST_EMPTY_ACCESS_REQUEST_FORM_ERROR_MESSAGE[
+            "error_msg": REQUEST_EMPTY_FORM_ERR_MSG[
                 "error_msg"
             ],
-            "msg": CREATE_REQUEST_EMPTY_ACCESS_REQUEST_FORM_ERROR_MESSAGE["msg"],
+            "msg": REQUEST_EMPTY_FORM_ERR_MSG["msg"],
         }
         return json_response
     return {}, access_request
@@ -454,19 +446,3 @@ def _validate_access_labels(access_labels_json, access_type):
             )
         )
     return access_labels
-
-
-# def _create_generic_request(access_module, access_reason, access_labels, user):
-#     generic_request_data = {}
-#     generic_request_data["accessLabel"] = access_module.validate_request(
-#         access_labels, user, is_group=False
-#     )
-#     generic_request_data["accessCategory"] = access_module.combine_labels_desc(
-#         generic_request_data["accessLabel"]
-#     )
-#     generic_request_data["accessMeta"] = access_module.combine_labels_meta(
-#         generic_request_data["accessLabel"]
-#     )
-#     generic_request_data["accessDesc"] = access_module.access_desc()
-#     generic_request_data["accessReason"] = access_reason
-#     return generic_request_data
