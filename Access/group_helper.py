@@ -175,7 +175,7 @@ def get_group_access_list(request, group_name):
     context["groupName"] = group_name
 
     allow_revoke = False
-    if not auth_user.user.is_allowed_to_offboard_user_from_group(group):
+    if auth_user.user.is_allowed_to_offboard_user_from_group(group):
         allow_revoke = True
     context["allowRevoke"] = allow_revoke
 
@@ -183,6 +183,8 @@ def get_group_access_list(request, group_name):
     context["genericAccesses"] = [
         get_generic_access(group_mapping) for group_mapping in group_mappings
     ]
+    if(context["genericAccesses"] == [{}]):
+        context["genericAccesses"] = []
 
     return context
 
