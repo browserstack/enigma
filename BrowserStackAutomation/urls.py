@@ -21,17 +21,20 @@ from Access.views import (
     showAccessHistory,
     pendingRequests,
     pendingFailure,
-    pendingRevoke,
+    pending_revoke,
     updateUserInfo,
+    saveIdentity,
     createNewGroup,
     allUserAccessList,
     allUsersList,
     requestAccess,
     groupRequestAccess,
-    groupAccessList,
+    group_access_list,
     approveNewGroup,
     add_user_to_group,
     groupDashboard,
+    accept_bulk,
+    update_group_owners,
 )
 
 urlpatterns = [
@@ -43,8 +46,9 @@ urlpatterns = [
     re_path(r"^access/showAccessHistory$", showAccessHistory, name="showAccessHistory"),
     re_path(r"^access/pendingRequests$", pendingRequests, name="pendingRequests"),
     re_path(r"^resolve/pendingFailure", pendingFailure, name="pendingFailure"),
-    re_path(r"^resolve/pendingRevoke", pendingRevoke, name="pendingRevoke"),
+    re_path(r"^resolve/pendingRevoke", pending_revoke, name="pendingRevoke"),
     re_path(r"^user/updateUserInfo/", updateUserInfo, name="updateUserInfo"),
+    re_path(r"^user/saveIdentity/", saveIdentity, name="saveIdentity"),
     re_path(r"^group/create$", createNewGroup, name="createNewGroup"),
     re_path(r"^group/dashboard/$", groupDashboard, name="groupDashboard"),
     re_path(r"^access/userAccesses$", allUserAccessList, name="allUserAccessList"),
@@ -53,7 +57,7 @@ urlpatterns = [
     re_path(r"^group/requestAccess$", groupRequestAccess, name="groupRequestAccess"),
     re_path(
         r"^group/access/list/(?P<groupName>[\w -]+)$",
-        groupAccessList,
+        group_access_list,
         name="groupAccessList",
     ),
     re_path(
@@ -64,4 +68,10 @@ urlpatterns = [
         add_user_to_group,
         name="addUserToGroup",
     ),
+    re_path(
+        r"^group/updateOwners/(?P<groupName>[\w -]+)$",
+        update_group_owners,
+        name="updateGroupOwners",
+    ),
+    re_path(r"^accept_bulk/(?P<selector>[\w-]+)", accept_bulk, name="accept_bulk"),
 ]

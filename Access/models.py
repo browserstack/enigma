@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User as user
 from django.db import models, transaction
-
 from BrowserStackAutomation.settings import USER_STATUS_CHOICES, PERMISSION_CONSTANTS
+import datetime
 
 
 class Permission(models.Model):
@@ -195,6 +195,28 @@ class User(models.Model):
     def isAdminOrOps(self):
         return self.is_ops or self.user.is_superuser
 
+    def get_all_memberships(self):
+        return self.membership_user.all()
+
+    def is_allowed_admin_actions_on_group(self, group):
+        return (
+            group.member_is_owner(self)
+            or self.user.is_superuser
+            or self.is_ops
+            or self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"])
+        )
+
+    def is_allowed_to_offboard_user_from_group(self, group):
+        return group.member_is_owner(self) or self.has_permission("ALLOW_USER_OFFBOARD")
+    
+    def create_new_identity(self, access_tag="", identity=""):
+        return self.module_identity.create(access_tag=access_tag, identity=identity)
+
+    def get_active_identity(self, access_tag):
+        return self.module_identity.filter(
+            access_tag=access_tag, status="Active"
+        ).first()
+
     def __str__(self):
         return "%s" % (self.user)
 
@@ -243,7 +265,6 @@ class MembershipV2(models.Model):
     status = models.CharField(
         max_length=255, null=False, blank=False, choices=STATUS, default="Pending"
     )
-
     reason = models.TextField(null=True, blank=True)
 
     approver = models.ForeignKey(
@@ -254,6 +275,38 @@ class MembershipV2(models.Model):
         on_delete=models.PROTECT,
     )
     decline_reason = models.TextField(null=True, blank=True)
+
+    def deactivate(self):
+        self.status = "Revoked"
+        self.save()
+
+    def approve(self, approver):
+        self.status = "Approved"
+        self.approver = approver
+        self.save()
+
+    def unapprove(self):
+        self.status = "Pending"
+        self.approver = None
+        self.save()
+
+    def get_status(self):
+        return self.status
+
+    def is_self_approval(self, approver):
+        return self.requested_by == approver
+
+    def is_already_processed(self):
+        return self.status in ["Declined", "Approved", "Processing", "Revoked"]
+
+    @staticmethod
+    def approve_membership(membership_id, approver):
+        membership = MembershipV2.objects.get(membership_id=membership_id)
+        membership.approve(approver=approver)
+
+    @staticmethod
+    def get_membership(membership_id):
+        return MembershipV2.objects.get(membership_id=membership_id)
 
     def __str__(self):
         return self.group.name + "-" + self.user.email + "-" + self.status
@@ -365,6 +418,59 @@ class GroupV2(models.Model):
             )
         return new_group_pending_data
 
+    @staticmethod
+    def get_pending_group(group_id):
+        return GroupV2.objects.get(group_id=group_id, status="Pending")
+
+    @staticmethod
+    def get_approved_group(group_id):
+        try:
+            return GroupV2.objects.get(group_id=group_id, status="Approved")
+        except GroupV2.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_active_group_by_name(group_name):
+        try:
+            return GroupV2.objects.get(name=group_name, status="Approved")
+        except Exception:
+            return None
+
+    def approve_all_pending_users(self, approved_by):
+        self.membership_group.filter(status="Pending").update(
+            status="Approved", approver=approved_by
+        )
+
+    def get_all_members(self):
+        group_members = self.membership_group.all()
+        return group_members
+
+    def member_is_owner(self, user):
+        return self.membership_group.get(user=user).is_owner
+
+    def get_active_accesses(self):
+        return self.groupaccessmapping_set.filter(
+            status__in=["Approved", "Pending", "Declined", "SecondaryPending"]
+        )
+
+    def is_self_approval(self, approver):
+        return self.requester == approver
+
+    def approve(self, approved_by):
+        self.approver = approved_by
+        self.status = "Approved"
+        self.save()
+
+    def unapprove(self):
+        self.approver = None
+        self.status = "Pending"
+        self.save()
+
+    def unapprove_memberships(self):
+        self.membership_group.filter(status="Approved").update(
+            status="Pending", approver=None
+        )
+
     def __str__(self):
         return self.name
 
@@ -380,8 +486,6 @@ class UserAccessMapping(models.Model):
     requested_on = models.DateTimeField(auto_now_add=True)
     approved_on = models.DateTimeField(null=True, blank=True)
     updated_on = models.DateTimeField(auto_now=True)
-
-    user = models.ForeignKey("User", null=False, blank=False, on_delete=models.PROTECT)
 
     request_reason = models.TextField(null=False, blank=False)
 
@@ -443,6 +547,14 @@ class UserAccessMapping(models.Model):
     )
     meta_data = models.JSONField(default=dict, blank=True, null=True)
 
+    user_identity = models.ForeignKey(
+        "UserIdentity",
+        null=True,
+        blank=True,
+        related_name="user_access_mapping",
+        on_delete=models.PROTECT,
+    )
+
     def __str__(self):
         return self.request_id
 
@@ -476,6 +588,9 @@ class UserAccessMapping(models.Model):
         access_request_data["accessMeta"] = access_module.combine_labels_meta(
             access_labels
         )
+        access_request_data["status"] = self.status
+        access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
+        access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
 
@@ -487,6 +602,9 @@ class UserAccessMapping(models.Model):
             mapping.meta_data[key] = data
             mapping.save()
         return True
+
+    def is_approved(self):
+        return self.status == "Approved"
 
 
 class GroupAccessMapping(models.Model):
@@ -584,6 +702,9 @@ class GroupAccessMapping(models.Model):
         access_request_data["accessMeta"] = access_module.combine_labels_meta(
             access_labels
         )
+        access_request_data["status"] = self.status
+        access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
+        access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
 
@@ -595,21 +716,6 @@ class AccessV2(models.Model):
 
     def __str__(self):
         try:
-            if self.access_tag == "aws":
-                label = self.access_label["data"]
-                return (
-                    "{}: Team- {} | Access: {} | Level: {} | Service: {} | Resource: {}"
-                    .format(
-                        self.access_tag,
-                        label["team"],
-                        label["awsAccessType"],
-                        label["levelAccessType"],
-                        label["awsService"],
-                        label["awsResource"],
-                    )
-                )
-            if self.access_tag == "other":
-                return self.access_tag + " - " + self.access_label["request"]
             details_arr = []
             for data in list(self.access_label.values()):
                 try:
@@ -619,3 +725,85 @@ class AccessV2(models.Model):
             return self.access_tag + " - " + ", ".join(details_arr)
         except Exception:
             return self.access_tag
+
+
+class UserIdentity(models.Model):
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "access_tag", "status"],
+                condition=models.Q(status="Active"),
+                name="one_active_identity_per_access_module_per_user",
+            )
+        ]
+
+    access_tag = models.CharField(max_length=255)
+
+    user = models.ForeignKey(
+        "User",
+        null=False,
+        blank=False,
+        related_name="module_identity",
+        on_delete=models.PROTECT,
+    )
+    identity = models.JSONField(default=dict)
+
+    STATUS_CHOICES = (
+        ("Active", "active"),
+        ("Inactive", "inactive"),
+    )
+
+    status = models.CharField(
+        max_length=100,
+        null=False,
+        blank=False,
+        choices=STATUS_CHOICES,
+        default="Active",
+    )
+
+    def deactivate(self):
+        self.status = 0
+        self.save()
+
+    def get_active_access(self):
+        return self.user_access_mapping.filter(
+            status__in=["Approved", "Pending"], access__access_tag=self.access_tag
+        )
+
+    def replicate_active_access_membership_for_module(
+        self, existing_user_access_mapping
+    ):
+        new_user_access_mapping = []
+
+        for i, user_access in enumerate(existing_user_access_mapping):
+            base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+            request_id = (
+                self.user.username
+                + "-"
+                + user_access.access_type
+                + "-"
+                + base_datetime_prefix
+                + "-"
+                + str(i)
+            )
+            access_status = user_access.status
+            if user_access.status.lower() == "approved":
+                access_status = "Processing"
+
+            new_user_access_mapping.append(
+                self.user_access_mapping.create(
+                    request_id=request_id,
+                    user=self,
+                    access=user_access.access,
+                    approver_1=user_access.approver_1,
+                    approver_2=user_access.approver_2,
+                    request_reason=user_access.request_reason,
+                    access_type=user_access.access_type,
+                    status=access_status,
+                )
+            )
+            user_access.deactivate()
+        return new_user_access_mapping
+
+    def __str__(self):
+        return "%s" % (self.identity)
