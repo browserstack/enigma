@@ -25,12 +25,17 @@
 	```bash
 	python3 manage.py shell
 	from Access.celery_helper import celery_task
-	celery_task.delay("Zoom", "grant", [1])
+	celery_task.delay("confluence_module", "access_desc", None)
 
-	from Access.background_task_manager import background_task, executeGroupAccess_celery_task
-	args = (None, None, [1])
-	executeGroupAccess_celery_task.delay(args)
-	background_task('executeGroupAccess', args=args)
+	from Access.background_task_manager import background_task
+	requestId=None
+	requestObject=None
+	accessType=None
+	user=None
+	approver=None
+	background_task('run_access_grant', requestId, requestObject, accessType, user, approver)
+
+	background_task('test_grant')
 	```
 7. Requirements:
 	```bash
