@@ -51,7 +51,6 @@ def getDashboardData(request):
 
             user_mappings_list = generateUserMappings(user, group, member)
             member.save()
-            # group_name = member.group.name
 
             executeGroupAccess(user_mappings_list)
 
