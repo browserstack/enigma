@@ -101,3 +101,8 @@ pytest-django==4.5.2
 pytest-mock==3.10.0
 pylama==8.4.1
 semgrep==1.2.1
+mysqlclient==2.1.1
+django-celery-results==2.4.0
+sqlalchemy==1.4.45
+redis==4.4.0
+celery==5.2.7

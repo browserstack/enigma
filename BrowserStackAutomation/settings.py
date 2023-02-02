@@ -187,6 +187,14 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = data["googleapi"][
     "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS"
 ]
 
+if data["background_task_manager"]["type"] == "celery":
+    background_task_manager_config = data["background_task_manager"]["config"]
+    CELERY_BROKER_URL = background_task_manager_config["broker"]
+    CELERY_RESULT_BACKEND = background_task_manager_config["backend"]
+
+    if background_task_manager_config["need_monitoring"]:
+        INSTALLED_APPS.append(background_task_manager_config["monitoring_apps"])
+
 USER_STATUS_CHOICES = [
     ("1", "active"),
     ("2", "offboarding"),

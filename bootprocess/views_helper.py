@@ -6,8 +6,7 @@ from Access.models import (
     UserAccessMapping,
 )
 from BrowserStackAutomation.settings import DEFAULT_ACCESS_GROUP
-from Access.views_helper import executeGroupAccess, generateUserMappings
-import threading
+from Access.views_helper import generateUserMappings, executeGroupAccess
 import json
 import datetime
 
@@ -52,13 +51,8 @@ def getDashboardData(request):
 
             user_mappings_list = generateUserMappings(user, group, member)
             member.save()
-            group_name = member.group.name
 
-            access_accept_thread = threading.Thread(
-                target=executeGroupAccess,
-                args=(request, group_name, user_mappings_list),
-            )
-            access_accept_thread.start()
+            executeGroupAccess(user_mappings_list)
 
             logger.debug(
                 "Process has been started for the Approval of request - "
