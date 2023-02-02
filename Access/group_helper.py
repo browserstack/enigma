@@ -6,6 +6,8 @@ import logging
 from bootprocess import general
 from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 import threading
+from . import helpers as helper
+
 
 logger = logging.getLogger(__name__)
 
@@ -591,3 +593,40 @@ def accept_member(request, requestId, shouldRender=True):
         context = {}
         context["error"] = APPROVAL_ERROR + str(e)
         return context
+
+def get_group_access(form_data, auth_user):
+    data = dict(form_data.lists())
+    group_name = data['groupName'][0]
+    context = {}
+    context['accesses'] = []
+
+    group = GroupV2.get_active_group_by_name(group_name = group_name)
+    if not group:    
+        logger.exception("This Group is not yet approved")
+        context['status'] = {'title':'Permisison Denied', 'msg': "This Group is not yet approved"}
+        return context
+        
+    if not (group.is_owner(auth_user.user.email) or auth_user.is_superuser):
+        logger.exception("Permission denied, you're not owner of this group")
+        context['status'] = {'title':'Permisison Denied', 'msg': "You're not owner of this group"}
+        return context
+    
+    access_module_list = data['accessList']
+    for module_value in access_module_list:
+        module = helper.get_available_access_modules()[module_value]
+        try:
+            extra_fields = module.get_extra_fields()
+        except:
+            extra_fields = []
+        
+        context['genericForm'] = True
+        context['accesses'].append({
+            'formDesc': module.access_desc(),
+            'accessTag': module.tag(),
+            'accessTypes': module.access_types(),
+            'accessRequestData': module.access_request_data(form_data, is_group=True),
+            'extraFields': extra_fields,
+            'accessRequestPath': module.fetch_access_request_form_path()
+        })
+    context['groupName'] = group_name
+    return context

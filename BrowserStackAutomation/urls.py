@@ -28,7 +28,7 @@ from Access.views import (
     allUserAccessList,
     allUsersList,
     requestAccess,
-    groupRequestAccess,
+    group_access,
     group_access_list,
     approveNewGroup,
     add_user_to_group,
@@ -54,7 +54,7 @@ urlpatterns = [
     re_path(r"^access/userAccesses$", allUserAccessList, name="allUserAccessList"),
     re_path(r"^access/usersList$", allUsersList, name="allUsersList"),
     re_path(r"^access/requestAccess$", requestAccess, name="requestAccess"),
-    re_path(r"^group/requestAccess$", groupRequestAccess, name="groupRequestAccess"),
+    re_path(r"^group/requestAccess$", group_access, name="groupRequestAccess"),
     re_path(
         r"^group/access/list/(?P<groupName>[\w -]+)$",
         group_access_list,

@@ -308,6 +308,9 @@ class MembershipV2(models.Model):
     def get_membership(membership_id):
         return MembershipV2.objects.get(membership_id=membership_id)
 
+    def get_owners(self):
+        return self.membership_group.filter(is_owner=True)
+    
     def __str__(self):
         return self.group.name + "-" + self.user.email + "-" + self.status
 
@@ -420,7 +423,10 @@ class GroupV2(models.Model):
 
     @staticmethod
     def get_pending_group(group_id):
-        return GroupV2.objects.get(group_id=group_id, status="Pending")
+        try:
+            return GroupV2.objects.get(group_id=group_id, status="Pending")
+        except GroupV2.DoesNotExist:
+            return None
 
     @staticmethod
     def get_approved_group(group_id):
@@ -433,7 +439,7 @@ class GroupV2(models.Model):
     def get_active_group_by_name(group_name):
         try:
             return GroupV2.objects.get(name=group_name, status="Approved")
-        except Exception:
+        except GroupV2.DoesNotExist:
             return None
 
     def approve_all_pending_users(self, approved_by):
@@ -470,6 +476,9 @@ class GroupV2(models.Model):
         self.membership_group.filter(status="Approved").update(
             status="Pending", approver=None
         )
+
+    def is_owner(self, email):
+        return self.membership_group.filter(is_owner=True).filter(user__email = email).first() != None
 
     def __str__(self):
         return self.name

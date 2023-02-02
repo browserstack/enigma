@@ -114,9 +114,10 @@ def requestAccess(request):
 
 
 @login_required
-def groupRequestAccess(request):
-    return False
-
+def group_access(request):
+    if request.GET:
+        context = group_helper.get_group_access(request.GET, request.user)
+        return render(request, 'BSOps/groupAccessRequestForm.html',context)
 
 @login_required
 def group_access_list(request, groupName):
