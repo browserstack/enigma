@@ -188,7 +188,7 @@ class User(models.Model):
             return GroupV2.objects.all().filter(status="Approved")
 
         groupOwnerMembership = MembershipV2.objects.filter(
-            is_owner=True, user=currentUser
+            is_owner=True, user=self
         )
         return [membership_obj.group for membership_obj in groupOwnerMembership]
 
