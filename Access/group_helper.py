@@ -564,14 +564,14 @@ def accept_member(request, requestId, shouldRender=True):
                 membership.approve(request.user.user)
                 group = membership.group
                 user = membership.user
-                userMappingsList = views_helper.generateUserMappings(
+                user_mappings_list = views_helper.generateUserMappings(
                     user, group, membership
                 )
 
-            # TODO: Add celery task for executeGroupAccess
             # accessAcceptThread = threading.Thread(target=executeGroupAccess,
             # args=(request, group.name, userMappingsList))
             # accessAcceptThread.start()
+            executeGroupAccess(user_mappings_list)
 
             notifications.send_membership_accepted_notification(
                 user=user, group=group, membership=membership
