@@ -319,9 +319,9 @@ def create_request(auth_user, access_request_form):
                 # start approval in celery
                 json_response["status_list"].append(
                     {
-                        "title": REQUEST_ACCESS_AUTO_APPROVED_MSG[
-                            "title"
-                        ].format(request_id),
+                        "title": REQUEST_ACCESS_AUTO_APPROVED_MSG["title"].format(
+                            request_id
+                        ),
                         "msg": REQUEST_ACCESS_AUTO_APPROVED_MSG["msg"],
                     }
                 )
@@ -330,9 +330,7 @@ def create_request(auth_user, access_request_form):
 
             json_response["status_list"].append(
                 {
-                    "title": REQUEST_SUCCESS_MSG["title"].format(
-                        request_id=request_id
-                    ),
+                    "title": REQUEST_SUCCESS_MSG["title"].format(request_id=request_id),
                     "msg": REQUEST_SUCCESS_MSG["msg"].format(
                         access_label=json.dumps(access_label)
                     ),
@@ -424,9 +422,7 @@ def _validate_access_request(access_request_form, user):
 
     if "accessRequests" not in access_request:
         json_response["error"] = {
-            "error_msg": REQUEST_EMPTY_FORM_ERR_MSG[
-                "error_msg"
-            ],
+            "error_msg": REQUEST_EMPTY_FORM_ERR_MSG["error_msg"],
             "msg": REQUEST_EMPTY_FORM_ERR_MSG["msg"],
         }
         return json_response
