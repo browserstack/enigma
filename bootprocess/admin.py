@@ -8,7 +8,8 @@ from Access.models import (
     AccessV2,
     GroupV2,
     MembershipV2,
-    GroupAccessMapping
+    GroupAccessMapping,
+    UserIdentity
 )
 
 admin.site.register(Permission)
@@ -18,3 +19,4 @@ admin.site.register(AccessV2)
 admin.site.register(GroupV2)
 admin.site.register(MembershipV2)
 admin.site.register(GroupAccessMapping)
+admin.site.register(UserIdentity)
