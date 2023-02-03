@@ -7,7 +7,7 @@
       <h2 class="h5 no-margin-bottom">Update User Info: {{request.user}}</h2>
     </div>
   </div>
-  
+
   <div class="container">
     <b>Update Identity</b>
     {% for each_access in identity_template %}
@@ -15,7 +15,7 @@
       <!-- Horizontal Form -->
       <div class="box box-danger">
         <form class="form-horizontal" action="create_post" method="post" id="usrform{{ forloop.counter }}" name="usrform">
-            {% csrf_token %}          
+            {% csrf_token %}
           <div class="page-header mx-3">
               <div style="color: red;" id="error-msg">
               </div>
@@ -27,7 +27,7 @@
             <div class="form-group">
                 <button id="update_identity" onclick = "form_post('usrform{{ forloop.counter }}', 'update')" type="submit" value="update" name="state" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Update</button>
                 <button id="git_bulk_approve" onclick = "form_post('usrform{{ forloop.counter }}', 'regrant')" type="submit" value="git_bulk_approve" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Regrant</button>
-              </div>            
+              </div>
           </div>
         </form>
       </div>
@@ -41,7 +41,7 @@
       }
       event.preventDefault();
     }
-    
+
     function create_post(formId) {
       modName = $('#' + formId + " input[name='modname']").val()
       $('#' + formId).find('#error-msg').text("")
@@ -58,12 +58,12 @@
                 var msg = jQuery.parseJSON(json);
                 modName = $('#' + formId + " input[name='modname']").val()
                 $('#' + formId).find('#success-msg').text(msg.status.msg)
-              } 
+              }
               else {
                 modName = $('#' + formId + " input[name='modname']").val()
-                $('#' + formId).find('#error-msg').text("Error: Identity for " + modName + " could not saved.")                  
+                $('#' + formId).find('#error-msg').text("Error: Identity for " + modName + " could not saved.")
               }
-          },  
+          },
 
           // handle a non-successful response
           error : function(jqXHR, status, err) {
@@ -73,6 +73,6 @@
           }
       });
     };
-  </script>  
+  </script>
   <!-- /.content-wrapper -->
 {% endblock %}

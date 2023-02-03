@@ -31,12 +31,11 @@ ERROR_INVALID_ACCESS_MODULE = {
 
 def get_identity_templates():
     context = {}
-    templates = []
-    context['identity_template'] = []
+    context["identity_template"] = []
     for mod in helper.get_available_access_modules().values():
-        context['identity_template'].append({
-            'accessUserTemplatePath': mod.get_identity_template()
-        })
+        context["identity_template"].append(
+            {"accessUserTemplatePath": mod.get_identity_template()}
+        )
     return context
 
 
@@ -56,7 +55,9 @@ def create_identity(user_identity_form, auth_user):
 
         # get useraccess if an identity already exists
         if existing_user_identity:
-            existing_user_access_mapping = existing_user_identity.get_active_access()
+            existing_user_access_mapping = (
+                existing_user_identity.get_active_access_mapping()
+            )
 
         # create identity json  # call this verify identity
         new_user_access_mapping = __change_identity_and_transfer_membership(

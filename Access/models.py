@@ -177,7 +177,7 @@ class User(models.Model):
             return GroupV2.objects.all().filter(status="Approved")
 
         groupOwnerMembership = MembershipV2.objects.filter(
-            is_owner=True, user=currentUser
+            is_owner=True, user=self
         )
         return [membership_obj.group for membership_obj in groupOwnerMembership]
 
@@ -197,7 +197,7 @@ class User(models.Model):
 
     def is_allowed_to_offboard_user_from_group(self, group):
         return group.member_is_owner(self) or self.has_permission("ALLOW_USER_OFFBOARD")
-    
+
     def create_new_identity(self, access_tag="", identity=""):
         return self.module_identity.create(access_tag=access_tag, identity=identity)
 
@@ -723,14 +723,17 @@ class AccessV2(models.Model):
             return self.access_tag + " - " + ", ".join(details_arr)
         except Exception:
             return self.access_tag
-    
+
     @staticmethod
     def get(access_type, access_label):
         try:
-            return AccessV2.objects.get(access_tag=access_type, access_label=access_label)
-        except:
+            return AccessV2.objects.get(
+                access_tag=access_type, access_label=access_label
+            )
+        except AccessV2.DoesNotExist:
             return None
-        
+
+
 class UserIdentity(models.Model):
     class Meta:
         constraints = [
@@ -769,7 +772,7 @@ class UserIdentity(models.Model):
         self.status = 0
         self.save()
 
-    def get_active_access(self):
+    def get_active_access_mapping(self):
         return self.user_access_mapping.filter(
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
@@ -779,6 +782,14 @@ class UserIdentity(models.Model):
     
     def access_exists(self, access):
         if self.get_active_access(access=access):
+            return True
+        return False
+
+    def access_mapping_exists(self, access):
+        mapping = self.user_access_mapping.get(
+            access=access, status__in=["Approved", "Pending"]
+        )
+        if mapping:
             return True
         return False
 
