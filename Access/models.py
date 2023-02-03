@@ -57,7 +57,6 @@ class User(models.Model):
     user = models.OneToOneField(
         user, null=False, blank=False, on_delete=models.CASCADE, related_name="user"
     )
-    gitusername = models.CharField(max_length=255, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=False)
 
     email = models.EmailField(null=True, blank=False)
@@ -79,16 +78,6 @@ class User(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    # ssh_pub_key will be deprecated. Use ssh_public_key field
-    ssh_pub_key = models.TextField(null=True, blank=True)
-    ssh_public_key = models.ForeignKey(
-        "SshPublicKey",
-        related_name="user",
-        blank=True,
-        null=True,
-        on_delete=models.PROTECT,
-    )
 
     avatar = models.TextField(null=True, blank=True)
 
