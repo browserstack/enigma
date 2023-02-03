@@ -56,7 +56,7 @@ def create_identity(user_identity_form, auth_user):
 
         # get useraccess if an identity already exists
         if existing_user_identity:
-            existing_user_access_mapping = existing_user_identity.get_active_access()
+            existing_user_access_mapping = existing_user_identity.get_active_access_mapping()
 
         # create identity json  # call this verify identity
         new_user_access_mapping = __change_identity_and_transfer_membership(

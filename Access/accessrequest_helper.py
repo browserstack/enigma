@@ -10,8 +10,6 @@ import json
 from django.db import transaction
 
 logger = logging.getLogger(__name__)
-all_access_modules = helper.get_available_access_modules()
-
 
 REQUEST_SUCCESS_MSG = {
     "title": "{request_id}  Request Submitted",
@@ -292,7 +290,7 @@ def create_request(auth_user, access_request_form):
             "dateTime": current_date_time,
         }
 
-        access_module = all_access_modules[access_type]
+        access_module = helper.get_available_access_modules()[access_type]
         module_access_labels = access_module.validate_request(
             access_labels, auth_user, is_group=False
         )
@@ -356,7 +354,7 @@ def _create_access(auth_user, access_label, access_type, request_id, access_reas
 
     access = AccessV2.get(access_type=access_type, access_label=access_label)
     if access:
-        if user_identity.access_exists(access):
+        if user_identity.access_mapping_exists(access):
             return {
                 "title": REQUEST_DUPLICATE_ERR_MSG["title"].format(
                     access_tag=access.access_tag

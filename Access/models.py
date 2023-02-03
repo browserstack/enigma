@@ -760,16 +760,14 @@ class UserIdentity(models.Model):
         self.status = 0
         self.save()
 
-    def get_active_access(self):
+    def get_active_access_mapping(self):
         return self.user_access_mapping.filter(
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
     
-    def get_active_access(self, access):
-        return self.user_access_mapping.filter(access=access, status__in=["Approved", "Pending"])
-    
-    def access_exists(self, access):
-        if self.get_active_access(access=access):
+    def access_mapping_exists(self, access):
+        mapping = self.user_access_mapping.get(access=access, status__in=["Approved", "Pending"])
+        if mapping:
             return True
         return False
 
