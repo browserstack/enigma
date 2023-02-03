@@ -57,7 +57,6 @@ class User(models.Model):
     user = models.OneToOneField(
         user, null=False, blank=False, on_delete=models.CASCADE, related_name="user"
     )
-    gitusername = models.CharField(max_length=255, null=True, blank=True)
     name = models.CharField(max_length=255, null=True, blank=False)
 
     email = models.EmailField(null=True, blank=False)
@@ -79,16 +78,6 @@ class User(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    # ssh_pub_key will be deprecated. Use ssh_public_key field
-    ssh_pub_key = models.TextField(null=True, blank=True)
-    ssh_public_key = models.ForeignKey(
-        "SshPublicKey",
-        related_name="user",
-        blank=True,
-        null=True,
-        on_delete=models.PROTECT,
-    )
 
     avatar = models.TextField(null=True, blank=True)
 
@@ -726,6 +715,15 @@ class AccessV2(models.Model):
         except Exception:
             return self.access_tag
 
+    @staticmethod
+    def get(access_type, access_label):
+        try:
+            return AccessV2.objects.get(
+                access_tag=access_type, access_label=access_label
+            )
+        except AccessV2.DoesNotExist:
+            return None
+
 
 class UserIdentity(models.Model):
     class Meta:
@@ -765,10 +763,18 @@ class UserIdentity(models.Model):
         self.status = 0
         self.save()
 
-    def get_active_access(self):
+    def get_active_access_mapping(self):
         return self.user_access_mapping.filter(
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
+
+    def access_mapping_exists(self, access):
+        mapping = self.user_access_mapping.get(
+            access=access, status__in=["Approved", "Pending"]
+        )
+        if mapping:
+            return True
+        return False
 
     def replicate_active_access_membership_for_module(
         self, existing_user_access_mapping
