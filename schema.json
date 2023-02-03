@@ -55,6 +55,21 @@
         "engine"
       ]
     },
+    "celery": {
+      "description": "Celery configuration",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "broker": {
+          "description": "Celery broker url",
+          "type": "string"
+        },
+        "backend": {
+          "description": "Celery backend url",
+          "type": "string"
+        }
+      }
+    },
     "access_modules": {
       "description": "List of access modules attached to this tool",
       "type": "object",
@@ -67,7 +82,7 @@
       }
     },
     "enigmaGroup": {
-      "description": "Config related of enigma groups",
+      "description": "Config related to enigma groups",
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -85,6 +100,40 @@
         "access-approve": {
           "description": "Access approve email",
           "type": "string"
+        }
+      }
+    },
+    "background_task_manager": {
+      "description": "Config for background task managment",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "description": "Currently it can be celery or threading",
+          "type": "string"
+        },
+        "config": {
+          "description": "if celery is selected, config for the same",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "broker": {
+              "description": "celery broker url, broker can be redis / mqtt",
+              "type": "string"
+            },
+            "backend": {
+              "description": "backed to store data for celery, can be redis / sql db url",
+              "type": "string"
+            },
+            "need_monitoring": {
+              "description": "true/false, if true, monitoring apps will be started",
+              "type": "boolean"
+            },
+            "monitoring_apps": {
+              "description": "app which will monitor celery tasks. django_celery_results / django_celery_monitor / django_celery_beat",
+              "type": "string"
+            }
+          }
         }
       }
     }

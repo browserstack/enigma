@@ -1,8 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
-from django.http import JsonResponse
-from django.shortcuts import render
 from django.shortcuts import render
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
@@ -17,6 +15,7 @@ from Access.accessrequest_helper import (
     getGrantFailedRequests,
     get_pending_revoke_failures,
     getPendingRequests,
+    create_request,
 )
 from Access.models import User
 from Access.userlist_helper import getallUserList, get_identity_templates, create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE
@@ -129,8 +128,12 @@ def allUsersList(request):
 
 @login_required
 def requestAccess(request):
-    context = requestAccessGet(request)
-    return render(request, "BSOps/accessRequestForm.html", context)
+    if request.POST:
+        context = create_request(auth_user = request.user, access_request_form = request.POST)
+        return render(request, "BSOps/accessStatus.html", context)
+    else:
+        context = requestAccessGet(request)
+        return render(request, "BSOps/accessRequestForm.html", context)
 
 
 @login_required

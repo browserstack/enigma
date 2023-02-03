@@ -1,106 +1,40 @@
-from django.shortcuts import render
-import datetime
-import logging
+import json
+import threading
 import traceback
+import logging
 
-from . import helpers as helper
-from .models import UserAccessMapping, GroupAccessMapping
+from celery import shared_task
+from celery.signals import task_success, task_failure
+
+from Access import helpers
 from bootprocess import general
-from Access.background_task_manager import background_task
 
 logger = logging.getLogger(__name__)
 
+with open("config.json") as data_file:
+    background_task_manager_type = json.load(data_file)["background_task_manager"]["type"]
 
-def generateUserMappings(user, group, membershipObj):
-    groupMappings = GroupAccessMapping.objects.filter(group=group, status="Approved")
 
-    userMappingsList = []
-    for groupMapping in groupMappings:
-        access = groupMapping.access
-        approver_1 = groupMapping.approver_1
-        approver_2 = groupMapping.approver_2
-        membership_id = membershipObj.membership_id
-        base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        reason = (
-            "Added to group for request "
-            + membership_id
-            + " - "
-            + membershipObj.reason
-            + " - "
-            + groupMapping.request_reason
-        )
-        request_id = (
-            user.user.username + "-" + access.access_tag + "-" + base_datetime_prefix
-        )
-        similar_id_mappings = list(
-            UserAccessMapping.objects.filter(
-                request_id__icontains=request_id
-            ).values_list("request_id", flat=True)
-        )
-        idx = 0
-        while request_id + "_" + str(idx) in similar_id_mappings:
-            idx += 1
-        request_id = request_id + "_" + str(idx)
-        if not len(
-            UserAccessMapping.objects.filter(
-                user=user, access=access, status="Approved"
+def background_task(func, *args):
+    if background_task_manager_type == "celery":
+        if func == "run_access_grant":
+            run_access_grant.delay(*args)
+
+        if func == "test_grant":
+            test_grant.delay(*args)
+
+    else:
+        if func == "run_access_grant":
+            accessAcceptThread = threading.Thread(
+                target=run_access_grant,
+                args=args,
             )
-        ):
-            userMappingObj = UserAccessMapping.objects.create(
-                request_id=request_id,
-                user=user,
-                access=access,
-                approver_1=approver_1,
-                approver_2=approver_2,
-                request_reason=reason,
-                access_type="Group",
-                status="Processing",
-            )
-            userMappingsList.append(userMappingObj)
-    return userMappingsList
+            accessAcceptThread.start()
 
 
-def executeGroupAccess(userMappingsList):
-    for mappingObj in userMappingsList:
-
-        accessType = mappingObj.access.access_tag
-        user = mappingObj.user
-        approver = mappingObj.approver_1.user.username
-        if user.current_state() == "active":
-            if "other" in mappingObj.request_id:
-                decline_group_other_access(mappingObj)
-            else:
-                background_task("run_access_grant", (mappingObj.request_id, mappingObj, accessType, user, approver))
-                logger.debug(
-                    "Successful group access grant for " + mappingObj.request_id
-                )
-        else:
-            mappingObj.status = "Declined"
-            mappingObj.decline_reason = "User is not active"
-            mappingObj.save()
-            logger.debug(
-                "Skipping group access grant for user "
-                + user.user.username
-                + " as user is not active"
-            )
-
-
-def decline_group_other_access(access_mapping):
-    user = access_mapping.user
-    access_mapping.status = "Declined"
-    access_mapping.decline_reason = (
-        "Auto decline for 'Other Access'. Please replace this with correct access."
-    )
-    access_mapping.save()
-    logger.debug(
-        "Skipping group access grant for user "
-        + user.user.username
-        + " for request_id "
-        + access_mapping.request_id
-        + " as it is 'Other Access'"
-    )
-
-
+@shared_task(
+    autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
+)
 def run_access_grant(requestId, requestObject, accessType, user, approver):
     message = ""
     if not requestObject.user.state == "1":
@@ -115,7 +49,7 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             }
         )
         return False
-    for each_access_module in helper.getAvailableAccessModules():
+    for each_access_module in helpers.getAvailableAccessModules():
         if accessType == each_access_module.tag():
             try:
                 response = each_access_module.approve(
@@ -202,11 +136,36 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             return True
     return False
 
-def render_error_message(request, log_message, user_message, user_message_description):
-    logger.error(log_message)
-    return render(request, 'BSOps/accessStatus.html', {
-        "error": {
-            "error_msg": user_message,
-            "msg": user_message_description,
-        }
-    })
+
+@task_success.connect(sender=run_access_grant)
+def task_success(sender=None, **kwargs):
+    success_func()
+    logger.info("you are in task success middleman")
+    return
+
+
+@task_failure.connect(sender=run_access_grant)
+def task_failure(sender=None, **kwargs):
+    fail_func()
+    logger.info("you are in task fail middleman")
+    return
+
+
+def success_func():
+    logger.info("task successful")
+
+
+def fail_func():
+    logger.info("task failed")
+
+
+@shared_task(
+    autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
+)
+def test_grant():
+    for each_access_module in helpers.getAvailableAccessModules():
+        logger.info(each_access_module.tag())
+        if each_access_module.tag() == 'confluence_module':
+            # call access_desc method of confluence module here
+            # and return the result to the caller of this function
+            return each_access_module.access_desc()
