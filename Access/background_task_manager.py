@@ -31,6 +31,7 @@ def background_task(func, *args):
             )
             accessAcceptThread.start()
 
+
 @shared_task(
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
@@ -135,11 +136,13 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             return True
     return False
 
+
 @task_success.connect(sender=run_access_grant)
 def task_success(sender=None, **kwargs):
     success_func()
     logger.info("you are in task success middleman")
     return
+
 
 @task_failure.connect(sender=run_access_grant)
 def task_failure(sender=None, **kwargs):
@@ -147,11 +150,14 @@ def task_failure(sender=None, **kwargs):
     logger.info("you are in task fail middleman")
     return
 
+
 def success_func():
     logger.info("task successful")
 
+
 def fail_func():
     logger.info("task failed")
+
 
 @shared_task(
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
