@@ -217,6 +217,24 @@ class User(models.Model):
             access_tag=access_tag, status="Active"
         ).first()
 
+    def get_user_access_mappings(self):
+        all_user_identities = self.module_identity.all()
+        access_request_mappings = []
+        for each_identity in all_user_identities:
+            access_request_mappings.extend(each_identity.useraccessmapping_set.prefetch_related('access', 'approver_1', 'approver_2'))
+        return access_request_mappings
+
+    def get_access_history(self, all_access_modules):
+        access_request_mappings = self.get_user_access_mappings()
+        access_history = []
+
+        for request_mapping in access_request_mappings:
+            for each_access_module in all_access_modules:
+                if request_mapping.accessType == each_access_module.tag():
+                    access_history.append(request_mapping.getAccessRequestDetails(eachAccessModule))
+
+        return access_history
+
     def __str__(self):
         return "%s" % (self.user)
 

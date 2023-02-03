@@ -20,16 +20,12 @@ from Access.accessrequest_helper import (
 )
 from Access.models import User
 from Access.userlist_helper import getallUserList, get_identity_templates, create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE
-from Access.views_helper import render_error_message, get_user_access_history
+from Access.views_helper import render_error_message
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type - "
 
 logger = logging.getLogger(__name__)
-
-# Create your views here.
-all_access_modules = helper.getAvailableAccessModules()
-
 
 @login_required
 def showAccessHistory(request):
@@ -52,7 +48,7 @@ def showAccessHistory(request):
         )
 
     return render(request, 'BSOps/showAccessHistory.html', {
-        'dataList': get_user_access_history(access_user)
+        'dataList': access_user.get_access_history(helper.getAvailableAccessModules())
     })
 
 

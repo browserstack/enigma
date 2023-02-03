@@ -6,6 +6,7 @@ import re
 import datetime
 
 from Access.access_modules import * # NOQA
+from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
 
