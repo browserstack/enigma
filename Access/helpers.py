@@ -6,6 +6,7 @@ import re
 import datetime
 
 from Access.access_modules import * # NOQA
+from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ def generateStringFromTemplate(filename, **kwargs):
 
 
 def getPossibleApproverPermissions():
-    all_approver_permissions = []
+    all_approver_permissions = [PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]]
     for each_module in getAvailableAccessModules():
         approver_permissions = each_module.fetch_approver_permissions()
         all_approver_permissions.extend(approver_permissions.values())

@@ -61,13 +61,6 @@ def getDashboardData(request):
                 + request.user.username
             )
 
-    if not user.gitusername:
-        logger.debug(
-            "Redirecting User to Fill out git username and his public key for ssh"
-            " access."
-        )
-        # return redirect('updateUserInfo')
-
     with open("instanceTypes.json") as data_file:
         data = json.load(data_file)
     ec2_regions = list(data.keys())
