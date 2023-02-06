@@ -71,7 +71,7 @@ pyparsing==2.4.7
 python-dateutil==2.8.1
 python-Levenshtein==0.12.0
 python3-openid==3.2.0
-pytz==2020.4
+pytz==2021.3
 pyvim==3.0.2
 pyvmomi==7.0.1
 PyYAML==6.0
@@ -101,8 +101,8 @@ pytest-django==4.5.2
 pytest-mock==3.10.0
 pylama==8.4.1
 semgrep==1.2.1
-mysql-connector-python==8.0.26
 mysqlclient==2.1.1
+mysql-connector-python==8.0.26
 django-celery-results==2.4.0
 sqlalchemy==1.4.45
 redis==4.4.0
