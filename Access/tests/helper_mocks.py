@@ -19,6 +19,9 @@ class MockAccessModule:
                 permissions["2"] = secondaryApproverPermissionLabel
         self.fetch_approver_permissions = Mock(return_value=permissions)
 
+    def tag(self):
+        return self.name
+
 
 class MockPermission:
     def __init__(self, label=""):
