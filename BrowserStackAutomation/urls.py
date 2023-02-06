@@ -36,6 +36,7 @@ from Access.views import (
     accept_bulk,
     update_group_owners,
 )
+from Access.helpers import getAvailableAccessModules
 
 urlpatterns = [
     re_path(r"^admin/", admin.site.urls),
@@ -75,3 +76,6 @@ urlpatterns = [
     ),
     re_path(r"^accept_bulk/(?P<selector>[\w-]+)", accept_bulk, name="accept_bulk"),
 ]
+
+for each_module in getAvailableAccessModules():
+    urlpatterns.extend(each_module.urlpatterns)
