@@ -302,10 +302,10 @@ def create_request(auth_user, access_request_form):
     json_response = {}
     json_response["status"] = []
     json_response["status_list"] = []
-    extra_fields = _get_extra_fields(access_request=access_request)
+    extra_fields = get_extra_fields(access_request=access_request)
 
     for index1, access_type in enumerate(access_request["accessRequests"]):
-        access_labels = _validate_access_labels(
+        access_labels = validate_access_labels(
             access_labels_json=access_request["accessLabel"][index1],
             access_type=access_type,
         )
@@ -328,7 +328,7 @@ def create_request(auth_user, access_request_form):
             access_labels, auth_user, is_group=False
         )
 
-        extra_field_labels = _get_extra_field_labels(access_module)
+        extra_field_labels = get_extra_field_labels(access_module)
 
         if extra_fields and extra_field_labels:
             for field in extra_field_labels:
@@ -427,14 +427,14 @@ def _create_access_mapping(
     return access
 
 
-def _get_extra_field_labels(access_module):
+def get_extra_field_labels(access_module):
     try:
         return access_module.get_extra_fields()
     except Exception:
         return []
 
 
-def _get_extra_fields(access_request):
+def get_extra_fields(access_request):
     if "extraFields" in access_request:
         return access_request["extraFields"]
     return []
@@ -462,7 +462,7 @@ def _validate_access_request(access_request_form, user):
     return {}, access_request
 
 
-def _validate_access_labels(access_labels_json, access_type):
+def validate_access_labels(access_labels_json, access_type):
     if access_labels_json is None or access_labels_json == "":
         raise Exception("No fields were selected in the request. Please try again.")
     access_labels = json.loads(access_labels_json)

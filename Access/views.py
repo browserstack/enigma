@@ -118,7 +118,9 @@ def group_access(request):
     if request.GET:
         context = group_helper.get_group_access(request.GET, request.user)
         return render(request, 'BSOps/groupAccessRequestForm.html',context)
-
+    elif request.POST:
+        context = group_helper.save_group_access_request(request.POST, request.user)
+        return render(request,'BSOps/accessStatus.html',context)
 @login_required
 def group_access_list(request, groupName):
     try:

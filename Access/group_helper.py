@@ -1,5 +1,5 @@
-from Access.models import User, GroupV2, MembershipV2
-from Access import helpers, views_helper, notifications
+from Access.models import User, GroupV2, MembershipV2, AccessV2
+from Access import helpers, views_helper, notifications, accessrequest_helper
 from django.db import transaction
 import datetime
 import logging
@@ -7,7 +7,7 @@ from bootprocess import general
 from Access.views_helper import generateUserMappings, executeGroupAccess
 from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 from . import helpers as helper
-
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +52,11 @@ UPDATE_OWNERS_REQUEST_ERROR = {
     "error_msg": "Bad request",
     "msg": "The requested URL is of POST method but was called with other.",
 }
+
+class GroupAccessExistsException(Exception):
+    def __init__(self):
+            self.message = "Group Access Exists"
+            super().__init__(self.message)    
 
 
 def create_group(request):
@@ -599,16 +604,10 @@ def get_group_access(form_data, auth_user):
     context['accesses'] = []
 
     group = GroupV2.get_active_group_by_name(group_name = group_name)
-    if not group:    
-        logger.exception("This Group is not yet approved")
-        context['status'] = {'title':'Permisison Denied', 'msg': "This Group is not yet approved"}
-        return context
-        
-    if not (group.is_owner(auth_user.user.email) or auth_user.is_superuser):
-        logger.exception("Permission denied, you're not owner of this group")
-        context['status'] = {'title':'Permisison Denied', 'msg': "You're not owner of this group"}
-        return context
-    
+    validation_error = validate_group_access_create_request(group=group, auth_user=auth_user)
+    if validation_error:
+        context['status'] = validation_error
+
     access_module_list = data['accessList']
     for module_value in access_module_list:
         module = helper.get_available_access_modules()[module_value]
@@ -628,3 +627,81 @@ def get_group_access(form_data, auth_user):
         })
     context['groupName'] = group_name
     return context
+
+def save_group_access_request(form_data, auth_user):
+    access_request=dict(form_data.lists())
+    group_name = access_request['groupName'][0]
+    group = GroupV2.get_active_group_by_name(group_name = group_name)
+    
+    context = {"status_list":[]}
+    validation_error = validate_group_access_create_request(group=group, auth_user=auth_user)
+    if validation_error:
+        context['status'] = validation_error
+    
+    for accessIndex, access_type in enumerate(access_request['accessType']):
+        access_module = helper.get_available_access_modules()[access_type]
+        access_labels = accessrequest_helper.validate_access_labels(
+            access_labels_json=access_request["accessLabel"][accessIndex],
+            access_type=access_type,
+        )
+        extra_fields = accessrequest_helper.get_extra_fields(access_request)
+        extra_field_labels = accessrequest_helper.get_extra_field_labels(access_module)
+        
+        if extra_fields and extra_field_labels:
+            for field in extra_field_labels:
+                module_access_labels[0][field] = extra_fields[0]
+                extra_fields = extra_fields[1:]
+
+        module_access_labels = access_module.validate_request(
+            access_labels, auth_user, is_group=False
+        )
+        request_id = (
+                    auth_user.username
+                    + "-"
+                    + access_type
+                    + "-"
+                    + datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+                )
+        with transaction.atomic():
+            for labelIndex, access_label in enumerate(module_access_labels):
+                request_id = request_id + "_" + str(labelIndex)
+                try:
+                    _create_group_access_mapping(group=group, 
+                                                user=auth_user.user,
+                                                request_id=request_id,
+                                                access_type=access_type,
+                                                access_label=access_label,
+                                                access_reason=access_request['accessReason'])
+                    context['status_list'].append({'title': request_id+' Request Submitted', 'msg': 'Once approved you will receive the update ' +json.dumps(access_label)})
+                except GroupAccessExistsException:
+                    context['status_list'].append({'title': request_id+' Request Submitted', 'msg': 'Once approved you will receive the update ' +json.dumps(access_label)})
+        email_destination = access_module.get_approvers()
+        member_list = group.get_all_approved_members()
+        notifications.send_group_access_add_email(destination=email_destination, 
+                                                  group_name=group_name, 
+                                                  requester=auth_user.user.email, 
+                                                  request_id=request_id,
+                                                  member_list=member_list)
+    
+    return context
+
+def _create_group_access_mapping(group, user ,request_id, access_type, access_label, access_reason):
+    access = AccessV2.get(access_type=access_type, access_label=access_label)
+    if not access:
+        access = AccessV2.objects.create(
+            access_tag=access_type, access_label=access_label
+        )
+    else:
+        if group.check_access_exist(access):
+            raise GroupAccessExistsException()
+    group.add_access(request_id=request_id, requested_by=user, request_reason = access_reason, access = access)
+
+def validate_group_access_create_request(group, auth_user):
+    if not group:
+        logger.exception("This Group is not yet approved")
+        return {'title':'Permisison Denied', 'msg': "This Group is not yet approved"}
+        
+    if not (group.is_owner(auth_user.user.email) or auth_user.is_superuser):
+        logger.exception("Permission denied, you're not owner of this group")
+        return {'title':'Permision Denied', 'msg': "You're not owner of this group"}
+    return None

@@ -14,6 +14,7 @@ NEW_MEMBERS_ADDED_MESSAGE = "The following members have been added to this team<
 MEMBERSHIP_ACCEPTED_SUBJECT = "Access approved for addition of {} to group - {}"
 MEMBERSHIP_ACCEPTED_BODY = "Access approved for addition of {} to group - {} by {}.<BR/>Automated accesses will be triggered shortly. Access grant mails will be sent to tool owners for manual access. Track your access status <a href='https://enigma.browserstack.com/access/showAccessHistory'>here</a>."
 
+GROUP_ACCESS_ADDED_SUBJECT = "Group: {group_name}  new access added"
 
 def send_new_group_create_notification(auth_user, date_time, new_group, member_list):
     subject = NEW_GROUP_EMAIL_SUBJECT + auth_user.email + " -- " + date_time
@@ -75,3 +76,15 @@ def send_group_owners_update_mail(destination, group_name, updated_by):
     except Exception as e:
         logger.exception(str(e))
         logger.error("Something when wrong while sending Email.")
+
+def send_group_access_add_email(destination, group_name, requester, request_id, member_list):
+    body = helpers.generateStringFromTemplate(filename="email.html", 
+                                              emailBody= helpers.generateStringFromTemplate("add_access_to_group.html", 
+                                                                                            request_id = request_id, 
+                                                                                            group_name = group_name, 
+                                                                                            requester = requester, 
+                                                                                            member_list=member_list)
+                                              )
+    subject = GROUP_ACCESS_ADDED_SUBJECT.format(group_name = group_name)
+    general.emailSES(destination, subject, body)
+    return ""
