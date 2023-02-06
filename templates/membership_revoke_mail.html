@@ -1,0 +1,11 @@
+Hi, <br>
+<p style="font-weight: bold">Note: This is not user offboard</p>
+Enigma group revoke for the user {{user_email}} from Group <b>{{ group_name }}</b> has been initiated. As per Enigma records, following accesses have been found and need to be revoked. <br>
+Requesting all teams to go through the relevant list of accesses provided below and revoke the necessary ones as per the list. <br>
+<b>You can go to the link mentioned below and you can mark the accesses as revoked on the access List on enigma itself. You don't need to reply on the thread for conformation of the revoke.</b><br>
+The SLA for access revoke is 5 days from the date of this email. <br>
+<table style='border:1px solid black'>
+    <tr><th>Access</th><th>Revoke Owner</th></tr>
+    <tr>{{revoke_email_list}}</tr>
+</table>
+<p>Visit https://enigma.browserstack.com/access/userAccesses?username={{username}} to view granular accesses</p>

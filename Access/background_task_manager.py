@@ -8,6 +8,7 @@ from celery.signals import task_success, task_failure
 
 from Access import helpers
 from bootprocess import general
+from BrowserStackAutomation.settings import AUTOMATED_EXEC_IDENTIFIER
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +31,14 @@ def background_task(func, *args):
                 args=args,
             )
             accessAcceptThread.start()
+        
+        if func == "run_access_revoke":
+            access_revoke_thread = threading.Thread(
+                target=run_access_revoke,
+                args=args
+            )
+
+            access_revoke_thread.start()
 
 @shared_task(
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
@@ -134,6 +143,35 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             # additional email of "Access approved" is not needed
             return True
     return False
+
+@shared_task(
+    autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
+)
+def run_access_revoke(access, user_identity, request, revoker):
+    for access_module in helpers.getAccessModules():
+        if access_module.tag() == access.access_tag:
+            response = access_module.revoke(user_identity, access.access_label, request)
+            logger.debug("Response from the revoke function: ", str(response))
+            if type(response) is bool:
+                    revoke_success = response
+                    message = None
+            else:
+                revoke_success = response[0]
+                message = str(response[1])
+
+            if revoke_success:
+                if AUTOMATED_EXEC_IDENTIFIER in access_module.revoke_owner():
+                    user_identity.update_mapping_status_revoked()
+                    request.update(status="Revoked", revoker=revoker)
+            else:
+                logger.debug("Failed to revoke the request: {} due to exception: {}".format(request.request_id, message))
+                raise Exception("Failed to revoke the access due to: "+ str(message))
+                
+            return True
+    
+    return False
+
+
 
 @task_success.connect(sender=run_access_grant)
 def task_success(sender=None, **kwargs):

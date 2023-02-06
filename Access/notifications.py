@@ -75,3 +75,17 @@ def send_group_owners_update_mail(destination, group_name, updated_by):
     except Exception as e:
         logger.exception(str(e))
         logger.error("Something when wrong while sending Email.")
+
+def send_membership_revoke_notification(user, membership, revoke_email_list, email_targets):
+    try:
+        body = helpers.generateStringFromTemplate("membership_revoke_mail.html", 
+            user_email=user.email,
+            group_name = membership.group.name,
+            revoke_email_list= revoke_email_list,
+            username=user.user.username
+        )
+        subject = "Group Revoke for User %s from group %s" % (user.email, membership.group.name)
+        general.emailSES(email_targets, subject, body)
+    except Exception as e:
+        logger.error("Something when wrong while sending membership revoke email")
+        logger.exception(str(e))

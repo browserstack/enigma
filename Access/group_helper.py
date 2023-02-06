@@ -5,7 +5,9 @@ import datetime
 import logging
 from bootprocess import general
 from Access.views_helper import generateUserMappings, executeGroupAccess
-from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
+from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS, AUTOMATED_EXEC_IDENTIFIER
+from Access.background_task_manager import background_task
+
 
 logger = logging.getLogger(__name__)
 
@@ -589,3 +591,36 @@ def accept_member(request, requestId, shouldRender=True):
         context = {}
         context["error"] = APPROVAL_ERROR + str(e)
         return context
+
+def remove_member(request):
+    try:
+        membership_id = request.POST.get("membershipId")
+        if not membership_id:
+            raise("Membership Id is not loaded.")
+        membership = MembershipV2.get_membership(membership_id)
+    except Exception as e:
+        logger.error("Membership id not found in request")
+
+    user = membership.user
+
+    revoke_group_accesses = [mapping.access for mapping in membership.group.get_approved_accesses()]
+    
+    other_memberships_groups = user.get_all_memberships().exclude(group=membership.group).values_list("group", flat=True)
+    other_group_accesses = []
+
+    for group in other_memberships_groups:
+        mapping = group.get_approved_accesses()
+        other_group_accesses.append(mapping.access)
+    
+    revoke_accesses = list(set(revoke_group_accesses) - set(other_group_accesses))
+    print(revoke_accesses)
+
+    for access in revoke_accesses:
+        for access_module in helpers.getAvailableAccessModules():
+            if access_module.tag() == access.access_tag:
+                user_identity = user.get_active_identity(access.access_tag)
+                user_identity.update_non_active_access_to_declined()
+                user_identity.update_mapping_status_offboaring()
+                background_task("run_access_revoke", (access, user_identity, user_identity.get_granted_accesses().first(), request.user.user))
+    
+    membership.revoke_membership()

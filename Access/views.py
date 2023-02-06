@@ -212,3 +212,11 @@ def accept_bulk(request, selector):
         json_response["success"] = False
         json_response["status_code"] = 401
         return JsonResponse(json_response, status=json_response["status_code"])
+
+def remove_group_member(request):
+    try:
+        group_helper.remove_member(request)
+        return JsonResponse({"message": "Success"})
+    except Exception as e:
+        logger.log(str(e))
+        return JsonResponse({"error": "Failed to remove the user"}, status=400)

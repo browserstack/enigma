@@ -303,6 +303,10 @@ class MembershipV2(models.Model):
     def approve_membership(membership_id, approver):
         membership = MembershipV2.objects.get(membership_id=membership_id)
         membership.approve(approver=approver)
+    
+    def approve_membership(self):
+        self.status = "Revoked"
+        self.save()
 
     @staticmethod
     def get_membership(membership_id):
@@ -470,6 +474,9 @@ class GroupV2(models.Model):
         self.membership_group.filter(status="Approved").update(
             status="Pending", approver=None
         )
+    
+    def get_approved_accesses(self):
+        return self.groupaccessmapping_set.filter(status="Approved")
 
     def __str__(self):
         return self.name
@@ -769,6 +776,24 @@ class UserIdentity(models.Model):
         return self.user_access_mapping.filter(
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
+
+    def get_granted_accesses(self):
+        return self.user_access_mapping.filter(status__in=["Approved", "Processing", "Offboarding"], access__access_tag=self.access_tag)
+    
+    def get_grantfailed_and_pending_access(self):
+        return self.user_access_mapping.filter(status__in=["Pending", "GrantFailed"], access__access_tag=self.access_tag)
+    
+    def update_non_active_access_to_declined(self):
+        user_mapping = self.get_grantfailed_and_pending_access()
+        user_mapping.update(status="Declined")
+
+    def update_mapping_status_offboaring(self):
+        user_mapping = self.get_granted_accesses()
+        user_mapping.update(status="Offboaring")
+
+    def update_mapping_status_revoked(self):
+        user_mapping = self.get_granted_accesses()
+        user_mapping.update(status="Revoked")
 
     def replicate_active_access_membership_for_module(
         self, existing_user_access_mapping
