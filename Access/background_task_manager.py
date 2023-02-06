@@ -21,8 +21,11 @@ def background_task(func, *args):
         if func == "run_access_grant":
             run_access_grant.delay(*args)
 
-        if func == "test_grant":
+        elif func == "test_grant":
             test_grant.delay(*args)
+        
+        elif func == "run_access_revoke":
+            run_access_revoke.delay(*args)
 
     else:
         if func == "run_access_grant":
@@ -39,6 +42,8 @@ def background_task(func, *args):
             )
 
             access_revoke_thread.start()
+            
+
 
 @shared_task(
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
@@ -167,10 +172,9 @@ def run_access_revoke(access, user_identity, request, revoker):
                 logger.debug("Failed to revoke the request: {} due to exception: {}".format(request.request_id, message))
                 raise Exception("Failed to revoke the access due to: "+ str(message))
                 
-            return True
+            return {"status": True}
     
-    return False
-
+    return {"status": True}
 
 
 @task_success.connect(sender=run_access_grant)
@@ -179,17 +183,21 @@ def task_success(sender=None, **kwargs):
     logger.info("you are in task success middleman")
     return
 
+
 @task_failure.connect(sender=run_access_grant)
 def task_failure(sender=None, **kwargs):
     fail_func()
     logger.info("you are in task fail middleman")
     return
 
+
 def success_func():
     logger.info("task successful")
 
+
 def fail_func():
     logger.info("task failed")
+
 
 @shared_task(
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}

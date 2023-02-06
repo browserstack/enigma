@@ -566,14 +566,14 @@ def accept_member(request, requestId, shouldRender=True):
                 membership.approve(request.user.user)
                 group = membership.group
                 user = membership.user
-                userMappingsList = views_helper.generateUserMappings(
+                user_mappings_list = views_helper.generateUserMappings(
                     user, group, membership
                 )
 
-            # TODO: Add celery task for executeGroupAccess
             # accessAcceptThread = threading.Thread(target=executeGroupAccess,
             # args=(request, group.name, userMappingsList))
             # accessAcceptThread.start()
+            executeGroupAccess(user_mappings_list)
 
             notifications.send_membership_accepted_notification(
                 user=user, group=group, membership=membership
@@ -621,6 +621,6 @@ def remove_member(request):
                 user_identity = user.get_active_identity(access.access_tag)
                 user_identity.update_non_active_access_to_declined()
                 user_identity.update_mapping_status_offboaring()
-                background_task("run_access_revoke", (access, user_identity, user_identity.get_granted_accesses().first(), request.user.user))
+                background_task("run_access_revoke", access, user_identity, user_identity.get_granted_accesses().first(), request.user.user)
     
-    membership.revoke_membership()
+    # membership.revoke_membership()
