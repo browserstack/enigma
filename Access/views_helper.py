@@ -72,7 +72,10 @@ def executeGroupAccess(userMappingsList):
             if "other" in mappingObj.request_id:
                 decline_group_other_access(mappingObj)
             else:
-                background_task("run_access_grant", (mappingObj.request_id, mappingObj, accessType, user, approver))
+                background_task("run_access_grant",
+                                (mappingObj.request_id,
+                                 mappingObj, accessType,
+                                 user, approver))
                 logger.debug(
                     "Successful group access grant for " + mappingObj.request_id
                 )
@@ -204,6 +207,7 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             return True
     return False
 
+
 def render_error_message(request, log_message, user_message, user_message_description):
     logger.error(log_message)
     return render(request, 'BSOps/accessStatus.html', {
@@ -250,7 +254,8 @@ def prepare_datalist(paginator, record_date):
                 'accessType': each_access_request.access.access_tag,
                 'type': each_access_request.access_type,
                 'dateRequested': str(each_access_request.requested_on)[:19] + "UTC",
-                'offboardingDate': str(each_access_request.user_identity.user.offbaord_date)[:19] + "UTC"
+                'offboardingDate':
+                    str(each_access_request.user_identity.user.offbaord_date)[:19] + "UTC"
                 if each_access_request.user_identity.user.offbaord_date else "",
                 'lastUpdated': str(each_access_request.updated_on)[:19] + "UTC",
                 'revoker': each_access_request.revoker.user.username

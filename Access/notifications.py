@@ -12,11 +12,6 @@ NEW_GROUP_APPROVED_BODY = (
 )
 NEW_MEMBERS_ADDED_MESSAGE = "The following members have been added to this team<br>"
 MEMBERSHIP_ACCEPTED_SUBJECT = "Access approved for addition of {} to group - {}"
-MEMBERSHIP_ACCEPTED_BODY = "Access approved for addition of {} to group - {} by {}. \
-<BR/>Automated accesses will be triggered shortly. \
-Access grant mails will be sent to tool owners for manual access. \
-Track your access status \
-<a href='https://enigma.browserstack.com/access/showAccessHistory'>here</a>."
 
 
 def send_new_group_create_notification(auth_user, date_time, new_group, member_list):
@@ -53,8 +48,11 @@ def send_new_group_approved_notification(group, group_id, initial_member_names):
 
 def send_membership_accepted_notification(user, group, membership):
     subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(user.name, group.name)
-    body = MEMBERSHIP_ACCEPTED_BODY.format(
-        user.name, group.name, membership.approver.name
+    body = helpers.generateStringFromTemplate(
+        filename="membershipAcceptedEmailBody.html",
+        user_name=user.name,
+        group_name=group.name,
+        approver=membership.approver.name,
     )
     destination = []
     destination.append(membership.requested_by.email)

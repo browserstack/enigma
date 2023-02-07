@@ -22,7 +22,9 @@ from Access.accessrequest_helper import (
     create_request,
 )
 from Access.models import User
-from Access.userlist_helper import getallUserList, get_identity_templates, create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE
+from Access.userlist_helper import getallUserList
+from Access.userlist_helper import get_identity_templates
+from Access.userlist_helper import create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE
 from Access.views_helper import render_error_message
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
@@ -90,7 +92,7 @@ def pending_revoke(request):
 @login_required
 def updateUserInfo(request):
     context = get_identity_templates()
-    return render(request,'updateUser.html',context)
+    return render(request, 'updateUser.html', context)
 
 
 @api_view(['POST'])
@@ -99,15 +101,16 @@ def saveIdentity(request):
     try:
         modname = request.POST.get("modname")
         if request.POST:
-            context = create_identity(user_identity_form = request.POST, auth_user=request.user)
+            context = create_identity(user_identity_form=request.POST, auth_user=request.user)
             return JsonResponse(json.dumps(context), safe=False, status=200)
     except:
         context = {}
         context["error"] = {
             "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
-            "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename = modname),
+            "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
         return JsonResponse(json.dumps(context), safe=False, status=400)
+
 
 @login_required
 def createNewGroup(request):
@@ -129,7 +132,7 @@ def allUsersList(request):
 @login_required
 def requestAccess(request):
     if request.POST:
-        context = create_request(auth_user = request.user, access_request_form = request.POST)
+        context = create_request(auth_user=request.user, access_request_form=request.POST)
         return render(request, "BSOps/accessStatus.html", context)
     else:
         context = requestAccessGet(request)
@@ -252,7 +255,6 @@ def all_user_access_list(request, load_ui=True):
     try:
         if request.GET.get('username'):
             username = request.GET.get('username')
-            username="larsen"
             user = djangoUser.objects.get(username=username)
     except Exception as e:
         # show all
@@ -269,7 +271,8 @@ def all_user_access_list(request, load_ui=True):
         record_date = request.GET.get('recordDate', None)
 
         if user:
-            generic_accesses = generic_accesses.filter(user_identity__user=user.user).order_by("-requested_on")
+            generic_accesses = generic_accesses.filter(
+                user_identity__user=user.user).order_by("-requested_on")
             show_tabs = True
             username = user.username
         elif "usersearch" in request.GET:

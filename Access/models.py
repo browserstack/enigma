@@ -210,7 +210,9 @@ class User(models.Model):
         all_user_identities = self.module_identity.all()
         access_request_mappings = []
         for each_identity in all_user_identities:
-            access_request_mappings.extend(each_identity.useraccessmapping_set.prefetch_related('access', 'approver_1', 'approver_2'))
+            access_request_mappings.extend(
+                each_identity.useraccessmapping_set.prefetch_related(
+                    'access', 'approver_1', 'approver_2'))
         return access_request_mappings
 
     def get_access_history(self, all_access_modules):
@@ -609,12 +611,11 @@ class UserAccessMapping(models.Model):
             mapping.meta_data[key] = data
             mapping.save()
         return True
-    
+
     def revoke(self, revoker):
         self.status = "Revoked"
         self.revoker = revoker
         self.save()
-        
 
     @staticmethod
     def get_accesses_not_declined():
