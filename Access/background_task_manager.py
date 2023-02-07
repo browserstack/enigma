@@ -38,7 +38,7 @@ def background_task(func, *args):
             )
             accessAcceptThread.start()
         
-        if func == "run_access_revoke":
+        elif func == "run_access_revoke":
             access_revoke_thread = threading.Thread(
                 target=run_access_revoke,
                 args=args
