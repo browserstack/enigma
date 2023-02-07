@@ -205,6 +205,13 @@ class User(models.Model):
         return self.module_identity.filter(
             access_tag=access_tag, status="Active"
         ).first()
+    
+    @staticmethod
+    def get_user_by_email(email):
+        try:
+            return User.objects.get(email=email)
+        except User.DoesNotExist:
+            return None
 
     def __str__(self):
         return "%s" % (self.user)
@@ -562,6 +569,13 @@ class UserAccessMapping(models.Model):
         if self.status.lower() == "approved" and self.approved_on in [None, ""]:
             self.approved_on = self.updated_on
             super(UserAccessMapping, self).save(*args, **kwargs)
+    
+    @staticmethod
+    def get_access_request(request_id):
+        try:
+            return UserAccessMapping.objects.get(request_id=request_id)
+        except UserAccessMapping.DoesNotExist:
+            return None
 
     def getAccessRequestDetails(self, access_module):
         access_request_data = {}
@@ -787,7 +801,7 @@ class UserIdentity(models.Model):
 
     def update_mapping_status_offboaring(self):
         user_mapping = self.get_granted_accesses()
-        user_mapping.update(status="Offboaring")
+        user_mapping.update(status="Offboarding")
 
     def update_mapping_status_revoked(self):
         user_mapping = self.get_granted_accesses()

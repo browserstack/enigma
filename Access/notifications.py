@@ -76,16 +76,17 @@ def send_group_owners_update_mail(destination, group_name, updated_by):
         logger.exception(str(e))
         logger.error("Something when wrong while sending Email.")
 
-def send_membership_revoke_notification(user, membership, revoke_email_list, email_targets):
+def send_run_revoke_failure_notification(targets, request_id, revoker_email, retries, message):
     try:
-        body = helpers.generateStringFromTemplate("membership_revoke_mail.html", 
-            user_email=user.email,
-            group_name = membership.group.name,
-            revoke_email_list= revoke_email_list,
-            username=user.user.username
+        subject = "Celery Revoke Failed for the request: {}".format(request_id)
+        body = helpers.generateStringFromTemplate("celery_revoke_failure_email.html",
+            request_id=request_id,
+            revoker_email=revoker_email,
+            retries=retries,
+            message=message
         )
-        subject = "Group Revoke for User %s from group %s" % (user.email, membership.group.name)
-        general.emailSES(email_targets, subject, body)
+
+        general.emailSES(targets, subject, body)
     except Exception as e:
         logger.error("Something when wrong while sending membership revoke email")
         logger.exception(str(e))

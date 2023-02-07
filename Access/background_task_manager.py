@@ -9,6 +9,9 @@ from celery.signals import task_success, task_failure
 from Access import helpers
 from bootprocess import general
 from BrowserStackAutomation.settings import AUTOMATED_EXEC_IDENTIFIER
+from Access.models import UserAccessMapping, User
+from Access import notifications
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +155,25 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
 @shared_task(
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
-def run_access_revoke(access, user_identity, request, revoker):
+def run_access_revoke(data):
+    data = json.loads(data)
+    request = UserAccessMapping.get_access_request(data["request_id"])
+    if not request:
+        # TODO: Have to add the email targets for failure
+        targets = []
+        message = "Request not found"
+        notifications.send_run_revoke_failure_notification(targets, data["request_id"], data["revoker_email"], 0, message)
+        return False
+    access = request.access
+    user_identity = request.user_identity
+    revoker = User.get_user_by_email(data["revoker_email"])
+    if not revoker:
+        # TODO: Have to add the email targets for failure
+        targets = []
+        message = "Revoker not found"
+        notifications.send_run_revoke_failure_notification(targets, data["request_id"], data["revoker_email"], 0, message)
+        return False
+
     for access_module in helpers.getAccessModules():
         if access_module.tag() == access.access_tag:
             response = access_module.revoke(user_identity, access.access_label, request)
@@ -170,6 +191,10 @@ def run_access_revoke(access, user_identity, request, revoker):
                     request.update(status="Revoked", revoker=revoker)
             else:
                 logger.debug("Failed to revoke the request: {} due to exception: {}".format(request.request_id, message))
+                logger.debug("Retry count: {}".format(run_access_revoke.request.retries))
+                if(run_access_revoke.request.retries == 3):
+                    logger.info("Sending the notification for failure")
+                    notifications.send_run_revoke_failure_notification(access_module.access_mark_revoke_permission(request.access_type), request.request_id, revoker.email, run_access_revoke.request.retries, message)
                 raise Exception("Failed to revoke the access due to: "+ str(message))
                 
             return {"status": True}
