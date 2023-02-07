@@ -252,6 +252,7 @@ def all_user_access_list(request, load_ui=True):
     try:
         if request.GET.get('username'):
             username = request.GET.get('username')
+            username="larsen"
             user = djangoUser.objects.get(username=username)
     except Exception as e:
         # show all
@@ -268,15 +269,15 @@ def all_user_access_list(request, load_ui=True):
         record_date = request.GET.get('recordDate', None)
 
         if user:
-            generic_accesses = generic_accesses.filter(user=user.user).order_by("-requested_on")
+            generic_accesses = generic_accesses.filter(user_identity__user=user.user).order_by("-requested_on")
             show_tabs = True
             username = user.username
         elif "usersearch" in request.GET:
             generic_accesses = generic_accesses.filter(
-                user__user__username__icontains=request.GET.get('usersearch')) \
-                .order_by("user__user__username")
+                user_identity__user__user__username__icontains=request.GET.get('usersearch')) \
+                .order_by("user_identity__user__user__username")
         else:
-            generic_accesses = generic_accesses.order_by("user__user__username")
+            generic_accesses = generic_accesses.order_by("user_identity__user__user__username")
 
         filters = views_helper.get_filters(request)
         generic_accesses = generic_accesses.filter(**filters)

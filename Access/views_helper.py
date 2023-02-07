@@ -236,7 +236,7 @@ def prepare_datalist(paginator, record_date):
         for each_access_split in helper.split_access_details(access_details):
             data_list.append({
                 'request_id': each_access_request.request_id,
-                'user': str(each_access_request.user),
+                'user': str(each_access_request.user_identity.user),
                 'name': [key + " - " + str(value).strip("[]")
                          for key, value in list(each_access_request.access.access_label.items())
                          if key != "keySecret"],
@@ -250,8 +250,8 @@ def prepare_datalist(paginator, record_date):
                 'accessType': each_access_request.access.access_tag,
                 'type': each_access_request.access_type,
                 'dateRequested': str(each_access_request.requested_on)[:19] + "UTC",
-                'offboardingDate': str(each_access_request.user.offbaord_date)[:19] + "UTC"
-                if each_access_request.user.offbaord_date else "",
+                'offboardingDate': str(each_access_request.user_identity.user.offbaord_date)[:19] + "UTC"
+                if each_access_request.user_identity.user.offbaord_date else "",
                 'lastUpdated': str(each_access_request.updated_on)[:19] + "UTC",
                 'revoker': each_access_request.revoker.user.username
                 if each_access_request.revoker else "",
