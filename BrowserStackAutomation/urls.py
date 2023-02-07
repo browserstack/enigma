@@ -37,7 +37,6 @@ from Access.views import (
     update_group_owners,
     remove_group_member
 )
-from Access.access_modules.aws_access.views import get_aws_accounts, get_aws_groups
 
 urlpatterns = [
     re_path(r"^admin/", admin.site.urls),
@@ -77,6 +76,4 @@ urlpatterns = [
     ),
     re_path(r"^accept_bulk/(?P<selector>[\w-]+)", accept_bulk, name="accept_bulk"),
     re_path(r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"),
-    re_path(r"^api/v1/aws/accounts/$", get_aws_accounts),
-    re_path(r"^api/v1/aws/account/groups/$", get_aws_groups)
 ]

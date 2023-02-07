@@ -806,6 +806,10 @@ class UserIdentity(models.Model):
     def update_mapping_status_revoked(self):
         user_mapping = self.get_granted_accesses()
         user_mapping.update(status="Revoked")
+    
+    def update_mapping_status_revokefail(self):
+        user_mapping = self.get_granted_accesses()
+        user_mapping.update(status="RevokeFailed")
 
     def access_mapping_exists(self, access):
         mapping = self.user_access_mapping.get(
