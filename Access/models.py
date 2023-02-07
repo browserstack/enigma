@@ -205,6 +205,9 @@ class User(models.Model):
         return self.module_identity.filter(
             access_tag=access_tag, status="Active"
         ).first()
+    
+    def get_all_active_identity(self):
+        return self.module_identity.filter(status = "Active")
 
     def __str__(self):
         return "%s" % (self.user)

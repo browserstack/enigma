@@ -9,7 +9,7 @@ from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from Access import group_helper
 from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, get_pending_revoke_failures, getPendingRequests, create_request
-from Access.userlist_helper import getallUserList, get_identity_templates, create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE
+from Access.userlist_helper import getallUserList, get_identity_templates, create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE, IDENTITY_UNCHANGED_ERROR_MESSAGE, IdentityNotChangedException
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 from django.shortcuts import render
 from django.http import JsonResponse
@@ -58,7 +58,7 @@ def pending_revoke(request):
 
 @login_required
 def updateUserInfo(request):
-    context = get_identity_templates()
+    context = get_identity_templates(request.user)
     return render(request,'updateUser.html',context)
 
 
@@ -70,7 +70,15 @@ def saveIdentity(request):
         if request.POST:
             context = create_identity(user_identity_form = request.POST, auth_user=request.user)
             return JsonResponse(json.dumps(context), safe=False, status=200)
-    except:
+    except IdentityNotChangedException:
+        context = {}
+        context["error"] = {
+            "title": IDENTITY_UNCHANGED_ERROR_MESSAGE["title"],
+            "msg": IDENTITY_UNCHANGED_ERROR_MESSAGE["msg"].format(modulename = modname),
+        }
+        return JsonResponse(json.dumps(context), safe=False, status=400)
+        
+    except Exception:
         context = {}
         context["error"] = {
             "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
