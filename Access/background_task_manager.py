@@ -172,7 +172,7 @@ def run_access_revoke(data):
         targets = []
         message = "Revoker not found"
         notifications.send_run_revoke_failure_notification(targets, data["request_id"], data["revoker_email"], 0, message, access.access_tag)
-        user_identity.update_mapping_status_revokefail()
+        user_identity.update_mapping_status_revokefail(access)
         return False
 
     for access_module in helpers.getAccessModules():
@@ -188,14 +188,14 @@ def run_access_revoke(data):
 
             if revoke_success:
                 if AUTOMATED_EXEC_IDENTIFIER in access_module.revoke_owner():
-                    user_identity.update_mapping_status_revoked()
+                    user_identity.update_mapping_status_revoked(access)
             else:
                 logger.debug("Failed to revoke the request: {} due to exception: {}".format(request.request_id, message))
                 logger.debug("Retry count: {}".format(run_access_revoke.request.retries))
                 if(run_access_revoke.request.retries == 3):
                     logger.info("Sending the notification for failure")
                     notifications.send_run_revoke_failure_notification(access_module.access_mark_revoke_permission(request.access_type), request.request_id, revoker.email, run_access_revoke.request.retries, message, access.access_tag)
-                    user_identity.update_mapping_status_revokefail()
+                    user_identity.update_mapping_status_revokefail(access)
                 raise Exception("Failed to revoke the access due to: "+ str(message))
                 
             return {"status": True}

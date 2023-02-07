@@ -620,8 +620,8 @@ def remove_member(request):
         for access_module in helpers.getAvailableAccessModules():
             if access_module.tag() == access.access_tag:
                 user_identity = user.get_active_identity(access.access_tag)
-                user_identity.update_non_active_access_to_declined()
-                user_identity.update_mapping_status_offboaring()
-                background_task("run_access_revoke", json.dumps({"request_id": user_identity.get_granted_accesses().first().request_id, "revoker_email": request.user.user.email}))
+                user_identity.update_non_active_access_to_declined(access)
+                user_identity.update_mapping_status_offboaring(access)
+                background_task("run_access_revoke", json.dumps({"request_id": user_identity.get_granted_access(access).first().request_id, "revoker_email": request.user.user.email}))
     
     membership.revoke_membership()
