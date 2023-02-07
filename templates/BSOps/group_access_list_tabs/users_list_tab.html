@@ -1,0 +1,189 @@
+<script id="js">
+  $(function() {
+  $(".users-list-table").tablesorter({
+    theme : "bootstrap",
+    widthFixed: true,
+    widgets : [ "filter", "columns" ],
+    widgetOptions : {
+      zebra : ["even", "odd"],
+      columns: [ "primary", "secondary", "tertiary" ],
+      filter_reset : ".reset",
+      filter_cssFilter: [
+        'form-control',
+        'form-control',
+        'form-control',
+        'form-control',
+        'form-control'
+      ]
+
+    }
+  })
+  .tablesorterPager({
+    container: $(".ts-pager-users-list"),
+    cssGoto  : ".pagenum-users-list",
+    removeRows: false,
+    cssPageDisplay: '.pagedisplay-users-list',
+    cssPageSize: '.pagesize-users-list',
+    output: '{startRow} - {endRow} / {filteredRows} ({totalRows})'
+  });
+});
+
+$(document).on("submit", "#updateOwners", function(e){
+  e.preventDefault()
+
+  let form = $(this)
+  let actionUrl = form.attr('action');
+
+  $.ajax({
+    type: "POST",
+    url: actionUrl,
+    data: form.serialize(),
+    error: (xhr, status, error) => {
+      alert("Failed to Update Owners");
+    }
+  }).done(function(data, statusText, xhr){
+    let status = xhr.status;
+    if(status !== 200) {
+      alert(data["error"] || "Failed to update Owners")
+    }
+    else {
+      location.reload(true);
+    }
+  })
+
+})
+
+
+$(document).on('click', '.user-remove-button', function(){
+    id = $(this).attr("id");
+    urlBuilder = "/group/removeMember?membershipId="+id
+    $.ajax({url: urlBuilder,
+        success: function(result){
+          document.getElementById(id+"-remove-user-button").innerHTML = "";
+          document.getElementById(id+"-user-state").innerHTML = "revoked";
+        },
+        error: function(result){
+          alert("Error occured while marking revoke! - "+result["responseJSON"]["error"])
+        }});
+    $("#closeRemoveModal").click()
+  });
+
+function userRemoveConfirm(membership_id){
+  $("#remove-details").html("<h4>Confirm User removal "+ membership_id +"</h4>")
+  button_elem = document.getElementsByName("final-remove-button")[0]
+  button_elem.id = membership_id
+}
+</script>
+
+<div class="modal fade" id="userRemoveModal">
+  <div class="modal-dialog generic-access-modal">
+    <div class="modal-content">
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h4 class="modal-title"></h4>
+        <button type="button" id="closeRemoveModal" class="close" data-dismiss="modal">&times;</button>
+      </div>
+      <!-- Modal body -->
+      <div class="modal-body generic-access-modal-body">
+        <div id="remove-details"></div><br>
+        <button class="btn btn-danger user-remove-button" name="final-remove-button" id="">Confirm Offboarding</button></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="users" class="container tab-pane active"><br>
+  <form id="updateOwners" action="{% url 'updateGroupOwners' groupName %}" method="POST">
+    {% csrf_token %}
+    <table class="table table-bordered table-striped users-list-table">
+      <thead class="thead-dark">
+        <tr>
+          <th data-placeholder="Search">Owner</th>
+          <th data-placeholder="Search">Name</th>
+          <th data-placeholder="Search">Email</th>
+          <th data-placeholder="Search">Role</th>
+          <th data-placeholder="Search">Current State</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for user in userList %}
+        <tr>
+          <td style="width:10%; text-align: center;">
+            {% if request.user.email == user.email %}
+            <input type="checkbox" name="owners" value="{{ user.is_owner }}" checked disabled="true"></input>
+            {% else %}
+            {% if user.is_owner %}
+            <input type="checkbox" name="owners" value="{{ user.email }}" checked></input>
+            {% else %}
+            <input type="checkbox" name="owners" value="{{ user.email }}" > </input>
+            {% endif %}
+            {% endif %}
+          </td>
+          <td>{{user.name}}</td>
+          <td>{{user.email}}</td>
+          <td>
+            {% if user.is_owner %}
+            Owner
+            {% else %}
+            Member
+            {% endif %}
+          </td>
+          <td id="{{ user.membership_id }}-user-state">{{ user.current_state }}</td>
+          <td id="{{ user.membership_id }}-remove-user-button">
+            {% if allowRevoke and user.current_state == "active" %}
+              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#userRemoveModal" onclick='userRemoveConfirm("{{ user.membership_id }}")'>Remove User</button>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr class="tablesorter-ignoreRow">
+          <th colspan="6" class="ts-pager ts-pager-users-list form-horizontal" style="padding:1%">
+            <button type="button" class="btn btn-primary first" style="padding: 0px 30px;"><i class="small material-icons">first_page</i></button>
+            <button type="button" class="btn btn-primary prev" style="padding: 0px 30px;"><i class="small material-icons">navigate_before</i></button>
+            <span class="pagedisplay-users-list"></span>
+            <button type="button" class="btn btn-primary next" style="padding: 0px 30px;"><i class="small material-icons">navigate_next</i></button>
+            <button type="button" class="btn btn-primary last" style="padding: 0px 30px;"><i class="small material-icons">last_page</i></button>
+            <select class="pagesize-users-list browser-default form-control col-sm-1" title="Select page size" style="display:  inherit;">
+              <option selected="selected" value="10">10</option>
+              <option value="20">20</option>
+              <option value="30">30</option>
+              <option value="40">40</option>
+            </select>
+            <select class="pagenum-users-list browser-default form-control col-sm-1" title="Select page number" style="display:  inherit;"></select>
+          </th>
+        </tr>
+      </tfoot>
+    </table>
+    <div class="row">
+      <div class="col-10">
+        <strong>
+          <span class="text-danger">
+            NOTE:
+          </span>
+          <br>
+          <span class="text-danger">
+            1. Changing owner(s) means, new owner(s) will be able to add new members, raise access request on behalf of the group.
+          </span>
+          <br>
+          <span class="text-danger">2. An Email will be sent to access approvers with updated owner(s) of the group.</span>
+          <br>
+          <span class="text-danger">3. You can't make yourself Owner/Member.</span>
+        </strong>
+      </div>
+      <div class="col-2">
+        <button type="submit" class="mt-2 float-right btn btn-primary">Update Owners</button>
+      </div>
+    </div>
+  </form>
+  {% if notification %}
+  <div class="alert alert-success alert-dismissible fade show">
+    {{ notification }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  {% endif %}
+</div>

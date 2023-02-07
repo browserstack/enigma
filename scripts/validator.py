@@ -1,7 +1,11 @@
 import json
 import os
 import sys
+import traceback
+import logging
 from jsonschema import validate
+
+logger = logging.getLogger(__name__)
 
 try:
     config_file = "config.json" if len(sys.argv) <= 1 else sys.argv[1]
@@ -19,8 +23,8 @@ try:
                 schema["properties"].update(module_schema["properties"])
                 schema["required"] += module_schema["required"]
     validate(instance=config, schema=schema)
-    print("Schema validation passed!")
+    logger.info("Schema validation passed!")
 except Exception as e:
-    print("Schema validation failed!")
-    print(e)
+    logger.error("Schema validation failed! Error is: " + e)
+    traceback.format_exc()
     sys.exit(1)

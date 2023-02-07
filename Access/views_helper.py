@@ -1,14 +1,16 @@
-from .models import UserAccessMapping, GroupAccessMapping
+from django.shortcuts import render
 from django.http import HttpResponse
 import datetime
-import traceback
 import logging
+import traceback
+
 import csv
 from . import helpers as helper
+from .models import UserAccessMapping, GroupAccessMapping
 from bootprocess import general
+from Access.background_task_manager import background_task
 
 logger = logging.getLogger(__name__)
-all_access_modules = helper.getAvailableAccessModules()
 
 
 def generateUserMappings(user, group, membershipObj):
@@ -70,9 +72,7 @@ def executeGroupAccess(userMappingsList):
             if "other" in mappingObj.request_id:
                 decline_group_other_access(mappingObj)
             else:
-                run_access_grant(
-                    mappingObj.request_id, mappingObj, accessType, user, approver
-                )
+                background_task("run_access_grant", (mappingObj.request_id, mappingObj, accessType, user, approver))
                 logger.debug(
                     "Successful group access grant for " + mappingObj.request_id
                 )
@@ -117,7 +117,7 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             }
         )
         return False
-    for each_access_module in all_access_modules:
+    for each_access_module in helper.getAvailableAccessModules():
         if accessType == each_access_module.tag():
             try:
                 response = each_access_module.approve(
@@ -203,6 +203,15 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             # additional email of "Access approved" is not needed
             return True
     return False
+
+def render_error_message(request, log_message, user_message, user_message_description):
+    logger.error(log_message)
+    return render(request, 'BSOps/accessStatus.html', {
+        "error": {
+            "error_msg": user_message,
+            "msg": user_message_description,
+        }
+    })
 
 
 def get_filters(request):

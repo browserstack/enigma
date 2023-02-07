@@ -114,17 +114,6 @@ TEMPLATES = [
 WSGI_APPLICATION = "BrowserStackAutomation.wsgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -187,11 +176,44 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = data["googleapi"][
     "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS"
 ]
 
+if data["background_task_manager"]["type"] == "celery":
+    background_task_manager_config = data["background_task_manager"]["config"]
+    CELERY_BROKER_URL = background_task_manager_config["broker"]
+    CELERY_RESULT_BACKEND = background_task_manager_config["backend"]
+
+    if background_task_manager_config["need_monitoring"]:
+        INSTALLED_APPS.append(background_task_manager_config["monitoring_apps"])
+
 USER_STATUS_CHOICES = [
     ("1", "active"),
     ("2", "offboarding"),
     ("3", "offboarded"),
 ]
+
+# Database
+# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
+
+DATABASES = {}
+if data['database']['engine'] == "mysql":
+    DATABASES['default'] = {
+        'ENGINE':   'mysql.connector.django',
+        'CONN_MAX_AGE': 0,
+        'NAME': data['database']['dbname'],
+        'USER': data['database']['username'],
+        'PASSWORD': data['database']['password'],
+        'HOST': data['database']['host'],
+        'PORT': data['database']['port'],
+        'OPTIONS': {
+            'auth_plugin': 'mysql_native_password'
+        }
+    }
+elif data['database']['engine'] == "sqlite3":
+    DATABASES['default'] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+else:
+    raise Exception("Database engine %s not recognized" % data['database']['engine'])
 
 PERMISSION_CONSTANTS = {"DEFAULT_APPROVER_PERMISSION": "ACCESS_APPROVE"}
 

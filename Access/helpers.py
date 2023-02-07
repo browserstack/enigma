@@ -5,11 +5,22 @@ import logging
 import re
 import datetime
 
-from Access.access_modules import *
+from Access.access_modules import * # NOQA
+from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
+
 available_accesses = []
 cached_accesses = []
+
+modules = {}
+
+
+def get_available_access_modules():
+    available_accesses = getAvailableAccessModules()
+    for access in available_accesses:
+        modules.update({access.tag(): access})
+    return modules
 
 
 def getAvailableAccessModules():
@@ -69,7 +80,7 @@ def generateStringFromTemplate(filename, **kwargs):
 
 
 def getPossibleApproverPermissions():
-    all_approver_permissions = []
+    all_approver_permissions = [PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]]
     for each_module in getAvailableAccessModules():
         approver_permissions = each_module.fetch_approver_permissions()
         all_approver_permissions.extend(approver_permissions.values())

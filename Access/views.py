@@ -4,11 +4,13 @@ from django.core.paginator import Paginator
 from django.contrib.auth.models import User as djangoUser
 from .models import UserAccessMapping
 from Access import views_helper
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
+import json
 import logging
+
 from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from Access import group_helper
@@ -17,11 +19,12 @@ from Access.accessrequest_helper import (
     getGrantFailedRequests,
     get_pending_revoke_failures,
     getPendingRequests,
+    create_request,
 )
-from Access.userlist_helper import getallUserList
+from Access.models import User
+from Access.userlist_helper import getallUserList, get_identity_templates, create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE
+from Access.views_helper import render_error_message
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
-import csv
-import datetime
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 
@@ -33,7 +36,27 @@ all_access_modules = helper.getAvailableAccessModules()
 
 @login_required
 def showAccessHistory(request):
-    return False
+    if request.method == 'POST':
+        return render_error_message(
+            request,
+            "POST for showAccessHistory not supported",
+            "Invalid Request",
+            "Error request not found OR Invalid request type"
+        )
+
+    try:
+        access_user = User.objects.get(email=request.user.email)
+    except Exception as e:
+        return render_error_message(
+            request,
+            "Access user with email %s not found. Error: %s" % (request.user.email, str(e)),
+            "Invalid Request",
+            "Please login again"
+        )
+
+    return render(request, 'BSOps/showAccessHistory.html', {
+        'dataList': access_user.get_access_history(helper.getAvailableAccessModules())
+    })
 
 
 @login_required
@@ -46,8 +69,8 @@ def pendingFailure(request):
         logger.debug("Error in request not found OR Invalid request type")
         logger.exception(e)
         json_response = {}
-        json_response['error'] = {'error_msg': str(e), 'msg': INVALID_REQUEST_MESSAGE}
-        return render(request, 'BSOps/accessStatus.html', json_response)
+        json_response["error"] = {"error_msg": str(e), "msg": INVALID_REQUEST_MESSAGE}
+        return render(request, "BSOps/accessStatus.html", json_response)
 
 
 @login_required
@@ -60,14 +83,31 @@ def pending_revoke(request):
         logger.debug("Error in request not found OR Invalid request type")
         logger.exception(e)
         json_response = {}
-        json_response['error'] = {'error_msg': str(e), 'msg': INVALID_REQUEST_MESSAGE}
-        return render(request, 'BSOps/accessStatus.html', json_response)
+        json_response["error"] = {"error_msg": str(e), "msg": INVALID_REQUEST_MESSAGE}
+        return render(request, "BSOps/accessStatus.html", json_response)
 
 
 @login_required
 def updateUserInfo(request):
-    return False
+    context = get_identity_templates()
+    return render(request,'updateUser.html',context)
 
+
+@api_view(['POST'])
+@login_required
+def saveIdentity(request):
+    try:
+        modname = request.POST.get("modname")
+        if request.POST:
+            context = create_identity(user_identity_form = request.POST, auth_user=request.user)
+            return JsonResponse(json.dumps(context), safe=False, status=200)
+    except:
+        context = {}
+        context["error"] = {
+            "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
+            "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename = modname),
+        }
+        return JsonResponse(json.dumps(context), safe=False, status=400)
 
 @login_required
 def createNewGroup(request):
@@ -88,8 +128,12 @@ def allUsersList(request):
 
 @login_required
 def requestAccess(request):
-    context = requestAccessGet(request)
-    return render(request, "BSOps/accessRequestForm.html", context)
+    if request.POST:
+        context = create_request(auth_user = request.user, access_request_form = request.POST)
+        return render(request, "BSOps/accessStatus.html", context)
+    else:
+        context = requestAccessGet(request)
+        return render(request, "BSOps/accessRequestForm.html", context)
 
 
 @login_required
@@ -98,12 +142,35 @@ def groupRequestAccess(request):
 
 
 @login_required
-def groupAccessList(request, groupName):
-    context = group_helper.getGroupAccessList(request, groupName)
-    if "error" in context:
-        return render(request, "BSOps/accessStatus.html", context)
+def group_access_list(request, groupName):
+    try:
+        context = group_helper.get_group_access_list(request, groupName)
+        if "error" in context:
+            return render(request, "BSOps/accessStatus.html", context)
 
-    return render(request, "BSOps/groupAccessList.html", context)
+        return render(request, "BSOps/groupAccessList.html", context)
+    except Exception as e:
+        logger.debug("Error in request not found OR Invalid request type")
+        logger.exception(e)
+        json_response = {}
+        json_response["error"] = {"error_msg": str(e), "msg": INVALID_REQUEST_MESSAGE}
+        return render(request, "BSOps/accessStatus.html", json_response)
+
+
+@login_required
+def update_group_owners(request, groupName):
+    try:
+        context = group_helper.update_owners(request, groupName)
+        if "error" in context:
+            return JsonResponse(context, status=400)
+
+        return JsonResponse(context, status=200)
+    except Exception as e:
+        logger.debug("Error in request not found OR Invalid request type")
+        logger.exception(e)
+        json_response = {}
+        json_response["error"] = INVALID_REQUEST_MESSAGE
+        return JsonResponse(json_response, status=400)
 
 
 @login_required
@@ -137,7 +204,7 @@ def pendingRequests(request):
 def accept_bulk(request, selector):
     try:
         context = {"response": {}}
-        inputVals = request.GET.getlist('requestId')
+        inputVals = request.GET.getlist("requestId")
         requestIds = []
         returnIds = []
         user = request.user.user
@@ -146,16 +213,24 @@ def accept_bulk(request, selector):
         for value in requestIds:
             requestType, requestId = selector, value
             if selector == "groupNew" and is_access_approver:
-                json_response = group_helper.approve_new_group_request(request, requestId)
+                json_response = group_helper.approve_new_group_request(
+                    request, requestId
+                )
             elif selector == "groupMember" and is_access_approver:
                 json_response = group_helper.accept_member(request, requestId, False)
             else:
                 raise ValidationError("Invalid request")
             if "error" in json_response:
-                context['response'][requestId] = {"error": json_response["error"], "success": False}
+                context["response"][requestId] = {
+                    "error": json_response["error"],
+                    "success": False,
+                }
             else:
-                context['response'][requestId] = {"msg": json_response["msg"], "success": True}
-        context['bulk_approve'] = True
+                context["response"][requestId] = {
+                    "msg": json_response["msg"],
+                    "success": True,
+                }
+        context["bulk_approve"] = True
         context["returnIds"] = returnIds
         return JsonResponse(context, status=200)
     except Exception as e:
