@@ -486,7 +486,7 @@ class GroupV2(models.Model):
             self.membership_group.filter(is_owner=True)
             .filter(user__email=email)
             .first()
-            != None
+            is not None
         )
 
     def add_access(self, request_id, requested_by, request_reason, access):
@@ -821,7 +821,7 @@ class UserIdentity(models.Model):
 
     def access_mapping_exists(self, access):
         try:
-            mapping = self.user_access_mapping.get(
+            self.user_access_mapping.get(
                 access=access, status__in=["Approved", "Pending"]
             )
             return True

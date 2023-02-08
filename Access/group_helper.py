@@ -617,7 +617,7 @@ def get_group_access(form_data, auth_user):
         module = helper.get_available_access_modules()[module_value]
         try:
             extra_fields = module.get_extra_fields()
-        except:
+        except Exception:
             extra_fields = []
 
         context["genericForm"] = True
@@ -658,14 +658,14 @@ def save_group_access_request(form_data, auth_user):
         extra_fields = accessrequest_helper.get_extra_fields(access_request)
         extra_field_labels = accessrequest_helper.get_extra_field_labels(access_module)
 
+        module_access_labels = access_module.validate_request(
+            access_labels, auth_user, is_group=False
+        )
         if extra_fields and extra_field_labels:
             for field in extra_field_labels:
                 module_access_labels[0][field] = extra_fields[0]
                 extra_fields = extra_fields[1:]
 
-        module_access_labels = access_module.validate_request(
-            access_labels, auth_user, is_group=False
-        )
         request_id = (
             auth_user.username
             + "-"

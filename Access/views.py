@@ -108,7 +108,7 @@ def saveIdentity(request):
                 user_identity_form=request.POST, auth_user=request.user
             )
             return JsonResponse(json.dumps(context), safe=False, status=200)
-    except:
+    except Exception:
         context = {}
         context["error"] = {
             "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
@@ -234,7 +234,7 @@ def accept_bulk(request, selector):
         is_access_approver = user.has_permission("ACCESS_APPROVE")
         requestIds = inputVals
         for value in requestIds:
-            requestType, requestId = selector, value
+            requestId = value
             if selector == "groupNew" and is_access_approver:
                 json_response = group_helper.approve_new_group_request(
                     request, requestId
