@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import re_path, include
 from Access.views import (
+    offboarding_user,
     showAccessHistory,
     pendingRequests,
     pendingFailure,
@@ -53,6 +54,7 @@ urlpatterns = [
     re_path(r"^group/dashboard/$", groupDashboard, name="groupDashboard"),
     re_path(r"^access/userAccesses$", allUserAccessList, name="allUserAccessList"),
     re_path(r"^access/usersList$", allUsersList, name="allUsersList"),
+    re_path(r"^user/offboardUser$", offboarding_user, name="offboarding_user"),
     re_path(r"^access/requestAccess$", requestAccess, name="requestAccess"),
     re_path(r"^group/requestAccess$", groupRequestAccess, name="groupRequestAccess"),
     re_path(

@@ -48,7 +48,7 @@ function startOffboarding(offboard_email) {
   message_text_div.append("Offboarding user with email " + offboard_email + ". Please wait");
   $('#alert-space').html(custom_alert);
 
-  $.ajax("{% url 'allUsersList' %}", {
+  $.ajax("{% url 'offboarding_user' %}", {
     type: "POST",
     data: { "offboard_email": offboard_email, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
     success: function(data) {

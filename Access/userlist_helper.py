@@ -169,20 +169,24 @@ def offboard_user(request):
     except Exception as e:
         logger.debug("Error in request, not found or Invalid request type")
         logger.exception(str(e))
-        return {}
+        return {"error": ERROR_MESSAGE}
     
-    user.offboard_user()
-
+    user.offboard_user(request.user.user)
+    
     for access_module in helpers.getAvailableAccessModules():
         module_identity = user.get_active_identity(access_module.tag())
-        module_identity.update_all_non_active_accesses_to_declined()
-        access_mappings = module_identity.get_granted_accesses()
+        if not module_identity:
+            continue
+        module_identity.decline_all_non_approved_access_mappings()
+        access_mappings = module_identity.get_all_granted_access_mappings()
 
         for access_mapping in access_mappings:
-            access_mapping.update_mapping_status_offboaring(access_mappings.access)
+            access_mapping.offboarding_approved_access_mapping(access_mappings.access)
             background_task("run_access_revoke", json.dumps({"request_id": access_mapping.request_id, "revoker_email": request.user.user.email}))
         
         module_identity.deactivate()
     
     MembershipV2.revoke_memberships_of_user(user)
+
+    return {"message": "Successfully initiated Offboard user"}
 
