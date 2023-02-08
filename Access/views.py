@@ -220,7 +220,9 @@ def accept_bulk(request, selector):
 
 def remove_group_member(request):
     try:
-        group_helper.remove_member(request)
+        response = group_helper.remove_member(request)
+        if "error" in response:
+            return JsonResponse(response, status=400)
         return JsonResponse({"message": "Success"})
     except Exception as e:
         logger.exception(str(e))

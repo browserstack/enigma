@@ -18,6 +18,8 @@ NEW_GROUP_CREATE_SUCCESS_MESSAGE = {
     You will be notified for any changes in request status.""",
 }
 
+ERROR_MESSAGE = "Error in request not found OR Invalid request type"
+
 NEW_GROUP_CREATE_ERROR_MESSAGE = {
     "error_msg": "Internal Error",
     "msg": "Error Occured while loading the page. Please contact admin",
@@ -601,6 +603,8 @@ def remove_member(request):
         membership = MembershipV2.get_membership(membership_id)
     except Exception as e:
         logger.error("Membership id not found in request")
+        logger.exception(str(e))
+        return { "error" : ERROR_MESSAGE }
 
     user = membership.user
 
