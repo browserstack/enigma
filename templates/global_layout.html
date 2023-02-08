@@ -1,296 +1,120 @@
 {% load static %}
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Enigma</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="all,follow">
+    <link rel="shortcut icon" type="image/x-icon" href={% static "favicon.ico" %}>
 
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Enigma</title>
-  <meta name="description" content="">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="all,follow">
-  <link rel="shortcut icon" type="image/x-icon" href={% static "favicon.ico" %}>
-  <!-- Bootstrap CSS-->
-  <link rel="stylesheet" href={% static "files/vendor/bootstrap/css/bootstrap.min.css" %}>
-  <!-- Font Awesome CSS-->
-  <link rel="stylesheet" href={% static "files/vendor/font-awesome/css/font-awesome.min.css" %}>
-  <!-- Custom Font Icons CSS-->
-  <link rel="stylesheet" type="text/css" href="{% static "files/css/semantic.min.css" %}">
+    <!-- Custom stylesheet - for your changes-->
+    <link rel="stylesheet" href={% static "css/global_layout.css" %}>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+  </head>
 
-  <link rel="stylesheet" href={% static "files/css/font.css" %}>
-  <!-- Google fonts - Muli-->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli:300,400,700">
-  <!-- theme stylesheet-->
-  <link rel="stylesheet" href={% static "files/css/style.green.css" %} id="theme-stylesheet">
-  <!-- Custom stylesheet - for your changes-->
-  <link rel="stylesheet" href={% static "files/css/custom.css" %}>
-  <!-- Favicon-->
-  <!-- Tweaks for older IEs-->
-  <script src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
-  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
-</head>
+  <body>
+    <div class="cust-left-nav-panel">
+      <div class="cust-leading-content">
+        <div class="cust-nav-logo">
+          <div class="cust-logo">
+            <img class="cust-logo-svg" src="static/images/global_layout/logo_mark.svg"></img>
+            <div class="cust-logo-text">enigma</div>
+          </div>
+        </div>
+        <div class="cust-nav-profile">
+          <div class="cust-profile-border"></div>
+          <div class="cust-profile-content">
+            <div class="cust-profile-avatar">
+              <div class="cust-avatar">{{ currentUser.name | make_list | first }}</div>
+              <div class="cust-avatar-name">
+                <div class="cust-avatar-name-title">{{ currentUser.name }}</div>
+                <div class="cust-avatar-name-support">View Profile</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% comment %} <div class="cust-nav-tabs"> {% endcomment %}
+        {% comment %}   <a href="#" class="cust-each-nav-tab cust-nav-tab-active"> {% endcomment %}
+        {% comment %}     <div class="cust-each-nav-tab-content"> {% endcomment %}
+        {% comment %}       <div class="cust-each-nav-tab-icon"> {% endcomment %}
+        {% comment %}         <img class="cust-each-nav-icon-svg" src="static/images/global_layout/navbar_home.svg"></img> {% endcomment %}
+        {% comment %}       </div> {% endcomment %}
+        {% comment %}       <div class="cust-each-nav-tab-text">Dashboard</div> {% endcomment %}
+        {% comment %}     </div> {% endcomment %}
+        {% comment %}   </a> {% endcomment %}
+        {% comment %}   <a href="" class="cust-each-nav-tab hover:text-gray-200"> {% endcomment %}
+        {% comment %}     <div class="cust-each-nav-tab-content"> {% endcomment %}
+        {% comment %}       <div class="cust-each-nav-tab-icon"> {% endcomment %}
+        {% comment %}         <img class="cust-each-nav-icon-svg" src="static/images/global_layout/navbar_key.svg"></img> {% endcomment %}
+        {% comment %}       </div> {% endcomment %}
+        {% comment %}       <div class="cust-each-nav-tab-text">Access</div> {% endcomment %}
+        {% comment %}     </div> {% endcomment %}
+        {% comment %}   </a> {% endcomment %}
+        {% comment %}   <a href="" class="cust-each-nav-tab hover:text-gray-200"> {% endcomment %}
+        {% comment %}     <div class="cust-each-nav-tab-content"> {% endcomment %}
+        {% comment %}       <div class="cust-each-nav-tab-icon"> {% endcomment %}
+        {% comment %}         <img class="cust-each-nav-icon-svg" src="static/images/global_layout/navbar_users.svg"></img> {% endcomment %}
+        {% comment %}       </div> {% endcomment %}
+        {% comment %}       <div class="cust-each-nav-tab-text">Groups</div> {% endcomment %}
+        {% comment %}     </div> {% endcomment %}
+        {% comment %}   </a> {% endcomment %}
+        {% comment %} </div> {% endcomment %}
+        <nav class="space-y-1 cust-nav-tabs" aria-label="Sidebar">
+          <a href="#" class="bg-gray-100 text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md" aria-current="page">
+            <svg class="text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6 cust-each-nav-icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+            </svg>
+            <span class="truncate">Dashboard</span>
 
-<style>
-form label{
-  font-size: larger !important;
-}
-</style>
-
-<script>
-function toggleInventoryDiv() {
-    var x = document.getElementById("inventoryToggle");
-    if (x.style.display === "none") {
-        x.style.display = "block";
-    } else {
-        x.style.display = "none";
-    }
-}
-function inputRegion(e) {
-  e.preventDefault()
-  region = prompt("Input region to boot machine")
-  console.log(region)
-  window.location.href = `${e.target.href}?region=${region}`
-}
-</script>
-
-<body>
-  <header class="header">
-    <nav class="navbar navbar-expand-lg">
-      <div class="container-fluid d-flex align-items-center justify-content-between">
-        <div class="navbar-header">
-          <!-- Navbar Header-->
-          <a href="{% url 'dashboard' %}" class="navbar-brand">
-            <div class="brand-text brand-big visible text-uppercase"><strong class="text-primary">ENI</strong><strong style="color:white">GMA</strong></div>
-            <div class="brand-text brand-sm"><strong class="text-primary">E</strong><strong style="color:white">G</strong></div>
+            <span class="bg-white ml-auto inline-block py-0.5 px-3 text-xs rounded-full">5</span>
           </a>
-          <!-- Sidebar Toggle Btn-->
-          <button class="sidebar-toggle"><i class="fas fa-arrow-left" style="color:white;"></i></button>
-        </div>
-        <div class="right-menu list-inline no-margin-bottom">
 
-          <div class="list-inline-item" style="padding-right:15px">
-            <a href="{% url 'showAccessHistory' %}"><i class="fa fa-tasks" style="font-size:22px;color:white" title="Request History"></i></a>
-          </div>
+          <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+            <svg class="text-gray-400 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+            </svg>
+            <span class="truncate">Team</span>
+          </a>
 
-          {% if anyApprover %}
-          <div class="list-inline-item" style="padding-right:15px">
-            <a href="{% url 'pendingRequests' %}"><i class="far fa-bell" style="font-size:28px;color:white"></i><span class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ pendingCount }}</span></a>
-          </div>
-          {% endif %}
+          <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+            <svg class="text-gray-400 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+            </svg>
+            <span class="truncate">Projects</span>
 
-          {% if user.is_superuser or is_ops %}
-          <div class="list-inline-item" style="padding-right:15px">
-            <a href="{% url 'pendingFailure' %}" title="Grant Failures"><i class="fas fa-exclamation" style="font-size:25px;color:white"></i><span
-                class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ grantFailureCount }}</span></a>
-          </div>
+            <span class="bg-gray-100 group-hover:bg-gray-200 ml-auto inline-block py-0.5 px-3 text-xs rounded-full">19</span>
+          </a>
 
-          <div class="list-inline-item" style="padding-right:15px">
-            <a href="{% url 'pendingRevoke' %}" title="Revoke Failures"><i class="fas fa-exclamation-triangle" style="font-size:25px;color:white"></i><span
-                class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ revokeFailureCount }}</span></a>
-          </div>
+          <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+            <svg class="text-gray-400 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+            </svg>
+            <span class="truncate">Calendar</span>
 
-          {% endif %}
+            <span class="bg-gray-100 group-hover:bg-gray-200 ml-auto inline-block py-0.5 px-3 text-xs rounded-full">20+</span>
+          </a>
 
-          <div class="list-inline-item"> <a id="profile" href="{% url 'updateUserInfo' %}" class="nav-link" style="color:#1AC98E;">Profile <i class="icon-paper-and-pencil" style="color:white;font-size: 20px;"></i></a></div>
-          <div class="list-inline-item logout"> <a id="logout" href="{% url 'logout' %}" class="nav-link" style="color:#1AC98E;">Logout <i class="icon-logout" style="color:white;font-size: 20px;"></i></a></div>
-        </div>
-      </div>
-    </nav>
-  </header>
-  <div class="d-flex align-items-stretch" style="height:calc(100vh - 149px);overflow-y:auto">
-    <!-- Sidebar Navigation-->
-    <nav id="sidebar" style="overflow-y: scroll; min-width: 6%;">
-      <!-- Sidebar Header-->
-      <div class="sidebar-header d-flex align-items-center">
-        {% if request.user.user.avatar %}
-          <div class="avatar" style="border:none;"><img style="border:3px solid #282b2f" src="{{request.user.user.avatar}}" alt="O" class="img-fluid rounded-circle"></div>
-        {% endif %}
-        <!-- <div class="avatar"><i class="fa fa-user-circle-o rounded-circle" style="font-size:48px;"></i></div> -->
-        <div class="title">
-          <h1 class="h4" style="color:white;">{{request.user.user.name}}</h1>
-        </div>
-      </div>
-      <ul class="list-unstyled" style="color:#1AC98E;">
-        <li><a href={% url 'dashboard' %}><i class="icon-home nav-icon"></i>Home</a></li>
-        <li><a href={% url 'showAccessHistory' %}><i class="fa fa-list-ol nav-icon"></i>My Access</a></li>
-      </ul>
-      <!-- Sidebar Navidation Menus-->
-      <span class="heading">GROUP</span>
-      <ul class="list-unstyled" style="color:#1AC98E;">
-        <li><a href={% url 'createNewGroup' %}><i class="fas fa-users nav-icon"></i>Create New Group</a></li>
-        {% if groups %}
-        <li><a data-toggle="modal" data-target="#groupAccess" style="cursor: pointer;"> <i class="icon-list nav-icon"></i>Access Request</a></li>
-        <li><a data-toggle="modal" data-target="#newGroupMember" style="cursor: pointer;"> <i class="fa fa-user-plus nav-icon"></i>Add New Members</a></li>
-        <!-- <li><a href={% url 'groupDashboard' %}> <i class="icon-grid nav-icon"></i>Add New Member2</a></li> -->
-        <li><a data-toggle="modal" data-target="#groupAccessList" style="cursor: pointer;"> <i class="fa fa-list-ol nav-icon"></i>List Group Access</a></li>
-        <!-- <li><a href={% url 'groupAccessList' 'gel' %}> <i class="fa fa-list-ol nav-icon"></i>List Group Access</a></li> -->
-        {% endif %}
-      </ul>
+          <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+            <svg class="text-gray-400 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z" />
+            </svg>
+            <span class="truncate">Documents</span>
+          </a>
 
-
-      {% if request.user.is_superuser or user.user.is_manager or is_ops %}
-      <span class="heading">MANAGEMENT</span>
-      <ul class="list-unstyled" style="color:#1AC98E;">
-        <li><a href={% url 'allUserAccessList' %}><i class="fa fa-list-ul nav-icon"></i>User Access List</a></li>
-        <li><a href={% url 'allUsersList' %}><i class="fa fa-list-ul nav-icon"></i>Users List</a></li>
-      </ul>
-      {% endif %}
-
-    </nav>
-
-    <div class="modal fade" id="myAccess">
-      <div class="modal-dialog generic-access-modal">
-        <div class="modal-content">
-          <!-- Modal Header -->
-          <div class="modal-header">
-            <h4 class="modal-title">Access Request</h4>
-            <p>&nbsp;Note - Only resource creation requests are approved via this flow. If you wan't to get access to any tool, connect with your manager to have the request raised via group access.</p>
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-          </div>
-          <!-- Modal body -->
-          <div class="modal-body generic-access-modal-body">
-            <form class="generic-access-form" action="{% url 'requestAccess' %}">
-              <div class="generic-access-select-wrapper">
-                <select id="accesses" name="accesses" multiple="" class="ui fluid search dropdown generic-access-select-dropdown">
-                  <option value="">Access List</option>
-                  {% for each_access in access_list %}
-                    <option value="access_{{ each_access.tag }}">{{ each_access.desc }}</option>
-                  {% endfor %}
-                </select>
-              </div>
-
-              <div class="generic-access-form-submit">
-                <button type="submit" class="btn btn-primary">Proceed</button></a>&nbsp;&nbsp;
-              </div>
-            </form>
-          </div>
-        </div>
+          <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
+            <svg class="text-gray-400 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+            </svg>
+            <span class="truncate">Reports</span>
+          </a>
+        </nav>
+        <div class="cust-top-border"></div>
       </div>
     </div>
-
-    <div class="modal fade" id="groupAccess">
-      <div class="modal-dialog groupAccessModal">
-        <div class="modal-content">
-          <!-- Modal Header -->
-          <div class="modal-header">
-            <h4 class="modal-title">Access Request</h4>
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-          </div>
-          <!-- Modal body -->
-          <div class="modal-body">
-            <form action="{% url 'groupRequestAccess' %}">
-              <div class="contentDiv">
-                <div class="labelDiv col-sm-2">
-                  <label>Select Group:</label>
-                </div>
-                <div class="selectDiv col-sm-10">
-                  <select id="group" name="groupName" class="form-control group-access-select-dropdown">
-                    {% for group in groups %}
-                    <option value="{{group}}" >{{group}}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-              </div>
-              <div class="contentDiv">
-                <div class="labelDiv col-sm-2">
-                  <label>Select Accesses:</label>
-                </div>
-                <div class="selectDiv col-sm-10">
-                  <select id="group" name="accessList" multiple="" class="ui fluid search dropdown group-access-select-dropdown">
-                    {% for each_access in access_list %}
-                      <option id="{{ each_access.tag }}-box" value="{{ each_access.tag }}">{{ each_access.desc }}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-              </div>
-          </div>
-          <div class="modal-footer">
-            <button type="submit" class="btn btn btn-primary">Proceed</button></a>&nbsp;&nbsp;
-          </div>
-          </form>
-          </div>
-      </div>
-    </div>
-
-    <div class="modal fade" id="newGroupMember" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">Add New Members</h4>
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-          </div>
-          <div class="modal-body">
-            <div class="labelDiv">
-              <label>Select Group: </label>
-            </div>
-            <div>
-              <select id="selectedGroup" name="group" class="form-control custom-dropdown">
-                {% for group in groups %}
-                <option value="{% url 'addUserToGroup' group %}" >{{group}}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" onclick="javascript:location.href=document.getElementById('selectedGroup').value">Fill Request Form</button>
-            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal fade" id="groupAccessList" role="dialog">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">Select Group</h4>
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-          </div>
-          <div class="modal-body">
-            <select id="groupList" class="form-control custom-dropdown" name="groupName" style="width: -moz-available;width: -webkit-fill-available;">
-              {% for group in groups %}
-                <option value="{% url 'groupAccessList' group %}" >{{group}}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" onclick="javascript:location.href= document.getElementById('groupList').value">Proceed</button>
-            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div style="width: 94%;">
-    <!-- Sidebar Navigation end-->
-    <div class="page-content" style="overflow-y:auto; width: 100%; height: 100%; min-height: auto">
-
-      {% block content_body %}
-      {% endblock %}
-    </div>
-    </div>
-  </div>
-  <footer class="custom_footer">
-    <div class="footer__block block no-margin-bottom">
-      <div class="container-fluid text-center">
-        <p class="no-margin-bottom"><strong>Copyright &copy; {{currentYear}} <a href="/" data-ajax="false"
-              data-transition="slide" style="color:white;">BrowserStack</a></strong> All rights reserved.</p>
-      </div>
-    </div>
-  </footer>
-
-  <!-- JavaScript files-->
-  <script src="{% static "files/vendor/popper.js/umd/popper.min.js" %}"></script>
-  <script src="{% static "files/vendor/bootstrap/js/bootstrap.min.js" %}"></script>
-  <script src="{% static "files/js/front.js" %}"></script>
-  <script src="{% static 'files/js/semantic.min.js' %}"></script>
-  <script type="text/javascript">
-    $(document).ready(function() {
-      $('.generic-access-select-dropdown').dropdown();
-      $('.group-access-select-dropdown').dropdown();
-      $('.custom-dropdown').dropdown();
-    });
-  </script>
-</body>
-
+    {% block content_body %}
+    {% endblock %}
+  </body>
 </html>

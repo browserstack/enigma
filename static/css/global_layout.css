@@ -1,0 +1,311 @@
+@font-face {
+  font-family: 'Inter';
+  src: url('/static/fonts/Inter-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: normal;
+}
+
+body {
+  position: relative;
+
+  background: #F9FAFB;
+}
+
+.cust-left-nav-panel {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 0px;
+
+  position: absolute;
+  width: 256px;
+  height: 4855px;
+  left: 0px;
+  top: 0px;
+
+  background: #FFFFFF;
+}
+
+.cust-leading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 20px 0px 16px;
+  gap: 10px;
+
+  width: 255px;
+  height: 4855px;
+
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.cust-top-border {
+  width: 1px;
+
+  background: #E5E7EB;
+
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.cust-nav-logo {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  padding: 0px 16px;
+
+  width: 255px;
+  height: 32px;
+
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.cust-logo {
+  display: flex;
+  width: 143px;
+  height: 32px;
+
+  order: 0;
+  flex-grow: 0;
+}
+
+.cust-logo-text {
+  padding-left: 10px;
+
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-size: 22px;
+  line-height: 24px;
+
+  color: #1F2937;
+}
+
+.cust-logo-svg {
+}
+
+.cust-nav-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px;
+
+  width: 256px;
+  height: 69px;
+
+
+  flex: none;
+  order: 2;
+  flex-grow: 0;
+}
+
+.cust-nav-tabs {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px 8px;
+  gap: 4px;
+
+  width: 255px;
+  height: 4678px;
+  padding-top: 20px;
+
+  flex: none;
+  order: 3;
+  align-self: stretch;
+  flex-grow: 1;
+}
+
+.cust-profile-border {
+  width: 256px;
+  height: 1px;
+
+  background: #E5E7EB;
+
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.cust-profile-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 16px;
+
+  width: 256px;
+  height: 68px;
+
+  flex: none;
+  order: 1;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.cust-profile-avatar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+  gap: 12px;
+
+  width: 116px;
+  height: 36px;
+
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.cust-avatar {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 0px;
+
+  background: #0070F0;
+  font-size: 25px;
+  color: #fff;
+  text-align: center;
+  margin: 20px 0;
+  text-transform: capitalize;
+
+  width: 36px;
+  height: 36px;
+
+  border-radius: 18px;
+
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.cust-avatar-name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px;
+
+  width: 68px;
+  height: 36px;
+
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+}
+
+.cust-avatar-name-title {
+  width: 68px;
+  height: 20px;
+
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+
+  color: #374151;
+
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+
+  text-transform: capitalize;
+}
+
+.cust-avatar-name-support {
+  width: 68px;
+  height: 16px;
+
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 12px;
+  line-height: 16px;
+
+  color: #6B7280;
+
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+}
+
+.cust-each-nav-tab {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 8px 12px 8px 8px;
+  gap: 105px;
+
+  width: 219px;
+  height: 40px;
+
+  border-radius: 6px;
+
+  flex: none;
+  order: 0;
+  align-self: stretch;
+  flex-grow: 0;
+}
+
+.cust-nav-tab-active {
+  background: #F3F4F6;
+}
+
+.cust-each-nav-tab-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0px;
+  gap: 12px;
+
+  width: 110px;
+  height: 24px;
+
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.cust-each-nav-tab-icon {
+  width: 24px;
+  height: 24px;
+
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+}
+
+.cust-each-nav-tab-text {
+  width: 74px;
+  height: 20px;
+
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 20px;
+
+  color: #111827;
+
+  flex: none;
+  order: 1;
+  flex-grow: 0;
+}
+
+.cust-each-nav-icon-svg {
+  left: 12.5%;
+  right: 12.5%;
+  top: 12.5%;
+  bottom: 12.5%;
+}

@@ -19,6 +19,7 @@ def add_variables_to_context(request):
     context = {}
     context["currentYear"] = datetime.datetime.now().year
     context["users"] = User.objects.filter().only("user")
+    context["currentUser"] = currentUser
     context["anyApprover"] = currentUser.isAnApprover(getPossibleApproverPermissions())
     context["is_ops"] = currentUser.is_ops
     context["access_list"] = [
