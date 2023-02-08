@@ -626,3 +626,5 @@ def remove_member(request):
         background_task("run_access_revoke", json.dumps({"request_id": user_identity.get_granted_access_mapping(access).first().request_id, "revoker_email": request.user.user.email}))
     
     membership.revoke_membership()
+
+    return { "message": "Successfully removed user from group"}

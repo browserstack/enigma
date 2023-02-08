@@ -164,6 +164,8 @@ def run_access_revoke(data):
         message = "Request not found"
         notifications.send_revoke_failure_mail(targets, data["request_id"], data["revoker_email"], 0, message)
         return {"status": False}
+    elif access_mapping.status == "Revoked":
+        return {"status": True}
     access = access_mapping.access
     user_identity = access_mapping.user_identity
 
