@@ -157,49 +157,50 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
 )
 def run_access_revoke(data):
     data = json.loads(data)
-    request = UserAccessMapping.get_access_request(data["request_id"])
-    if not request:
+    access_mapping = UserAccessMapping.get_access_request(data["request_id"])
+    if not access_mapping:
         # TODO: Have to add the email targets for failure
         targets = []
         message = "Request not found"
-        notifications.send_run_revoke_failure_notification(targets, data["request_id"], data["revoker_email"], 0, message)
-        return False
-    access = request.access
-    user_identity = request.user_identity
+        notifications.send_revoke_failure_mail(targets, data["request_id"], data["revoker_email"], 0, message)
+        return {"status": False}
+    access = access_mapping.access
+    user_identity = access_mapping.user_identity
+
     revoker = User.get_user_by_email(data["revoker_email"])
     if not revoker:
         # TODO: Have to add the email targets for failure
         targets = []
         message = "Revoker not found"
-        notifications.send_run_revoke_failure_notification(targets, data["request_id"], data["revoker_email"], 0, message, access.access_tag)
-        user_identity.update_mapping_status_revokefail(access)
-        return False
+        notifications.send_revoke_failure_mail(targets, data["request_id"], data["revoker_email"], 0, message, access.access_tag)
+        user_identity.mark_revoke_failed_for_approved_access_mapping(access)
+        return {"status": False}
 
-    for access_module in helpers.getAccessModules():
-        if access_module.tag() == access.access_tag:
-            response = access_module.revoke(user_identity, access.access_label, request)
-            logger.debug("Response from the revoke function: ", str(response))
-            if type(response) is bool:
-                    revoke_success = response
-                    message = None
-            else:
-                revoke_success = response[0]
-                message = str(response[1])
+    access_modules = helpers.get_available_access_modules()
 
-            if revoke_success:
-                if AUTOMATED_EXEC_IDENTIFIER in access_module.revoke_owner():
-                    user_identity.update_mapping_status_revoked(access)
-            else:
-                logger.debug("Failed to revoke the request: {} due to exception: {}".format(request.request_id, message))
-                logger.debug("Retry count: {}".format(run_access_revoke.request.retries))
-                if(run_access_revoke.request.retries == 3):
-                    logger.info("Sending the notification for failure")
-                    notifications.send_run_revoke_failure_notification(access_module.access_mark_revoke_permission(request.access_type), request.request_id, revoker.email, run_access_revoke.request.retries, message, access.access_tag)
-                    user_identity.update_mapping_status_revokefail(access)
-                raise Exception("Failed to revoke the access due to: "+ str(message))
-                
-            return {"status": True}
-    
+    access_module = access_modules[access.access_tag]
+
+    response = access_module.revoke(user_identity.user, user_identity, access.access_label, access_mapping)
+    logger.debug("Response from the revoke function: " + str(response))
+    if type(response) is bool:
+            revoke_success = response
+            message = None
+    else:
+        revoke_success = response[0]
+        message = str(response[1])
+
+    if revoke_success:
+        if AUTOMATED_EXEC_IDENTIFIER in access_module.revoke_owner():
+            user_identity.revoke_approved_access_mapping(access)
+    else:
+        logger.debug("Failed to revoke the request: {} due to exception: {}".format(access_mapping.request_id, message))
+        logger.debug("Retry count: {}".format(run_access_revoke.request.retries))
+        if(run_access_revoke.request.retries == 3):
+            logger.info("Sending the notification for failure")
+            notifications.send_revoke_failure_mail(access_module.access_mark_revoke_permission(access_mapping.access_type), access_mapping.request_id, revoker.email, run_access_revoke.request.retries, message, access.access_tag)
+            user_identity.mark_revoke_failed_for_approved_access_mapping(access)
+        raise Exception("Failed to revoke the access due to: "+ str(message))
+        
     return {"status": True}
 
 
