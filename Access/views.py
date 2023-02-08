@@ -56,7 +56,7 @@ def showAccessHistory(request):
         )
 
     return render(request, 'BSOps/showAccessHistory.html', {
-        'dataList': access_user.get_access_history(helper.getAvailableAccessModules())
+        'dataList': access_user.get_access_history(helper.get_available_access_modules())
     })
 
 
