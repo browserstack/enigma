@@ -13,25 +13,22 @@ logger = logging.getLogger(__name__)
 available_accesses = []
 cached_accesses = []
 
-modules = {}
 
+def get_available_access_module_from_tag(tag):
+    all_modules = get_available_access_modules()
+    if tag in all_modules:
+        return get_available_access_modules()[tag]
+    return None
 
 def get_available_access_modules():
-    available_accesses = getAvailableAccessModules()
-    for access in available_accesses:
-        modules.update({access.tag(): access})
-    return modules
-
-
-def getAvailableAccessModules():
     global available_accesses
     if len(available_accesses) > 0:
         return available_accesses
-    available_accesses = [access for access in getAccessModules() if access.available]
+    available_accesses = {access.tag(): access for access in _get_modules_on_disk() if access.available}
     return available_accesses
 
 
-def getAccessModules():
+def _get_modules_on_disk():
     global cached_accesses
     if len(cached_accesses) > 0:
         return cached_accesses
@@ -81,7 +78,7 @@ def generateStringFromTemplate(filename, **kwargs):
 
 def getPossibleApproverPermissions():
     all_approver_permissions = [PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]]
-    for each_module in getAvailableAccessModules():
+    for each_tag, each_module in get_available_access_modules().items():
         approver_permissions = each_module.fetch_approver_permissions()
         all_approver_permissions.extend(approver_permissions.values())
     return list(set(all_approver_permissions))

@@ -142,16 +142,13 @@ class User(models.Model):
 
         return self.isPrimaryApproverForModule(accessModule, accessLabel)
 
-    def getPendingApprovals(self, all_access_modules):
-        return self.__query_pending_accesses()
-
     def getPendingApprovalsCount(self, all_access_modules):
         pendingCount = 0
         if self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]):
             pendingCount += GroupV2.getPendingMemberships().count()
             pendingCount += len(GroupV2.getPendingCreation())
 
-        for each_access_module in all_access_modules:
+        for each_tag, each_access_module in all_access_modules.items():
             all_requests = each_access_module.get_pending_access_objects(self)
             pendingCount += len(all_requests["individual_requests"])
             pendingCount += len(all_requests["group_requests"])
@@ -218,9 +215,8 @@ class User(models.Model):
         access_history = []
 
         for request_mapping in access_request_mappings:
-            for each_access_module in all_access_modules:
-                if request_mapping.accessType == each_access_module.tag():
-                    access_history.append(request_mapping.getAccessRequestDetails(eachAccessModule))
+            access_module = all_access_modules[request_mapping.accessType]
+            access_history.append(request_mapping.getAccessRequestDetails(access_module))
 
         return access_history
 

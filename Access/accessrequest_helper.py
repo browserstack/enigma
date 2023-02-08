@@ -46,31 +46,31 @@ REQUEST_IDENTITY_NOT_SETUP_ERR_MSG = {
 def requestAccessGet(request):
     context = {}
     try:
-        for each_access in helpers.getAvailableAccessModules():
-            if "access_" + each_access.tag() in request.GET.getlist("accesses"):
+        for each_tag, each_module in helpers.get_available_access_modules().items():
+            if "access_" + each_tag in request.GET.getlist("accesses"):
                 if "accesses" not in context:
                     context["accesses"] = []
                 context["genericForm"] = True
                 try:
-                    extra_fields = each_access.get_extra_fields()
+                    extra_fields = each_module.get_extra_fields()
                 except Exception:
                     extra_fields = []
                 try:
-                    notice = each_access.get_notice()
+                    notice = each_module.get_notice()
 
                 except Exception:
                     notice = ""
                 context["accesses"].append(
                     {
-                        "formDesc": each_access.access_desc(),
-                        "accessTag": each_access.tag(),
-                        "accessTypes": each_access.access_types(),
-                        "accessRequestData": each_access.access_request_data(
+                        "formDesc": each_module.access_desc(),
+                        "accessTag": each_tag,
+                        "accessTypes": each_module.access_types(),
+                        "accessRequestData": each_module.access_request_data(
                             request, is_group=False
                         ),
                         "extraFields": extra_fields,
                         "notice": notice,
-                        "accessRequestPath": each_access.fetch_access_request_form_path(),
+                        "accessRequestPath": each_module.fetch_access_request_form_path(),
                     }
                 )
     except Exception as e:
@@ -154,7 +154,7 @@ def get_pending_accesses_from_modules(accessUser):
     group_requests = {}
 
     logger.info("Start looping all access modules")
-    for access_module in helpers.getAvailableAccessModules():
+    for access_module_tag, access_module in helpers.get_available_access_modules().items():
         access_module_start_time = time.time()
 
         try:
@@ -169,13 +169,13 @@ def get_pending_accesses_from_modules(accessUser):
         process_individual_requests(
             pending_accesses["individual_requests"],
             individual_requests,
-            access_module.tag(),
+            access_module_tag,
         )
         process_group_requests(pending_accesses["group_requests"], group_requests)
 
         logger.info(
             "Time to fetch pending requests of access module: "
-            + access_module.tag()
+            + access_module_tag
             + " - "
             + str(time.time() - access_module_start_time)
         )
