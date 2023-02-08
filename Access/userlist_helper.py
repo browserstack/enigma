@@ -1,5 +1,7 @@
+import json
 from Access import helpers
-from Access.models import User
+from Access.background_task_manager import background_task
+from Access.models import MembershipV2, User
 import logging
 from . import helpers as helper
 from django.db import transaction
@@ -131,7 +133,7 @@ def getallUserList(request):
                     "last_name": each_user.user.last_name,
                     "email": each_user.email,
                     "username": each_user.user.username,
-                    "git_username": each_user.gitusername,
+                    # "git_username": each_user.gitusername,
                     "is_active": each_user.user.is_active,
                     "offbaord_date": each_user.offbaord_date,
                     "state": each_user.current_state(),
@@ -150,3 +152,37 @@ def getallUserList(request):
         json_response = {}
         json_response["error"] = {"error_msg": str(e), "msg": ERROR_MESSAGE}
         return json_response
+
+
+def offboard_user(request):
+    if not (request.user.user.has_permission("VIEW_USER_LIST") and request.user.user.has_permission("ALLOW_USER_OFFBOARD")):
+        raise Exception("Requested User is unauthorised to offboard user.")
+    try:
+        offboard_user_email = request.POST.get("offboard_email")
+        if not offboard_user_email:
+            raise Exception("Invalid request, attribute not found")
+        
+        user = User.objects.filter(email=offboard_user_email).first()
+        if not user:
+            raise Exception("User not found")
+
+    except Exception as e:
+        logger.debug("Error in request, not found or Invalid request type")
+        logger.exception(str(e))
+        return {}
+    
+    user.offboard_user()
+
+    for access_module in helpers.getAvailableAccessModules():
+        module_identity = user.get_active_identity(access_module.tag())
+        module_identity.update_all_non_active_accesses_to_declined()
+        access_mappings = module_identity.get_granted_accesses()
+
+        for access_mapping in access_mappings:
+            access_mapping.update_mapping_status_offboaring(access_mappings.access)
+            background_task("run_access_revoke", json.dumps({"request_id": access_mapping.request_id, "revoker_email": request.user.user.email}))
+        
+        module_identity.deactivate()
+    
+    MembershipV2.revoke_memberships_of_user(user)
+

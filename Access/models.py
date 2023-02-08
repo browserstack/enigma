@@ -224,6 +224,17 @@ class User(models.Model):
 
         return access_history
 
+    def update_revoker(self, revoker):
+        self.revoker = revoker
+        self.save()
+
+    def offboard_user(self, revoker):
+        self.current_state("offboarding")
+        self.update_revoker(revoker)
+        self.offbaord_date = datetime.datetime.now()
+        self.user.is_active = False
+        self.save()
+
     def __str__(self):
         return "%s" % (self.user)
 
@@ -314,6 +325,10 @@ class MembershipV2(models.Model):
     @staticmethod
     def get_membership(membership_id):
         return MembershipV2.objects.get(membership_id=membership_id)
+    
+    @staticmethod
+    def revoke_memberships_of_user(user):
+        MembershipV2.objects.filter(user=user, status__in=["Pending", "Approved"]).update(status="Revoked")
 
     def __str__(self):
         return self.group.name + "-" + self.user.email + "-" + self.status
@@ -785,6 +800,39 @@ class UserIdentity(models.Model):
         return self.user_access_mapping.filter(
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
+    
+    def get_granted_accesses(self):
+        return self.user_access_mapping.filter(status__in=["Approved", "Processing", "Offboarding"], access__access_tag=self.access_tag)
+
+    def get_granted_access(self, access):
+        return self.user_access_mapping.filter(status__in=["Approved", "Processing", "Offboarding"], access=access)
+
+    def get_non_active_accesses(self):
+        return self.user_access_mapping.filter(status__in=[ 'approvefailed', 'pending', 'secondarypending', 'grantfailed' ], access__access_tag=self.access_tag)
+
+    def get_grantfailed_and_pending_access(self, access):
+        return self.user_access_mapping.filter(status__in=["Pending", "GrantFailed"], access=access)
+
+    def update_all_non_active_accesses_to_declined(self):
+        user_mapping = self.get_non_active_accesses()
+        user_mapping.update(status="Declined")
+
+
+    def update_non_active_access_to_declined(self, access):
+        user_mapping = self.get_grantfailed_and_pending_access(access)
+        user_mapping.update(status="Declined")
+
+    def update_mapping_status_offboaring(self, access):
+        user_mapping = self.get_granted_access(access)
+        user_mapping.update(status="Offboarding")
+
+    def update_mapping_status_revoked(self, access):
+        user_mapping = self.get_granted_access(access)
+        user_mapping.update(status="Revoked")
+
+    def update_mapping_status_revokefail(self, access):
+        user_mapping = self.get_granted_access(access)
+        user_mapping.update(status="RevokeFailed")
 
     def access_mapping_exists(self, access):
         mapping = self.user_access_mapping.get(
