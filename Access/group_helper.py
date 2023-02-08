@@ -3,8 +3,7 @@ from Access import helpers, views_helper, notifications
 from django.db import transaction
 import datetime
 import logging
-from bootprocess import general
-from Access.views_helper import generateUserMappings, executeGroupAccess
+from Access.views_helper import execute_group_access
 from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
@@ -50,6 +49,24 @@ UPDATE_OWNERS_REQUEST_ERROR = {
     "error_msg": "Bad request",
     "msg": "The requested URL is of POST method but was called with other.",
 }
+
+ERROR_LOADING_PAGE = {
+    "error_msg": "Internal Error",
+    "msg": "Error Occured while loading the page. Please contact admin, {exception}"
+}
+
+ADD_MEMBER_REQUEST_SUBMITTED_MESSAGE = {
+    "title": "Request Submitted",
+    "msg": "Once Approved the newly added members will be granted the same \
+    permissions as the group",
+}
+
+DUPLICATE_GROUP_MEMBER_ADD_REQUEST = "User {user_email} is already added to \
+group/or pending approval for group addition"
+DUPLICATE_GROUP_MEMBERS_ADD_REQUEST = "Users {user_emails} are already added to \
+    group/or pending approval for group addition"
+NO_GROUP_ERROR = "There is no group named {group_name}. Please contact admin for \
+    any queries."
 
 
 def create_group(request):
@@ -183,7 +200,7 @@ def get_group_access_list(request, group_name):
     context["genericAccesses"] = [
         get_generic_access(group_mapping) for group_mapping in group_mappings
     ]
-    if(context["genericAccesses"] == [{}]):
+    if (context["genericAccesses"] == [{}]):
         context["genericAccesses"] = []
 
     return context
@@ -342,10 +359,8 @@ def approve_new_group_request(request, group_id):
 def get_user_group(request, group_name):
     try:
         context = {}
-        group = GroupV2.objects.filter(name=group_name).filter(status="Approved")
-        # check if the groupName is valid.
-        if len(group) == 0:
-            # there does not exist no such group.
+        group = GroupV2.get_approved_group_by_name(group_name=group_name)
+        if not group:
             logger.debug(
                 "addUserToGroup-- url received a bad group name requester-"
                 + request.user.username
@@ -353,22 +368,17 @@ def get_user_group(request, group_name):
             context = {}
             context["status"] = {
                 "title": "Invalid Group",
-                "msg": "There is no group named "
-                + group_name
-                + ". Please contact admin for any queries.",
+                "msg": NO_GROUP_ERROR.format(group_name=group_name),
             }
             return context
-        group = group[0]
-        groupMembers = (
-            MembershipV2.objects.filter(group=group)
-            .filter(status="Approved")
-            .only("user")
-        )
-        if not isAllowedGroupAdminFunctions(request, groupMembers):
+
+        group_members = group.get_approved_members().only("user")
+
+        if not isAllowedGroupAdminFunctions(request, group_members):
             raise Exception("Permission denied, you're not owner of this group")
 
-        groupMembers = get_users_from_groupmembers(groupMembers)
-        context["groupMembers"] = groupMembers
+        group_members = get_users_from_groupmembers(group_members)
+        context["groupMembers"] = group_members
         context["groupName"] = group_name
         return context
     except Exception as e:
@@ -376,9 +386,8 @@ def get_user_group(request, group_name):
         logger.error("Error in Add New User to Group request.")
         context = {}
         context["error"] = {
-            "error_msg": "Internal Error",
-            "msg": "Error Occured while loading the page. Please contact admin, "
-            + str(e),
+            "error_msg": ERROR_LOADING_PAGE["error_msg"],
+            "msg": ERROR_LOADING_PAGE["msg"].format(exception=str(e))
         }
         return context
 
@@ -389,50 +398,49 @@ def get_users_from_groupmembers(group_members):
 
 def add_user_to_group(request):
     try:
-
+        base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
         data = request.POST
         data = dict(data.lists())
-        group = GroupV2.objects.filter(name=data["groupName"][0]).filter(
-            status="Approved"
-        )[0]
-        group_members = (
-            MembershipV2.objects.filter(group=group)
-            .filter(status__in=["Approved", "Pending"])
-            .only("user")
-        )
+        group = GroupV2.get_approved_group_by_name(data["groupName"][0])
+        if not group:
+            context = {}
+            context["error"] = {
+                "error_msg": "Request failed",
+                "msg": "Group not found"
+            }
+            return context
 
-        if not isAllowedGroupAdminFunctions(request, group_members):
+        group_members_email = group.get_all_member_emails()
+
+        if not has_permission_to_add(request=request, group=group):
             raise Exception("Permission denied, requester is non owner")
 
-        group_members_email = [member.user.email for member in group_members]
-        for user_email in data["selectedUserList"]:
-            if is_user_in_group(user_email, group_members_email):
-                context = {}
-                context["error"] = {
-                    "error_msg": "Duplicate Request",
-                    "msg": "User "
-                    + user_email
-                    + " is already added to group/or pending approval for group"
-                    " addition",
-                }
-                return context
+        duplicate_request_emails = set(
+            data["selectedUserList"]).intersection(set(group_members_email))
 
-        for user_email in data["selectedUserList"]:
-            user = User.objects.filter(email=user_email)[0]
-            membership_id = (
-                user.name
-                + "-"
-                + str(group)
-                + "-membership-"
-                + datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
-            )
-            member = MembershipV2.objects.create(
-                group=group,
-                user=user,
-                reason=data["memberReason"][0],
-                membership_id=membership_id,
-                requested_by=request.user.user,
-            )
+        if duplicate_request_emails:
+            context = {}
+            if len(duplicate_request_emails) == 1:
+                msg = DUPLICATE_GROUP_MEMBER_ADD_REQUEST.format(
+                    user_email=duplicate_request_emails)
+            else:
+                msg = DUPLICATE_GROUP_MEMBERS_ADD_REQUEST.format(
+                    user_emails=duplicate_request_emails)
+
+            context["error"] = {
+                "error_msg": "Duplicate Request",
+                "msg": msg
+            }
+            return context
+
+        selected_users = get_selected_users_by_email(data["selectedUserList"])
+
+        for user in selected_users:
+            member = group.add_member(user=user, requested_by=request.user.user,
+                                      reason=data["memberReason"][0],
+                                      date_time=base_datetime_prefix)
+            membership_id = member.membership_id
+
             if not group.needsAccessApprove:
                 context = {}
                 context["accessStatus"] = {
@@ -441,16 +449,12 @@ def add_user_to_group(request):
                         "A email will be sent after the requested access are granted"
                     ),
                 }
-                member.approver = request.user.user
-                member.status = "Approved"
-                user_mappings_list = generateUserMappings(
+                member.approve(approver=request.user.user)
+                user_mappings_list = views_helper.generate_user_mappings(
                     user, group, member
                 )
-                member.save()
-                # group_name = member.group.name
 
-                executeGroupAccess(user_mappings_list)
-
+                views_helper.execute_group_access(user_mappings_list=user_mappings_list)
                 logger.debug(
                     "Process has been started for the Approval of request - "
                     + membership_id
@@ -459,20 +463,17 @@ def add_user_to_group(request):
                 )
                 return context
 
-            sendMailForGroupApproval(
-                membership_id,
-                user_email,
+            notifications.send_mail_for_member_approval(
+                user.email,
                 str(request.user),
                 data["groupName"][0],
-                request.META["HTTP_HOST"],
                 data["memberReason"][0],
             )
 
         context = {}
         context["status"] = {
-            "title": "Request Submitted",
-            "msg": "Once Approved the newly added members will be granted"
-            + " the same permissions as the group",
+            "title": ADD_MEMBER_REQUEST_SUBMITTED_MESSAGE["title"],
+            "msg": ADD_MEMBER_REQUEST_SUBMITTED_MESSAGE["msg"]
         }
         return context
     except Exception as e:
@@ -480,58 +481,14 @@ def add_user_to_group(request):
         logger.error("Error in Add New User to Group request.")
         context = {}
         context["error"] = {
-            "error_msg": "Internal Error",
-            "msg": "Error Occured while loading the page. Please contact admin, "
-            + str(e),
+            "error_msg": ERROR_LOADING_PAGE["error_msg"],
+            "msg": ERROR_LOADING_PAGE["msg"].format(exception=str(e))
         }
         return context
 
 
 def is_user_in_group(user_email, group_members_email):
     return user_email in group_members_email
-
-
-def sendMailForGroupApproval(
-    membership_id, userEmail, requester, group_name, http_host, reason
-):
-    primary_approver, otherApprover = helpers.getApprovers()
-    subject = (
-        "Request for addition of new members to group ("
-        + group_name
-        + ")"
-        + "["
-        + primary_approver
-        + "]"
-    )
-    destination = MAIL_APPROVER_GROUPS[:]
-    body = helpers.generateStringFromTemplate(
-        filename="email.html",
-        emailBody=generateUserAddToGroupEmailBody(
-            membership_id,
-            userEmail,
-            primary_approver,
-            otherApprover,
-            requester,
-            group_name,
-            http_host,
-            reason,
-        ),
-    )
-    general.emailSES(destination, subject, body)
-
-
-def generateUserAddToGroupEmailBody(
-    user_email, primary_approver, other_approver, requester, group_name, reason
-):
-    return helpers.generateStringFromTemplate(
-        filename="add_user_to_group_mail.html",
-        user_email=user_email,
-        primary_approver=primary_approver,
-        other_approver=other_approver,
-        requester=requester,
-        group_name=group_name,
-        reason=reason,
-    )
 
 
 def accept_member(request, requestId, shouldRender=True):
@@ -564,14 +521,11 @@ def accept_member(request, requestId, shouldRender=True):
                 membership.approve(request.user.user)
                 group = membership.group
                 user = membership.user
-                user_mappings_list = views_helper.generateUserMappings(
+                user_mappings_list = views_helper.generate_user_mappings(
                     user, group, membership
                 )
 
-            # accessAcceptThread = threading.Thread(target=executeGroupAccess,
-            # args=(request, group.name, userMappingsList))
-            # accessAcceptThread.start()
-            executeGroupAccess(user_mappings_list)
+            execute_group_access(user_mappings_list)
 
             notifications.send_membership_accepted_notification(
                 user=user, group=group, membership=membership
@@ -589,3 +543,28 @@ def accept_member(request, requestId, shouldRender=True):
         context = {}
         context["error"] = APPROVAL_ERROR + str(e)
         return context
+
+
+def get_selected_users_by_email(user_emails):
+    selected_users = User.get_users_by_email(emails=user_emails)
+    selected_users_email = {user.email: user for user in selected_users}
+    not_found_emails = [email for email in user_emails if email not in selected_users_email]
+
+    if len(not_found_emails) == 1:
+        raise User.DoesNotExist("User with email {} does not exist".format(not_found_emails))
+    elif len(not_found_emails) > 1:
+        raise User.DoesNotExist("Users with email {} are not found".format(not_found_emails))
+    return selected_users
+
+
+def has_permission_to_add(request, group):
+    is_owner = group.is_owner(request.user.user.email)
+    is_approver = request.user.user.has_permission(
+        PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]
+    )
+
+    if (not is_owner) and not (
+        request.user.is_superuser or request.user.user.is_ops or is_approver
+    ):
+        return False
+    return True

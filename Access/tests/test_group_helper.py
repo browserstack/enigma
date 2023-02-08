@@ -479,7 +479,7 @@ def test_add_user_to_group(mocker, test_name, post_data, expected_output):
             "Access.group_helper.isAllowedGroupAdminFunctions", return_value=True
         )
         mocker.patch(
-            "Access.views_helper.generateUserMappings", return_value=mocker.MagicMock()
+            "Access.views_helper.generate_user_mappings", return_value=mocker.MagicMock()
         )
 
         mock_thread = mocker.MagicMock()

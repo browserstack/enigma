@@ -7,7 +7,8 @@ from celery import shared_task
 from celery.signals import task_success, task_failure
 
 from Access import helpers
-from bootprocess import general
+from Access.models import UserAccessMapping
+from Access import notifications
 
 logger = logging.getLogger(__name__)
 
@@ -18,16 +19,17 @@ with open("config.json") as data_file:
 def background_task(func, *args):
     if background_task_manager_type == "celery":
         if func == "run_access_grant":
-            run_access_grant.delay(*args)
-
-        if func == "test_grant":
+            request_id = args[0]
+            run_access_grant.delay(request_id)
+        elif func == "test_grant":
             test_grant.delay(*args)
 
     else:
         if func == "run_access_grant":
+            request_id = args[0]
             accessAcceptThread = threading.Thread(
                 target=run_access_grant,
-                args=args,
+                args=(request_id,),
             )
             accessAcceptThread.start()
 
@@ -35,33 +37,45 @@ def background_task(func, *args):
 @shared_task(
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
-def run_access_grant(requestId, requestObject, accessType, user, approver):
+def run_access_grant(request_id):
+    mapping_obj = UserAccessMapping.get_from_request_id(request_id=request_id)
+    access_type = mapping_obj.access.access_tag
+    user = mapping_obj.user_identity.user
+    approver = mapping_obj.approver_1.user.username
     message = ""
-    if not requestObject.user.state == "1":
-        requestObject.status = "Declined"
-        requestObject.save()
+    if not mapping_obj.user_identity.user.state == "1":
+        mapping_obj.set_status_declined()
         logger.debug(
             {
-                "requestId": requestId,
+                "requestId": request_id,
                 "status": "Declined",
                 "by": approver,
                 "response": message,
             }
         )
         return False
+    elif mapping_obj.user_identity.identity == {}:
+        mapping_obj.set_status_grant_failed()
+        logger.debug(
+            {
+                "requestId": request_id,
+                "status": "GrantFailed",
+                "by": approver,
+                "response": message,
+            }
+        )
+        return False
 
-    access_module = helpers.get_available_access_module_from_tag(accessType)
+    access_module = helpers.get_available_access_module_from_tag(access_type)
     if not access_module:
         return False
 
     try:
-        response = access_module.approve(
-            user,
-            [requestObject.access.access_label],
-            approver,
-            requestId,
-            is_group=False,
-        )
+        response = access_module.approve(user_identity=mapping_obj.user_identity,
+                                         labels=[mapping_obj.access.access_label],
+                                         approver=approver,
+                                         request_id=request_id,
+                                         is_group=False,)
         if type(response) is bool:
             approve_success = response
         else:
@@ -74,62 +88,42 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
         )
         approve_success = False
         message = str(traceback.format_exc())
+
     if approve_success:
-        requestObject.status = "Approved"
-        requestObject.save()
+        mapping_obj.set_status_approved()
         logger.debug(
             {
-                "requestId": requestId,
+                "requestId": request_id,
                 "status": "Approved",
                 "by": approver,
                 "response": message,
             }
         )
     else:
-        requestObject.status = "GrantFailed"
-        requestObject.save()
+        mapping_obj.set_status_grant_failed()
         logger.debug(
             {
-                "requestId": requestId,
+                "requestId": request_id,
                 "status": "GrantFailed",
                 "by": approver,
                 "response": message,
             }
         )
         try:
-            destination = [
-                access_module.access_mark_revoke_permission(accessType)
-            ]
-            subject = str("Access Grant Failed - ") + accessType.upper()
-            body = (
-                "Request by "
-                + user.email
-                + " having Request ID = "
-                + requestId
-                + " is GrantFailed. Please debug and rerun the grant.<BR/>"
-            )
-            body = body + "Failure Reason - " + message
-            body = (
-                body
-                + "<BR/><BR/> <a target='_blank'"
-                + "href "
-                + "='https://enigma.browserstack.com/resolve/pendingFailure?access_type="
-                + accessType
-                + "'>View all failed grants</a>"
-            )
+            destination = access_module.access_mark_revoke_permission(access_type)
+            notifications.send_mail_for_access_grant_failed(destination,
+                                                            access_type.upper(),
+                                                            user.email,
+                                                            request_id=request_id,
+                                                            message=message)
             logger.debug(
                 "Sending Grant Failed email - "
                 + str(destination)
-                + " - "
-                + subject
-                + " - "
-                + body
             )
-            general.emailSES(destination, subject, body)
         except Exception:
             logger.debug(
                 "Grant Failed - Error while sending email - "
-                + requestId
+                + request_id
                 + "-"
                 + str(str(traceback.format_exc()))
             )

@@ -2,6 +2,7 @@ from django.contrib.auth.models import User as user
 from django.db import models, transaction
 from BrowserStackAutomation.settings import USER_STATUS_CHOICES, PERMISSION_CONSTANTS
 import datetime
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class Permission(models.Model):
@@ -219,6 +220,27 @@ class User(models.Model):
             access_history.append(request_mapping.getAccessRequestDetails(access_module))
 
         return access_history
+
+    def get_or_create_active_identity(self, access_tag):
+        identity, created = self.module_identity.get_or_create(
+            access_tag=access_tag, status="Active")
+        return identity
+
+    @staticmethod
+    def get_user_by_email(email):
+        try:
+            return User.objects.get(email=email)
+        except User.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_users_by_email(emails):
+        return User.objects.filter(email__in=emails)
+
+    @staticmethod
+    def get_active_users_with_role(role_label):
+        role = Role.objects.get(label=role_label)
+        return User.objects.filter(role=role, state=1)
 
     def __str__(self):
         return "%s" % (self.user)
@@ -439,6 +461,13 @@ class GroupV2(models.Model):
         except Exception:
             return None
 
+    @staticmethod
+    def get_approved_group_by_name(group_name):
+        try:
+            return GroupV2.objects.filter(name=group_name, status="Approved").first()
+        except GroupV2.DoesNotExist:
+            return None
+
     def approve_all_pending_users(self, approved_by):
         self.membership_group.filter(status="Pending").update(
             status="Approved", approver=approved_by
@@ -448,12 +477,26 @@ class GroupV2(models.Model):
         group_members = self.membership_group.all()
         return group_members
 
+    def get_approved_members(self):
+        group_members = self.membership_group.filter(status="Approved")
+        return group_members
+
+    def get_all_member_emails(self):
+        group_member_emails = self.membership_group.filter(
+            status__in=["Approved", "Pending"]).values_list('user__email', flat=True)
+        return group_member_emails
+
     def member_is_owner(self, user):
         return self.membership_group.get(user=user).is_owner
 
     def get_active_accesses(self):
         return self.groupaccessmapping_set.filter(
             status__in=["Approved", "Pending", "Declined", "SecondaryPending"]
+        )
+
+    def get_approved_accesses(self):
+        return self.groupaccessmapping_set.filter(
+            status__in=["Approved"]
         )
 
     def is_self_approval(self, approver):
@@ -473,6 +516,11 @@ class GroupV2(models.Model):
         self.membership_group.filter(status="Approved").update(
             status="Pending", approver=None
         )
+
+    def is_owner(self, email):
+        return self.membership_group.filter(
+            is_owner=True).filter(
+                user__email=email).first() is not None
 
     def __str__(self):
         return self.name
@@ -608,6 +656,23 @@ class UserAccessMapping(models.Model):
 
     def is_approved(self):
         return self.status == "Approved"
+
+    def set_status_grant_failed(self):
+        self.status = "GrantFailed"
+        self.save()
+
+    def set_status_declined(self, decline_reason=None):
+        self.status = "Declined"
+        self.decline_reason = decline_reason
+        self.save()
+
+    def set_status_approved(self):
+        self.status = "Approved"
+        self.save()
+
+    @staticmethod
+    def get_mapping_from_request_id(request_id):
+        return UserAccessMapping.objects.get(request_id=request_id)
 
 
 class GroupAccessMapping(models.Model):
@@ -824,6 +889,19 @@ class UserIdentity(models.Model):
             )
             user_access.deactivate()
         return new_user_access_mapping
+
+    def create_access_mapping(self, request_id, access, approver_1,
+                              approver_2, reason, access_type="Individual"):
+        return self.user_access_mapping.create(
+            request_id=request_id, access=access, approver_1=approver_1,
+            approver_2=approver_2, request_reason=reason, access_type=access_type)
+
+    def has_approved_access(self, access):
+        try:
+            UserAccessMapping.objects.get(user_identity=self, access=access, status="Approved")
+            return True
+        except ObjectDoesNotExist:
+            return False
 
     def __str__(self):
         return "%s" % (self.identity)

@@ -4,30 +4,30 @@ import logging
 import traceback
 
 from . import helpers as helper
-from .models import UserAccessMapping, GroupAccessMapping
+from .models import UserAccessMapping
 from bootprocess import general
 from Access.background_task_manager import background_task
 
 logger = logging.getLogger(__name__)
 
 
-def generateUserMappings(user, group, membershipObj):
-    groupMappings = GroupAccessMapping.objects.filter(group=group, status="Approved")
+def generate_user_mappings(user, group, membership):
+    group_mappings = group.get_approved_accesses()
 
-    userMappingsList = []
-    for groupMapping in groupMappings:
-        access = groupMapping.access
-        approver_1 = groupMapping.approver_1
-        approver_2 = groupMapping.approver_2
-        membership_id = membershipObj.membership_id
+    user_mappings_list = []
+    for group_mapping in group_mappings:
+        access = group_mapping.access
+        approver_1 = group_mapping.approver_1
+        approver_2 = group_mapping.approver_2
+        membership_id = membership.membership_id
         base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
         reason = (
             "Added to group for request "
             + membership_id
             + " - "
-            + membershipObj.reason
+            + membership.reason
             + " - "
-            + groupMapping.request_reason
+            + group_mapping.request_reason
         )
         request_id = (
             user.user.username + "-" + access.access_tag + "-" + base_datetime_prefix
@@ -37,47 +37,33 @@ def generateUserMappings(user, group, membershipObj):
                 request_id__icontains=request_id
             ).values_list("request_id", flat=True)
         )
-        idx = 0
-        while request_id + "_" + str(idx) in similar_id_mappings:
-            idx += 1
-        request_id = request_id + "_" + str(idx)
-        if not len(
-            UserAccessMapping.objects.filter(
-                user=user, access=access, status="Approved"
-            )
-        ):
-            userMappingObj = UserAccessMapping.objects.create(
-                request_id=request_id,
-                user=user,
-                access=access,
-                approver_1=approver_1,
-                approver_2=approver_2,
-                request_reason=reason,
-                access_type="Group",
-                status="Processing",
-            )
-            userMappingsList.append(userMappingObj)
-    return userMappingsList
+
+        request_id = get_next_index(request_id=request_id, similar_id_mappings=similar_id_mappings)
+
+        user_identity = user.get_or_create_active_identity(access.access_tag)
+
+        if user_identity and not user_identity.has_approved_access(access=access):
+            user_mapping_obj = user_identity.create_access_mapping(
+                request_id=request_id, access=access,
+                approver_1=approver_1, approver_2=approver_2,
+                reason=reason, access_type="Group")
+            user_mappings_list.append(user_mapping_obj)
+    return user_mappings_list
 
 
-def executeGroupAccess(userMappingsList):
-    for mappingObj in userMappingsList:
-
-        accessType = mappingObj.access.access_tag
-        user = mappingObj.user
-        approver = mappingObj.approver_1.user.username
+def execute_group_access(user_mappings_list):
+    for mapping_obj in user_mappings_list:
+        user = mapping_obj.user_identity.user
         if user.current_state() == "active":
-            if "other" in mappingObj.request_id:
-                decline_group_other_access(mappingObj)
+            if "other" in mapping_obj.request_id:
+                decline_group_other_access(mapping_obj)
             else:
-                background_task("run_access_grant", (mappingObj.request_id, mappingObj, accessType, user, approver))
+                background_task("run_access_grant", mapping_obj.request_id)
                 logger.debug(
-                    "Successful group access grant for " + mappingObj.request_id
+                    "Successful group access grant for " + mapping_obj.request_id
                 )
         else:
-            mappingObj.status = "Declined"
-            mappingObj.decline_reason = "User is not active"
-            mappingObj.save()
+            mapping_obj.set_status_declined(decline_reason="User is not active")
             logger.debug(
                 "Skipping group access grant for user "
                 + user.user.username
@@ -87,11 +73,8 @@ def executeGroupAccess(userMappingsList):
 
 def decline_group_other_access(access_mapping):
     user = access_mapping.user
-    access_mapping.status = "Declined"
-    access_mapping.decline_reason = (
-        "Auto decline for 'Other Access'. Please replace this with correct access."
-    )
-    access_mapping.save()
+    access_mapping.set_status_declined(
+        decline_reason="Auto decline for 'Other Access'. Please replace this with correct access.")
     logger.debug(
         "Skipping group access grant for user "
         + user.user.username
@@ -99,6 +82,15 @@ def decline_group_other_access(access_mapping):
         + access_mapping.request_id
         + " as it is 'Other Access'"
     )
+
+
+def get_next_index(request_id, similar_id_mappings):
+    idx = 0
+    while True:
+        candidate = request_id + "_" + str(idx)
+        if candidate not in similar_id_mappings:
+            return candidate
+        idx += 1
 
 
 def render_error_message(request, log_message, user_message, user_message_description):

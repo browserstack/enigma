@@ -223,3 +223,5 @@ MAIL_APPROVER_GROUPS = data["enigmaGroup"]["MAIL_APPROVER_GROUPS"]
 ACCESS_APPROVE_EMAIL = data["emails"]["access-approve"]
 
 ACCESS_MODULES = data["access_modules"]
+
+EXCLUDED_PRIMARY_APPROVERS = data['aws']['EXCLUDED_PRIMARY_APPROVERS']
