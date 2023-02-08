@@ -1,13 +1,14 @@
-from .models import UserAccessMapping, GroupAccessMapping
+from django.shortcuts import render
 import datetime
-import traceback
 import logging
+import traceback
+
 from . import helpers as helper
+from .models import UserAccessMapping, GroupAccessMapping
 from bootprocess import general
 from Access.background_task_manager import background_task
 
 logger = logging.getLogger(__name__)
-all_access_modules = helper.getAvailableAccessModules()
 
 
 def generateUserMappings(user, group, membershipObj):
@@ -98,3 +99,13 @@ def decline_group_other_access(access_mapping):
         + access_mapping.request_id
         + " as it is 'Other Access'"
     )
+
+
+def render_error_message(request, log_message, user_message, user_message_description):
+    logger.error(log_message)
+    return render(request, 'BSOps/accessStatus.html', {
+        "error": {
+            "error_msg": user_message,
+            "msg": user_message_description,
+        }
+    })

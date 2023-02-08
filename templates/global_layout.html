@@ -136,13 +136,6 @@ function inputRegion(e) {
       </ul>
       {% endif %}
 
-      {% if request.user.is_superuser %}
-      <span class="heading">ADMIN</span>
-      <ul class="list-unstyled" style="color:#1AC98E;">
-        <li><a data-toggle="modal" data-target="#gitRevoke" style="cursor: pointer;"> <i class="icon-list nav-icon"></i>Git Revoke</a></li>
-      </ul>
-      {% endif %}
-
     </nav>
 
     <div class="modal fade" id="myAccess">

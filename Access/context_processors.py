@@ -1,7 +1,7 @@
 import datetime
 
 from Access.models import User
-from Access.helpers import getAvailableAccessModules, getPossibleApproverPermissions
+from Access.helpers import get_available_access_modules, getPossibleApproverPermissions
 
 
 def add_variables_to_context(request):
@@ -14,7 +14,7 @@ def add_variables_to_context(request):
     except User.DoesNotExist:
         return {}
 
-    all_access_modules = getAvailableAccessModules()
+    all_access_modules = get_available_access_modules()
 
     context = {}
     context["currentYear"] = datetime.datetime.now().year
@@ -22,8 +22,8 @@ def add_variables_to_context(request):
     context["anyApprover"] = currentUser.isAnApprover(getPossibleApproverPermissions())
     context["is_ops"] = currentUser.is_ops
     context["access_list"] = [
-        {"tag": each_module.tag(), "desc": each_module.access_desc()}
-        for each_module in all_access_modules
+        {"tag": each_tag, "desc": each_module.access_desc()}
+        for each_tag, each_module in all_access_modules.items()
     ]
 
     context["pendingCount"] = currentUser.getPendingApprovalsCount(all_access_modules)

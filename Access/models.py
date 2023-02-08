@@ -142,16 +142,13 @@ class User(models.Model):
 
         return self.isPrimaryApproverForModule(accessModule, accessLabel)
 
-    def getPendingApprovals(self, all_access_modules):
-        return self.__query_pending_accesses()
-
     def getPendingApprovalsCount(self, all_access_modules):
         pendingCount = 0
         if self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]):
             pendingCount += GroupV2.getPendingMemberships().count()
             pendingCount += len(GroupV2.getPendingCreation())
 
-        for each_access_module in all_access_modules:
+        for each_tag, each_access_module in all_access_modules.items():
             all_requests = each_access_module.get_pending_access_objects(self)
             pendingCount += len(all_requests["individual_requests"])
             pendingCount += len(all_requests["group_requests"])
@@ -205,6 +202,23 @@ class User(models.Model):
         return self.module_identity.filter(
             access_tag=access_tag, status="Active"
         ).first()
+
+    def get_user_access_mappings(self):
+        all_user_identities = self.module_identity.all()
+        access_request_mappings = []
+        for each_identity in all_user_identities:
+            access_request_mappings.extend(each_identity.useraccessmapping_set.prefetch_related('access', 'approver_1', 'approver_2'))
+        return access_request_mappings
+
+    def get_access_history(self, all_access_modules):
+        access_request_mappings = self.get_user_access_mappings()
+        access_history = []
+
+        for request_mapping in access_request_mappings:
+            access_module = all_access_modules[request_mapping.accessType]
+            access_history.append(request_mapping.getAccessRequestDetails(access_module))
+
+        return access_history
 
     def __str__(self):
         return "%s" % (self.user)
