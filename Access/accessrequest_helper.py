@@ -10,8 +10,6 @@ import json
 from django.db import transaction
 
 logger = logging.getLogger(__name__)
-all_access_modules = helper.get_available_access_modules()
-
 
 REQUEST_SUCCESS_MSG = {
     "title": "{request_id}  Request Submitted",

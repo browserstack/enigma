@@ -12,9 +12,6 @@ from Access.models import (
     UserIdentity
 )
 
-admin.site.register(Permission)
-admin.site.register(UserAccessMapping)
-admin.site.register(Role)
 admin.site.register(AccessV2)
 admin.site.register(GroupV2)
 admin.site.register(MembershipV2)

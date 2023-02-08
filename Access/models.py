@@ -296,9 +296,6 @@ class MembershipV2(models.Model):
     @staticmethod
     def get_membership(membership_id):
         return MembershipV2.objects.get(membership_id=membership_id)
-
-    def get_owners(self):
-        return self.membership_group.filter(is_owner=True)
     
     def __str__(self):
         return self.group.name + "-" + self.user.email + "-" + self.status
@@ -794,21 +791,14 @@ class UserIdentity(models.Model):
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
     
-    def get_active_access(self, access):
-        return self.user_access_mapping.filter(access=access, status__in=["Approved", "Pending"])
-    
-    def access_exists(self, access):
-        if self.get_active_access(access=access):
-            return True
-        return False
-
     def access_mapping_exists(self, access):
-        mapping = self.user_access_mapping.get(
-            access=access, status__in=["Approved", "Pending"]
-        )
-        if mapping:
+        try:
+            mapping = self.user_access_mapping.get(
+                access=access, status__in=["Approved", "Pending"]
+            )
             return True
-        return False
+        except Exception:
+            return False
 
     def replicate_active_access_membership_for_module(
         self, existing_user_access_mapping
