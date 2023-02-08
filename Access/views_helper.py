@@ -185,11 +185,10 @@ def gen_all_user_access_list_csv(data_list):
                          data["revokeOwner"], data["type"]])
     return response
 
-
 def get_generic_user_access_mapping(user_access_mapping):
-    access_modules_dict = helper.get_available_access_modules()
-    if user_access_mapping.access.access_tag in access_modules_dict:
-        access_details = user_access_mapping.getAccessRequestDetails(
-            access_modules_dict[user_access_mapping.access.access_tag])
+    access_module = helper.get_available_access_module_from_tag(
+        user_access_mapping.access.access_tag)
+    if access_module:
+        access_details = user_access_mapping.getAccessRequestDetails(access_module)
     logger.debug("Generic access generated: " + str(access_details))
     return access_details

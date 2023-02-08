@@ -32,8 +32,6 @@ INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 
 logger = logging.getLogger(__name__)
 
-# Create your views here.
-
 
 @login_required
 def showAccessHistory(request):
