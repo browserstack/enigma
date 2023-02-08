@@ -173,9 +173,7 @@ class User(models.Model):
         if self.isAdminOrOps():
             return GroupV2.objects.all().filter(status="Approved")
 
-        groupOwnerMembership = MembershipV2.objects.filter(
-            is_owner=True, user=self
-        )
+        groupOwnerMembership = MembershipV2.objects.filter(is_owner=True, user=self)
         return [membership_obj.group for membership_obj in groupOwnerMembership]
 
     def isAdminOrOps(self):
@@ -207,7 +205,11 @@ class User(models.Model):
         all_user_identities = self.module_identity.all()
         access_request_mappings = []
         for each_identity in all_user_identities:
-            access_request_mappings.extend(each_identity.useraccessmapping_set.prefetch_related('access', 'approver_1', 'approver_2'))
+            access_request_mappings.extend(
+                each_identity.useraccessmapping_set.prefetch_related(
+                    "access", "approver_1", "approver_2"
+                )
+            )
         return access_request_mappings
 
     def get_access_history(self, all_access_modules):
@@ -216,7 +218,9 @@ class User(models.Model):
 
         for request_mapping in access_request_mappings:
             access_module = all_access_modules[request_mapping.accessType]
-            access_history.append(request_mapping.getAccessRequestDetails(access_module))
+            access_history.append(
+                request_mapping.getAccessRequestDetails(access_module)
+            )
 
         return access_history
 
@@ -310,7 +314,7 @@ class MembershipV2(models.Model):
     @staticmethod
     def get_membership(membership_id):
         return MembershipV2.objects.get(membership_id=membership_id)
-    
+
     def __str__(self):
         return self.group.name + "-" + self.user.email + "-" + self.status
 
@@ -478,20 +482,28 @@ class GroupV2(models.Model):
         )
 
     def is_owner(self, email):
-        return self.membership_group.filter(is_owner=True).filter(user__email = email).first() != None
-    
+        return (
+            self.membership_group.filter(is_owner=True)
+            .filter(user__email=email)
+            .first()
+            != None
+        )
+
     def add_access(self, request_id, requested_by, request_reason, access):
-        self.group_access_mapping.create(request_id=request_id,
-                                         requested_by= requested_by,
-                                         request_reason = request_reason,
-                                         access = access)
+        self.group_access_mapping.create(
+            request_id=request_id,
+            requested_by=requested_by,
+            request_reason=request_reason,
+            access=access,
+        )
+
     def check_access_exist(self, access):
         try:
             self.group_access_mapping.get(access=access)
             return True
         except GroupAccessMapping.DoesNotExist:
             return False
-        
+
     def get_all_approved_members(self):
         self.membership_group.filter(status="Approved")
 
@@ -643,7 +655,11 @@ class GroupAccessMapping(models.Model):
     updated_on = models.DateTimeField(auto_now=True)
 
     group = models.ForeignKey(
-        "GroupV2", null=False, blank=False, on_delete=models.PROTECT, related_name="group_access_mapping"
+        "GroupV2",
+        null=False,
+        blank=False,
+        on_delete=models.PROTECT,
+        related_name="group_access_mapping",
     )
 
     requested_by = models.ForeignKey(
@@ -731,8 +747,6 @@ class GroupAccessMapping(models.Model):
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
-    
-    
 
 
 class AccessV2(models.Model):
@@ -804,7 +818,7 @@ class UserIdentity(models.Model):
         return self.user_access_mapping.filter(
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
-    
+
     def access_mapping_exists(self, access):
         try:
             mapping = self.user_access_mapping.get(

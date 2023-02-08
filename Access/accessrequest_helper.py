@@ -186,7 +186,10 @@ def get_pending_accesses_from_modules(access_user):
     group_requests = {}
 
     logger.info("Start looping all access modules")
-    for access_module_tag, access_module in helpers.get_available_access_modules().items():
+    for (
+        access_module_tag,
+        access_module,
+    ) in helpers.get_available_access_modules().items():
         access_module_start_time = time.time()
 
         try:
