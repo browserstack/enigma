@@ -218,7 +218,7 @@ def render_error_message(request, log_message, user_message, user_message_descri
     })
 
 
-def get_filters(request):
+def get_filters_for_access_list(request):
     filters = {}
     if "accessTag" in request.GET:
         filters['access__access_tag__icontains'] = request.GET.get('accessTag')
@@ -236,7 +236,7 @@ def prepare_datalist(paginator, record_date):
     for each_access_request in paginator:
         if record_date is not None and record_date != str(each_access_request.updated_on)[:10]:
             continue
-        access_details = helper.get_access_details(each_access_request.access)
+        access_details = get_generic_user_access_mapping(each_access_request)
         for each_access_split in helper.split_access_details(access_details):
             data_list.append({
                 'request_id': each_access_request.request_id,
@@ -286,3 +286,12 @@ def gen_all_user_access_list_csv(data_list):
                          data["approver"], data["grantOwner"],
                          data["revokeOwner"], data["type"]])
     return response
+
+
+def get_generic_user_access_mapping(user_access_mapping):
+    access_modules_dict = helper.get_available_access_modules()
+    if user_access_mapping.access.access_tag in access_modules_dict:
+        access_details = user_access_mapping.getAccessRequestDetails(
+            access_modules_dict[user_access_mapping.access.access_tag])
+    logger.debug("Generic access generated: " + str(access_details))
+    return access_details

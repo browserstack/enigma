@@ -226,6 +226,17 @@ class User(models.Model):
 
         return access_history
 
+    @staticmethod
+    def get_accesses_by_username_access_tag_status(username, access_tag, status):
+        try:
+            user_identity = UserIdentity.objects.get(user__user__username=username,access_tag=access_tag)
+        except UserIdentity.DoesNotExist:
+            return None
+        return UserAccessMapping.objects.filter(
+            user_identity=user_identity,
+            access__access_tag=access_tag,
+            status__in=status)
+
     def __str__(self):
         return "%s" % (self.user)
 
@@ -585,7 +596,7 @@ class UserAccessMapping(models.Model):
         # code metadata
         access_request_data["access_tag"] = access_tag
         # ui metadata
-        access_request_data["userEmail"] = self.user.email
+        access_request_data["userEmail"] = self.user_identity.user.email
         access_request_data["requestId"] = self.request_id
         access_request_data["accessReason"] = self.request_reason
         access_request_data["requested_on"] = self.requested_on
@@ -620,11 +631,6 @@ class UserAccessMapping(models.Model):
     @staticmethod
     def get_accesses_not_declined():
         return UserAccessMapping.objects.exclude(status='Declined')
-
-    @staticmethod
-    def get_accesses_by_username_access_tag_status(username, access_tag, status):
-        return UserAccessMapping.objects.filter(user__user__username=username,
-                                                access__access_tag=access_tag, status__in=status)
 
     @staticmethod
     def get_unrevoked_accesses_by_request_id(request_id):

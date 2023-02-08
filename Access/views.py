@@ -33,7 +33,6 @@ INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 logger = logging.getLogger(__name__)
 
 # Create your views here.
-all_access_modules = helper.getAvailableAccessModules()
 
 
 @login_required
@@ -282,7 +281,7 @@ def all_user_access_list(request, load_ui=True):
         else:
             generic_accesses = generic_accesses.order_by("user_identity__user__user__username")
 
-        filters = views_helper.get_filters(request)
+        filters = views_helper.get_filters_for_access_list(request)
         generic_accesses = generic_accesses.filter(**filters)
 
         page = int(request.GET.get('page', 1))
@@ -345,7 +344,7 @@ def mark_revoked(request):
                 status = 403
                 return JsonResponse(json_response, status=status)
             access_tag = request_id.split("-", 1)[1]
-            requests = UserAccessMapping.get_accesses_by_username_access_tag_status(
+            requests = User.get_accesses_by_username_access_tag_status(
                 username=username, access_tag=access_tag, status=["Approved", "Offboarding"])
         else:
             requests = UserAccessMapping.get_unrevoked_accesses_by_request_id(request_id=request_id)
