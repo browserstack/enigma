@@ -1,5 +1,5 @@
 from celery import shared_task
-from celery.signals import task_prerun, task_postrun, task_success, task_failure
+from celery.signals import task_success, task_failure
 from celery.result import AsyncResult
 
 

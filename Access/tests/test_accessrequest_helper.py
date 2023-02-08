@@ -115,16 +115,14 @@ def test_requestAccessGet(
 
     if not getAvailableAccessModulesThrowsException:
         mocker.patch(
-            "Access.helpers.getAvailableAccessModules", return_value=[accessModule]
+            "Access.helpers.get_available_access_modules", return_value={'AccModule1': accessModule}
         )
     else:
         mocker.patch(
-            "Access.helpers.getAvailableAccessModules",
-            return_value=[accessModule],
+            "Access.helpers.get_available_access_modules",
+            return_value={'AccModule1': accessModule},
             side_effect=Exception("getAvailableAccessModules error"),
         )
-
-    # monkeypatch.setattr(helpers, "getAvailableAccessModules", mock_getAvailableAccessModules)
 
     request = HttpRequest()
     request.method = "GET"
