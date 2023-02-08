@@ -221,11 +221,17 @@ class User(models.Model):
             access_history.append(request_mapping.getAccessRequestDetails(access_module))
 
         return access_history
-
+    
     @staticmethod
-    def get_accesses_by_username_access_tag_status(username, access_tag, status):
+    def get_user_from_username(username):
         try:
-            user_identity = UserIdentity.objects.get(user__user__username=username,access_tag=access_tag)
+            return User.objects.get(user__username=username)
+        except User.DoesNotExist:
+            return None
+
+    def get_accesses_by_access_tag_and_status(self, access_tag, status):
+        try:
+            user_identity = self.module_identity.get(access_tag=access_tag)
         except UserIdentity.DoesNotExist:
             return None
         return UserAccessMapping.objects.filter(

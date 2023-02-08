@@ -342,8 +342,11 @@ def mark_revoked(request):
                 status = 403
                 return JsonResponse(json_response, status=status)
             access_tag = request_id.split("-", 1)[1]
-            requests = User.get_accesses_by_username_access_tag_status(
-                username=username, access_tag=access_tag, status=["Approved", "Offboarding"])
+            user = User.get_user_from_username(username=username)
+            if user:
+                requests = user.get_accesses_by_access_tag_and_status(access_tag=access_tag, status=["Approved", "Offboarding"])
+            else:
+                raise User.DoesNotExist(f"User with '{username}' does not exist")
         else:
             requests = UserAccessMapping.get_unrevoked_accesses_by_request_id(request_id=request_id)
         success_list = []
