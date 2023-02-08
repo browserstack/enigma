@@ -107,6 +107,9 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "Access.context_processors.add_variables_to_context",
             ],
+            "libraries": {
+                "navbar_css_helpers": "templates.libraries.navbar_css_helper",
+            },
         },
     },
 ]

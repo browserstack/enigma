@@ -1,3 +1,4 @@
+{% load navbar_css_helpers %}
 {% load static %}
 <!DOCTYPE html>
 <html>
@@ -10,9 +11,11 @@
     <meta name="robots" content="all,follow">
     <link rel="shortcut icon" type="image/x-icon" href={% static "favicon.ico" %}>
 
-    <!-- Custom stylesheet - for your changes-->
     <link rel="stylesheet" href={% static "css/global_layout.css" %}>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+
+    <script src={% static "js/tailwind.js" %}></script>
+    <script src={% static "js/jquery-3.6.3.min.js" %}></script>
+    <script src={% static "js/global_layout.js" %}></script>
   </head>
 
   <body>
@@ -20,7 +23,7 @@
       <div class="cust-leading-content">
         <div class="cust-nav-logo">
           <div class="cust-logo">
-            <img class="cust-logo-svg" src="static/images/global_layout/logo_mark.svg"></img>
+            <img class="cust-logo-svg" src="{% static "images/global_layout/logo_mark.svg" %}"></img>
             <div class="cust-logo-text">enigma</div>
           </div>
         </div>
@@ -36,80 +39,35 @@
             </div>
           </div>
         </div>
-        {% comment %} <div class="cust-nav-tabs"> {% endcomment %}
-        {% comment %}   <a href="#" class="cust-each-nav-tab cust-nav-tab-active"> {% endcomment %}
-        {% comment %}     <div class="cust-each-nav-tab-content"> {% endcomment %}
-        {% comment %}       <div class="cust-each-nav-tab-icon"> {% endcomment %}
-        {% comment %}         <img class="cust-each-nav-icon-svg" src="static/images/global_layout/navbar_home.svg"></img> {% endcomment %}
-        {% comment %}       </div> {% endcomment %}
-        {% comment %}       <div class="cust-each-nav-tab-text">Dashboard</div> {% endcomment %}
-        {% comment %}     </div> {% endcomment %}
-        {% comment %}   </a> {% endcomment %}
-        {% comment %}   <a href="" class="cust-each-nav-tab hover:text-gray-200"> {% endcomment %}
-        {% comment %}     <div class="cust-each-nav-tab-content"> {% endcomment %}
-        {% comment %}       <div class="cust-each-nav-tab-icon"> {% endcomment %}
-        {% comment %}         <img class="cust-each-nav-icon-svg" src="static/images/global_layout/navbar_key.svg"></img> {% endcomment %}
-        {% comment %}       </div> {% endcomment %}
-        {% comment %}       <div class="cust-each-nav-tab-text">Access</div> {% endcomment %}
-        {% comment %}     </div> {% endcomment %}
-        {% comment %}   </a> {% endcomment %}
-        {% comment %}   <a href="" class="cust-each-nav-tab hover:text-gray-200"> {% endcomment %}
-        {% comment %}     <div class="cust-each-nav-tab-content"> {% endcomment %}
-        {% comment %}       <div class="cust-each-nav-tab-icon"> {% endcomment %}
-        {% comment %}         <img class="cust-each-nav-icon-svg" src="static/images/global_layout/navbar_users.svg"></img> {% endcomment %}
-        {% comment %}       </div> {% endcomment %}
-        {% comment %}       <div class="cust-each-nav-tab-text">Groups</div> {% endcomment %}
-        {% comment %}     </div> {% endcomment %}
-        {% comment %}   </a> {% endcomment %}
-        {% comment %} </div> {% endcomment %}
+
         <nav class="space-y-1 cust-nav-tabs" aria-label="Sidebar">
-          <a href="#" class="bg-gray-100 text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md" aria-current="page">
-            <svg class="text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6 cust-each-nav-icon-svg" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <a href="/" class="{% ahref_class_for_path "Dashboard" request.path %} group flex items-center px-3 py-2 text-sm font-medium rounded-md cust-each-nav-tab" aria-current={% ahref_ariacurrent "Dashboard" request.path %}">
+            <svg class="{% svg_class_for_path "Dashboard" request.path %} flex-shrink-0 -ml-1 mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
             </svg>
             <span class="truncate">Dashboard</span>
 
-            <span class="bg-white ml-auto inline-block py-0.5 px-3 text-xs rounded-full">5</span>
+            <span class="{% count_class_for_path "Dashboard" request.path %} ml-auto inline-block py-0.5 px-3 text-xs rounded-full">5</span>
           </a>
 
-          <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
-            <svg class="text-gray-400 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+          <a href="/access/showAccessHistory" class="{% ahref_class_for_path "Access" request.path %} group flex items-center px-3 py-2 text-sm font-medium rounded-md cust-each-nav-tab" aria-current={% ahref_ariacurrent "Access" request.path %}">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="{% svg_class_for_path "Access" request.path %} flex-shrink-0 -ml-1 mr-3 h-6 w-6" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
+            </svg>
+            <span class="truncate">Access</span>
+
+            <span class="{% count_class_for_path "Access" request.path %} ml-auto inline-block py-0.5 px-3 text-xs rounded-full">19</span>
+          </a>
+
+          <a href="/access/showAccessHistory" class="{% ahref_class_for_path "Groups" request.path %} group flex items-center px-3 py-2 text-sm font-medium rounded-md cust-each-nav-tab" aria-current={% ahref_ariacurrent "Groups" request.path %}">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="{% svg_class_for_path "Groups" request.path %} flex-shrink-0 -ml-1 mr-3 h-6 w-6" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
             </svg>
-            <span class="truncate">Team</span>
+            <span class="truncate">Groups</span>
+
+            <span class="{% count_class_for_path "Groups" request.path %} ml-auto inline-block py-0.5 px-3 text-xs rounded-full">20+</span>
           </a>
 
-          <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
-            <svg class="text-gray-400 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
-            </svg>
-            <span class="truncate">Projects</span>
-
-            <span class="bg-gray-100 group-hover:bg-gray-200 ml-auto inline-block py-0.5 px-3 text-xs rounded-full">19</span>
-          </a>
-
-          <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
-            <svg class="text-gray-400 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-            </svg>
-            <span class="truncate">Calendar</span>
-
-            <span class="bg-gray-100 group-hover:bg-gray-200 ml-auto inline-block py-0.5 px-3 text-xs rounded-full">20+</span>
-          </a>
-
-          <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
-            <svg class="text-gray-400 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 012.012 1.244l.256.512a2.25 2.25 0 002.013 1.244h3.218a2.25 2.25 0 002.013-1.244l.256-.512a2.25 2.25 0 012.013-1.244h3.859m-19.5.338V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 00-2.15-1.588H6.911a2.25 2.25 0 00-2.15 1.588L2.35 13.177a2.25 2.25 0 00-.1.661z" />
-            </svg>
-            <span class="truncate">Documents</span>
-          </a>
-
-          <a href="#" class="text-gray-600 hover:bg-gray-50 hover:text-gray-900 group flex items-center px-3 py-2 text-sm font-medium rounded-md">
-            <svg class="text-gray-400 group-hover:text-gray-500 flex-shrink-0 -ml-1 mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-            </svg>
-            <span class="truncate">Reports</span>
-          </a>
         </nav>
         <div class="cust-top-border"></div>
       </div>

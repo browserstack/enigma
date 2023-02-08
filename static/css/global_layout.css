@@ -241,71 +241,9 @@ body {
 }
 
 .cust-each-nav-tab {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 8px 12px 8px 8px;
-  gap: 105px;
-
-  width: 219px;
-  height: 40px;
-
-  border-radius: 6px;
-
-  flex: none;
-  order: 0;
-  align-self: stretch;
-  flex-grow: 0;
+  width: 100%;
 }
 
 .cust-nav-tab-active {
   background: #F3F4F6;
-}
-
-.cust-each-nav-tab-content {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  padding: 0px;
-  gap: 12px;
-
-  width: 110px;
-  height: 24px;
-
-  flex: none;
-  order: 0;
-  flex-grow: 0;
-}
-
-.cust-each-nav-tab-icon {
-  width: 24px;
-  height: 24px;
-
-  flex: none;
-  order: 0;
-  flex-grow: 0;
-}
-
-.cust-each-nav-tab-text {
-  width: 74px;
-  height: 20px;
-
-  font-family: 'Inter';
-  font-style: normal;
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 20px;
-
-  color: #111827;
-
-  flex: none;
-  order: 1;
-  flex-grow: 0;
-}
-
-.cust-each-nav-icon-svg {
-  left: 12.5%;
-  right: 12.5%;
-  top: 12.5%;
-  bottom: 12.5%;
 }
