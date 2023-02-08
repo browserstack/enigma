@@ -247,3 +247,7 @@ body {
 .cust-nav-tab-active {
   background: #F3F4F6;
 }
+
+.content_body {
+  padding-left: 256px;
+}

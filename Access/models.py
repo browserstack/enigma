@@ -181,6 +181,10 @@ class User(models.Model):
         )
         return [membership_obj.group for membership_obj in groupOwnerMembership]
 
+    def get_active_groups(self):
+        all_active_memberships = self.membership_user.filter(status="Approved")
+        return [each_membership.group for each_membership in all_active_memberships]
+
     def isAdminOrOps(self):
         return self.is_ops or self.user.is_superuser
 

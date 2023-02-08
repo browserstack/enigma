@@ -16,6 +16,8 @@
     <script src={% static "js/tailwind.js" %}></script>
     <script src={% static "js/jquery-3.6.3.min.js" %}></script>
     <script src={% static "js/global_layout.js" %}></script>
+    {% block head_body %}
+    {% endblock %}
   </head>
 
   <body>
@@ -72,7 +74,9 @@
         <div class="cust-top-border"></div>
       </div>
     </div>
+    <div class="content_body">
     {% block content_body %}
     {% endblock %}
+    </div>
   </body>
 </html>
