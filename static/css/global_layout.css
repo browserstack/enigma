@@ -12,16 +12,8 @@ body {
 }
 
 .cust-left-nav-panel {
-  display: flex;
-  flex-direction: row;
   align-items: flex-start;
   padding: 0px;
-
-  position: absolute;
-  width: 256px;
-  height: 4855px;
-  left: 0px;
-  top: 0px;
 
   background: #FFFFFF;
 }
@@ -32,9 +24,6 @@ body {
   align-items: flex-start;
   padding: 20px 0px 16px;
   gap: 10px;
-
-  width: 255px;
-  height: 4855px;
 
   flex: none;
   order: 0;
@@ -114,8 +103,6 @@ body {
   padding: 0px 8px;
   gap: 4px;
 
-  width: 255px;
-  height: 4678px;
   padding-top: 20px;
 
   flex: none;

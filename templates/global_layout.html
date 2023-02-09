@@ -1,7 +1,7 @@
 {% load navbar_css_helpers %}
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html class="h-full bg-gray-100">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -20,8 +20,8 @@
     {% endblock %}
   </head>
 
-  <body>
-    <div class="cust-left-nav-panel">
+  <body class="h-full">
+    <div class="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col cust-left-nav-panel">
       <div class="cust-leading-content">
         <div class="cust-nav-logo">
           <div class="cust-logo">
