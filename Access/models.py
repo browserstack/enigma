@@ -481,10 +481,10 @@ class GroupV2(models.Model):
             status="Pending", approver=None
         )
 
-    def is_owner(self, email):
+    def is_owner(self, user):
         return (
             self.membership_group.filter(is_owner=True)
-            .filter(user__email=email)
+            .filter(user=user)
             .first()
             is not None
         )

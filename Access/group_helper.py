@@ -737,7 +737,7 @@ def validate_group_access_create_request(group, auth_user):
         logger.exception("This Group is not yet approved")
         return {"title": "Permisison Denied", "msg": "This Group is not yet approved"}
 
-    if not (group.is_owner(auth_user.user.email) or auth_user.is_superuser):
+    if not (group.is_owner(auth_user.user) or auth_user.is_superuser):
         logger.exception("Permission denied, you're not owner of this group")
         return {"title": "Permision Denied", "msg": "You're not owner of this group"}
     return None
