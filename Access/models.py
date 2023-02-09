@@ -176,9 +176,7 @@ class User(models.Model):
         if self.isAdminOrOps():
             return GroupV2.objects.all().filter(status="Approved")
 
-        groupOwnerMembership = MembershipV2.objects.filter(
-            is_owner=True, user=self
-        )
+        groupOwnerMembership = MembershipV2.objects.filter(is_owner=True, user=self)
         return [membership_obj.group for membership_obj in groupOwnerMembership]
 
     def isAdminOrOps(self):
@@ -205,7 +203,7 @@ class User(models.Model):
         return self.module_identity.filter(
             access_tag=access_tag, status="Active"
         ).first()
-    
+
     @staticmethod
     def get_user_by_email(email):
         try:
@@ -299,7 +297,7 @@ class MembershipV2(models.Model):
     def approve_membership(membership_id, approver):
         membership = MembershipV2.objects.get(membership_id=membership_id)
         membership.approve(approver=approver)
-    
+
     def revoke_membership(self):
         self.status = "Revoked"
         self.save()
@@ -470,7 +468,7 @@ class GroupV2(models.Model):
         self.membership_group.filter(status="Approved").update(
             status="Pending", approver=None
         )
-    
+
     def get_approved_accesses(self):
         return self.groupaccessmapping_set.filter(status="Approved")
 
@@ -569,7 +567,7 @@ class UserAccessMapping(models.Model):
         if self.status.lower() == "approved" and self.approved_on in [None, ""]:
             self.approved_on = self.updated_on
             super(UserAccessMapping, self).save(*args, **kwargs)
-    
+
     @staticmethod
     def get_access_request(request_id):
         try:
@@ -790,11 +788,16 @@ class UserIdentity(models.Model):
         )
 
     def get_granted_access_mapping(self, access):
-        return self.user_access_mapping.filter(status__in=["Approved", "Processing", "Offboarding"], access=access)
-    
+        return self.user_access_mapping.filter(
+            status__in=["Approved", "Processing", "Offboarding"], access=access
+        )
+
     def get_non_approved_access_mapping(self, access):
-        return self.user_access_mapping.filter(status__in=[ 'approvefailed', 'pending', 'secondarypending', 'grantfailed' ], access=access)
-    
+        return self.user_access_mapping.filter(
+            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"],
+            access=access,
+        )
+
     def decline_non_approved_access_mapping(self, access):
         user_mapping = self.get_non_approved_access_mapping(access)
         user_mapping.update(status="Declined")
@@ -806,7 +809,7 @@ class UserIdentity(models.Model):
     def revoke_approved_access_mapping(self, access):
         user_mapping = self.get_granted_access_mapping(access)
         user_mapping.update(status="Revoked")
-    
+
     def mark_revoke_failed_for_approved_access_mapping(self, access):
         user_mapping = self.get_granted_access_mapping(access)
         user_mapping.update(status="RevokeFailed")

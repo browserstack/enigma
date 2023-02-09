@@ -11,12 +11,13 @@ from bootprocess import general
 from BrowserStackAutomation.settings import AUTOMATED_EXEC_IDENTIFIER
 from Access.models import UserAccessMapping, User
 from Access import notifications
-import json
 
 logger = logging.getLogger(__name__)
 
 with open("config.json") as data_file:
-    background_task_manager_type = json.load(data_file)["background_task_manager"]["type"]
+    background_task_manager_type = json.load(data_file)["background_task_manager"][
+        "type"
+    ]
 
 
 def background_task(func, *args):
@@ -26,7 +27,7 @@ def background_task(func, *args):
 
         elif func == "test_grant":
             test_grant.delay(*args)
-        
+
         elif func == "run_access_revoke":
             run_access_revoke.delay(*args)
 
@@ -37,15 +38,11 @@ def background_task(func, *args):
                 args=args,
             )
             accessAcceptThread.start()
-        
+
         elif func == "run_access_revoke":
-            access_revoke_thread = threading.Thread(
-                target=run_access_revoke,
-                args=args
-            )
+            access_revoke_thread = threading.Thread(target=run_access_revoke, args=args)
 
             access_revoke_thread.start()
-            
 
 
 @shared_task(
@@ -152,6 +149,7 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             return True
     return False
 
+
 @shared_task(
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
@@ -162,7 +160,9 @@ def run_access_revoke(data):
         # TODO: Have to add the email targets for failure
         targets = []
         message = "Request not found"
-        notifications.send_revoke_failure_mail(targets, data["request_id"], data["revoker_email"], 0, message)
+        notifications.send_revoke_failure_mail(
+            targets, data["request_id"], data["revoker_email"], 0, message
+        )
         return {"status": False}
     elif access_mapping.status == "Revoked":
         return {"status": True}
@@ -174,7 +174,14 @@ def run_access_revoke(data):
         # TODO: Have to add the email targets for failure
         targets = []
         message = "Revoker not found"
-        notifications.send_revoke_failure_mail(targets, data["request_id"], data["revoker_email"], 0, message, access.access_tag)
+        notifications.send_revoke_failure_mail(
+            targets,
+            data["request_id"],
+            data["revoker_email"],
+            0,
+            message,
+            access.access_tag,
+        )
         user_identity.mark_revoke_failed_for_approved_access_mapping(access)
         return {"status": False}
 
@@ -182,11 +189,13 @@ def run_access_revoke(data):
 
     access_module = access_modules[access.access_tag]
 
-    response = access_module.revoke(user_identity.user, user_identity, access.access_label, access_mapping)
+    response = access_module.revoke(
+        user_identity.user, user_identity, access.access_label, access_mapping
+    )
     logger.debug("Response from the revoke function: " + str(response))
     if type(response) is bool:
-            revoke_success = response
-            message = None
+        revoke_success = response
+        message = None
     else:
         revoke_success = response[0]
         message = str(response[1])
@@ -195,14 +204,25 @@ def run_access_revoke(data):
         if AUTOMATED_EXEC_IDENTIFIER in access_module.revoke_owner():
             user_identity.revoke_approved_access_mapping(access)
     else:
-        logger.debug("Failed to revoke the request: {} due to exception: {}".format(access_mapping.request_id, message))
+        logger.debug(
+            "Failed to revoke the request: {} due to exception: {}".format(
+                access_mapping.request_id, message
+            )
+        )
         logger.debug("Retry count: {}".format(run_access_revoke.request.retries))
-        if(run_access_revoke.request.retries == 3):
+        if run_access_revoke.request.retries == 3:
             logger.info("Sending the notification for failure")
-            notifications.send_revoke_failure_mail(access_module.access_mark_revoke_permission(access_mapping.access_type), access_mapping.request_id, revoker.email, run_access_revoke.request.retries, message, access.access_tag)
+            notifications.send_revoke_failure_mail(
+                access_module.access_mark_revoke_permission(access_mapping.access_type),
+                access_mapping.request_id,
+                revoker.email,
+                run_access_revoke.request.retries,
+                message,
+                access.access_tag,
+            )
             user_identity.mark_revoke_failed_for_approved_access_mapping(access)
-        raise Exception("Failed to revoke the access due to: "+ str(message))
-        
+        raise Exception("Failed to revoke the access due to: " + str(message))
+
     return {"status": True}
 
 
@@ -234,7 +254,7 @@ def fail_func():
 def test_grant():
     for each_access_module in helpers.getAvailableAccessModules():
         logger.info(each_access_module.tag())
-        if each_access_module.tag() == 'confluence_module':
+        if each_access_module.tag() == "confluence_module":
             # call access_desc method of confluence module here
             # and return the result to the caller of this function
             return each_access_module.access_desc()
