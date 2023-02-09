@@ -10,10 +10,11 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
-import glob
 from os.path import join
-import json
 from pathlib import Path
+import glob
+import json
+import logging.config
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -109,6 +110,7 @@ TEMPLATES = [
             ],
             "libraries": {
                 "navbar_css_helpers": "templates.libraries.navbar_css_helper",
+                "myaccess_css_helpers": "templates.libraries.myaccess_css_helper",
             },
         },
     },
@@ -167,6 +169,30 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+LOGGING_CONFIG = None
+logging.config.dictConfig({
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'console': {
+            'format': '%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'console',
+        },
+    },
+    'loggers': {
+    # root logger
+        '': {
+            'level': 'INFO',
+            'handlers': ['console'],
+        },
+    },
+})
 
 
 with open("config.json") as data_file:

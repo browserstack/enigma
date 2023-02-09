@@ -74,7 +74,11 @@
         <div class="cust-top-border"></div>
       </div>
     </div>
-    <div class="content_body">
+    <div class="nav-breadcrumb">
+    {% block nav_breadcrumb %}
+    {% endblock %}
+    </div>
+    <div class="content-body">
     {% block content_body %}
     {% endblock %}
     </div>

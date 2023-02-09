@@ -248,6 +248,10 @@ body {
   background: #F3F4F6;
 }
 
-.content_body {
+.content-body {
+  padding-left: 256px;
+}
+
+.nav-breadcrumb {
   padding-left: 256px;
 }

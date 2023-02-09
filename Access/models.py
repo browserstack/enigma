@@ -214,7 +214,7 @@ class User(models.Model):
         all_user_identities = self.module_identity.all()
         access_request_mappings = []
         for each_identity in all_user_identities:
-            access_request_mappings.extend(each_identity.useraccessmapping_set.prefetch_related('access', 'approver_1', 'approver_2'))
+            access_request_mappings.extend(each_identity.user_access_mapping.prefetch_related('access', 'approver_1', 'approver_2'))
         return access_request_mappings
 
     def get_access_history(self, all_access_modules):
@@ -223,8 +223,8 @@ class User(models.Model):
 
         for request_mapping in access_request_mappings:
             for each_access_module in all_access_modules:
-                if request_mapping.accessType == each_access_module.tag():
-                    access_history.append(request_mapping.getAccessRequestDetails(eachAccessModule))
+                if request_mapping.access.access_tag == each_access_module.tag():
+                    access_history.append(request_mapping.getAccessRequestDetails(each_access_module))
 
         return access_history
 
@@ -587,7 +587,7 @@ class UserAccessMapping(models.Model):
         # code metadata
         access_request_data["access_tag"] = access_tag
         # ui metadata
-        access_request_data["userEmail"] = self.user.email
+        access_request_data["userEmail"] = self.user_identity.user.email
         access_request_data["requestId"] = self.request_id
         access_request_data["accessReason"] = self.request_reason
         access_request_data["requested_on"] = self.requested_on
@@ -602,6 +602,7 @@ class UserAccessMapping(models.Model):
         access_request_data["status"] = self.status
         access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
+        access_request_data["accessRequestType"] = self.access_type
 
         return access_request_data
 
@@ -716,6 +717,7 @@ class GroupAccessMapping(models.Model):
         access_request_data["status"] = self.status
         access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
+        access_request_data["accessRequestType"] = "Group Request"
 
         return access_request_data
 
