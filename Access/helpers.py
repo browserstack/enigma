@@ -8,7 +8,6 @@ import random
 
 from Access.access_modules import * # NOQA
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
-from BrowserStackAutomation.settings import EXCLUDED_PRIMARY_APPROVERS
 from Access.models import User
 
 logger = logging.getLogger(__name__)
@@ -90,11 +89,10 @@ def getPossibleApproverPermissions():
 
 def get_approvers():
     emails = [user.email
-              for user in User.get_active_users_with_role(role_label='TEAMS:ACCESSAPPROVE')]
-    choice_list = list(set(emails) - set(EXCLUDED_PRIMARY_APPROVERS))
-    if not choice_list:
+              for user in User.get_active_users_with_permission(permission_label=PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"])]
+    if not emails:
         raise Exception("No user found with approver roles")
-    primary_approver = random.choice(choice_list)
+    primary_approver = random.choice(emails)
 
     emails.remove(primary_approver)
     other_approver = emails
@@ -102,5 +100,4 @@ def get_approvers():
         other_approver = None
     else:
         other_approver = ', '.join(other_approver)
-
     return primary_approver, other_approver

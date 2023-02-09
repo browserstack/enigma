@@ -423,7 +423,7 @@ def add_user_to_group(request):
             }
             return context
 
-        group_members_email = group.get_all_member_emails()
+        group_members_email = group.get_approved_and_pending_member_emails()
 
         if not has_permission_to_add(request=request, group=group):
             raise Exception("Permission denied, requester is non owner")
@@ -448,40 +448,41 @@ def add_user_to_group(request):
 
         selected_users = get_selected_users_by_email(data["selectedUserList"])
 
-        for user in selected_users:
-            member = group.add_member(user=user, requested_by=request.user.user,
-                                      reason=data["memberReason"][0],
-                                      date_time=base_datetime_prefix)
-            membership_id = member.membership_id
+        with transaction.atomic():
+            for user in selected_users:
+                member = group.add_member(user=user, requested_by=request.user.user,
+                                        reason=data["memberReason"][0],
+                                        date_time=base_datetime_prefix)
+                membership_id = member.membership_id
 
-            if not group.needsAccessApprove:
-                context = {}
-                context["accessStatus"] = {
-                    "msg": REQUEST_PROCESSING.format(requestId=membership_id),
-                    "desc": (
-                        "A email will be sent after the requested access are granted"
-                    ),
-                }
-                member.approve(approver=request.user.user)
-                user_mappings_list = views_helper.generate_user_mappings(
-                    user, group, member
+                if not group.needsAccessApprove:
+                    context = {}
+                    context["accessStatus"] = {
+                        "msg": REQUEST_PROCESSING.format(requestId=membership_id),
+                        "desc": (
+                            "A email will be sent after the requested access are granted"
+                        ),
+                    }
+                    member.approve(approver=request.user.user)
+                    user_mappings_list = views_helper.generate_user_mappings(
+                        user, group, member
+                    )
+
+                    views_helper.execute_group_access(user_mappings_list=user_mappings_list)
+                    logger.debug(
+                        "Process has been started for the Approval of request - "
+                        + membership_id
+                        + " - Approver="
+                        + request.user.username
+                    )
+                    return context
+
+                notifications.send_mail_for_member_approval(
+                    user.email,
+                    str(request.user),
+                    data["groupName"][0],
+                    data["memberReason"][0],
                 )
-
-                views_helper.execute_group_access(user_mappings_list=user_mappings_list)
-                logger.debug(
-                    "Process has been started for the Approval of request - "
-                    + membership_id
-                    + " - Approver="
-                    + request.user.username
-                )
-                return context
-
-            notifications.send_mail_for_member_approval(
-                user.email,
-                str(request.user),
-                data["groupName"][0],
-                data["memberReason"][0],
-            )
 
         context = {}
         context["status"] = {

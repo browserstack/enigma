@@ -65,7 +65,7 @@ def run_access_grant(request_id):
         )
         return False
     elif user_access_mapping.user_identity.identity == {}:
-        user_access_mapping.grant_fail_access()
+        user_access_mapping.grant_fail_access(fail_reason="Failed since identity is blank for user identity")
         logger.debug(
             {
                 "requestId": request_id,
@@ -84,7 +84,7 @@ def run_access_grant(request_id):
         response = access_module.approve(user_identity=user_access_mapping.user_identity,
                                          labels=[user_access_mapping.access.access_label],
                                          approver=approver,
-                                         request_id=request_id,
+                                         request=user_access_mapping,
                                          is_group=False,)
         if type(response) is bool:
             approve_success = response
@@ -110,7 +110,7 @@ def run_access_grant(request_id):
             }
         )
     else:
-        user_access_mapping.grant_fail_access()
+        user_access_mapping.grant_fail_access(fail_reason="Error while running approve in module")
         logger.debug(
             {
                 "requestId": request_id,

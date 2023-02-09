@@ -242,9 +242,12 @@ class User(models.Model):
         return User.objects.filter(email__in=emails)
 
     @staticmethod
-    def get_active_users_with_role(role_label):
-        role = Role.objects.get(label=role_label)
-        return User.objects.filter(role=role, state=1)
+    def get_active_users_with_permission(permission_label):
+        try:
+            return User.objects.filter(role__permission__label=permission_label, state=1)
+        except User.DoesNotExist:
+            return None
+
 
     def __str__(self):
         return "%s" % (self.user)
@@ -488,7 +491,7 @@ class GroupV2(models.Model):
         group_members = self.membership_group.all()
         return group_members
 
-    def get_all_member_emails(self):
+    def get_approved_and_pending_member_emails(self):
         group_member_emails = self.membership_group.filter(
             status__in=["Approved", "Pending"]).values_list('user__email', flat=True)
         return group_member_emails
@@ -497,7 +500,7 @@ class GroupV2(models.Model):
         return self.membership_group.get(user=user).is_owner
 
     def get_active_accesses(self):
-        return self.groupaccessmapping_set.filter(
+        return self.group_access_mapping.filter(
             status__in=["Approved", "Pending", "Declined", "SecondaryPending"]
         )
 
@@ -543,10 +546,10 @@ class GroupV2(models.Model):
             return False
 
     def get_all_approved_members(self):
-        self.membership_group.filter(status="Approved")
+        return self.membership_group.filter(status="Approved")
         
     def get_approved_accesses(self):
-        return self.groupaccessmapping_set.filter(status="Approved")
+        return self.group_access_mapping.filter(status="Approved")
 
     def is_owner(self, email):
         return self.membership_group.filter(
@@ -611,6 +614,8 @@ class UserAccessMapping(models.Model):
     )
 
     decline_reason = models.TextField(null=True, blank=True)
+
+    fail_reason = models.TextField(null=True, blank=True)
 
     TYPE_CHOICES = (("Individual", "individual"), ("Group", "group"))
     access_type = models.CharField(
@@ -695,8 +700,9 @@ class UserAccessMapping(models.Model):
     def is_approved(self):
         return self.status == "Approved"
 
-    def grant_fail_access(self):
+    def grant_fail_access(self, fail_reason=None):
         self.status = "GrantFailed"
+        self.fail_reason=fail_reason
         self.save()
 
     def decline_access(self, decline_reason=None):
@@ -963,11 +969,7 @@ class UserIdentity(models.Model):
             approver_2=approver_2, request_reason=reason, access_type=access_type)
 
     def has_approved_access(self, access):
-        try:
-            UserAccessMapping.objects.get(user_identity=self, access=access, status="Approved")
-            return True
-        except ObjectDoesNotExist:
-            return False
+        return self.user_access_mapping.filter(status="Approved", access=access).exists()
 
     def __str__(self):
         return "%s" % (self.identity)
