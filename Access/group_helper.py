@@ -5,9 +5,19 @@ import datetime
 import logging
 from bootprocess import general
 from Access.views_helper import generateUserMappings, executeGroupAccess
+<<<<<<< HEAD
 from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 from . import helpers as helper
 import json
+=======
+from BrowserStackAutomation.settings import (
+    MAIL_APPROVER_GROUPS,
+    PERMISSION_CONSTANTS,
+)
+from Access.background_task_manager import background_task
+import json
+
+>>>>>>> fab57c8132c89b243a7def7a25f74be5e13ae662
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +26,8 @@ NEW_GROUP_CREATE_SUCCESS_MESSAGE = {
     "msg": """A request for New Group with name {group_name} has been submitted for approval.
     You will be notified for any changes in request status.""",
 }
+
+ERROR_MESSAGE = "Error in request not found OR Invalid request type"
 
 NEW_GROUP_CREATE_ERROR_MESSAGE = {
     "error_msg": "Internal Error",
@@ -741,3 +753,52 @@ def validate_group_access_create_request(group, auth_user):
         logger.exception("Permission denied, you're not owner of this group")
         return {"title": "Permision Denied", "msg": "You're not owner of this group"}
     return None
+def remove_member(request):
+    try:
+        membership_id = request.POST.get("membershipId")
+        if not membership_id:
+            raise ("Membership Id is not loaded.")
+        membership = MembershipV2.get_membership(membership_id)
+    except Exception as e:
+        logger.error("Membership id not found in request")
+        logger.exception(str(e))
+        return {"error": ERROR_MESSAGE}
+
+    user = membership.user
+
+    revoke_group_accesses = [
+        mapping.access for mapping in membership.group.get_approved_accesses()
+    ]
+
+    other_memberships_groups = (
+        user.get_all_memberships()
+        .exclude(group=membership.group)
+        .values_list("group", flat=True)
+    )
+    other_group_accesses = []
+
+    for group in other_memberships_groups:
+        mapping = group.get_approved_accesses()
+        other_group_accesses.append(mapping.access)
+
+    revoke_accesses = list(set(revoke_group_accesses) - set(other_group_accesses))
+
+    for access in revoke_accesses:
+        user_identity = user.get_active_identity(access.access_tag)
+        user_identity.decline_non_approved_access_mapping(access)
+        user_identity.offboarding_approved_access_mapping(access)
+        background_task(
+            "run_access_revoke",
+            json.dumps(
+                {
+                    "request_id": user_identity.get_granted_access_mapping(access)
+                    .first()
+                    .request_id,
+                    "revoker_email": request.user.user.email,
+                }
+            ),
+        )
+
+    membership.revoke_membership()
+
+    return {"message": "Successfully removed user from group"}
