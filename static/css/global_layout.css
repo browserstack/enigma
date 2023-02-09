@@ -37,7 +37,7 @@ body {
   background: #E5E7EB;
 
   flex: none;
-  order: 1;
+  order: 2;
   align-self: stretch;
   flex-grow: 0;
 }
@@ -86,13 +86,14 @@ body {
   flex-direction: column;
   align-items: center;
   padding: 0px;
+  padding-top: 10px;
 
   width: 256px;
   height: 69px;
 
 
   flex: none;
-  order: 2;
+  order: 3;
   flex-grow: 0;
 }
 
@@ -106,7 +107,7 @@ body {
   padding-top: 20px;
 
   flex: none;
-  order: 3;
+  order: 1;
   align-self: stretch;
   flex-grow: 1;
 }

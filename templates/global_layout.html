@@ -21,28 +21,16 @@
   </head>
 
   <body class="h-full">
-    <div class="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col cust-left-nav-panel">
-      <div class="cust-leading-content">
+    <div class="hidden md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col cust-left-nav-panel flex-1">
+      <div class="cust-leading-content md:fixed md:inset-y-0 md:flex md:w-64 md:flex-col flex-1">
         <div class="cust-nav-logo">
           <div class="cust-logo">
             <img class="cust-logo-svg" src="{% static "images/global_layout/logo_mark.svg" %}"></img>
             <div class="cust-logo-text">enigma</div>
           </div>
         </div>
-        <div class="cust-nav-profile">
-          <div class="cust-profile-border"></div>
-          <div class="cust-profile-content">
-            <div class="cust-profile-avatar">
-              <div class="cust-avatar">{{ currentUser.name | make_list | first }}</div>
-              <div class="cust-avatar-name">
-                <div class="cust-avatar-name-title">{{ currentUser.name }}</div>
-                <div class="cust-avatar-name-support">View Profile</div>
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <nav class="space-y-1 cust-nav-tabs" aria-label="Sidebar">
+        <nav class="space-y-1 cust-nav-tabs flex-1" aria-label="Sidebar">
           <a href="/" class="{% ahref_class_for_path "Dashboard" request.path %} group flex items-center px-3 py-2 text-sm font-medium rounded-md cust-each-nav-tab" aria-current={% ahref_ariacurrent "Dashboard" request.path %}">
             <svg class="{% svg_class_for_path "Dashboard" request.path %} flex-shrink-0 -ml-1 mr-3 h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
@@ -69,7 +57,18 @@
           </a>
 
         </nav>
-        <div class="cust-top-border"></div>
+        <div class="cust-nav-profile flex-shrink-0">
+          <div class="cust-profile-border"></div>
+          <div class="cust-profile-content">
+            <div class="cust-profile-avatar">
+              <div class="cust-avatar">{{ currentUser.name | make_list | first }}</div>
+              <div class="cust-avatar-name">
+                <div class="cust-avatar-name-title">{{ currentUser.name }}</div>
+                <div class="cust-avatar-name-support">View Profile</div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="nav-breadcrumb">
