@@ -102,6 +102,7 @@ def send_group_access_add_email(
     general.emailSES(destination, subject, body)
     return ""
 
+
 def send_revoke_failure_mail(
     targets, request_id, revoker_email, retries, message, access_tag=None
 ):

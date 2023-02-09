@@ -35,7 +35,7 @@ from Access.views import (
     groupDashboard,
     accept_bulk,
     update_group_owners,
-    remove_group_member
+    remove_group_member,
 )
 
 urlpatterns = [
@@ -75,5 +75,7 @@ urlpatterns = [
         name="updateGroupOwners",
     ),
     re_path(r"^accept_bulk/(?P<selector>[\w-]+)", accept_bulk, name="accept_bulk"),
-    re_path(r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"),
+    re_path(
+        r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"
+    ),
 ]

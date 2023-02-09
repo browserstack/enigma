@@ -264,6 +264,7 @@ def accept_bulk(request, selector):
         json_response["status_code"] = 401
         return JsonResponse(json_response, status=json_response["status_code"])
 
+
 def remove_group_member(request):
     try:
         response = group_helper.remove_member(request)
