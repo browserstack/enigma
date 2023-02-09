@@ -5,19 +5,10 @@ import datetime
 import logging
 from bootprocess import general
 from Access.views_helper import generateUserMappings, executeGroupAccess
-<<<<<<< HEAD
 from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 from . import helpers as helper
-import json
-=======
-from BrowserStackAutomation.settings import (
-    MAIL_APPROVER_GROUPS,
-    PERMISSION_CONSTANTS,
-)
 from Access.background_task_manager import background_task
 import json
-
->>>>>>> fab57c8132c89b243a7def7a25f74be5e13ae662
 
 logger = logging.getLogger(__name__)
 
@@ -753,6 +744,8 @@ def validate_group_access_create_request(group, auth_user):
         logger.exception("Permission denied, you're not owner of this group")
         return {"title": "Permision Denied", "msg": "You're not owner of this group"}
     return None
+
+
 def remove_member(request):
     try:
         membership_id = request.POST.get("membershipId")
