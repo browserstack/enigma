@@ -1,31 +1,54 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.shortcuts import render
 from django.http import JsonResponse
+from django.shortcuts import render
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
+import json
 import logging
+
 from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from Access import group_helper
-from Access.accessrequest_helper import requestAccessGet, getGrantFailedRequests, get_pending_revoke_failures, getPendingRequests, create_request
+from Access.accessrequest_helper import (
+    requestAccessGet,
+    getGrantFailedRequests,
+    get_pending_revoke_failures,
+    getPendingRequests,
+    create_request,
+)
+from Access.models import User
 from Access.userlist_helper import getallUserList, get_identity_templates, create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE
+from Access.views_helper import render_error_message
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
-from django.shortcuts import render
-from django.http import JsonResponse
-import json
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type - "
 
 logger = logging.getLogger(__name__)
 
-# Create your views here.
-all_access_modules = helper.getAvailableAccessModules()
-
-
 @login_required
 def showAccessHistory(request):
-    return False
+    if request.method == 'POST':
+        return render_error_message(
+            request,
+            "POST for showAccessHistory not supported",
+            "Invalid Request",
+            "Error request not found OR Invalid request type"
+        )
+
+    try:
+        access_user = User.objects.get(email=request.user.email)
+    except Exception as e:
+        return render_error_message(
+            request,
+            "Access user with email %s not found. Error: %s" % (request.user.email, str(e)),
+            "Invalid Request",
+            "Please login again"
+        )
+
+    return render(request, 'BSOps/showAccessHistory.html', {
+        'dataList': access_user.get_access_history(helper.get_available_access_modules())
+    })
 
 
 @login_required

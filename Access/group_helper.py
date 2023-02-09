@@ -134,11 +134,11 @@ def create_group(request):
 
 def get_generic_access(group_mapping):
     access_details = {}
-    for each_access_module in helpers.getAvailableAccessModules():
-        if group_mapping.access.access_tag == each_access_module.tag():
-            access_details = group_mapping.getAccessRequestDetails(each_access_module)
-            break
+    access_module = helpers.get_available_access_module_from_tag(group_mapping.access.access_tag)
+    if not access_module:
+        return {}
 
+    access_details = group_mapping.getAccessRequestDetails(access_module)
     logger.debug("Generic access generated: " + str(access_details))
     return access_details
 
