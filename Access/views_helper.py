@@ -135,32 +135,7 @@ def prepare_datalist(paginator, record_date):
         if record_date is not None and record_date != str(each_access_request.updated_on)[:10]:
             continue
         access_details = get_generic_user_access_mapping(each_access_request)
-        for each_access_split in helper.split_access_details(access_details):
-            data_list.append({
-                'request_id': each_access_request.request_id,
-                'user': str(each_access_request.user_identity.user),
-                'name': [key + " - " + str(value).strip("[]")
-                         for key, value in list(each_access_request.access.access_label.items())
-                         if key != "keySecret"],
-                'details': each_access_split['accessType'] + " => "
-                + each_access_split['accessCategory'],
-                'accessStatus': each_access_request.status,
-                'grantOwner': access_details['grantOwner'],
-                'revokeOwner': access_details['revokeOwner'],
-                'approver': each_access_request.approver_1.user.username
-                if each_access_request.approver_1 else "",
-                'accessType': each_access_request.access.access_tag,
-                'type': each_access_request.access_type,
-                'dateRequested': str(each_access_request.requested_on)[:19] + "UTC",
-                'offboardingDate':
-                    str(each_access_request.user_identity.user.offbaord_date)[:19] + "UTC"
-                if each_access_request.user_identity.user.offbaord_date else "",
-                'lastUpdated': str(each_access_request.updated_on)[:19] + "UTC",
-                'revoker': each_access_request.revoker.user.username
-                if each_access_request.revoker else "",
-                'approvedOn': str(each_access_request.approved_on)[:19] + "UTC"
-                if each_access_request.approved_on else ""
-            })
+        data_list.append(access_details)
     return data_list
 
 
@@ -175,14 +150,14 @@ def gen_all_user_access_list_csv(data_list):
                      'RequestDate', 'Approver', 'GrantOwner',
                      'RevokeOwner', 'Type'])
     for data in data_list:
-        access_status = data["accessStatus"]
+        access_status = data["status"]
         if len(data["revoker"]) > 0:
             access_status += " by - " + data["revoker"]
-        writer.writerow([data['user'], data['accessType'],
-                         (", ".join(data["name"])),
-                         access_status, data["dateRequested"],
-                         data["approver"], data["grantOwner"],
-                         data["revokeOwner"], data["type"]])
+        writer.writerow([data['user'], data['access_desc'],
+                         (", ".join(data["access_label"])),
+                         access_status, data["requested_on"],
+                         data["approver_1"], data["grantOwner"],
+                         data["revokeOwner"], data["access_type"]])
     return response
 
 def get_generic_user_access_mapping(user_access_mapping):

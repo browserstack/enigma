@@ -598,19 +598,30 @@ class UserAccessMapping(models.Model):
         # code metadata
         access_request_data["access_tag"] = access_tag
         # ui metadata
+        access_request_data["user"] = self.user_identity.user.name
         access_request_data["userEmail"] = self.user_identity.user.email
         access_request_data["requestId"] = self.request_id
         access_request_data["accessReason"] = self.request_reason
-        access_request_data["requested_on"] = self.requested_on
+        access_request_data["requested_on"] = str(self.requested_on)[:19] + "UTC" if self.updated_on else ""
 
-        access_request_data["accessType"] = access_module.access_desc()
+        access_request_data["access_desc"] = access_module.access_desc()
         access_request_data["accessCategory"] = access_module.combine_labels_desc(
             access_labels
         )
         access_request_data["accessMeta"] = access_module.combine_labels_meta(
             access_labels
         )
+        access_request_data["access_label"] = [key + "-" + str(val).strip("[]") 
+                                              for key,val in list(self.access.access_label.items()) 
+                                              if key != "keySecret"]
+        access_request_data["access_type"] = self.access_type
+        access_request_data["approver_1"] = self.approver_1.user.username
+        access_request_data["approver_2"] = self.approver_2.user.username
+        access_request_data["approved_on"] = self.approved_on
+        access_request_data["updated_on"] = str(self.updated_on)[:19] + "UTC" if self.updated_on else ""
         access_request_data["status"] = self.status
+        access_request_data["revoker"] = self.revoker.user.username
+        access_request_data["offboarding_date"] = str(self.user_identity.user.offbaord_date)[:19] + "UTC" if self.user_identity.user.offbaord_date else ""
         access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 

@@ -150,25 +150,25 @@ var current_username = "";
             record = result["dataList"][i]
             html_string += "<tr>"
             html_string += "<td>"+record["user"]+"</td>"
-            html_string += "<td>"+record["accessType"]+"</td>"
+            html_string += "<td>"+record["access_desc"]+"</td>"
             html_string += "<td>"
-            for(j=0;j<record["name"].length;j++)
-              html_string += record["name"][j]+"<br>"
+            for(j=0;j<record["access_label"].length;j++)
+              html_string += record["access_label"][j]+"<br>"
             html_string += "</td>"
-            if(record["accessStatus"] != "Revoked"){
-              html_string += "<td id='"+record["request_id"]+"-access-status'>"+record["accessStatus"]+"</td>"
+            if(record["status"] != "Revoked"){
+              html_string += "<td id='"+record["request_id"]+"-access-status'>"+record["status"]+"</td>"
             }
             else{
-              html_string += "<td id='"+record["request_id"]+"-access-status'>"+record["accessStatus"]+"<br>By-"+record["revoker"]+"</td>"
+              html_string += "<td id='"+record["request_id"]+"-access-status'>"+record["status"]+"<br>By-"+record["revoker"]+"</td>"
             }
             html_string += "<td id='"+record["request_id"]+"-revoke-button'>"
-            if(record["accessStatus"] != "Revoked")
+            if(record["status"] != "Revoked")
               html_string += '<button id="'+record["request_id"]+`" class="btn btn-danger" data-toggle="modal" data-target="#revokeModal" onclick='revokeConfirm("`+record["request_id"]+`")'>Mark Revoked</button>`
             html_string += "</td>"
-            html_string += "<td>"+record["dateRequested"]+"</td>"
+            html_string += "<td>"+record["requested_on"]+"</td>"
             html_string += "<td>"+record["approver"]+"</td>"
-            html_string += "<td>"+record["lastUpdated"]+"</td>"
-            html_string += "<td>"+record["offboardingDate"]+"</td>"
+            html_string += "<td>"+record["updated_on"]+"</td>"
+            html_string += "<td>"+record["offboarding_date"]+"</td>"
             html_string += "<td>"+record["grantOwner"]+"</td>"
             html_string += "<td>"+record["revokeOwner"]+"</td>"
             html_string += "<td>{% if is_ops %} <a class=\"btn btn-primary\" target=\"_blank\" href=\"/individual_resolve?requestId="+record["request_id"]+"&ops_resolve=true\">ReGrant</a></td>{% endif %}"
@@ -318,24 +318,24 @@ jQuery(document).ready(function ($) {
       {% for item in dataList %}
       <tr >
         <td>{{item.user}}</td>
-        <td>{{item.accessType}}</td>
+        <td>{{item.access_desc}}</td>
         <td>
-          {% for pair in item.name %}
+          {% for pair in item.access_label %}
             {{ pair }}<br>
           {% endfor %}
         </td>
-        <td id="{{ item.request_id }}-access-status">{{item.accessStatus}}{% if item.accessStatus == "Revoked" %}<br>By - {{ item.revoker }}{% endif %}</td>
-        <td id="{{ item.request_id }}-revoke-button">{% if item.accessStatus != "Revoked" %}<button class="btn btn-danger" data-toggle="modal" data-target="#revokeModal" onclick='revokeConfirm("{{ item.request_id }}")' id="{{ item.request_id }}">Mark Revoked</button>{% endif %}</td>
-        <td>{{item.dateRequested}}</td>
-        <td>{{item.approver}}</td>
-        <td>{{item.lastUpdated}}</td>
-        <td>{{item.offboardingDate}}</td>
+        <td id="{{ item.request_id }}-access-status">{{item.status}}{% if item.status == "Revoked" %}<br>By - {{ item.revoker }}{% endif %}</td>
+        <td id="{{ item.request_id }}-revoke-button">{% if item.status != "Revoked" %}<button class="btn btn-danger" data-toggle="modal" data-target="#revokeModal" onclick='revokeConfirm("{{ item.request_id }}")' id="{{ item.request_id }}">Mark Revoked</button>{% endif %}</td>
+        <td>{{item.requested_on}}</td>
+        <td>{{item.approver_1}}</td>
+        <td>{{item.updated_on}}</td>
+        <td>{{item.offboarding_date}}</td>
         <td>{{item.grantOwner}}</td>
         <td>{{item.revokeOwner}}</td>
         <td>{% if is_ops %}
           <a class="btn btn-primary" target="_blank" href="/individual_resolve?requestId={{ item.request_id }}&ops_resolve=true">ReGrant</a></td>
           {% endif %}
-          <td>{{item.type}}</td>
+          <td>{{item.access_type}}</td>
       </tr>
       {% endfor %}
   	</tbody>

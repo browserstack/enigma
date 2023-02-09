@@ -83,13 +83,3 @@ def getPossibleApproverPermissions():
         all_approver_permissions.extend(approver_permissions.values())
     return list(set(all_approver_permissions))
 
-
-def split_access_details(original_details):
-    split_details = []
-    for each_category in original_details['accessCategory'].split(';'):
-        split_details.append({
-            'accessType': original_details['accessType'],
-            'accessCategory': each_category,
-            'accessMeta': original_details['accessMeta']
-        })
-    return split_details
