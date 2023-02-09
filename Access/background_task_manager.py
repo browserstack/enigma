@@ -54,7 +54,7 @@ def run_access_grant(request_id):
     approver = user_access_mapping.approver_1.user.username
     message = ""
     if not user_access_mapping.user_identity.user.state == "1":
-        user_access_mapping.access_declined()
+        user_access_mapping.decline_access(decline_reason="User is not active")
         logger.debug(
             {
                 "requestId": request_id,
@@ -65,7 +65,7 @@ def run_access_grant(request_id):
         )
         return False
     elif user_access_mapping.user_identity.identity == {}:
-        user_access_mapping.access_grant_failed()
+        user_access_mapping.grant_fail_access()
         logger.debug(
             {
                 "requestId": request_id,
@@ -100,7 +100,7 @@ def run_access_grant(request_id):
         message = str(traceback.format_exc())
 
     if approve_success:
-        user_access_mapping.access_approved()
+        user_access_mapping.approve_access()
         logger.debug(
             {
                 "requestId": request_id,
@@ -110,7 +110,7 @@ def run_access_grant(request_id):
             }
         )
     else:
-        user_access_mapping.access_grant_failed()
+        user_access_mapping.grant_fail_access()
         logger.debug(
             {
                 "requestId": request_id,

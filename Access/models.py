@@ -699,16 +699,16 @@ class UserAccessMapping(models.Model):
     def is_approved(self):
         return self.status == "Approved"
 
-    def access_grant_failed(self):
+    def grant_fail_access(self):
         self.status = "GrantFailed"
         self.save()
 
-    def access_declined(self, decline_reason=None):
+    def decline_access(self, decline_reason=None):
         self.status = "Declined"
         self.decline_reason = decline_reason
         self.save()
 
-    def access_approved(self):
+    def approve_access(self):
         self.status = "Approved"
         self.save()
 

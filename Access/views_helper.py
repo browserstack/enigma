@@ -43,27 +43,27 @@ def generate_user_mappings(user, group, membership):
         user_identity = user.get_or_create_active_identity(access.access_tag)
 
         if user_identity and not user_identity.has_approved_access(access=access):
-            user_mapping_obj = user_identity.create_access_mapping(
+            user_mapping = user_identity.create_access_mapping(
                 request_id=request_id, access=access,
                 approver_1=approver_1, approver_2=approver_2,
                 reason=reason, access_type="Group")
-            user_mappings_list.append(user_mapping_obj)
+            user_mappings_list.append(user_mapping)
     return user_mappings_list
 
 
 def execute_group_access(user_mappings_list):
-    for mapping_obj in user_mappings_list:
-        user = mapping_obj.user_identity.user
+    for mapping in user_mappings_list:
+        user = mapping.user_identity.user
         if user.current_state() == "active":
-            if "other" in mapping_obj.request_id:
-                decline_group_other_access(mapping_obj)
+            if "other" in mapping.request_id:
+                decline_group_other_access(mapping)
             else:
-                background_task("run_access_grant", mapping_obj.request_id)
+                background_task("run_access_grant", mapping.request_id)
                 logger.debug(
-                    "Successful group access grant for " + mapping_obj.request_id
+                    "Successful group access grant for " + mapping.request_id
                 )
         else:
-            mapping_obj.access_declined(decline_reason="User is not active")
+            mapping.decline_access(decline_reason="User is not active")
             logger.debug(
                 "Skipping group access grant for user "
                 + user.user.username
@@ -73,7 +73,7 @@ def execute_group_access(user_mappings_list):
 
 def decline_group_other_access(access_mapping):
     user = access_mapping.user
-    access_mapping.access_declined(
+    access_mapping.decline_access(
         decline_reason="Auto decline for 'Other Access'. Please replace this with correct access.")
     logger.debug(
         "Skipping group access grant for user "
@@ -87,9 +87,9 @@ def decline_group_other_access(access_mapping):
 def get_next_index(request_id, similar_id_mappings):
     idx = 0
     while True:
-        candidate = request_id + "_" + str(idx)
-        if candidate not in similar_id_mappings:
-            return candidate
+        new_request_id = request_id + "_" + str(idx)
+        if new_request_id not in similar_id_mappings:
+            return new_request_id
         idx += 1
 
 
