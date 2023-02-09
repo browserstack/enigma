@@ -1,11 +1,14 @@
-from Access.models import User, GroupV2, MembershipV2
-from Access import helpers, views_helper, notifications
+from Access.models import User, GroupV2, MembershipV2, AccessV2
+from Access import helpers, views_helper, notifications, accessrequest_helper
 from django.db import transaction
 import datetime
 import logging
 from bootprocess import general
 from Access.views_helper import generateUserMappings, executeGroupAccess
 from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
+from . import helpers as helper
+from Access.background_task_manager import background_task
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -14,6 +17,8 @@ NEW_GROUP_CREATE_SUCCESS_MESSAGE = {
     "msg": """A request for New Group with name {group_name} has been submitted for approval.
     You will be notified for any changes in request status.""",
 }
+
+ERROR_MESSAGE = "Error in request not found OR Invalid request type"
 
 NEW_GROUP_CREATE_ERROR_MESSAGE = {
     "error_msg": "Internal Error",
@@ -50,6 +55,17 @@ UPDATE_OWNERS_REQUEST_ERROR = {
     "error_msg": "Bad request",
     "msg": "The requested URL is of POST method but was called with other.",
 }
+
+class GroupAccessExistsException(Exception):
+    def __init__(self):
+            self.message = "Group Access Exists"
+            super().__init__(self.message)    
+
+
+class GroupAccessExistsException(Exception):
+    def __init__(self):
+        self.message = "Group Access Exists"
+        super().__init__(self.message)
 
 
 def create_group(request):
@@ -126,7 +142,9 @@ def create_group(request):
 
 def get_generic_access(group_mapping):
     access_details = {}
-    access_module = helpers.get_available_access_module_from_tag(group_mapping.access.access_tag)
+    access_module = helpers.get_available_access_module_from_tag(
+        group_mapping.access.access_tag
+    )
     if not access_module:
         return {}
 
@@ -183,7 +201,7 @@ def get_group_access_list(request, group_name):
     context["genericAccesses"] = [
         get_generic_access(group_mapping) for group_mapping in group_mappings
     ]
-    if(context["genericAccesses"] == [{}]):
+    if context["genericAccesses"] == [{}]:
         context["genericAccesses"] = []
 
     return context
@@ -443,9 +461,7 @@ def add_user_to_group(request):
                 }
                 member.approver = request.user.user
                 member.status = "Approved"
-                user_mappings_list = generateUserMappings(
-                    user, group, member
-                )
+                user_mappings_list = generateUserMappings(user, group, member)
                 member.save()
                 # group_name = member.group.name
 
@@ -589,3 +605,198 @@ def accept_member(request, requestId, shouldRender=True):
         context = {}
         context["error"] = APPROVAL_ERROR + str(e)
         return context
+
+
+def get_group_access(form_data, auth_user):
+    data = dict(form_data.lists())
+    group_name = data["groupName"][0]
+    context = {}
+    context["accesses"] = []
+
+    group = GroupV2.get_active_group_by_name(group_name=group_name)
+    validation_error = validate_group_access_create_request(
+        group=group, auth_user=auth_user
+    )
+    if validation_error:
+        context["status"] = validation_error
+
+    access_module_list = data["accessList"]
+    for module_value in access_module_list:
+        module = helper.get_available_access_modules()[module_value]
+        try:
+            extra_fields = module.get_extra_fields()
+        except Exception:
+            extra_fields = []
+
+        context["genericForm"] = True
+        context["accesses"].append(
+            {
+                "formDesc": module.access_desc(),
+                "accessTag": module.tag(),
+                "accessTypes": module.access_types(),
+                "accessRequestData": module.access_request_data(
+                    form_data, is_group=True
+                ),
+                "extraFields": extra_fields,
+                "accessRequestPath": module.fetch_access_request_form_path(),
+            }
+        )
+    context["groupName"] = group_name
+    return context
+
+
+def save_group_access_request(form_data, auth_user):
+    access_request = dict(form_data.lists())
+    group_name = access_request["groupName"][0]
+    group = GroupV2.get_active_group_by_name(group_name=group_name)
+
+    context = {"status_list": []}
+    validation_error = validate_group_access_create_request(
+        group=group, auth_user=auth_user
+    )
+    if validation_error:
+        context["status"] = validation_error
+
+    for accessIndex, access_type in enumerate(access_request["accessType"]):
+        access_module = helper.get_available_access_modules()[access_type]
+        access_labels = accessrequest_helper.validate_access_labels(
+            access_labels_json=access_request["accessLabel"][accessIndex],
+            access_type=access_type,
+        )
+        extra_fields = accessrequest_helper.get_extra_fields(access_request)
+        extra_field_labels = accessrequest_helper.get_extra_field_labels(access_module)
+
+        module_access_labels = access_module.validate_request(
+            access_labels, auth_user, is_group=False
+        )
+        if extra_fields and extra_field_labels:
+            for field in extra_field_labels:
+                module_access_labels[0][field] = extra_fields[0]
+                extra_fields = extra_fields[1:]
+
+        request_id = (
+            auth_user.username
+            + "-"
+            + access_type
+            + "-"
+            + datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+        )
+        with transaction.atomic():
+            for labelIndex, access_label in enumerate(module_access_labels):
+                request_id = request_id + "_" + str(labelIndex)
+                try:
+                    _create_group_access_mapping(
+                        group=group,
+                        user=auth_user.user,
+                        request_id=request_id,
+                        access_type=access_type,
+                        access_label=access_label,
+                        access_reason=access_request["accessReason"],
+                    )
+                    context["status_list"].append(
+                        {
+                            "title": request_id + " Request Submitted",
+                            "msg": "Once approved you will receive the update "
+                            + json.dumps(access_label),
+                        }
+                    )
+                except GroupAccessExistsException:
+                    context["status_list"].append(
+                        {
+                            "title": request_id + " Request Submitted",
+                            "msg": "Once approved you will receive the update "
+                            + json.dumps(access_label),
+                        }
+                    )
+        email_destination = access_module.get_approvers()
+        member_list = group.get_all_approved_members()
+        notifications.send_group_access_add_email(
+            destination=email_destination,
+            group_name=group_name,
+            requester=auth_user.user.email,
+            request_id=request_id,
+            member_list=member_list,
+        )
+
+    return context
+
+
+def _create_group_access_mapping(
+    group, user, request_id, access_type, access_label, access_reason
+):
+    access = AccessV2.get(access_type=access_type, access_label=access_label)
+    if not access:
+        access = AccessV2.objects.create(
+            access_tag=access_type, access_label=access_label
+        )
+    else:
+        if group.check_access_exist(access):
+            raise GroupAccessExistsException()
+    group.add_access(
+        request_id=request_id,
+        requested_by=user,
+        request_reason=access_reason,
+        access=access,
+    )
+
+
+def validate_group_access_create_request(group, auth_user):
+    if not group:
+        logger.exception("This Group is not yet approved")
+        return {"title": "Permisison Denied", "msg": "This Group is not yet approved"}
+
+    if not (group.is_owner(auth_user.user) or auth_user.is_superuser):
+        logger.exception("Permission denied, you're not owner of this group")
+        return {"title": "Permision Denied", "msg": "You're not owner of this group"}
+    return None
+
+
+def remove_member(request):
+    try:
+        membership_id = request.POST.get("membershipId")
+        if not membership_id:
+            raise ("Membership Id is not loaded.")
+        membership = MembershipV2.get_membership(membership_id)
+    except Exception as e:
+        logger.error("Membership id not found in request")
+        logger.exception(str(e))
+        return {"error": ERROR_MESSAGE}
+
+    user = membership.user
+
+    revoke_group_accesses = [
+        mapping.access for mapping in membership.group.get_approved_accesses()
+    ]
+
+    other_memberships_groups = (
+        user.get_all_memberships()
+        .exclude(group=membership.group)
+        .values_list("group", flat=True)
+    )
+    other_group_accesses = []
+
+    for group in other_memberships_groups:
+        mapping = group.get_approved_accesses()
+        other_group_accesses.append(mapping.access)
+
+    revoke_accesses = list(set(revoke_group_accesses) - set(other_group_accesses))
+
+    for access in revoke_accesses:
+        user_identity = user.get_active_identity(access.access_tag)
+        user_identity.decline_non_approved_access_mapping(access)
+        user_identity.offboarding_approved_access_mapping(access)
+        background_task(
+            "run_access_revoke",
+            json.dumps(
+                {
+                    "request_id": user_identity.get_granted_access_mapping(access)
+                    .first()
+                    .request_id,
+                    "revoker_email": request.user.user.email,
+                }
+            ),
+        )
+
+    membership.revoke_membership()
+
+    return {"message": "Successfully removed user from group"}
