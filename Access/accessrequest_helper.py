@@ -42,35 +42,66 @@ REQUEST_IDENTITY_NOT_SETUP_ERR_MSG = {
     "msg": "User Identity for module {access_tag} not setup by the user",
 }
 
+REQUEST_SUCCESS_MSG = {
+    "title": "{request_id}  Request Submitted",
+    "msg": "Once approved you will receive the update. {access_label}",
+}
+REQUEST_DUPLICATE_ERR_MSG = {
+    "title": "{access_tag}: Duplicate Request not submitted",
+    "msg": "Access already granted or request in pending state. {access_label}",
+}
+REQUEST_ERR_MSG = {
+    "error_msg": "Invalid Request",
+    "msg": "Please Contact Admin",
+}
+REQUEST_EMPTY_FORM_ERR_MSG = {
+    "error_msg": "The submitted form is empty. Tried direct access to reqeust access page",
+    "msg": "Error Occured while submitting your Request. Please contact the Admin",
+}
+
+REQUEST_ACCESS_AUTO_APPROVED_MSG = {
+    "title": "{request_id}  Request Approved",
+    "msg": "Once granted you will receive the update",
+}
+
+REQUEST_DB_ERR_MSG = {
+    "error_msg": "Error Saving Request",
+    "msg": "Please Contact Admin",
+}
+REQUEST_IDENTITY_NOT_SETUP_ERR_MSG = {
+    "error_msg": "Identity not setup",
+    "msg": "User Identity for module {access_tag} not setup by the user",
+}
+
 
 def requestAccessGet(request):
     context = {}
     try:
-        for each_access in helpers.getAvailableAccessModules():
-            if "access_" + each_access.tag() in request.GET.getlist("accesses"):
+        for each_tag, each_module in helpers.get_available_access_modules().items():
+            if "access_" + each_tag in request.GET.getlist("accesses"):
                 if "accesses" not in context:
                     context["accesses"] = []
                 context["genericForm"] = True
                 try:
-                    extra_fields = each_access.get_extra_fields()
+                    extra_fields = each_module.get_extra_fields()
                 except Exception:
                     extra_fields = []
                 try:
-                    notice = each_access.get_notice()
+                    notice = each_module.get_notice()
 
                 except Exception:
                     notice = ""
                 context["accesses"].append(
                     {
-                        "formDesc": each_access.access_desc(),
-                        "accessTag": each_access.tag(),
-                        "accessTypes": each_access.access_types(),
-                        "accessRequestData": each_access.access_request_data(
+                        "formDesc": each_module.access_desc(),
+                        "accessTag": each_tag,
+                        "accessTypes": each_module.access_types(),
+                        "accessRequestData": each_module.access_request_data(
                             request, is_group=False
                         ),
                         "extraFields": extra_fields,
                         "notice": notice,
-                        "accessRequestPath": each_access.fetch_access_request_form_path(),
+                        "accessRequestPath": each_module.fetch_access_request_form_path(),
                     }
                 )
     except Exception as e:
@@ -136,10 +167,11 @@ def getPendingRequests(request):
         context["membershipPending"] = GroupV2.getPendingMemberships()
         context["newGroupPending"] = GroupV2.getPendingCreation()
 
+        user = request.user.user
         (
             context["genericRequests"],
             context["groupGenericRequests"],
-        ) = get_pending_accesses_from_modules(request)
+        ) = get_pending_accesses_from_modules(user)
 
         duration = time.time() - start_time
         logger.info("Time to fetch all pending requests:" + str(duration))
@@ -149,16 +181,19 @@ def getPendingRequests(request):
         return process_error_response(request, e)
 
 
-def get_pending_accesses_from_modules(accessUser):
+def get_pending_accesses_from_modules(access_user):
     individual_requests = []
     group_requests = {}
 
     logger.info("Start looping all access modules")
-    for access_module in helpers.getAvailableAccessModules():
+    for (
+        access_module_tag,
+        access_module,
+    ) in helpers.get_available_access_modules().items():
         access_module_start_time = time.time()
 
         try:
-            pending_accesses = access_module.get_pending_accesses(accessUser)
+            pending_accesses = access_module.get_pending_accesses(access_user)
         except Exception as e:
             logger.exception(e)
             pending_accesses = {
@@ -169,13 +204,13 @@ def get_pending_accesses_from_modules(accessUser):
         process_individual_requests(
             pending_accesses["individual_requests"],
             individual_requests,
-            access_module.tag(),
+            access_module_tag,
         )
         process_group_requests(pending_accesses["group_requests"], group_requests)
 
         logger.info(
             "Time to fetch pending requests of access module: "
-            + access_module.tag()
+            + access_module_tag
             + " - "
             + str(time.time() - access_module_start_time)
         )
@@ -269,10 +304,10 @@ def create_request(auth_user, access_request_form):
     json_response = {}
     json_response["status"] = []
     json_response["status_list"] = []
-    extra_fields = _get_extra_fields(access_request=access_request)
+    extra_fields = get_extra_fields(access_request=access_request)
 
     for index1, access_type in enumerate(access_request["accessRequests"]):
-        access_labels = _validate_access_labels(
+        access_labels = validate_access_labels(
             access_labels_json=access_request["accessLabel"][index1],
             access_type=access_type,
         )
@@ -295,7 +330,7 @@ def create_request(auth_user, access_request_form):
             access_labels, auth_user, is_group=False
         )
 
-        extra_field_labels = _get_extra_field_labels(access_module)
+        extra_field_labels = get_extra_field_labels(access_module)
 
         if extra_fields and extra_field_labels:
             for field in extra_field_labels:
@@ -394,14 +429,14 @@ def _create_access_mapping(
     return access
 
 
-def _get_extra_field_labels(access_module):
+def get_extra_field_labels(access_module):
     try:
         return access_module.get_extra_fields()
     except Exception:
         return []
 
 
-def _get_extra_fields(access_request):
+def get_extra_fields(access_request):
     if "extraFields" in access_request:
         return access_request["extraFields"]
     return []
@@ -429,7 +464,7 @@ def _validate_access_request(access_request_form, user):
     return {}, access_request
 
 
-def _validate_access_labels(access_labels_json, access_type):
+def validate_access_labels(access_labels_json, access_type):
     if access_labels_json is None or access_labels_json == "":
         raise Exception("No fields were selected in the request. Please try again.")
     access_labels = json.loads(access_labels_json)

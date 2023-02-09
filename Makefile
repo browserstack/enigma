@@ -33,7 +33,7 @@ test:
 	fi
 
 	@docker exec dev python -m pytest -v --cov --disable-warnings;\
-	echo "Tests finished. Stopping runserver:" && make down
+	echo "Tests finished."
 
 ## Create lint issues file
 .PHONY: lint_issues

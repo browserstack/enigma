@@ -173,10 +173,9 @@ def offboard_user(request):
     
     user.offboard_user(request.user.user)
     
-    for access_module in helpers.getAvailableAccessModules():
-        module_identity = user.get_active_identity(access_module.tag())
-        if not module_identity:
-            continue
+    module_identities = user.get_all_active_identities()
+
+    for module_identity in module_identities:  
         module_identity.decline_all_non_approved_access_mappings()
         access_mappings = module_identity.get_all_granted_access_mappings()
 
