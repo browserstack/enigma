@@ -1,0 +1,59 @@
+{% extends 'global_layout.html' %}
+{% load static %}
+
+{% block content_body %}
+<!-- Content Wrapper. Contains page content -->
+
+<!-- <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script> -->
+
+<script src="{% static "js/multiselect.min.js" %}"></script>
+<script src="{% static "js/jquery-ui.min.js" %}"></script>
+
+<link rel="stylesheet" type="text/css" href="{% static "lib/google-code-prettify/prettify.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "css/multiselect.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "css/jquery-ui.min.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "files/css/custom.css" %}">
+
+
+
+<div class="wrapper">
+  <!-- Horizontal Form -->
+  <div class="accessForms">
+    <form class="form-horizontal" action="{% url 'groupRequestAccess' %}" method="POST" id="usrform" name="usrform">
+      {% csrf_token %}
+      {% if genericForm %}
+        {% for each_access in accesses %}
+          <!-- Add condition to show note for BQ Restricted Access, as we are receiving alot of invalid Requests for this -->
+          {% if each_access.accessTag and each_access.accessTag == "bigquery_restricted" %}
+            <div style="border-left: 20px solid rgb(255, 255, 255);">
+              <p style="margin-left: 5px;"><strong>Note:</strong> BigQuery Restricted Access provides private data access. As mentioned <a href="https://browserstack.atlassian.net/wiki/spaces/ENG/pages/87884113/Access+management#Dashboard">here</a>,
+                Not everyone can get access to this project or its datasets.
+                If you are looking out for Normal BigQuery data access, Please go back and raise for BigQuery Viewer Access</p>
+            </div>
+          {% endif %}
+          {% with each_access.accessRequestPath as includePath %}
+            {% include includePath %}
+          {% endwith %}
+          <input type="hidden" name="requestUser" value="{{ request.user }}">
+          <input type="hidden" name="accessType" value="{{ each_access.accessTag }}"><br>
+          <input type="hidden" name="accessRequests" value="{{ each_access.accessTag }}">
+          <br>
+        {% endfor %}
+      {% endif %}
+
+      <input type="hidden" name="groupName" value="{{groupName}}">
+      <input type="hidden" name="requester" value="{{request.user.email}}">
+      <br>
+      <div id="suggestions" style="margin: auto; margin-left: 15px;"></div>
+      <div class="form-group" style="padding-left:1%;">
+        <button type="submit" class="btn btn-primary" style="margin: auto; margin-left: 15px;">Request Access</button>
+      </div>
+
+    </form>
+
+  </div>
+  <!-- /.box -->
+</div>
+
+<!-- /.content-wrapper -->
+{% endblock %}

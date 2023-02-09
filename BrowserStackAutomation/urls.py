@@ -28,15 +28,16 @@ from Access.views import (
     allUserAccessList,
     allUsersList,
     requestAccess,
-    groupRequestAccess,
+    group_access,
     group_access_list,
     approveNewGroup,
     add_user_to_group,
     groupDashboard,
     accept_bulk,
     update_group_owners,
-    remove_group_member
+    remove_group_member,
 )
+from Access.helpers import getAvailableAccessModules
 
 urlpatterns = [
     re_path(r"^admin/", admin.site.urls),
@@ -55,7 +56,7 @@ urlpatterns = [
     re_path(r"^access/userAccesses$", allUserAccessList, name="allUserAccessList"),
     re_path(r"^access/usersList$", allUsersList, name="allUsersList"),
     re_path(r"^access/requestAccess$", requestAccess, name="requestAccess"),
-    re_path(r"^group/requestAccess$", groupRequestAccess, name="groupRequestAccess"),
+    re_path(r"^group/requestAccess$", group_access, name="groupRequestAccess"),
     re_path(
         r"^group/access/list/(?P<groupName>[\w -]+)$",
         group_access_list,
@@ -75,5 +76,10 @@ urlpatterns = [
         name="updateGroupOwners",
     ),
     re_path(r"^accept_bulk/(?P<selector>[\w-]+)", accept_bulk, name="accept_bulk"),
-    re_path(r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"),
+    re_path(
+        r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"
+    ),
 ]
+
+for each_module in getAvailableAccessModules():
+    urlpatterns.extend(each_module.urlpatterns)

@@ -213,7 +213,11 @@ class User(models.Model):
         all_user_identities = self.module_identity.all()
         access_request_mappings = []
         for each_identity in all_user_identities:
-            access_request_mappings.extend(each_identity.useraccessmapping_set.prefetch_related('access', 'approver_1', 'approver_2'))
+            access_request_mappings.extend(
+                each_identity.useraccessmapping_set.prefetch_related(
+                    "access", "approver_1", "approver_2"
+                )
+            )
         return access_request_mappings
 
     def get_access_history(self, all_access_modules):
@@ -222,7 +226,9 @@ class User(models.Model):
 
         for request_mapping in access_request_mappings:
             access_module = all_access_modules[request_mapping.accessType]
-            access_history.append(request_mapping.getAccessRequestDetails(access_module))
+            access_history.append(
+                request_mapping.getAccessRequestDetails(access_module)
+            )
 
         return access_history
 
@@ -447,7 +453,10 @@ class GroupV2(models.Model):
 
     @staticmethod
     def get_pending_group(group_id):
-        return GroupV2.objects.get(group_id=group_id, status="Pending")
+        try:
+            return GroupV2.objects.get(group_id=group_id, status="Pending")
+        except GroupV2.DoesNotExist:
+            return None
 
     @staticmethod
     def get_approved_group(group_id):
@@ -460,7 +469,7 @@ class GroupV2(models.Model):
     def get_active_group_by_name(group_name):
         try:
             return GroupV2.objects.get(name=group_name, status="Approved")
-        except Exception:
+        except GroupV2.DoesNotExist:
             return None
 
     @staticmethod
@@ -514,6 +523,32 @@ class GroupV2(models.Model):
             status="Pending", approver=None
         )
 
+    def is_owner(self, user):
+        return (
+            self.membership_group.filter(is_owner=True)
+            .filter(user=user)
+            .first()
+            is not None
+        )
+
+    def add_access(self, request_id, requested_by, request_reason, access):
+        self.group_access_mapping.create(
+            request_id=request_id,
+            requested_by=requested_by,
+            request_reason=request_reason,
+            access=access,
+        )
+
+    def check_access_exist(self, access):
+        try:
+            self.group_access_mapping.get(access=access)
+            return True
+        except GroupAccessMapping.DoesNotExist:
+            return False
+
+    def get_all_approved_members(self):
+        self.membership_group.filter(status="Approved")
+        
     def get_approved_accesses(self):
         return self.groupaccessmapping_set.filter(status="Approved")
 
@@ -690,7 +725,11 @@ class GroupAccessMapping(models.Model):
     updated_on = models.DateTimeField(auto_now=True)
 
     group = models.ForeignKey(
-        "GroupV2", null=False, blank=False, on_delete=models.PROTECT
+        "GroupV2",
+        null=False,
+        blank=False,
+        on_delete=models.PROTECT,
+        related_name="group_access_mapping",
     )
 
     requested_by = models.ForeignKey(
@@ -878,12 +917,13 @@ class UserIdentity(models.Model):
         user_mapping.update(status="RevokeFailed")
 
     def access_mapping_exists(self, access):
-        mapping = self.user_access_mapping.get(
-            access=access, status__in=["Approved", "Pending"]
-        )
-        if mapping:
+        try:
+            self.user_access_mapping.get(
+                access=access, status__in=["Approved", "Pending"]
+            )
             return True
-        return False
+        except Exception:
+            return False
 
     def replicate_active_access_membership_for_module(
         self, existing_user_access_mapping
