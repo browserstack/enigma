@@ -26,14 +26,15 @@ INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type - 
 
 logger = logging.getLogger(__name__)
 
+
 @login_required
 def showAccessHistory(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         return render_error_message(
             request,
             "POST for showAccessHistory not supported",
             "Invalid Request",
-            "Error request not found OR Invalid request type"
+            "Error request not found OR Invalid request type",
         )
 
     try:
@@ -41,14 +42,21 @@ def showAccessHistory(request):
     except Exception as e:
         return render_error_message(
             request,
-            "Access user with email %s not found. Error: %s" % (request.user.email, str(e)),
+            "Access user with email %s not found. Error: %s"
+            % (request.user.email, str(e)),
             "Invalid Request",
-            "Please login again"
+            "Please login again",
         )
 
-    return render(request, 'BSOps/showAccessHistory.html', {
-        'dataList': access_user.get_access_history(helper.get_available_access_modules())
-    })
+    return render(
+        request,
+        "BSOps/showAccessHistory.html",
+        {
+            "dataList": access_user.get_access_history(
+                helper.get_available_access_modules()
+            )
+        },
+    )
 
 
 @login_required
@@ -85,13 +93,15 @@ def updateUserInfo(request):
     return render(request,'updateUser.html',context)
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @login_required
 def saveIdentity(request):
     try:
         modname = request.POST.get("modname")
         if request.POST:
-            context = create_identity(user_identity_form = request.POST, auth_user=request.user)
+            context = create_identity(
+                user_identity_form=request.POST, auth_user=request.user
+            )
             return JsonResponse(json.dumps(context), safe=False, status=200)
     except IdentityNotChangedException:
         context = {}
@@ -105,9 +115,10 @@ def saveIdentity(request):
         context = {}
         context["error"] = {
             "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
-            "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename = modname),
+            "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
         return JsonResponse(json.dumps(context), safe=False, status=400)
+
 
 @login_required
 def createNewGroup(request):
@@ -137,7 +148,9 @@ def allUsersList(request):
 @login_required
 def requestAccess(request):
     if request.POST:
-        context = create_request(auth_user = request.user, access_request_form = request.POST)
+        context = create_request(
+            auth_user=request.user, access_request_form=request.POST
+        )
         return render(request, "BSOps/accessStatus.html", context)
     else:
         context = requestAccessGet(request)
@@ -148,10 +161,12 @@ def requestAccess(request):
 def group_access(request):
     if request.GET:
         context = group_helper.get_group_access(request.GET, request.user)
-        return render(request, 'BSOps/groupAccessRequestForm.html',context)
+        return render(request, "BSOps/groupAccessRequestForm.html", context)
     elif request.POST:
         context = group_helper.save_group_access_request(request.POST, request.user)
-        return render(request,'BSOps/accessStatus.html',context)
+        return render(request, "BSOps/accessStatus.html", context)
+
+
 @login_required
 def group_access_list(request, groupName):
     try:
@@ -222,7 +237,7 @@ def accept_bulk(request, selector):
         is_access_approver = user.has_permission("ACCESS_APPROVE")
         requestIds = inputVals
         for value in requestIds:
-            requestType, requestId = selector, value
+            requestId = value
             if selector == "groupNew" and is_access_approver:
                 json_response = group_helper.approve_new_group_request(
                     request, requestId
@@ -251,3 +266,14 @@ def accept_bulk(request, selector):
         json_response["success"] = False
         json_response["status_code"] = 401
         return JsonResponse(json_response, status=json_response["status_code"])
+
+
+def remove_group_member(request):
+    try:
+        response = group_helper.remove_member(request)
+        if "error" in response:
+            return JsonResponse(response, status=400)
+        return JsonResponse({"message": "Success"})
+    except Exception as e:
+        logger.exception(str(e))
+        return JsonResponse({"error": "Failed to remove the user"}, status=400)

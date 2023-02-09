@@ -1,0 +1,18 @@
+<div class="row " style="background-color:#d9d9d9">
+    <br>
+    <center><h2>{{requester}} has Requested Access for Group: {{group_name}}</h2></center>
+    <br>
+</div>
+<h4>Request Id = {{request_id}}</h4>
+<h4>Members receiving this access:</h4>
+    <table>
+        <th>Member Email</th>
+        </tr>
+            {% for member in member_list %}
+            <tr>
+                <td> {{member}} </td>
+            </tr>
+            {% endfor %}
+        </tr>
+    </table>
+<br>

@@ -12,7 +12,15 @@ NEW_GROUP_APPROVED_BODY = (
 )
 NEW_MEMBERS_ADDED_MESSAGE = "The following members have been added to this team<br>"
 MEMBERSHIP_ACCEPTED_SUBJECT = "Access approved for addition of {} to group - {}"
-MEMBERSHIP_ACCEPTED_BODY = "Access approved for addition of {} to group - {} by {}.<BR/>Automated accesses will be triggered shortly. Access grant mails will be sent to tool owners for manual access. Track your access status <a href='https://enigma.browserstack.com/access/showAccessHistory'>here</a>."
+MEMBERSHIP_ACCEPTED_BODY = """Access approved for addition of {} to group - {} by {}.
+                            <BR/>Automated accesses will be triggered shortly.
+                            Access grant mails will be sent to tool owners for manual access.
+                            Track your access status
+                            <a href='https://enigma.browserstack.com/access/showAccessHistory'>
+                            here
+                            </a>."""
+
+GROUP_ACCESS_ADDED_SUBJECT = "Group: {group_name}  new access added"
 
 GROUP_ACCESS_ADDED_SUBJECT = "Group: {group_name}  new access added"
 
@@ -77,14 +85,40 @@ def send_group_owners_update_mail(destination, group_name, updated_by):
         logger.exception(str(e))
         logger.error("Something when wrong while sending Email.")
 
-def send_group_access_add_email(destination, group_name, requester, request_id, member_list):
-    body = helpers.generateStringFromTemplate(filename="email.html", 
-                                              emailBody= helpers.generateStringFromTemplate("add_access_to_group.html", 
-                                                                                            request_id = request_id, 
-                                                                                            group_name = group_name, 
-                                                                                            requester = requester, 
-                                                                                            member_list=member_list)
-                                              )
-    subject = GROUP_ACCESS_ADDED_SUBJECT.format(group_name = group_name)
+
+def send_group_access_add_email(
+    destination, group_name, requester, request_id, member_list
+):
+    body = helpers.generateStringFromTemplate(
+        filename="email.html",
+        emailBody=helpers.generateStringFromTemplate(
+            "add_access_to_group.html",
+            request_id=request_id,
+            group_name=group_name,
+            requester=requester,
+            member_list=member_list,
+        ),
+    )
+    subject = GROUP_ACCESS_ADDED_SUBJECT.format(group_name=group_name)
     general.emailSES(destination, subject, body)
     return ""
+
+
+def send_revoke_failure_mail(
+    targets, request_id, revoker_email, retries, message, access_tag=None
+):
+    try:
+        subject = "Celery Revoke Failed for the request: {}".format(request_id)
+        body = helpers.generateStringFromTemplate(
+            "celery_revoke_failure_email.html",
+            request_id=request_id,
+            revoker_email=revoker_email,
+            retries=retries,
+            message=message,
+            access_tag=access_tag,
+        )
+
+        general.emailSES(targets, subject, body)
+    except Exception as e:
+        logger.error("Something when wrong while sending membership revoke email")
+        logger.exception(str(e))
