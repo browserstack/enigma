@@ -18,12 +18,7 @@ from Access.accessrequest_helper import (
     create_request,
 )
 from Access.models import User
-from Access.userlist_helper import (
-    getallUserList,
-    get_identity_templates,
-    create_identity,
-    NEW_IDENTITY_CREATE_ERROR_MESSAGE,
-)
+from Access.userlist_helper import getallUserList, get_identity_templates, create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE, IDENTITY_UNCHANGED_ERROR_MESSAGE, IdentityNotChangedException
 from Access.views_helper import render_error_message
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
@@ -94,8 +89,8 @@ def pending_revoke(request):
 
 @login_required
 def updateUserInfo(request):
-    context = get_identity_templates()
-    return render(request, "updateUser.html", context)
+    context = get_identity_templates(request.user)
+    return render(request,'updateUser.html',context)
 
 
 @api_view(["POST"])
@@ -108,6 +103,14 @@ def saveIdentity(request):
                 user_identity_form=request.POST, auth_user=request.user
             )
             return JsonResponse(json.dumps(context), safe=False, status=200)
+    except IdentityNotChangedException:
+        context = {}
+        context["error"] = {
+            "title": IDENTITY_UNCHANGED_ERROR_MESSAGE["title"],
+            "msg": IDENTITY_UNCHANGED_ERROR_MESSAGE["msg"].format(modulename = modname),
+        }
+        return JsonResponse(json.dumps(context), safe=False, status=400)
+        
     except Exception:
         context = {}
         context["error"] = {

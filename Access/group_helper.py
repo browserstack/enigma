@@ -55,6 +55,11 @@ UPDATE_OWNERS_REQUEST_ERROR = {
     "msg": "The requested URL is of POST method but was called with other.",
 }
 
+class GroupAccessExistsException(Exception):
+    def __init__(self):
+            self.message = "Group Access Exists"
+            super().__init__(self.message)    
+
 ERROR_LOADING_PAGE = {
     "error_msg": "Internal Error",
     "msg": "Error Occured while loading the page. Please contact admin, {exception}"
