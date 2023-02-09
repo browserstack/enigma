@@ -56,6 +56,11 @@ UPDATE_OWNERS_REQUEST_ERROR = {
     "msg": "The requested URL is of POST method but was called with other.",
 }
 
+class GroupAccessExistsException(Exception):
+    def __init__(self):
+            self.message = "Group Access Exists"
+            super().__init__(self.message)    
+
 
 class GroupAccessExistsException(Exception):
     def __init__(self):
