@@ -56,8 +56,13 @@ $(document).on("submit", "#updateOwners", function(e){
 
 $(document).on('click', '.user-remove-button', function(){
     id = $(this).attr("id");
-    urlBuilder = "/group/removeMember?membershipId="+id
+    urlBuilder = "/group/removeGroupMember"
     $.ajax({url: urlBuilder,
+        type: "POST",
+        data: {
+          membershipId: id,
+          csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
         success: function(result){
           document.getElementById(id+"-remove-user-button").innerHTML = "";
           document.getElementById(id+"-user-state").innerHTML = "revoked";

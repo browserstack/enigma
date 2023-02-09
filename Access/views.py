@@ -22,9 +22,12 @@ from Access.accessrequest_helper import (
     create_request,
 )
 from Access.models import User
-from Access.userlist_helper import getallUserList
-from Access.userlist_helper import get_identity_templates
-from Access.userlist_helper import create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE
+from Access.userlist_helper import (
+    getallUserList,
+    get_identity_templates,
+    create_identity,
+    NEW_IDENTITY_CREATE_ERROR_MESSAGE,
+)
 from Access.views_helper import render_error_message
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
@@ -35,12 +38,12 @@ logger = logging.getLogger(__name__)
 
 @login_required
 def showAccessHistory(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         return render_error_message(
             request,
             "POST for showAccessHistory not supported",
             "Invalid Request",
-            "Error request not found OR Invalid request type"
+            "Error request not found OR Invalid request type",
         )
 
     try:
@@ -48,14 +51,21 @@ def showAccessHistory(request):
     except Exception as e:
         return render_error_message(
             request,
-            "Access user with email %s not found. Error: %s" % (request.user.email, str(e)),
+            "Access user with email %s not found. Error: %s"
+            % (request.user.email, str(e)),
             "Invalid Request",
-            "Please login again"
+            "Please login again",
         )
 
-    return render(request, 'BSOps/showAccessHistory.html', {
-        'dataList': access_user.get_access_history(helper.get_available_access_modules())
-    })
+    return render(
+        request,
+        "BSOps/showAccessHistory.html",
+        {
+            "dataList": access_user.get_access_history(
+                helper.get_available_access_modules()
+            )
+        },
+    )
 
 
 @login_required
@@ -89,18 +99,20 @@ def pending_revoke(request):
 @login_required
 def updateUserInfo(request):
     context = get_identity_templates()
-    return render(request, 'updateUser.html', context)
+    return render(request, "updateUser.html", context)
 
 
-@api_view(['POST'])
+@api_view(["POST"])
 @login_required
 def saveIdentity(request):
     try:
         modname = request.POST.get("modname")
         if request.POST:
-            context = create_identity(user_identity_form=request.POST, auth_user=request.user)
+            context = create_identity(
+                user_identity_form=request.POST, auth_user=request.user
+            )
             return JsonResponse(json.dumps(context), safe=False, status=200)
-    except:
+    except Exception:
         context = {}
         context["error"] = {
             "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
@@ -129,7 +141,9 @@ def allUsersList(request):
 @login_required
 def requestAccess(request):
     if request.POST:
-        context = create_request(auth_user=request.user, access_request_form=request.POST)
+        context = create_request(
+            auth_user=request.user, access_request_form=request.POST
+        )
         return render(request, "BSOps/accessStatus.html", context)
     else:
         context = requestAccessGet(request)
@@ -137,8 +151,13 @@ def requestAccess(request):
 
 
 @login_required
-def groupRequestAccess(request):
-    return False
+def group_access(request):
+    if request.GET:
+        context = group_helper.get_group_access(request.GET, request.user)
+        return render(request, "BSOps/groupAccessRequestForm.html", context)
+    elif request.POST:
+        context = group_helper.save_group_access_request(request.POST, request.user)
+        return render(request, "BSOps/accessStatus.html", context)
 
 
 @login_required
@@ -211,7 +230,7 @@ def accept_bulk(request, selector):
         is_access_approver = user.has_permission("ACCESS_APPROVE")
         requestIds = inputVals
         for value in requestIds:
-            requestType, requestId = selector, value
+            requestId = value
             if selector == "groupNew" and is_access_approver:
                 json_response = group_helper.approve_new_group_request(
                     request, requestId
@@ -240,6 +259,17 @@ def accept_bulk(request, selector):
         json_response["success"] = False
         json_response["status_code"] = 401
         return JsonResponse(json_response, status=json_response["status_code"])
+
+
+def remove_group_member(request):
+    try:
+        response = group_helper.remove_member(request)
+        if "error" in response:
+            return JsonResponse(response, status=400)
+        return JsonResponse({"message": "Success"})
+    except Exception as e:
+        logger.exception(str(e))
+        return JsonResponse({"error": "Failed to remove the user"}, status=400)
 
 
 @api_view(['GET'])
@@ -346,7 +376,7 @@ def mark_revoked(request):
             if user:
                 requests = user.get_accesses_by_access_tag_and_status(access_tag=access_tag, status=["Approved", "Offboarding"])
             else:
-                raise User.DoesNotExist(f"User with '{username}' does not exist")
+                raise User.DoesNotExist(f"User with username '{username}' does not exist")
         else:
             requests = UserAccessMapping.get_unrevoked_accesses_by_request_id(request_id=request_id)
         success_list = []

@@ -156,14 +156,14 @@ var current_username = "";
               html_string += record["access_label"][j]+"<br>"
             html_string += "</td>"
             if(record["status"] != "Revoked"){
-              html_string += "<td id='"+record["request_id"]+"-access-status'>"+record["status"]+"</td>"
+              html_string += "<td id='"+record["requestId"]+"-access-status'>"+record["status"]+"</td>"
             }
             else{
-              html_string += "<td id='"+record["request_id"]+"-access-status'>"+record["status"]+"<br>By-"+record["revoker"]+"</td>"
+              html_string += "<td id='"+record["requestId"]+"-access-status'>"+record["status"]+"<br>By-"+record["revoker"]+"</td>"
             }
-            html_string += "<td id='"+record["request_id"]+"-revoke-button'>"
+            html_string += "<td id='"+record["requestId"]+"-revoke-button'>"
             if(record["status"] != "Revoked")
-              html_string += '<button id="'+record["request_id"]+`" class="btn btn-danger" data-toggle="modal" data-target="#revokeModal" onclick='revokeConfirm("`+record["request_id"]+`")'>Mark Revoked</button>`
+              html_string += '<button id="'+record["requestId"]+`" class="btn btn-danger" data-toggle="modal" data-target="#revokeModal" onclick='revokeConfirm("`+record["requestId"]+`")'>Mark Revoked</button>`
             html_string += "</td>"
             html_string += "<td>"+record["requested_on"]+"</td>"
             html_string += "<td>"+record["approver"]+"</td>"
@@ -171,7 +171,7 @@ var current_username = "";
             html_string += "<td>"+record["offboarding_date"]+"</td>"
             html_string += "<td>"+record["grantOwner"]+"</td>"
             html_string += "<td>"+record["revokeOwner"]+"</td>"
-            html_string += "<td>{% if is_ops %} <a class=\"btn btn-primary\" target=\"_blank\" href=\"/individual_resolve?requestId="+record["request_id"]+"&ops_resolve=true\">ReGrant</a></td>{% endif %}"
+            html_string += "<td>{% if is_ops %} <a class=\"btn btn-primary\" target=\"_blank\" href=\"/individual_resolve?requestId="+record["requestId"]+"&ops_resolve=true\">ReGrant</a></td>{% endif %}"
             html_string += "<td>"+record["type"]+"</td>"
             html_string += "</tr>"
           }
@@ -324,8 +324,8 @@ jQuery(document).ready(function ($) {
             {{ pair }}<br>
           {% endfor %}
         </td>
-        <td id="{{ item.request_id }}-access-status">{{item.status}}{% if item.status == "Revoked" %}<br>By - {{ item.revoker }}{% endif %}</td>
-        <td id="{{ item.request_id }}-revoke-button">{% if item.status != "Revoked" %}<button class="btn btn-danger" data-toggle="modal" data-target="#revokeModal" onclick='revokeConfirm("{{ item.request_id }}")' id="{{ item.request_id }}">Mark Revoked</button>{% endif %}</td>
+        <td id="{{ item.requestId }}-access-status">{{item.status}}{% if item.status == "Revoked" %}<br>By - {{ item.revoker }}{% endif %}</td>
+        <td id="{{ item.requestId }}-revoke-button">{% if item.status != "Revoked" %}<button class="btn btn-danger" data-toggle="modal" data-target="#revokeModal" onclick='revokeConfirm("{{ item.requestId }}")' id="{{ item.requestId }}">Mark Revoked</button>{% endif %}</td>
         <td>{{item.requested_on}}</td>
         <td>{{item.approver_1}}</td>
         <td>{{item.updated_on}}</td>
@@ -333,7 +333,7 @@ jQuery(document).ready(function ($) {
         <td>{{item.grantOwner}}</td>
         <td>{{item.revokeOwner}}</td>
         <td>{% if is_ops %}
-          <a class="btn btn-primary" target="_blank" href="/individual_resolve?requestId={{ item.request_id }}&ops_resolve=true">ReGrant</a></td>
+          <a class="btn btn-primary" target="_blank" href="/individual_resolve?requestId={{ item.requestId }}&ops_resolve=true">ReGrant</a></td>
           {% endif %}
           <td>{{item.access_type}}</td>
       </tr>
