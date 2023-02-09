@@ -200,7 +200,7 @@ class User(models.Model):
         return self.module_identity.filter(
             access_tag=access_tag, status="Active"
         ).first()
-    
+
     def get_all_active_identity(self):
         return self.module_identity.filter(status = "Active")
 
@@ -210,7 +210,7 @@ class User(models.Model):
             return User.objects.get(email=email)
         except User.DoesNotExist:
             return None
-    
+
     def get_user_access_mappings(self):
         all_user_identities = self.module_identity.all()
         access_request_mappings = []
@@ -328,7 +328,7 @@ class MembershipV2(models.Model):
     @staticmethod
     def get_membership(membership_id):
         return MembershipV2.objects.get(membership_id=membership_id)
-    
+
     def __str__(self):
         return self.group.name + "-" + self.user.email + "-" + self.status
 
@@ -520,7 +520,7 @@ class GroupV2(models.Model):
 
     def get_all_approved_members(self):
         self.membership_group.filter(status="Approved")
-        
+
     def get_approved_accesses(self):
         return self.groupaccessmapping_set.filter(status="Approved")
 
@@ -636,7 +636,7 @@ class UserAccessMapping(models.Model):
         # code metadata
         access_request_data["access_tag"] = access_tag
         # ui metadata
-        access_request_data["userEmail"] = self.user.email
+        access_request_data["userEmail"] = self.user_identity.user.email
         access_request_data["requestId"] = self.request_id
         access_request_data["accessReason"] = self.request_reason
         access_request_data["requested_on"] = self.requested_on
@@ -771,8 +771,8 @@ class GroupAccessMapping(models.Model):
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
-    
-    
+
+
 
 
 class AccessV2(models.Model):
