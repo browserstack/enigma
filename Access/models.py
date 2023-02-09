@@ -240,7 +240,7 @@ class User(models.Model):
 
     def get_accesses_by_access_tag_and_status(self, access_tag, status):
         try:
-            user_identities = self.module_identity.get(access_tag=access_tag)
+            user_identities = self.module_identity.filter(access_tag=access_tag)
         except UserIdentity.DoesNotExist:
             return None
         return UserAccessMapping.objects.filter(
