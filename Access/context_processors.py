@@ -1,5 +1,5 @@
 from Access.models import User
-from Access.helpers import getAvailableAccessModules, getPossibleApproverPermissions
+from Access.helpers import get_available_access_modules, getPossibleApproverPermissions
 
 
 def add_variables_to_context(request):
@@ -12,7 +12,7 @@ def add_variables_to_context(request):
     except User.DoesNotExist:
         return {}
 
-    all_access_modules = getAvailableAccessModules()
+    all_access_modules = get_available_access_modules()
 
     context = {}
     context["currentUser"] = currentUser
