@@ -135,11 +135,11 @@ def getPendingRequests(request):
 
         context["membershipPending"] = GroupV2.getPendingMemberships()
         context["newGroupPending"] = GroupV2.getPendingCreation()
-
+        user = request.user.user
         (
             context["genericRequests"],
             context["groupGenericRequests"],
-        ) = get_pending_accesses_from_modules(request)
+        ) = get_pending_accesses_from_modules(user)
 
         duration = time.time() - start_time
         logger.info("Time to fetch all pending requests:" + str(duration))
@@ -149,16 +149,15 @@ def getPendingRequests(request):
         return process_error_response(request, e)
 
 
-def get_pending_accesses_from_modules(accessUser):
+def get_pending_accesses_from_modules(access_user):
     individual_requests = []
     group_requests = {}
 
     logger.info("Start looping all access modules")
     for access_module_tag, access_module in helpers.get_available_access_modules().items():
         access_module_start_time = time.time()
-
         try:
-            pending_accesses = access_module.get_pending_accesses(accessUser)
+            pending_accesses = access_module.get_pending_accesses(access_user)
         except Exception as e:
             logger.exception(e)
             pending_accesses = {

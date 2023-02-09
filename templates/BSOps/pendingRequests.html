@@ -2,380 +2,402 @@
 {% load static %}
 
 {% block content_body %}
-<link rel="stylesheet" type="text/css" href="{% static "files/css/custom.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static " files/css/custom.css" %}">
 <style>
-  p {
-    overflow-wrap: break-word;
-  }
+    p {
+        overflow-wrap: break-word;
+    }
 
-  h4 {
-    color: white;
-  }
+    h4 {
+        color: white;
+    }
 
-  h2>a {
-    text-decoration: none;
-    color: #1AC98E;
-  }
+    h2>a {
+        text-decoration: none;
+        color: #1AC98E;
+    }
 
-  span.custom-badge {
-    background-color: #1AC98E;
-    color: white;
-  }
+    span.custom-badge {
+        background-color: #1AC98E;
+        color: white;
+    }
 
-  .checkbox label {
-    font-size: 1.8rem;
-  }
+    .checkbox label {
+        font-size: 1.8rem;
+    }
 
-  .checkbox label:after {
-    content: '';
-    display: table;
-    clear: both;
-  }
+    .checkbox label:after {
+        content: '';
+        display: table;
+        clear: both;
+    }
 
-  .checkbox .cr {
-    position: relative;
-    display: inline-block;
-    border: 1px solid #a9a9a9;
-    border-radius: .25em;
-    width: 1.1em;
-    height: 1.1em;
-    float: left;
-    margin-right: .5em;
-  }
+    .checkbox .cr {
+        position: relative;
+        display: inline-block;
+        border: 1px solid #a9a9a9;
+        border-radius: .25em;
+        width: 1.1em;
+        height: 1.1em;
+        float: left;
+        margin-right: .5em;
+    }
 
 
-  .checkbox .cr .cr-icon {
-    position: absolute;
-    font-size: .8em;
-    line-height: 0;
-    top: 50%;
-    left: 20%;
-  }
+    .checkbox .cr .cr-icon {
+        position: absolute;
+        font-size: .8em;
+        line-height: 0;
+        top: 50%;
+        left: 20%;
+    }
 
-  .checkbox label input[type="checkbox"] {
-    display: none;
-  }
+    .checkbox label input[type="checkbox"] {
+        display: none;
+    }
 
-  .checkbox label input[type="checkbox"]+.cr>.cr-icon {
-    transform: scale(3) rotateZ(-20deg);
-    opacity: 0;
-    transition: all .3s ease-in;
-  }
+    .checkbox label input[type="checkbox"]+.cr>.cr-icon {
+        transform: scale(3) rotateZ(-20deg);
+        opacity: 0;
+        transition: all .3s ease-in;
+    }
 
-  .checkbox label input[type="checkbox"]:checked+.cr>.cr-icon {
-    transform: scale(1) rotateZ(0deg);
-    opacity: 1;
-  }
+    .checkbox label input[type="checkbox"]:checked+.cr>.cr-icon {
+        transform: scale(1) rotateZ(0deg);
+        opacity: 1;
+    }
 
-  .checkbox label input[type="checkbox"]:disabled+.cr {
-    opacity: .5;
-  }
+    .checkbox label input[type="checkbox"]:disabled+.cr {
+        opacity: .5;
+    }
 
-  .bulkHeader {
-    height: 5rem;
-    padding: 9px;
+    .bulkHeader {
+        height: 5rem;
+        padding: 9px;
 
-  }
-  h2.h5 > a {
-    text-decoration: none;
-  }
-  span.badge-light{
-    background-color: darkslategray;
-  }
-  .modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgb(0,0,0); /* Fallback color */
-    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
-  }
+    }
 
-  /* Modal Content/Box */
-  .modal-content {
-    background-color: #fefefe;
-    margin: 15% auto; /* 15% from the top and centered */
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%; /* Could be more or less, depending on screen size */
-  }
+    h2.h5>a {
+        text-decoration: none;
+    }
 
-  /* The Close Button */
-  .close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-  }
+    span.badge-light {
+        background-color: darkslategray;
+    }
 
-  .close:hover,
-  .close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-  }
+    .modal {
+        display: none;
+        /* Hidden by default */
+        position: fixed;
+        /* Stay in place */
+        z-index: 1;
+        /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%;
+        /* Full width */
+        height: 100%;
+        /* Full height */
+        overflow: auto;
+        /* Enable scroll if needed */
+        background-color: rgb(0, 0, 0);
+        /* Fallback color */
+        background-color: rgba(0, 0, 0, 0.4);
+        /* Black w/ opacity */
+    }
 
-  .sla-breached-tag {
-    padding: 10px 20px;
-    font-weight: bold;
-    border-radius: 3px;
-    background-color: #bb414d;
-    color: #fff;
-    text-transform: uppercase;
-    display: inline-block;
-  }
+    /* Modal Content/Box */
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto;
+        /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        /* Could be more or less, depending on screen size */
+    }
+
+    /* The Close Button */
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .sla-breached-tag {
+        padding: 10px 20px;
+        font-weight: bold;
+        border-radius: 3px;
+        background-color: #bb414d;
+        color: #fff;
+        text-transform: uppercase;
+        display: inline-block;
+    }
+
 </style>
 <script>
-  jQuery(document).ready(function ($) {
+    jQuery(document).ready(function ($) {
 
-    function showSSHCardWithTitle(environment) {
-      $(".filter").each(function (idx, elem) {
-        if ($(this).find("div div h4.card-title").text().indexOf(environment) > -1)
-          $(this).show()
-        else
-          $(this).hide()
-      })
-    }
-
-    $(".dropdown-menu a").click(function () {
-      let selected_dropdown = $(this).text()
-
-      $(this).parents(".dropdown").find('.btn').html($(this).text());
-      $(this).parents(".dropdown").find('.btn').val($(this).data('value'));
-
-      if (selected_dropdown === "Production") {
-        showSSHCardWithTitle("prod")
-
-      }
-      else if (selected_dropdown === "Staging") {
-        showSSHCardWithTitle("staging")
-      }
-
-    });
-
-    $(".dropdown-menu a:first-child").trigger('click')
-
-    function updateStatus(result, selector){
-      for(var request_id in result["response"]){
-        div_id = request_id+"-action"
-        chkbox = request_id+"-checkbox"
-        if(document.getElementById(chkbox))
-            document.getElementById(chkbox).innerHTML = ""
-        if(result["response"][request_id]["success"]){
-          msg = result["response"][request_id]["msg"]
-          if(document.getElementById(div_id))
-            document.getElementById(div_id).innerHTML = "<p style='color: #68e068'>"+msg+"</p>"
+        function showSSHCardWithTitle(environment) {
+            $(".filter").each(function (idx, elem) {
+                if ($(this).find("div div h4.card-title").text().indexOf(environment) > -1)
+                    $(this).show()
+                else
+                    $(this).hide()
+            })
         }
-        else{
-          error = result["response"][request_id]["error"];
-          if(document.getElementById(div_id))
-            document.getElementById(div_id).innerHTML = "<p style='color: red'>"+error+"</p>"
+
+        $(".dropdown-menu a").click(function () {
+            let selected_dropdown = $(this).text()
+
+            $(this).parents(".dropdown").find('.btn').html($(this).text());
+            $(this).parents(".dropdown").find('.btn').val($(this).data('value'));
+
+            if (selected_dropdown === "Production") {
+                showSSHCardWithTitle("prod")
+
+            }
+            else if (selected_dropdown === "Staging") {
+                showSSHCardWithTitle("staging")
+            }
+
+        });
+
+        $(".dropdown-menu a:first-child").trigger('click')
+
+        function updateStatus(result, selector) {
+            for (var request_id in result["response"]) {
+                div_id = request_id + "-action"
+                chkbox = request_id + "-checkbox"
+                if (document.getElementById(chkbox))
+                    document.getElementById(chkbox).innerHTML = ""
+                if (result["response"][request_id]["success"]) {
+                    msg = result["response"][request_id]["msg"]
+                    if (document.getElementById(div_id))
+                        document.getElementById(div_id).innerHTML = "<p style='color: #68e068'>" + msg + "</p>"
+                }
+                else {
+                    error = result["response"][request_id]["error"];
+                    if (document.getElementById(div_id))
+                        document.getElementById(div_id).innerHTML = "<p style='color: red'>" + error + "</p>"
+                }
+            }
+            if (selector.endsWith("-club") || selector == "clubGroupAccess") {
+                const overallarray = result["returnIds"]
+                for (var i = 0; i < overallarray.length; i++) {
+                    club = overallarray[i];
+                    div_id = club + "-action"
+                    chkbox = club + "-checkbox"
+                    if (document.getElementById(div_id))
+                        document.getElementById(div_id).innerHTML = "<p style='color: green'>Submitted!</p>"
+                    if (document.getElementById(chkbox))
+                        document.getElementById(chkbox).innerHTML = ""
+                }
+            }
         }
-      }
-      if(selector.endsWith("-club") || selector == "clubGroupAccess"){
-        const overallarray = result["returnIds"]
-        for(var i=0;i<overallarray.length;i++){
-          club = overallarray[i];
-          div_id = club+"-action"
-          chkbox = club+"-checkbox"
-          if(document.getElementById(div_id))
-            document.getElementById(div_id).innerHTML = "<p style='color: green'>Submitted!</p>"
-          if(document.getElementById(chkbox))
-            document.getElementById(chkbox).innerHTML = ""
+
+        $(".bulkAccept-button").click(function () {
+            let bulkAcceptAnchor = this
+            let selector = $(this).attr("id")
+            let urlBuilder = `/accept_bulk/${selector}?`
+            reqParams = []
+            request_ids = []
+
+            $(`.${selector}`).each(function () {
+                if ($(this).is(":checked"))
+                    reqParams.push(`requestId=${$(this).val()}`)
+                request_ids.push($(this).val())
+            });
+
+            if (reqParams.length == 0) {
+                alert("please select check boxes before")
+            }
+            else {
+                urlBuilder = urlBuilder + reqParams.join("&")
+
+                $.ajax({
+                    url: urlBuilder,
+                    success: function (result) {
+                        updateStatus(result, selector)
+                    },
+                    error: function (result) {
+                        error = result["responseJSON"]["error"]
+                        alert("Error occured while approving - " + error)
+                    }
+                });
+            }
+        });
+
+        $(".accept-button").click(function () {
+            let acceptAnchor = this
+            let selector = $(this).attr("id")
+            let urlBuilder = `/accept_bulk/${selector}?`
+            request_id = $(this).val()
+            reqParams = []
+            reqParams.push(`requestId=${request_id}`)
+
+            urlBuilder = urlBuilder + reqParams.join("&")
+            div_id = request_id + "-action"
+            document.getElementById(div_id).innerHTML = "<p style='color: green'>Processing...</p>"
+            $.ajax({
+                url: urlBuilder,
+                success: function (result) {
+                    updateStatus(result, selector)
+                },
+                error: function (result) {
+                    error = result["responseJSON"]["error"]
+                    alert("Error occured while approving - " + error)
+                }
+            });
+        });
+
+        var othermodal = document.getElementById("otherModal");
+        $(".other-accept-button").click(function () {
+            request_id = $(this).val()
+            othermodal.style.display = "block";
+            $('#otherRequestId').val(request_id)
+            $('#OtherAccessType').val($(this).attr("id"))
+            document.getElementById("otherAcceptHeading").innerHTML = "Approve " + request_id
+        });
+
+        $(".otherApproveFinalButton").click(function () {
+            let selector = $('#OtherAccessType').val()
+            let urlBuilder = `/accept_bulk/${selector}?`
+            request_id = $('#otherRequestId').val()
+            reqParams = []
+            reqParams.push(`requestId=${request_id}`)
+
+            var checkboxes = document.getElementsByName("otherApprovalEmails");
+            var checkedEmails = [];
+            for (var i = 0; i < checkboxes.length; i++) {
+                // And stick the checked ones onto an array...
+                if (checkboxes[i].checked) {
+                    checkedEmails.push(checkboxes[i].value);
+                }
+            }
+            extra_emails = $("#otherEmails").val().split(",")
+            for (var i = 0; i < extra_emails.length; i++) {
+                if (extra_emails[i].trim().length > 0) {
+                    checkedEmails.push(extra_emails[i].trim());
+                }
+            }
+            if (checkedEmails.length == 0) {
+                alert("No email ids selected!")
+            }
+            else {
+                reqParams.push(`checkedEmails=${checkedEmails}`)
+
+                urlBuilder = urlBuilder + reqParams.join("&")
+                div_id = request_id + "-action"
+                document.getElementById("other-approve-processing").innerHTML = "<p style='color: green'>Processing...</p>"
+                $.ajax({
+                    url: urlBuilder,
+                    success: function (result) {
+                        updateStatus(result, selector)
+                        document.getElementById("other-approve-processing").innerHTML = ""
+                        othermodal.style.display = "none";
+                    },
+                    error: function (result) {
+                        error = result["responseJSON"]["error"]
+                        document.getElementById(div_id).innerHTML = "<p style='color: red'>" + error + "</p>"
+                        document.getElementById("other-approve-processing").innerHTML = ""
+                        othermodal.style.display = "none";
+                    }
+                });
+            }
+        });
+
+        var modal = document.getElementById("declineModal");
+        $(".declineFinalButton").click(function () {
+            let acceptAnchor = this
+            let selector = $('#declineUrlParams').val()
+            let urlBuilder = `/decline/${selector}`
+            request_id = selector.split("/")[1]
+
+            div_id = request_id + "-action"
+            data = { reason: $('#declineReasonText').val() }
+            document.getElementById("decline-processing").innerHTML = "<p style='color: green'>Processing</p>"
+            $.ajax({
+                url: urlBuilder, data: data,
+                success: function (result) {
+                    updateStatus(result, selector.split("/")[0])
+                    modal.style.display = "none";
+                    document.getElementById("decline-processing").innerHTML = ""
+                },
+                error: function (result) {
+                    error = result["responseJSON"]["error"]
+                    document.getElementById(div_id).innerHTML = "<p style='color: red'>" + error + "</p>"
+                    modal.style.display = "none";
+                    document.getElementById("decline-processing").innerHTML = ""
+                }
+            });
+        });
+
+        window.onclick = function (event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+            else if (event.target == othermodal) {
+                othermodal.style.display = "none";
+            }
         }
-      }
-    }
 
-    $(".bulkAccept-button").click(function () {
-      let bulkAcceptAnchor = this
-      let selector = $(this).attr("id")
-      let urlBuilder = `/accept_bulk/${selector}?`
-      reqParams = []
-      request_ids = []
+        $(".decline-button").click(function () {
+            let acceptAnchor = this
+            let selector = $(this).attr("id")
+            request_id = $(this).val()
+            modal.style.display = "block";
+            $('#declineUrlParams').val(selector)
+            document.getElementById("declineHeading").innerHTML = "Decline " + request_id
+        });
 
-      $(`.${selector}`).each(function () {
-        if ($(this).is(":checked"))
-          reqParams.push(`requestId=${$(this).val()}`)
-          request_ids.push($(this).val())
-      });
+        $('#declineReason').on('change', function () {
+            if ($(this).val() === "customInput") {
+                $("#otherType").show()
+                document.getElementById("reason_box").required = true;
+            }
+            else {
+                document.getElementById("reason_box").required = false;
+                $("#otherType").hide()
+                $('#declineReasonText').val($(this).val())
+            }
+        });
 
-      if (reqParams.length == 0) {
-        alert("please select check boxes before")
-      }
-      else {
-        urlBuilder = urlBuilder + reqParams.join("&")
-
-        $.ajax({url: urlBuilder,
-        success: function(result){
-          updateStatus(result, selector)
-        },
-        error: function(result){
-          error = result["responseJSON"]["error"]
-          alert("Error occured while approving - "+error)
-        }});
-      }
-    });
-
-    $(".accept-button").click(function () {
-      let acceptAnchor = this
-      let selector = $(this).attr("id")
-      let urlBuilder = `/accept_bulk/${selector}?`
-      request_id = $(this).val()
-      reqParams = []
-      reqParams.push(`requestId=${request_id}`)
-
-      urlBuilder = urlBuilder + reqParams.join("&")
-      div_id = request_id+"-action"
-      document.getElementById(div_id).innerHTML = "<p style='color: green'>Processing...</p>"
-      $.ajax({url: urlBuilder,
-      success: function(result){
-          updateStatus(result, selector)
-        },
-        error: function(result){
-          error = result["responseJSON"]["error"]
-          alert("Error occured while approving - "+error)
-        }});
-    });
-
-    var othermodal = document.getElementById("otherModal");
-    $(".other-accept-button").click(function () {
-      request_id = $(this).val()
-      othermodal.style.display = "block";
-      $('#otherRequestId').val(request_id)
-      $('#OtherAccessType').val($(this).attr("id"))
-      document.getElementById("otherAcceptHeading").innerHTML = "Approve "+request_id
-    });
-
-    $(".otherApproveFinalButton").click(function () {
-      let selector = $('#OtherAccessType').val()
-      let urlBuilder = `/accept_bulk/${selector}?`
-      request_id = $('#otherRequestId').val()
-      reqParams = []
-      reqParams.push(`requestId=${request_id}`)
-
-      var checkboxes = document.getElementsByName("otherApprovalEmails");
-      var checkedEmails = [];
-      for (var i=0; i<checkboxes.length; i++) {
-        // And stick the checked ones onto an array...
-        if (checkboxes[i].checked) {
-          checkedEmails.push(checkboxes[i].value);
+        function checkSSHCardWithTitle(environment, checked) {
+            $(".filter").each(function (idx, elem) {
+                if ($(this).find("div div h4.card-title").text().indexOf(environment) > -1)
+                    $(this).find("div.checkbox input.ssh").prop('checked', checked)
+            })
         }
-      }
-      extra_emails = $("#otherEmails").val().split(",")
-      for(var i=0; i<extra_emails.length; i++){
-        if(extra_emails[i].trim().length > 0){
-          checkedEmails.push(extra_emails[i].trim());
-        }
-      }
-      if(checkedEmails.length == 0){
-        alert("No email ids selected!")
-      }
-      else{
-        reqParams.push(`checkedEmails=${checkedEmails}`)
 
-        urlBuilder = urlBuilder + reqParams.join("&")
-        div_id = request_id+"-action"
-        document.getElementById("other-approve-processing").innerHTML = "<p style='color: green'>Processing...</p>"
-        $.ajax({url: urlBuilder,
-          success: function(result){
-            updateStatus(result, selector)
-            document.getElementById("other-approve-processing").innerHTML = ""
-            othermodal.style.display = "none";
-          },
-          error: function(result){
-            error = result["responseJSON"]["error"]
-            document.getElementById(div_id).innerHTML = "<p style='color: red'>"+error+"</p>"
-            document.getElementById("other-approve-processing").innerHTML = ""
-            othermodal.style.display = "none";
-          }});
-      }
-    });
+        $(".bulkAcceptAll-checkbox").change(function () {
+            let bulkCheckValue = $(this).prop('checked');
+            // for ssh
+            // sshCheckedAllOption = $("#dropdownMenuButton").text()
 
-    var modal = document.getElementById("declineModal");
-    $(".declineFinalButton").click(function () {
-      let acceptAnchor = this
-      let selector = $('#declineUrlParams').val()
-      let urlBuilder = `/decline/${selector}`
-      request_id = selector.split("/")[1]
+            // if (sshCheckedAllOption === "Production") {
+            //   checkSSHCardWithTitle("prod", bulkCheckValue)
+            // }
+            // else if (sshCheckedAllOption === "Staging") {
+            //   checkSSHCardWithTitle("staging", bulkCheckValue)
+            // }
 
-      div_id = request_id+"-action"
-      data = {reason: $('#declineReasonText').val()}
-      document.getElementById("decline-processing").innerHTML = "<p style='color: green'>Processing</p>"
-      $.ajax({url: urlBuilder, data: data,
-      success: function(result){
-        updateStatus(result, selector.split("/")[0])
-        modal.style.display = "none";
-        document.getElementById("decline-processing").innerHTML = ""
-      },
-      error: function(result){
-        error = result["responseJSON"]["error"]
-        document.getElementById(div_id).innerHTML = "<p style='color: red'>"+error+"</p>"
-        modal.style.display = "none";
-        document.getElementById("decline-processing").innerHTML = ""
-      }});
-    });
+            let selector = $(this).val()
+            $(`.${selector}`).each(function (idx, elem) {
+                $(elem).prop('checked', bulkCheckValue)
+            })
 
-    window.onclick = function(event) {
-      if (event.target == modal) {
-        modal.style.display = "none";
-      }
-      else if (event.target == othermodal) {
-        othermodal.style.display = "none";
-      }
-    }
-
-    $(".decline-button").click(function () {
-      let acceptAnchor = this
-      let selector = $(this).attr("id")
-      request_id = $(this).val()
-      modal.style.display = "block";
-      $('#declineUrlParams').val(selector)
-      document.getElementById("declineHeading").innerHTML = "Decline "+request_id
-    });
-
-    $('#declineReason').on('change',function(){
-      if( $(this).val()==="customInput"){
-        $("#otherType").show()
-        document.getElementById("reason_box").required = true;
-      }
-      else{
-        document.getElementById("reason_box").required = false;
-        $("#otherType").hide()
-        $('#declineReasonText').val($(this).val())
-      }
-    });
-
-    function checkSSHCardWithTitle(environment, checked) {
-      $(".filter").each(function (idx, elem) {
-        if ($(this).find("div div h4.card-title").text().indexOf(environment) > -1)
-          $(this).find("div.checkbox input.ssh").prop('checked', checked)
-      })
-    }
-
-    $(".bulkAcceptAll-checkbox").change(function () {
-      let bulkCheckValue = $(this).prop('checked');
-      // for ssh
-      // sshCheckedAllOption = $("#dropdownMenuButton").text()
-
-      // if (sshCheckedAllOption === "Production") {
-      //   checkSSHCardWithTitle("prod", bulkCheckValue)
-      // }
-      // else if (sshCheckedAllOption === "Staging") {
-      //   checkSSHCardWithTitle("staging", bulkCheckValue)
-      // }
-
-      let selector = $(this).val()
-      $(`.${selector}`).each(function (idx, elem) {
-        $(elem).prop('checked', bulkCheckValue)
-      })
+        });
 
     });
-
-  });
 
 </script>
 
@@ -383,27 +405,29 @@
 <div id="declineModal" class="modal">
     <!-- Modal content -->
     <div class="modal-content">
-      <h2 id="declineHeading"></h2>
+        <h2 id="declineHeading"></h2>
 
-      <div class="form-group">
-        <label for="declineReason">Reason</label>
-          <select id="declineReason" name="reason" placeholder="--select--" class="ui fluid search dropdown generic-access-select-dropdown" required>
-            <option selected disabled>--select--</option>
-            {% for key,value in declineReasons.items %}
-              <option value="{{value}}">{{value}}</option>
-            {% endfor %}
-            <option value="customInput">Other</option>
-          </select>
-          <div id="otherType" style="display:none;">
-            <br>
-            <input type="text" class="form-control" rows="5" id="reason_box" name="reason_box" placeholder="Provide a reason" oninput="$('#declineReasonText').val($(this).val())">
-          </div>
+        <div class="form-group">
+            <label for="declineReason">Reason</label>
+            <select id="declineReason" name="reason" placeholder="--select--"
+                class="ui fluid search dropdown generic-access-select-dropdown" required>
+                <option selected disabled>--select--</option>
+                {% for key,value in declineReasons.items %}
+                <option value="{{value}}">{{value}}</option>
+                {% endfor %}
+                <option value="customInput">Other</option>
+            </select>
+            <div id="otherType" style="display:none;">
+                <br>
+                <input type="text" class="form-control" rows="5" id="reason_box" name="reason_box"
+                    placeholder="Provide a reason" oninput="$('#declineReasonText').val($(this).val())">
+            </div>
         </div>
-        <div >
-          <input type="hidden" id="declineUrlParams">
-          <input type="hidden" id="declineReasonText">
-          <button class="btn btn-primary declineFinalButton">Decline</button>
-          <div id="decline-processing"></div>
+        <div>
+            <input type="hidden" id="declineUrlParams">
+            <input type="hidden" id="declineReasonText">
+            <button class="btn btn-primary declineFinalButton">Decline</button>
+            <div id="decline-processing"></div>
         </div>
     </div>
 </div>
@@ -412,524 +436,561 @@
 <div id="otherModal" class="modal">
     <!-- Modal content -->
     <div class="modal-content">
-      <h2 id="otherAcceptHeading"></h2>
+        <h2 id="otherAcceptHeading"></h2>
 
-      <div class="form-group">
-        <h3>Mail approval to</h3>
-          <div id="mailto">
-            {% for email in otherAccessRecepients %}
-            <input type="checkbox" value="{{email}}" id="{{email}}-checkbox" name="otherApprovalEmails">
-            <label for="{{email}}-checkbox">&nbsp;{{email}}</label><br>
-            {% endfor %}
-            Other Email IDs (comma separated) : <input type="text" id="otherEmails" class="form-control"></label><br>
-          </div>
+        <div class="form-group">
+            <h3>Mail approval to</h3>
+            <div id="mailto">
+                {% for email in otherAccessRecepients %}
+                <input type="checkbox" value="{{email}}" id="{{email}}-checkbox" name="otherApprovalEmails">
+                <label for="{{email}}-checkbox">&nbsp;{{email}}</label><br>
+                {% endfor %}
+                Other Email IDs (comma separated) : <input type="text" id="otherEmails"
+                    class="form-control"></label><br>
+            </div>
         </div>
-        <div >
-          <input type="hidden" id="otherRequestId">
-          <input type="hidden" id="OtherAccessType">
-          <button class="btn btn-primary otherApproveFinalButton">Accept</button>
-          <div id="other-approve-processing"></div>
+        <div>
+            <input type="hidden" id="otherRequestId">
+            <input type="hidden" id="OtherAccessType">
+            <button class="btn btn-primary otherApproveFinalButton">Accept</button>
+            <div id="other-approve-processing"></div>
         </div>
     </div>
 </div>
 
 <div class="wrapper">
-  <div class="panel-group" id="pending-accordion">
-    {% if repoRequest|length %}
-      <div class="panel panel-default">
-        <div class="panel-heading page-header">
-          <div class="container-fluid">
-            <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#collapse11"
-                data-parent="#pending-accordion">Github Repo Creation Pending : </a>
-              <span class="h6 badge badge-light">{{ repoRequest|length }}</span>
-
-            </h2>
-          </div>
-        </div>
-        <div id="collapse11" class="panel-collapse collapse">
-          <div class="panel-body">
-            {% if repoRequest %}
-            <div class="page-header bulkHeader mx-4">
-              <div class="row">
-                <div class="checkbox col-1">
-                  <label>
-                    <!-- checkbox classes should also contain this value -->
-                    <input class="bulkAcceptAll-checkbox" value="github" type="checkbox">
-                    <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                  </label>
-                </div>
-                <div class="col-9">
-                  <h2 class="h4">Bulk Operation</h2>
-                </div>
-                <div class="col-2 pl-5">
-                  <!-- checkbox classes should also contain this id -->
-                  <button class="card-link btn btn-primary bulkAccept-button" id="github">Bulk Accept</button>
-                </div>
-              </div>
-            </div>
-            {% endif %}
-
-
-            {% for request in repoRequest %}
-            <div class="row">
-              <div class="card col-xs-12 col-md-12">
-                <div class="card-body" style="color:white;">
-                  <div class="row">
-                    <div class="checkbox col-1 pl-1">
-                      <label id="{{ request.requestId }}-checkbox">
-                        <input class="github" type="checkbox" value="{{ request.requestId }}">
-                        <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                      </label>
-                    </div>
-                    <div class="col-8">
-                      <div class="row">
-                        <div class="col-6">
-                          <h4 class="card-title">{{request.requestId}}</h4>
-                          <p>Requested By: {{request.requester}}</p>
-                          <p>Requested On: {{ request.requested_on }} UTC</p>
-                          <br>
-                        </div>
-                        <div class="col-6">
-                          <p class="text-success">Github Repo Details</p>
-                          <p>Git user name: {{request.requestInfo.gitusername}}</p>
-                          <p>Repo Name: {{request.requestInfo.githubRepoName}}</p>
-                          <p>Repo Description: {{request.requestInfo.githubRepoDesc}}</p>
-                          <p>Repo type: {{request.requestInfo.githubRepoType}}</p>
-                          <p>Master Branch Protection: {{request.requestInfo.masterBranchProtection}}</p>
-                          <p>README enabled: {{request.requestInfo.readmeEnabled}}</p>
-                          <p>Deny Default Access: {{request.requestInfo.denyDefaultAccess}}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-3">
-                      <div class="row float-right" id="{{ request.requestId }}-action">
-                          <button class="card-link btn btn-primary accept-button"
-                          id="github" value="{{request.requestId}}">Accept</button>
-                          <button class="card-link btn btn-danger decline-button"
-                            id="github/{{request.requestId}}" value ="{{request.requestId}}">Decline</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-            {% if not repoRequest %}
-            <div class="page-header mx-3">
-              <p>None pending</p>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    <!-- group stuff start -->
-    {% if newGroupPending|length %}
-      <div class="panel panel-default">
-        <div class="panel-heading page-header">
-          <div class="container-fluid">
-            <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#collapse5"
-                data-parent="#pending-accordion">New Group Creation : </a>
-              <span class="h6 badge badge-light">{{ newGroupPending|length }}</span>
-            </h2>
-          </div>
-        </div>
-        <div id="collapse5" class="panel-collapse collapse">
-          <div class="panel-body">
-
-            {% if newGroupPending %}
-            <div class="page-header bulkHeader mx-4">
-              <div class="row">
-                <div class="checkbox col-1">
-                  <label>
-                    <!-- checkbox classes should also contain this value -->
-                    <input class="bulkAcceptAll-checkbox" value="groupNew" type="checkbox">
-                    <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                  </label>
-                </div>
-                <div class="col-9">
-                  <h2 class="h4">Bulk Operation</h2>
-                </div>
-                <div class="col-2 pl-5">
-                  <!-- checkbox classes should also contain this id -->
-                  <button class="card-link btn btn-primary bulkAccept-button" id="groupNew">Bulk Accept</button>
-                </div>
-              </div>
-            </div>
-            {% endif %}
-
-            {% for group in newGroupPending %}
-            <div class="row">
-              <div class="card col-xs-12 col-md-12">
-                <div class="card-body" style="color:white;">
-                  <div class="row">
-                    <div class="checkbox col-1 pl-1">
-                      <label id="{{ group.groupRequest.group_id }}-checkbox">
-                        <input class="groupNew" type="checkbox" value="{{ group.groupRequest.group_id }}">
-                        <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                      </label>
-                    </div>
-                    <div class="col-8">
-                      <h4 class="card-title">{{group.groupRequest.group_id}}</h4>
-                      <p>Requested By: {{group.groupRequest.requester}}</p>
-                      <p>Requested On: {{ group.groupRequest.requested_on }} UTC</p>
-                      <p>Requested Group Name: {{group.groupRequest.name}}</p>
-                      <p>Reason for Request: {{group.groupRequest.description}}</p>
-                      <p>Further addition of users {% if group.groupRequest.needsAccessApprove %}will{% else %}<b style="color: red;">will not</b>{% endif %}
-                        require
-                        permission from access_approve</p>
-                      <p>Initial Members: {{group.initialMembers}} (These members will be automatically added to group.)</p>
-                    </div>
-                    <div class="col-3">
-                      <div class="row float-right" id="{{ group.groupRequest.group_id }}-action">
-                          <button class="card-link btn btn-primary accept-button"
-                          id="groupNew" value="{{group.groupRequest.group_id}}">Accept</button>
-                          <button class="card-link btn btn-danger decline-button"
-                            id="declineNewGroup/{{group.groupRequest.group_id}}" value ="{{group.groupRequest.group_id}}">Decline</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-            {% if not newGroupPending %}
-            <div class="page-header mx-3">
-              <p>None pending</p>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    {% if membershipPending|length %}
-      <div class="panel panel-default">
-        <div class="panel-heading page-header">
-          <div class="container-fluid">
-            <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#collapse6"
-                data-parent="#pending-accordion">New Group Additions : </a>
-              <span class="h6 badge badge-light">{{ membershipPending|length }}</span>
-
-            </h2>
-          </div>
-        </div>
-        <div id="collapse6" class="panel-collapse collapse">
-          <div class="panel-body">
-
-            {% if membershipPending %}
-            <div class="page-header bulkHeader mx-4">
-              <div class="row">
-                <div class="checkbox col-1">
-                  <label>
-                    <!-- checkbox classes should also contain this value -->
-                    <input class="bulkAcceptAll-checkbox" value="groupMember" type="checkbox">
-                    <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                  </label>
-                </div>
-                <div class="col-9">
-                  <h2 class="h4">Bulk Operation</h2>
-                </div>
-                <div class="col-2 pl-5">
-                  <!-- checkbox classes should also contain this id -->
-                  <button class="card-link btn btn-primary bulkAccept-button" id="groupMember">Bulk Accept</button>
-                </div>
-              </div>
-            </div>
-            {% endif %}
-
-            {% for member in membershipPending %}
-            <div class="row">
-              <div class="card col-xs-12 col-md-12">
-                <div class="card-body" style="color:white;">
-                  <div class="row">
-                    <div class="checkbox col-1 pl-1">
-                      <label id="{{ member.membership_id }}-checkbox">
-                        <input class="groupMember" type="checkbox" value="{{ member.membership_id }}">
-                        <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                      </label>
-                    </div>
-                    <div class="col-8">
-                      <h4 class="card-title">{{member.membership_id}}</h4>
-                      <p>Requested By: {{member.requested_by}}</p>
-                      <p>Requested On: {{ member.requested_on }} UTC</p>
-                      <br>
-                      <p>New Member Name: {{member.user}}</p>
-                      <p>Email: {{member.user.email}}</p>
-                      <br>
-                      <p>Reason for Request: {{member.reason}}</p>
-
-                    </div>
-                    <div class="col-3">
-                      <div class="row float-right" id="{{ member.membership_id }}-action">
-                          <button class="card-link btn btn-primary accept-button"
-                          id="groupMember" value="{{member.membership_id}}">Accept</button>
-                          <button class="card-link btn btn-danger decline-button"
-                          id="declineMember/{{member.membership_id}}" value ="{{member.membership_id}}">Decline</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-            {% if not membershipPending %}
-            <div class="page-header mx-3">
-              <p>None pending</p>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    {% if groupGenericRequests|length %}
-      <div class="panel panel-default">
-        <div class="panel-heading page-header">
-          <div class="container-fluid">
-            <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#collapse7"
-                data-parent="#pending-accordion">Group Access Requests : </a>
-              <span class="h6 badge badge-light">{{ groupGenericRequests|length }}</span>
-
-            </h2>
-          </div>
-        </div>
-        <div id="collapse7" class="panel-collapse collapse">
-          <div class="panel-body">
-
-            {% if groupGenericRequests %}
-            <div class="page-header bulkHeader mx-4">
-              <div class="row">
-                <div class="checkbox col-1">
-                  <label>
-                    <!-- checkbox classes should also contain this value -->
-                    <input class="bulkAcceptAll-checkbox" value="clubGroupAccess" type="checkbox">
-                    <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                  </label>
-                </div>
-                <div class="col-9">
-                  <h2 class="h4">Bulk Operation</h2>
-                </div>
-                <div class="col-2 pl-5">
-                  <!-- checkbox classes should also contain this id -->
-                  <button class="card-link btn btn-primary bulkAccept-button" id="clubGroupAccess">Bulk Accept</button>
-                </div>
-              </div>
-            </div>
-            {% endif %}
-
-            {% for group in groupGenericRequests %}
-            <div class="row">
-              <div class="card col-xs-12 col-md-12" {% if group.sla_breached %} style="border: 5px solid #bb414d; border-radius: 4px;" {% endif %}>
-                <div class="card-body" style="color:white;">
-                  <div class="row">
-                    <div class="checkbox col-1 pl-1">
-                      <label id="{{ group.group_club_id }}-checkbox">
-                        {% if not group.hasOtherRequest %}
-                        <input class="clubGroupAccess" type="checkbox" value="{{ group.group_club_id }}">
-                        <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                        {% endif %}
-                      </label>
-                    </div>
-                    <div class="col-8">
-                        {% if group.hasOtherRequest %}
-                        <h6 class="text-warning">This request has other access. Bulk approve not available.</h6>
-                        {% endif %}
-                      <h4 class="card-title">{{group.group_club_id}}</h4>
-                      <p>Requested for group: <a target="_blank" href="/group/access/list/{{ group.groupName }}" rel="noopener noreferrer nofollow">{{ group.groupName }}</a> (click to view group accesses)</p>
-                      <p>Requested By: {{ group.userEmail }}</p>
-                      <p>Requested On: {{ group.requested_on }} UTC</p>
-                      {% if not group.needsAccessApprove %}
-                        <p class="text-warning"><b>Note: This group does not require approval for adding new members</b></p>
-                      {% endif %}
-                      <p>Approval SLA Breached: <span {% if group.sla_breached %} class="sla-breached-tag" {% endif %}>{{ group.sla_breached }}</span></p>
-                      <br>
-
-                      <p><strong>Accesses requested:</strong></p>
-                      {% for eachAccessDetails in group.accessData %}
-                        <div style="margin-top:10px; margin-bottom: 10px; padding: 10px;background-color: #51575d;">
-                          {% if "EKS" in eachAccessDetails.accessType %}
-                          <h6 class="text-warning">Approving EKS access also creates aws account for the user if it does not exists.</h6>
-                          {% endif %}
-                          <p><b style="color: yellow;">{{ eachAccessDetails.accessType }} - </b> {{ eachAccessDetails.accessCategory }}</p>
-                          {% if eachAccessDetails.accessMeta %}
-                            <p>
-                              <table class="table" style="color: white;">
-                                {% for key, value in eachAccessDetails.accessMeta.items %}
-                                  <tr>
-                                    <td style="height: 20px; padding:5px">{{ key }}</td>
-                                    <td style="height: 20px; padding:5px">{{ value }}</td>
-                                  </tr>
-                                {% endfor %}
-                              </table>
-                          {% endif %}
-                          </p>
-                          <p>Reason: {{ eachAccessDetails.accessReason }}</p>
-                          <div id="{{ eachAccessDetails.requestId }}-action">
-                              {% if group.accessData|length > 1 %}
-                                <button class="card-link btn btn-primary accept-button"
-                                id="groupAccess" value="{{ eachAccessDetails.requestId }}">Accept</button>
-                                <button class="card-link btn btn-danger decline-button"
-                                id="groupAccess/{{ eachAccessDetails.requestId }}" value ="{{ eachAccessDetails.requestId }}">Decline</button>
-                              {% endif %}
-                          </div>
-                        </div>
-                      {% endfor %}
-                    </div>
-                    <div class="col-3">
-                      <div class="row float-right" id="{{ group.group_club_id }}-action">
-                          {% if not group.hasOtherRequest %}
-                            <button class="card-link btn btn-primary accept-button"
-                            id="clubGroupAccess" value="{{group.group_club_id}}">Accept</button>
-                          {% else %}
-                            <button class="card-link btn btn-primary other-accept-button"
-                            id="clubGroupAccess" value="{{group.group_club_id}}">Accept</button>
-                          {% endif %}
-                          <button class="card-link btn btn-danger decline-button"
-                          id="clubGroupAccess/{{group.group_club_id}}" value ="{{group.group_club_id}}">Decline</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {% endfor %}
-            {% if not groupGenericRequests %}
-            <div class="page-header mx-3">
-              <p>None pending</p>
-              {% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    <!-- group stuff end  -->
-
-    {% for each_module in genericRequests %}
-      {% if each_module.requests|length %}
+    <div class="panel-group" id="pending-accordion">
+        {% if repoRequest|length %}
         <div class="panel panel-default">
-          <div class="panel-heading page-header">
-            <div class="container-fluid">
-              <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#{{ each_module.module_tag }}"
-                  data-parent="#pending-accordion">{{ each_module.module_tag }} : </a>
-                <span class="h6 badge badge-light">{{ each_module.requests|length }}</span>
-                {% if each_module.module_tag == "other" %}
-                    <h6 class="text-warning">Bulk approve not available for other requests.</h6>
-                {% endif %}
-                {% if each_module.module_tag == "eks" %}
-                    <h6 class="text-warning">Approving EKS access also grants AWS access to the user.</h6>
-                {% endif %}
-                {% if each_module.module_tag == "hashicorpvault" %}
-                    <h6 class="text-warning">Approving Key Creation request also grants write access to the user.</h6>
-                {% endif %}
+            <div class="panel-heading page-header">
+                <div class="container-fluid">
+                    <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#collapse11"
+                            data-parent="#pending-accordion">Github Repo Creation Pending : </a>
+                        <span class="h6 badge badge-light">{{ repoRequest|length }}</span>
 
-              </h2>
-            </div>
-          </div>
-          <div id="{{ each_module.module_tag }}" class="panel-collapse collapse">
-            <div class="panel-body">
-              {% if each_module.module_tag != "other" %}
-              <div class="page-header bulkHeader mx-4">
-                <div class="row">
-                  <div class="checkbox col-1">
-                    <label>
-                      <!-- checkbox classes should also contain this value -->
-                      <input class="bulkAcceptAll-checkbox" value="{{ each_module.module_tag }}-club" type="checkbox">
-                      <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                    </label>
-                  </div>
-                  <div class="col-9">
-                    <h2 class="h4">Bulk Operation</h2>
-                  </div>
-                  <div class="col-2 pl-5">
-                    <!-- checkbox classes should also contain this id -->
-                    <button class="card-link btn btn-primary bulkAccept-button" id="{{ each_module.module_tag }}-club">Bulk Accept</button>
-                  </div>
+                    </h2>
                 </div>
-              </div>
-              {% endif %}
-              {% for eachRequest in each_module.requests %}
-              <div class="row">
-                <div class="card col-xs-12 col-md-12" {% if eachRequest.sla_breached %} style="border: 5px solid #bb414d; border-radius: 4px;" {% endif %}>
-                  <div class="card-body" style="color:white;">
-                    <div class="row">
-                      <div class="checkbox col-1 pl-1">
-                        <label id="{{ eachRequest.club_id }}-checkbox">
-                          {% if each_module.module_tag != "other" %}
-                            <input class="{{ each_module.module_tag }}-club" type="checkbox"
-                              value="{{ eachRequest.club_id }}">
-                              <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                          {% endif %}
-                        </label>
-                      </div>
-                      <div class="col-8">
-                        <h4 class="card-title">
-                          {{ eachRequest.club_id }}
-                        </h4>
-                        <p>Requested By: {{ eachRequest.userEmail }}</p>
-                        <p>Requested On: {{ eachRequest.requested_on }} UTC</p>
-                        <p>Approval SLA Breached: <span {% if eachRequest.sla_breached %} class="sla-breached-tag" {% endif %}>{{ eachRequest.sla_breached }}</span></p>
-                        <p>Access Type: {{ eachRequest.accessType }}</p>
-                        <p>Reason for Request: {{ eachRequest.accessReason }}</p>
-                        <h5>Accesses</h5>
-                        {% for accessData in eachRequest.accessData %}
-                          <div style="margin-top:10px; margin-bottom: 10px; padding: 10px;background-color: #51575d;">
-                            <p>{{accessData.accessCategory}}</p>
-                            {% if accessData.accessMeta %}
-                            <b>Access Metadata:</b>
-                              <table class="table" style="color: white;">
-                                {% for key, value in accessData.accessMeta.items %}
-                                <tr>
-                                  <td style="height: 25px; padding:5px">{{ key }}</td>
-                                  <td style="height: 25px;padding:5px">{{ value }}</td>
-                                </tr>
-                                {% endfor %}
-                              </table>
-                              {% endif %}
-
-                              <div id="{{ accessData.requestId }}-action">
-                                  {% if eachRequest.accessData|length > 1 %}
-                                    <button class="card-link btn btn-primary accept-button"
-                                    id="{{ eachRequest.access_tag }}" value="{{ accessData.requestId }}">Accept</button>
-                                    <button class="card-link btn btn-danger decline-button"
-                                    id="{{ eachRequest.access_tag }}/{{ accessData.requestId }}" value ="{{ accessData.requestId }}">Decline</button>
-                                  {% endif %}
-                              </div>
+            </div>
+            <div id="collapse11" class="panel-collapse collapse">
+                <div class="panel-body">
+                    {% if repoRequest %}
+                    <div class="page-header bulkHeader mx-4">
+                        <div class="row">
+                            <div class="checkbox col-1">
+                                <label>
+                                    <!-- checkbox classes should also contain this value -->
+                                    <input class="bulkAcceptAll-checkbox" value="github" type="checkbox">
+                                    <span class="cr"><i class="cr-icon fa fa-check"></i></span>
+                                </label>
+                            </div>
+                            <div class="col-9">
+                                <h2 class="h4">Bulk Operation</h2>
+                            </div>
+                            <div class="col-2 pl-5">
+                                <!-- checkbox classes should also contain this id -->
+                                <button class="card-link btn btn-primary bulkAccept-button" id="github">Bulk
+                                    Accept</button>
+                            </div>
                         </div>
-                        {% endfor %}
-                      </div>
-                      <div class="col-3">
-                        <div class="row float-right" id="{{ eachRequest.club_id }}-action">
-                            {% if each_module.module_tag == "other" %}
-                              <button class="card-link btn btn-primary other-accept-button"
-                              id="{{ eachRequest.access_tag }}-club" value="{{ eachRequest.club_id }}">Accept</button>
-                            {% else %}
-                              <button class="card-link btn btn-primary accept-button"
-                              id="{{ eachRequest.access_tag }}-club" value="{{ eachRequest.club_id }}">Accept</button>
-                            {% endif %}
-                            <button class="card-link btn btn-danger decline-button"
-                            id="{{ eachRequest.access_tag }}-club/{{ eachRequest.club_id }}" value ="{{ eachRequest.club_id }}">Decline</button>
-                        </div>
-                      </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-              {% endfor %}
+                    {% endif %}
 
-              {% if not each_module.requests %}
-              <div class="page-header mx-3">
-                <p>None pending</p>
-              </div>
-              {% endif %}
+
+                    {% for request in repoRequest %}
+                    <div class="row">
+                        <div class="card col-xs-12 col-md-12">
+                            <div class="card-body" style="color:white;">
+                                <div class="row">
+                                    <div class="checkbox col-1 pl-1">
+                                        <label id="{{ request.requestId }}-checkbox">
+                                            <input class="github" type="checkbox" value="{{ request.requestId }}">
+                                            <span class="cr"><i class="cr-icon fa fa-check"></i></span>
+                                        </label>
+                                    </div>
+                                    <div class="col-8">
+                                        <div class="row">
+                                            <div class="col-6">
+                                                <h4 class="card-title">{{request.requestId}}</h4>
+                                                <p>Requested By: {{request.requester}}</p>
+                                                <p>Requested On: {{ request.requested_on }} UTC</p>
+                                                <br>
+                                            </div>
+                                            <div class="col-6">
+                                                <p class="text-success">Github Repo Details</p>
+                                                <p>Git user name: {{request.requestInfo.gitusername}}</p>
+                                                <p>Repo Name: {{request.requestInfo.githubRepoName}}</p>
+                                                <p>Repo Description: {{request.requestInfo.githubRepoDesc}}</p>
+                                                <p>Repo type: {{request.requestInfo.githubRepoType}}</p>
+                                                <p>Master Branch Protection:
+                                                    {{request.requestInfo.masterBranchProtection}}</p>
+                                                <p>README enabled: {{request.requestInfo.readmeEnabled}}</p>
+                                                <p>Deny Default Access: {{request.requestInfo.denyDefaultAccess}}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="row float-right" id="{{ request.requestId }}-action">
+                                            <button class="card-link btn btn-primary accept-button" id="github"
+                                                value="{{request.requestId}}">Accept</button>
+                                            <button class="card-link btn btn-danger decline-button"
+                                                id="github/{{request.requestId}}"
+                                                value="{{request.requestId}}">Decline</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if not repoRequest %}
+                    <div class="page-header mx-3">
+                        <p>None pending</p>
+                    </div>
+                    {% endif %}
+                </div>
             </div>
-          </div>
         </div>
-      {% endif %}
-    {% endfor %}
-  </div>
+        {% endif %}
+
+        <!-- group stuff start -->
+        {% if newGroupPending|length %}
+        <div class="panel panel-default">
+            <div class="panel-heading page-header">
+                <div class="container-fluid">
+                    <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#collapse5"
+                            data-parent="#pending-accordion">New Group Creation : </a>
+                        <span class="h6 badge badge-light">{{ newGroupPending|length }}</span>
+                    </h2>
+                </div>
+            </div>
+            <div id="collapse5" class="panel-collapse collapse">
+                <div class="panel-body">
+
+                    {% if newGroupPending %}
+                    <div class="page-header bulkHeader mx-4">
+                        <div class="row">
+                            <div class="checkbox col-1">
+                                <label>
+                                    <!-- checkbox classes should also contain this value -->
+                                    <input class="bulkAcceptAll-checkbox" value="groupNew" type="checkbox">
+                                    <span class="cr"><i class="cr-icon fa fa-check"></i></span>
+                                </label>
+                            </div>
+                            <div class="col-9">
+                                <h2 class="h4">Bulk Operation</h2>
+                            </div>
+                            <div class="col-2 pl-5">
+                                <!-- checkbox classes should also contain this id -->
+                                <button class="card-link btn btn-primary bulkAccept-button" id="groupNew">Bulk
+                                    Accept</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% for group in newGroupPending %}
+                    <div class="row">
+                        <div class="card col-xs-12 col-md-12">
+                            <div class="card-body" style="color:white;">
+                                <div class="row">
+                                    <div class="checkbox col-1 pl-1">
+                                        <label id="{{ group.groupRequest.group_id }}-checkbox">
+                                            <input class="groupNew" type="checkbox"
+                                                value="{{ group.groupRequest.group_id }}">
+                                            <span class="cr"><i class="cr-icon fa fa-check"></i></span>
+                                        </label>
+                                    </div>
+                                    <div class="col-8">
+                                        <h4 class="card-title">{{group.groupRequest.group_id}}</h4>
+                                        <p>Requested By: {{group.groupRequest.requester}}</p>
+                                        <p>Requested On: {{ group.groupRequest.requested_on }} UTC</p>
+                                        <p>Requested Group Name: {{group.groupRequest.name}}</p>
+                                        <p>Reason for Request: {{group.groupRequest.description}}</p>
+                                        <p>Further addition of users
+                                            {% if group.groupRequest.needsAccessApprove%}
+                                            will
+                                            {% else %}
+                                            <b style="color: red;">will not</b>
+                                            {% endif %}
+                                            require permission from access_approve
+                                        </p>
+                                        <p>Initial Members: {{group.initialMembers}} (These members will be
+                                            automatically added to group.)</p>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="row float-right" id="{{ group.groupRequest.group_id }}-action">
+                                            <button class="card-link btn btn-primary accept-button" id="groupNew"
+                                                value="{{group.groupRequest.group_id}}">Accept</button>
+                                            <button class="card-link btn btn-danger decline-button"
+                                                id="declineNewGroup/{{group.groupRequest.group_id}}"
+                                                value="{{group.groupRequest.group_id}}">Decline</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if not newGroupPending %}
+                    <div class="page-header mx-3">
+                        <p>None pending</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if membershipPending|length %}
+        <div class="panel panel-default">
+            <div class="panel-heading page-header">
+                <div class="container-fluid">
+                    <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#collapse6"
+                            data-parent="#pending-accordion">New Group Additions : </a>
+                        <span class="h6 badge badge-light">{{ membershipPending|length }}</span>
+
+                    </h2>
+                </div>
+            </div>
+            <div id="collapse6" class="panel-collapse collapse">
+                <div class="panel-body">
+
+                    {% if membershipPending %}
+                    <div class="page-header bulkHeader mx-4">
+                        <div class="row">
+                            <div class="checkbox col-1">
+                                <label>
+                                    <!-- checkbox classes should also contain this value -->
+                                    <input class="bulkAcceptAll-checkbox" value="groupMember" type="checkbox">
+                                    <span class="cr"><i class="cr-icon fa fa-check"></i></span>
+                                </label>
+                            </div>
+                            <div class="col-9">
+                                <h2 class="h4">Bulk Operation</h2>
+                            </div>
+                            <div class="col-2 pl-5">
+                                <!-- checkbox classes should also contain this id -->
+                                <button class="card-link btn btn-primary bulkAccept-button" id="groupMember">Bulk
+                                    Accept</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% for member in membershipPending %}
+                    <div class="row">
+                        <div class="card col-xs-12 col-md-12">
+                            <div class="card-body" style="color:white;">
+                                <div class="row">
+                                    <div class="checkbox col-1 pl-1">
+                                        <label id="{{ member.membership_id }}-checkbox">
+                                            <input class="groupMember" type="checkbox"
+                                                value="{{ member.membership_id }}">
+                                            <span class="cr"><i class="cr-icon fa fa-check"></i></span>
+                                        </label>
+                                    </div>
+                                    <div class="col-8">
+                                        <h4 class="card-title">{{member.membership_id}}</h4>
+                                        <p>Requested By: {{member.requested_by}}</p>
+                                        <p>Requested On: {{ member.requested_on }} UTC</p>
+                                        <br>
+                                        <p>New Member Name: {{member.user}}</p>
+                                        <p>Email: {{member.user.email}}</p>
+                                        <br>
+                                        <p>Reason for Request: {{member.reason}}</p>
+
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="row float-right" id="{{ member.membership_id }}-action">
+                                            <button class="card-link btn btn-primary accept-button" id="groupMember"
+                                                value="{{member.membership_id}}">Accept</button>
+                                            <button class="card-link btn btn-danger decline-button"
+                                                id="declineMember/{{member.membership_id}}"
+                                                value="{{member.membership_id}}">Decline</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if not membershipPending %}
+                    <div class="page-header mx-3">
+                        <p>None pending</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if groupGenericRequests|length %}
+        <div class="panel panel-default">
+            <div class="panel-heading page-header">
+                <div class="container-fluid">
+                    <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#collapse7"
+                            data-parent="#pending-accordion">Group Access Requests : </a>
+                        <span class="h6 badge badge-light">{{ groupGenericRequests|length }}</span>
+
+                    </h2>
+                </div>
+            </div>
+            <div id="collapse7" class="panel-collapse collapse">
+                <div class="panel-body">
+
+                    {% if groupGenericRequests %}
+                    <div class="page-header bulkHeader mx-4">
+                        <div class="row">
+                            <div class="checkbox col-1">
+                                <label>
+                                    <!-- checkbox classes should also contain this value -->
+                                    <input class="bulkAcceptAll-checkbox" value="clubGroupAccess" type="checkbox">
+                                    <span class="cr"><i class="cr-icon fa fa-check"></i></span>
+                                </label>
+                            </div>
+                            <div class="col-9">
+                                <h2 class="h4">Bulk Operation</h2>
+                            </div>
+                            <div class="col-2 pl-5">
+                                <!-- checkbox classes should also contain this id -->
+                                <button class="card-link btn btn-primary bulkAccept-button" id="clubGroupAccess">Bulk
+                                    Accept</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% for group in groupGenericRequests %}
+                    <div class="row">
+                        <div class="card col-xs-12 col-md-12" {% if group.sla_breached %}
+                            style="border: 5px solid #bb414d; border-radius: 4px;" {% endif %}>
+                            <div class="card-body" style="color:white;">
+                                <div class="row">
+                                    <div class="checkbox col-1 pl-1">
+                                        <label id="{{ group.group_club_id }}-checkbox">
+                                            {% if not group.hasOtherRequest %}
+                                            <input class="clubGroupAccess" type="checkbox"
+                                                value="{{ group.group_club_id }}">
+                                            <span class="cr"><i class="cr-icon fa fa-check"></i></span>
+                                            {% endif %}
+                                        </label>
+                                    </div>
+                                    <div class="col-8">
+                                        {% if group.hasOtherRequest %}
+                                        <h6 class="text-warning">This request has other access. Bulk approve not
+                                            available.</h6>
+                                        {% endif %}
+                                        <h4 class="card-title">{{group.group_club_id}}</h4>
+                                        <p>Requested for group: <a target="_blank"
+                                                href="/group/access/list/{{ group.groupName }}"
+                                                rel="noopener noreferrer nofollow">{{ group.groupName }}</a> (click to
+                                            view group accesses)</p>
+                                        <p>Requested By: {{ group.userEmail }}</p>
+                                        <p>Requested On: {{ group.requested_on }} UTC</p>
+                                        {% if not group.needsAccessApprove %}
+                                        <p class="text-warning"><b>Note: This group does not require approval for adding
+                                                new members</b></p>
+                                        {% endif %}
+                                        <p>Approval SLA Breached: <span {% if group.sla_breached %}
+                                                class="sla-breached-tag" {% endif %}>{{ group.sla_breached }}</span></p>
+                                        <br>
+
+                                        <p><strong>Accesses requested:</strong></p>
+                                        {% for eachAccessDetails in group.accessData %}
+                                        <div
+                                            style="margin-top:10px; margin-bottom: 10px; padding: 10px;background-color: #51575d;">
+                                            {% if "EKS" in eachAccessDetails.accessType %}
+                                            <h6 class="text-warning">Approving EKS access also creates aws account for
+                                                the user if it does not exists.</h6>
+                                            {% endif %}
+                                            <p><b style="color: yellow;">{{ eachAccessDetails.accessType }} - </b> {{
+                                                eachAccessDetails.accessCategory }}</p>
+                                            {% if eachAccessDetails.accessMeta %}
+                                            <p>
+                                            <table class="table" style="color: white;">
+                                                {% for key, value in eachAccessDetails.accessMeta.items %}
+                                                <tr>
+                                                    <td style="height: 20px; padding:5px">{{ key }}</td>
+                                                    <td style="height: 20px; padding:5px">{{ value }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </table>
+                                            {% endif %}
+                                            </p>
+                                            <p>Reason: {{ eachAccessDetails.accessReason }}</p>
+                                            <div id="{{ eachAccessDetails.requestId }}-action">
+                                                {% if group.accessData|length > 1 %}
+                                                <button class="card-link btn btn-primary accept-button" id="groupAccess"
+                                                    value="{{ eachAccessDetails.requestId }}">Accept</button>
+                                                <button class="card-link btn btn-danger decline-button"
+                                                    id="groupAccess/{{ eachAccessDetails.requestId }}"
+                                                    value="{{ eachAccessDetails.requestId }}">Decline</button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="row float-right" id="{{ group.group_club_id }}-action">
+                                            {% if not group.hasOtherRequest %}
+                                            <button class="card-link btn btn-primary accept-button" id="clubGroupAccess"
+                                                value="{{group.group_club_id}}">Accept</button>
+                                            {% else %}
+                                            <button class="card-link btn btn-primary other-accept-button"
+                                                id="clubGroupAccess" value="{{group.group_club_id}}">Accept</button>
+                                            {% endif %}
+                                            <button class="card-link btn btn-danger decline-button"
+                                                id="clubGroupAccess/{{group.group_club_id}}"
+                                                value="{{group.group_club_id}}">Decline</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% if not groupGenericRequests %}
+                    <div class="page-header mx-3">
+                        <p>None pending</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- group stuff end  -->
+
+        {% for each_module in genericRequests %}
+        {% if each_module.requests|length %}
+        <div class="panel panel-default">
+            <div class="panel-heading page-header">
+                <div class="container-fluid">
+                    <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#{{ each_module.module_tag }}"
+                            data-parent="#pending-accordion">{{ each_module.module_tag }} : </a>
+                        <span class="h6 badge badge-light">{{ each_module.requests|length }}</span>
+                        {% if each_module.module_tag == "other" %}
+                        <h6 class="text-warning">Bulk approve not available for other requests.</h6>
+                        {% endif %}
+
+                    </h2>
+                </div>
+            </div>
+            <div id="{{ each_module.module_tag }}" class="panel-collapse collapse">
+                <div class="panel-body">
+                    {% if each_module.module_tag != "other" %}
+                    <div class="page-header bulkHeader mx-4">
+                        <div class="row">
+                            <div class="checkbox col-1">
+                                <label>
+                                    <!-- checkbox classes should also contain this value -->
+                                    <input class="bulkAcceptAll-checkbox" value="{{ each_module.module_tag }}-club"
+                                        type="checkbox">
+                                    <span class="cr"><i class="cr-icon fa fa-check"></i></span>
+                                </label>
+                            </div>
+                            <div class="col-9">
+                                <h2 class="h4">Bulk Operation</h2>
+                            </div>
+                            <div class="col-2 pl-5">
+                                <!-- checkbox classes should also contain this id -->
+                                <button class="card-link btn btn-primary bulkAccept-button"
+                                    id="{{ each_module.module_tag }}-club">Bulk Accept</button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% for eachRequest in each_module.requests %}
+                    <div class="row">
+                        <div class="card col-xs-12 col-md-12" {% if eachRequest.sla_breached %}
+                            style="border: 5px solid #bb414d; border-radius: 4px;" {% endif %}>
+                            <div class="card-body" style="color:white;">
+                                <div class="row">
+                                    <div class="checkbox col-1 pl-1">
+                                        <label id="{{ eachRequest.club_id }}-checkbox">
+                                            {% if each_module.module_tag != "other" %}
+                                            <input class="{{ each_module.module_tag }}-club" type="checkbox"
+                                                value="{{ eachRequest.club_id }}">
+                                            <span class="cr"><i class="cr-icon fa fa-check"></i></span>
+                                            {% endif %}
+                                        </label>
+                                    </div>
+                                    <div class="col-8">
+                                        <h4 class="card-title">
+                                            {{ eachRequest.club_id }}
+                                        </h4>
+                                        <p>Requested By: {{ eachRequest.userEmail }}</p>
+                                        <p>Requested On: {{ eachRequest.requested_on }} UTC</p>
+                                        <p>Approval SLA Breached:
+                                            <span {% if eachRequest.sla_breached %} class="sla-breached-tag" {% endif%}>
+                                                {{ eachRequest.sla_breached}}
+                                            </span>
+                                        </p>
+                                        <p>Access Type: {{ eachRequest.accessType }}</p>
+                                        <p>Reason for Request: {{ eachRequest.accessReason }}</p>
+                                        <h5>Accesses</h5>
+                                        {% for accessData in eachRequest.accessData %}
+                                        <div
+                                            style="margin-top:10px; margin-bottom: 10px; padding: 10px;background-color: #51575d;">
+                                            <p>{{accessData.accessCategory}}</p>
+                                            {% if accessData.accessMeta %}
+                                            <b>Access Metadata:</b>
+                                            <table class="table" style="color: white;">
+                                                {% for key, value in accessData.accessMeta.items %}
+                                                <tr>
+                                                    <td style="height: 25px; padding:5px">{{ key }}</td>
+                                                    <td style="height: 25px;padding:5px">{{ value }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </table>
+                                            {% endif %}
+
+                                            <div id="{{ accessData.requestId }}-action">
+                                                {% if eachRequest.accessData|length > 1 %}
+                                                <button class="card-link btn btn-primary accept-button"
+                                                    id="{{ eachRequest.access_tag }}"
+                                                    value="{{ accessData.requestId }}">Accept</button>
+                                                <button class="card-link btn btn-danger decline-button"
+                                                    id="{{ eachRequest.access_tag }}/{{ accessData.requestId }}"
+                                                    value="{{ accessData.requestId }}">Decline</button>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="row float-right" id="{{ eachRequest.club_id }}-action">
+                                            {% if each_module.module_tag == "other" %}
+                                            <button class="card-link btn btn-primary other-accept-button"
+                                                id="{{ eachRequest.access_tag }}-club"
+                                                value="{{ eachRequest.club_id }}">Accept</button>
+                                            {% else %}
+                                            <button class="card-link btn btn-primary accept-button"
+                                                id="{{ eachRequest.access_tag }}-club"
+                                                value="{{ eachRequest.club_id }}">Accept</button>
+                                            {% endif %}
+                                            <button class="card-link btn btn-danger decline-button"
+                                                id="{{ eachRequest.access_tag }}-club/{{ eachRequest.club_id }}"
+                                                value="{{ eachRequest.club_id }}">Decline</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+
+                    {% if not each_module.requests %}
+                    <div class="page-header mx-3">
+                        <p>None pending</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
 </div>
 
 
