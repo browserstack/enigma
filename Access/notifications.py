@@ -22,7 +22,6 @@ MEMBERSHIP_ACCEPTED_BODY = """Access approved for addition of {} to group - {} b
 
 GROUP_ACCESS_ADDED_SUBJECT = "Group: {group_name}  new access added"
 
-
 def send_new_group_create_notification(auth_user, date_time, new_group, member_list):
     subject = NEW_GROUP_EMAIL_SUBJECT + auth_user.email + " -- " + date_time
     body = helpers.generateStringFromTemplate(
