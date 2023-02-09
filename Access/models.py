@@ -1,7 +1,8 @@
 from django.contrib.auth.models import User as user
 from django.db import models, transaction
+import datetime, logging
+
 from BrowserStackAutomation.settings import USER_STATUS_CHOICES, PERMISSION_CONSTANTS
-import datetime
 
 
 class Permission(models.Model):
@@ -48,7 +49,6 @@ class SshPublicKey(models.Model):
         return str(self.key)
 
 
-# Create your models here.
 class User(models.Model):
     """
     Represents an user belonging to the organistaion
@@ -215,28 +215,40 @@ class User(models.Model):
         except User.DoesNotExist:
             return None
     
-    def get_user_access_mappings(self):
-        all_user_identities = self.module_identity.all()
-        access_request_mappings = []
+    def get_user_access_mapping_related_manager(self):
+        all_user_identities = self.module_identity.order_by('id').reverse()
+        access_request_mapping_related_manager = []
         for each_identity in all_user_identities:
-            access_request_mappings.extend(
-                each_identity.user_access_mapping.prefetch_related(
-                    "access", "approver_1", "approver_2"
-                )
-            )
-        return access_request_mappings
+            access_request_mapping_related_manager.append(each_identity.user_access_mapping)
+        return access_request_mapping_related_manager
 
-    def get_access_history(self, all_access_modules):
-        access_request_mappings = self.get_user_access_mappings()
+    def get_access_history(self, all_access_modules, start_index, count):
+        access_request_mapping_related_manager = self.get_user_access_mapping_related_manager()
         access_history = []
 
-        for request_mapping in access_request_mappings:
-            access_module = all_access_modules[request_mapping.access.access_tag]
-            access_history.append(
-                request_mapping.getAccessRequestDetails(access_module)
-            )
+        for request_mapping_related_manager in access_request_mapping_related_manager:
+            all_user_access_mappings = request_mapping_related_manager.order_by('id').reverse()
 
-        return access_history
+            for each_user_access_mapping in all_user_access_mappings:
+                access_module = all_access_modules[each_user_access_mapping.access.access_tag]
+                access_history.append(each_user_access_mapping.getAccessRequestDetails(access_module))
+
+            # skip till start_index
+            if start_index <= len(access_history):
+                access_history = access_history[start_index:]
+                start_index = 0
+            else:
+                start_index = start_index - len(access_history)
+                access_history = []
+
+            # end loop if count to return is reached
+            if start_index == 0 and len(access_history) >= count:
+                break
+
+        return access_history[0:count]
+
+    def get_total_access_count(self):
+        return UserAccessMapping.objects.filter(user_identity__user=self).count()
 
     def __str__(self):
         return "%s" % (self.user)

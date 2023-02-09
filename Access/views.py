@@ -5,6 +5,7 @@ from django.shortcuts import render
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
 import json
+import math
 import logging
 
 from . import helpers as helper
@@ -48,13 +49,24 @@ def showAccessHistory(request):
             "Please login again",
         )
 
+    page = int(request.GET.get('page') or 1) - 1
+    limit = 20
+
+    start_index = page * limit
+    max_pagination = math.ceil(access_user.get_total_access_count() / limit)
+
     return render(
         request,
         "BSOps/showAccessHistory.html",
         {
             "dataList": access_user.get_access_history(
-                helper.get_available_access_modules()
-            )
+                helper.get_available_access_modules(),
+                start_index,
+                limit,
+            ),
+            "maxPagination": max_pagination,
+            "allPages": range(1, max_pagination + 1),
+            "currentPagination": page + 1,
         },
     )
 

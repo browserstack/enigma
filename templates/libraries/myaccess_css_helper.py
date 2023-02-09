@@ -46,3 +46,10 @@ def access_status_content(status):
         ''')
 
     return status
+
+@register.simple_tag
+def get_navigation_class(current_page, nav_page):
+    if str(current_page) == str(nav_page):
+        return "border-indigo-500 text-indigo-600"
+
+    return "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"

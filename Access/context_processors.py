@@ -17,6 +17,7 @@ def add_variables_to_context(request):
     context = {}
     context["currentUser"] = currentUser
 
+    context["totalAccessCount"] = currentUser.get_total_access_count()
     context["groupsMemberFor"] = len(currentUser.get_active_groups())
 
     return context
