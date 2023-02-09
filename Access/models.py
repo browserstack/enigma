@@ -232,13 +232,6 @@ class User(models.Model):
         return identity
 
     @staticmethod
-    def get_user_by_email(email):
-        try:
-            return User.objects.get(email=email)
-        except User.DoesNotExist:
-            return None
-
-    @staticmethod
     def get_users_by_email(emails):
         return User.objects.filter(email__in=emails)
 
@@ -503,11 +496,6 @@ class GroupV2(models.Model):
             status__in=["Approved", "Pending", "Declined", "SecondaryPending"]
         )
 
-    def get_approved_accesses(self):
-        return self.groupaccessmapping_set.filter(
-            status__in=["Approved"]
-        )
-
     def is_self_approval(self, approver):
         return self.requester == approver
 
@@ -676,22 +664,18 @@ class UserAccessMapping(models.Model):
     def is_approved(self):
         return self.status == "Approved"
 
-    def set_status_grant_failed(self):
+    def access_grant_failed(self):
         self.status = "GrantFailed"
         self.save()
 
-    def set_status_declined(self, decline_reason=None):
+    def access_declined(self, decline_reason=None):
         self.status = "Declined"
         self.decline_reason = decline_reason
         self.save()
 
-    def set_status_approved(self):
+    def access_approved(self):
         self.status = "Approved"
         self.save()
-
-    @staticmethod
-    def get_mapping_from_request_id(request_id):
-        return UserAccessMapping.objects.get(request_id=request_id)
 
 
 class GroupAccessMapping(models.Model):

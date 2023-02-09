@@ -48,13 +48,13 @@ def background_task(func, *args):
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
 def run_access_grant(request_id):
-    mapping_obj = UserAccessMapping.get_mapping_from_request_id(request_id=request_id)
-    access_type = mapping_obj.access.access_tag
-    user = mapping_obj.user_identity.user
-    approver = mapping_obj.approver_1.user.username
+    user_access_mapping = UserAccessMapping.get_access_request(request_id=request_id)
+    access_type = user_access_mapping.access.access_tag
+    user = user_access_mapping.user_identity.user
+    approver = user_access_mapping.approver_1.user.username
     message = ""
-    if not mapping_obj.user_identity.user.state == "1":
-        mapping_obj.set_status_declined()
+    if not user_access_mapping.user_identity.user.state == "1":
+        user_access_mapping.access_declined()
         logger.debug(
             {
                 "requestId": request_id,
@@ -64,8 +64,8 @@ def run_access_grant(request_id):
             }
         )
         return False
-    elif mapping_obj.user_identity.identity == {}:
-        mapping_obj.set_status_grant_failed()
+    elif user_access_mapping.user_identity.identity == {}:
+        user_access_mapping.access_grant_failed()
         logger.debug(
             {
                 "requestId": request_id,
@@ -81,8 +81,8 @@ def run_access_grant(request_id):
         return False
 
     try:
-        response = access_module.approve(user_identity=mapping_obj.user_identity,
-                                         labels=[mapping_obj.access.access_label],
+        response = access_module.approve(user_identity=user_access_mapping.user_identity,
+                                         labels=[user_access_mapping.access.access_label],
                                          approver=approver,
                                          request_id=request_id,
                                          is_group=False,)
@@ -100,7 +100,7 @@ def run_access_grant(request_id):
         message = str(traceback.format_exc())
 
     if approve_success:
-        mapping_obj.set_status_approved()
+        user_access_mapping.access_approved()
         logger.debug(
             {
                 "requestId": request_id,
@@ -110,7 +110,7 @@ def run_access_grant(request_id):
             }
         )
     else:
-        mapping_obj.set_status_grant_failed()
+        user_access_mapping.access_grant_failed()
         logger.debug(
             {
                 "requestId": request_id,

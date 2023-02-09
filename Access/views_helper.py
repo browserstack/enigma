@@ -63,7 +63,7 @@ def execute_group_access(user_mappings_list):
                     "Successful group access grant for " + mapping_obj.request_id
                 )
         else:
-            mapping_obj.set_status_declined(decline_reason="User is not active")
+            mapping_obj.access_declined(decline_reason="User is not active")
             logger.debug(
                 "Skipping group access grant for user "
                 + user.user.username
@@ -73,7 +73,7 @@ def execute_group_access(user_mappings_list):
 
 def decline_group_other_access(access_mapping):
     user = access_mapping.user
-    access_mapping.set_status_declined(
+    access_mapping.access_declined(
         decline_reason="Auto decline for 'Other Access'. Please replace this with correct access.")
     logger.debug(
         "Skipping group access grant for user "
