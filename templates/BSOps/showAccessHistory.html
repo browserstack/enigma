@@ -92,9 +92,12 @@
             <tbody class="divide-y divide-gray-200 bg-white">
               {% for each_access in dataList %}
               <tr {% if forloop.counter|divisibleby:2 %}class="bg-gray-50"{% endif %}>
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">{{ each_access.access_tag }}</td>
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-6">
+                  <div class="text-gray-900">{{ each_access.accessType }}</div>
+                  <div class="text-gray-400">{{ each_access.requestId }}</div>
+                </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ each_access.status }}</td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ each_access.accessType }}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ each_access.accessCategory }}</td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ each_access.accessRequestType }}</td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                   <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit<span class="sr-only">, {{ each_access.requestId }}</span></a>
