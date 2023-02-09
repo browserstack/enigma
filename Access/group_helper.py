@@ -385,7 +385,7 @@ def get_user_group(request, group_name):
             }
             return context
 
-        group_members = group.get_approved_members().only("user")
+        group_members = group.get_all_approved_members().only("user")
 
         if not isAllowedGroupAdminFunctions(request, group_members):
             raise Exception("Permission denied, you're not owner of this group")
