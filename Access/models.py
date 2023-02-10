@@ -200,7 +200,7 @@ class User(models.Model):
         return self.module_identity.filter(
             access_tag=access_tag, status="Active"
         ).first()
-    
+
     def get_all_active_identity(self):
         return self.module_identity.filter(status = "Active")
 
@@ -210,7 +210,7 @@ class User(models.Model):
             return User.objects.get(email=email)
         except User.DoesNotExist:
             return None
-    
+
     def get_user_access_mappings(self):
         all_user_identities = self.module_identity.all()
         access_request_mappings = []
@@ -233,7 +233,7 @@ class User(models.Model):
             )
 
         return access_history
-    
+
     @staticmethod
     def get_user_from_username(username):
         try:
@@ -345,7 +345,7 @@ class MembershipV2(models.Model):
     @staticmethod
     def get_membership(membership_id):
         return MembershipV2.objects.get(membership_id=membership_id)
-    
+
     def __str__(self):
         return self.group.name + "-" + self.user.email + "-" + self.status
 
@@ -537,7 +537,7 @@ class GroupV2(models.Model):
 
     def get_all_approved_members(self):
         self.membership_group.filter(status="Approved")
-        
+
     def get_approved_accesses(self):
         return self.groupaccessmapping_set.filter(status="Approved")
 
@@ -666,8 +666,8 @@ class UserAccessMapping(models.Model):
         access_request_data["accessMeta"] = access_module.combine_labels_meta(
             access_labels
         )
-        access_request_data["access_label"] = [key + "-" + str(val).strip("[]") 
-                                              for key,val in list(self.access.access_label.items()) 
+        access_request_data["access_label"] = [key + "-" + str(val).strip("[]")
+                                              for key,val in list(self.access.access_label.items())
                                               if key != "keySecret"]
         access_request_data["access_type"] = self.access_type
         access_request_data["approver_1"] = self.approver_1.user.username
@@ -812,8 +812,8 @@ class GroupAccessMapping(models.Model):
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
-    
-    
+
+
 
 
 class AccessV2(models.Model):
@@ -878,7 +878,7 @@ class UserIdentity(models.Model):
     )
 
     def deactivate(self):
-        self.status = 0
+        self.status = 'Inactive'
         self.save()
 
     def get_active_access_mapping(self):
@@ -930,7 +930,7 @@ class UserIdentity(models.Model):
         for i, user_access in enumerate(existing_user_access_mapping):
             base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
             request_id = (
-                self.user.username
+                self.user.user.username
                 + "-"
                 + user_access.access_type
                 + "-"
@@ -945,7 +945,6 @@ class UserIdentity(models.Model):
             new_user_access_mapping.append(
                 self.user_access_mapping.create(
                     request_id=request_id,
-                    user=self,
                     access=user_access.access,
                     approver_1=user_access.approver_1,
                     approver_2=user_access.approver_2,
@@ -954,7 +953,7 @@ class UserIdentity(models.Model):
                     status=access_status,
                 )
             )
-            user_access.deactivate()
+            user_access.user_identity.deactivate()
         return new_user_access_mapping
 
     def __str__(self):

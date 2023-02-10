@@ -32,7 +32,7 @@ IDENTITY_UNCHANGED_ERROR_MESSAGE = {
 class IdentityNotChangedException(Exception):
     def __init__(self):
             self.message = "Identity Unchanged"
-            super().__init__(self.message)    
+            super().__init__(self.message)
 
 
 def get_identity_templates(auth_user):
@@ -47,16 +47,16 @@ def get_identity_templates(auth_user):
             module = all_modules[user_identity.access_tag]
             context["configured_identity_template"].append(
                 {
-                    "accessUserTemplatePath": module.get_identity_template(), 
+                    "accessUserTemplatePath": module.get_identity_template(),
                     "identity" : user_identity.identity
-                }            
+                }
             )
             all_modules.pop(user_identity.access_tag)
-            
+
     for mod in all_modules.values():
         context["unconfigured_identity_template"].append(
             {
-                "accessUserTemplatePath": mod.get_identity_template(), 
+                "accessUserTemplatePath": mod.get_identity_template(),
             }
         )
     # context["aws_username"] = "some name"
@@ -93,7 +93,6 @@ def create_identity(user_identity_form, auth_user):
             existing_user_access_mapping = (
                 existing_user_identity.get_active_access_mapping()
             )
-
         # create identity json  # call this verify identity
         new_user_access_mapping = __change_identity_and_transfer_membership(
             user=user,
@@ -114,7 +113,7 @@ def create_identity(user_identity_form, auth_user):
                 # mod.approve(membership)
                 raise Exception("Not Implemented")
 
-   
+
     context["status"] = {
         "title": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["title"],
         "msg": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["msg"].format(
@@ -142,7 +141,7 @@ def __change_identity_and_transfer_membership(
     # replicate the memberships with new identity
     if existing_user_access_mapping:
         return new_user_identity.replicate_active_access_membership_for_module(
-            existing_access=existing_user_access_mapping
+            existing_user_access_mapping=existing_user_access_mapping
         )
 
 
