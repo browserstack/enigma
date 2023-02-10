@@ -1,8 +1,10 @@
 from django.shortcuts import render
+from django.http import HttpResponse
 import datetime
 import logging
 import traceback
 
+import csv
 from . import helpers as helper
 from .models import UserAccessMapping, GroupAccessMapping
 from bootprocess import general
@@ -70,7 +72,10 @@ def executeGroupAccess(userMappingsList):
             if "other" in mappingObj.request_id:
                 decline_group_other_access(mappingObj)
             else:
-                background_task("run_access_grant", (mappingObj.request_id, mappingObj, accessType, user, approver))
+                background_task("run_access_grant",
+                                (mappingObj.request_id,
+                                 mappingObj, accessType,
+                                 user, approver))
                 logger.debug(
                     "Successful group access grant for " + mappingObj.request_id
                 )
@@ -109,3 +114,56 @@ def render_error_message(request, log_message, user_message, user_message_descri
             "msg": user_message_description,
         }
     })
+
+
+def get_filters_for_access_list(request):
+    filters = {}
+    if "accessTag" in request.GET:
+        filters['access__access_tag__icontains'] = request.GET.get('accessTag')
+    if "accessTagExact" in request.GET:
+        filters['access__access_tag'] = request.GET.get('accessTagExact')
+    if "status" in request.GET:
+        filters['status__icontains'] = request.GET.get('status')
+    if "type" in request.GET:
+        filters['access_type__icontains'] = request.GET.get('type')
+    return filters
+
+
+def prepare_datalist(paginator, record_date):
+    data_list = []
+    for each_access_request in paginator:
+        if record_date is not None and record_date != str(each_access_request.updated_on)[:10]:
+            continue
+        access_details = get_generic_user_access_mapping(each_access_request)
+        data_list.append(access_details)
+    return data_list
+
+
+def gen_all_user_access_list_csv(data_list):
+    logger.debug("Processing CSV response")
+    response = HttpResponse(content_type='text/csv')
+    filename = "AccessList-" + str(datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')) + ".csv"
+    response['Content-Disposition'] = 'attachment; filename="' + filename + '"'
+
+    writer = csv.writer(response)
+    writer.writerow(['User', 'AccessType', 'Access', 'AccessStatus',
+                     'RequestDate', 'Approver', 'GrantOwner',
+                     'RevokeOwner', 'Type'])
+    for data in data_list:
+        access_status = data["status"]
+        if len(data["revoker"]) > 0:
+            access_status += " by - " + data["revoker"]
+        writer.writerow([data['user'], data['access_desc'],
+                         (", ".join(data["access_label"])),
+                         access_status, data["requested_on"],
+                         data["approver_1"], data["grantOwner"],
+                         data["revokeOwner"], data["access_type"]])
+    return response
+
+def get_generic_user_access_mapping(user_access_mapping):
+    access_module = helper.get_available_access_module_from_tag(
+        user_access_mapping.access.access_tag)
+    if access_module:
+        access_details = user_access_mapping.getAccessRequestDetails(access_module)
+    logger.debug("Generic access generated: " + str(access_details))
+    return access_details

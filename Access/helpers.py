@@ -82,3 +82,4 @@ def getPossibleApproverPermissions():
         approver_permissions = each_module.fetch_approver_permissions()
         all_approver_permissions.extend(approver_permissions.values())
     return list(set(all_approver_permissions))
+
