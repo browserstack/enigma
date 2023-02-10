@@ -5,6 +5,7 @@ from Access.models import MembershipV2, User
 import logging
 from . import helpers as helper
 from django.db import transaction
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -24,35 +25,69 @@ NEW_IDENTITY_CREATE_ERROR_MESSAGE = {
     "msg": "Identity could not be updated for {modulename}. Please connect with admin",
 }
 
-
-ERROR_INVALID_ACCESS_MODULE = {
-    "title": "Invalid Access Module",
-    "msg": "Invalid Access Module - {modulename}",
+IDENTITY_UNCHANGED_ERROR_MESSAGE = {
+    "title": "Identity value not changed",
+    "msg": "Identity could not be updated for {modulename}. The new identity is same as the old identity",
 }
 
 
-def get_identity_templates():
+class IdentityNotChangedException(Exception):
+    def __init__(self):
+            self.message = "Identity Unchanged"
+            super().__init__(self.message)    
+
+
+def get_identity_templates(auth_user):
+    user_identities = auth_user.user.get_all_active_identity()
     context = {}
-    context["identity_template"] = []
-    for mod in helper.get_available_access_modules().values():
-        context["identity_template"].append(
-            {"accessUserTemplatePath": mod.get_identity_template()}
+    context["configured_identity_template"] = []
+    context["unconfigured_identity_template"] = []
+    all_modules = helper.get_available_access_modules()
+    for user_identity in user_identities:
+        is_identity_configured = _is_valid_identity_json(identity=user_identity.identity)
+        if is_identity_configured:
+            module = all_modules[user_identity.access_tag]
+            context["configured_identity_template"].append(
+                {
+                    "accessUserTemplatePath": module.get_identity_template(), 
+                    "identity" : user_identity.identity
+                }            
+            )
+            all_modules.pop(user_identity.access_tag)
+            
+    for mod in all_modules.values():
+        context["unconfigured_identity_template"].append(
+            {
+                "accessUserTemplatePath": mod.get_identity_template(), 
+            }
         )
+    # context["aws_username"] = "some name"
     return context
 
+def _is_valid_identity_json(identity):
+    try:
+        identity_json = json.loads(json.dumps(identity))
+        identity_dict = dict(identity_json)
+        if len(identity_dict)>0:
+            return True
+        return False
+    except Exception:
+        return False
 
 def create_identity(user_identity_form, auth_user):
     user = auth_user.user
     mod_name = user_identity_form.get("modname")
     selected_access_module = helper.get_available_access_modules()[mod_name]
-
+    context = {}
     if selected_access_module:
-        new_module_identity = selected_access_module.verify_identity(
+        new_module_identity_json = selected_access_module.verify_identity(
             user_identity_form, user.email
         )
         existing_user_identity = user.get_active_identity(
             access_tag=selected_access_module.tag()
         )
+        if new_module_identity_json == existing_user_identity.identity:
+            raise IdentityNotChangedException()
         existing_user_access_mapping = None
 
         # get useraccess if an identity already exists
@@ -67,7 +102,7 @@ def create_identity(user_identity_form, auth_user):
             access_tag=selected_access_module.tag(),
             existing_user_identity=existing_user_identity,
             existing_user_access_mapping=existing_user_access_mapping,
-            new_module_identity=new_module_identity,
+            new_module_identity=new_module_identity_json,
         )
         if True:
             for access_mapping in existing_user_access_mapping:
@@ -81,7 +116,7 @@ def create_identity(user_identity_form, auth_user):
                 # mod.approve(membership)
                 raise Exception("Not Implemented")
 
-    context = {}
+   
     context["status"] = {
         "title": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["title"],
         "msg": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["msg"].format(
