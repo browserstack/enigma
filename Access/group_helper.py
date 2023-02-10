@@ -279,19 +279,6 @@ def update_owners(request, group_name):
     return context
 
 
-def isAllowedGroupAdminFunctions(request, groupMembers):
-    ownersEmail = [member.user.email for member in groupMembers.filter(is_owner=True)]
-    is_approver = request.user.user.has_permission(
-        PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]
-    )
-
-    if request.user.user.email not in ownersEmail and not (
-        request.user.is_superuser or request.user.user.is_ops or is_approver
-    ):
-        return False
-    return True
-
-
 def getGroupMembers(groupMembers):
     return [
         {
@@ -391,8 +378,9 @@ def get_user_group(request, group_name):
             return context
 
         group_members = group.get_all_approved_members().only("user")
+        auth_user = request.user
 
-        if not isAllowedGroupAdminFunctions(request, group_members):
+        if not auth_user.user.is_allowed_admin_actions_on_group(group):
             raise Exception("Permission denied, you're not owner of this group")
 
         group_members = get_users_from_groupmembers(group_members)
@@ -429,8 +417,9 @@ def add_user_to_group(request):
             return context
 
         group_members_email = group.get_approved_and_pending_member_emails()
+        auth_user = request.user
 
-        if not has_permission_to_add(request=request, group=group):
+        if not auth_user.user.is_allowed_admin_actions_on_group(group)
             raise Exception("Permission denied, requester is non owner")
 
         duplicate_request_emails = set(
@@ -770,15 +759,3 @@ def get_selected_users_by_email(user_emails):
         raise User.DoesNotExist("Users with email {} are not found".format(not_found_emails))
     return selected_users
 
-
-def has_permission_to_add(request, group):
-    is_owner = group.is_owner(request.user.user.email)
-    is_approver = request.user.user.has_permission(
-        PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]
-    )
-
-    if (not is_owner) and not (
-        request.user.is_superuser or request.user.user.is_ops or is_approver
-    ):
-        return False
-    return True
