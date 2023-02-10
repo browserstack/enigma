@@ -202,7 +202,7 @@ class User(models.Model):
         ).first()
 
     def get_all_active_identity(self):
-        return self.module_identity.filter(status = "Active")
+        return self.module_identity.filter(status="Active")
 
     @staticmethod
     def get_user_by_email(email):
@@ -771,8 +771,6 @@ class GroupAccessMapping(models.Model):
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
-
-
 
 
 class AccessV2(models.Model):

@@ -20,6 +20,7 @@ def get_available_access_module_from_tag(tag):
         return get_available_access_modules()[tag]
     return None
 
+
 def get_available_access_modules():
     global available_accesses
     if len(available_accesses) > 0:

@@ -20,8 +20,15 @@ from Access.accessrequest_helper import (
     accept_user_access_requests,
     decline_individual_access,
 )
-from Access.models import User, UserAccessMapping
-from Access.userlist_helper import getallUserList, get_identity_templates, create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE, IDENTITY_UNCHANGED_ERROR_MESSAGE, IdentityNotChangedException
+from Access.models import User
+from Access.userlist_helper import (
+    getallUserList,
+    get_identity_templates,
+    create_identity,
+    NEW_IDENTITY_CREATE_ERROR_MESSAGE,
+    IDENTITY_UNCHANGED_ERROR_MESSAGE,
+    IdentityNotChangedException,
+)
 from Access.views_helper import render_error_message
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
@@ -93,7 +100,7 @@ def pending_revoke(request):
 @login_required
 def updateUserInfo(request):
     context = get_identity_templates(request.user)
-    return render(request,'updateUser.html',context)
+    return render(request, 'updateUser.html', context)
 
 
 @api_view(["POST"])
@@ -110,7 +117,7 @@ def saveIdentity(request):
         context = {}
         context["error"] = {
             "title": IDENTITY_UNCHANGED_ERROR_MESSAGE["title"],
-            "msg": IDENTITY_UNCHANGED_ERROR_MESSAGE["msg"].format(modulename = modname),
+            "msg": IDENTITY_UNCHANGED_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
         return JsonResponse(json.dumps(context), safe=False, status=400)
 
@@ -228,6 +235,7 @@ def pendingRequests(request):
     context = getPendingRequests(request)
     return render(request, "BSOps/pendingRequests.html", context)
 
+
 @login_required
 def accept_bulk(request, selector):
     try:
@@ -253,7 +261,7 @@ def accept_bulk(request, selector):
             elif selector == "groupMember" and is_access_approver:
                 json_response = group_helper.accept_member(request, requestId, False)
             elif selector.endswith("-club"):
-                access_type = selector.rsplit("-",1)[0]
+                access_type = selector.rsplit("-", 1)[0]
                 json_response = accept_user_access_requests(request, access_type, requestId)
             else:
                 raise ValidationError("Invalid request")
@@ -280,10 +288,10 @@ def accept_bulk(request, selector):
 
 
 @login_required
-def decline_access(request,access_type,request_id):
+def decline_access(request, access_type, request_id):
     try:
         if request.GET:
-            context = {"response":{}}
+            context = {"response": {}}
             reason = request.GET["reason"]
             request_ids = []
             return_ids = []
@@ -292,24 +300,28 @@ def decline_access(request,access_type,request_id):
                     return_ids.append(value)
                     current_ids = list(get_pending_module_access(request_id=value))
                     request_ids.extend(current_ids)
-                access_type = access_type.rsplit("-",1)[0]
+                access_type = access_type.rsplit("-", 1)[0]
             else:
                 request_ids = [request_id]
             for current_request_id in request_ids:
-                response = decline_individual_access(request, access_type, current_request_id, reason)
+                response = decline_individual_access(request,
+                                                     access_type,
+                                                     current_request_id,
+                                                     reason)
                 if "error" in response:
                     response["success"] = False
                 else:
                     response["success"] = True
                 context["response"][current_request_id] = response
             context["returnIds"] = return_ids
-            return JsonResponse(context, status = 200)
+            return JsonResponse(context, status=200)
     except Exception as e:
         json_response = {}
-        logger.error("Error in rejecting the request. Please contact admin - "+str(str(e)))
-        json_response['error'] = "Error in rejecting the request. Please contact admin - "+str(str(e))
+        logger.error("Error in rejecting the request. Please contact admin - " + str(str(e)))
+        json_response['error'] = "Error in rejecting the request. Please contact admin - "
+        + str(str(e))
         json_response['status_code'] = 401
-        return JsonResponse(json_response, status = json_response["status_code"])
+        return JsonResponse(json_response, status=json_response["status_code"])
 
 
 def remove_group_member(request):

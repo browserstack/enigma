@@ -264,11 +264,11 @@ def test_grant():
     # and return the result to the caller of this function
     return access_module.access_desc()
 
+
 @shared_task(
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
 def run_accept_request(data):
-    subject = ""
     data = json.loads(data)
     request_id = data["request_id"]
     request = UserAccessMapping.get_access_request(data["request_id"])
@@ -288,11 +288,18 @@ def run_accept_request(data):
         if result:
             return True
 
-        request.status='Approved'
+        request.status = 'Approved'
         request.save()
 
         notifications.send_mail_for_request_granted(user, approver, access_type, request_id)
-        logger.debug({'requestId':request_id,'status':'Approved','By':approver, 'response':str(response)})
+        logger.debug(
+            {
+                'requestId': request_id,
+                'status': 'Approved',
+                'By': approver,
+                'response': str(response)
+            }
+        )
     except Exception as e:
         logger.exception(e)
         request.status = 'Pending'
@@ -300,9 +307,9 @@ def run_accept_request(data):
         request.save()
 
         logger.debug(
-            "Error in accept of request "+request_id
-            +" error: "
-            + str(e),"Error while Approving "
+            "Error in accept of request " + request_id
+            + " error: "
+            + str(e), "Error while Approving "
             + request_id
-            +" Request","Error msg : "+str(e)
+            + " Request", "Error msg : " + str(e)
         )
