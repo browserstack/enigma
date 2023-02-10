@@ -238,7 +238,7 @@ class User(models.Model):
         self.revoker = revoker
         self.save()
 
-    def offboard_user(self, revoker):
+    def offboard(self, revoker):
         self.change_state("offboarding")
         self.update_revoker(revoker)
         self.offbaord_date = datetime.datetime.now()

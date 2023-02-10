@@ -206,16 +206,16 @@ def offboard_user(request):
         logger.exception(str(e))
         return {"error": ERROR_MESSAGE}
     
-    user.offboard_user(request.user.user)
+    user.offboard(request.user.user)
     
-    module_identities = user.get_all_active_identities()
+    module_identities = user.get_all_active_identity()
 
     for module_identity in module_identities:  
         module_identity.decline_all_non_approved_access_mappings()
         access_mappings = module_identity.get_all_granted_access_mappings()
 
         for access_mapping in access_mappings:
-            access_mapping.offboarding_approved_access_mapping(access_mappings.access)
+            module_identity.offboarding_approved_access_mapping(access_mapping.access)
             background_task("run_access_revoke", json.dumps({"request_id": access_mapping.request_id, "revoker_email": request.user.user.email}))
         
         module_identity.deactivate()

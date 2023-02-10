@@ -153,7 +153,7 @@ def allUsersList(request):
     return render(request, "BSOps/allUsersList.html", context)
 
 
-def offboarding_user(request):
+def user_offboarding(request):
     try:
         response = offboard_user(request)
         if "error" in response:
