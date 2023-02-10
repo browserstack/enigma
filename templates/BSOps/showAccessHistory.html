@@ -138,13 +138,13 @@ $(function() {
       {% for item in dataList %}
       <tr >
         <td>{{ item.requestId }}</td>
-        <td>{{ item.accessType }}</td>
+        <td>{{ item.access_desc }}</td>
         <td>{{ item.accessCategory }} details: {{ item.accessMeta | pprint }}</td>
         {% if item.approver_1 %}
-        <td>{{ item.approver_1.user.username }}</td>
+        <td>{{ item.approver_1 }}</td>
         {% elif item.approver_2 %}
-        <td>1: {{ item.approver_1.user.username }}
-          2: {{ item.approver_2.user.username }}</td>
+        <td>1: {{ item.approver_1 }}
+          2: {{ item.approver_2 }}</td>
         {% endif %}
         <td>{{ item.status }}</td>
         <td>{{ item.accessReason }}</td>

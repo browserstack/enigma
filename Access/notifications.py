@@ -53,8 +53,11 @@ def send_new_group_approved_notification(group, group_id, initial_member_names):
 
 def send_membership_accepted_notification(user, group, membership):
     subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(user.name, group.name)
-    body = MEMBERSHIP_ACCEPTED_BODY.format(
-        user.name, group.name, membership.approver.name
+    body = helpers.generateStringFromTemplate(
+        filename="membershipAcceptedEmailBody.html",
+        user_name=user.name,
+        group_name=group.name,
+        approver=membership.approver.name,
     )
     destination = []
     destination.append(membership.requested_by.email)
