@@ -36,6 +36,7 @@ from Access.views import (
     accept_bulk,
     update_group_owners,
     remove_group_member,
+    new_access_request,
 )
 from Access.helpers import get_available_access_modules
 
@@ -47,6 +48,7 @@ urlpatterns = [
     re_path(r"^oauth/", include("social_django.urls", namespace="social")),
     re_path(r"^access/showAccessHistory$", showAccessHistory, name="showAccessHistory"),
     re_path(r"^access/pendingRequests$", pendingRequests, name="pendingRequests"),
+    re_path(r"^access/newRequest$", new_access_request, name="newAccessRequest"),
     re_path(r"^resolve/pendingFailure", pendingFailure, name="pendingFailure"),
     re_path(r"^resolve/pendingRevoke", pending_revoke, name="pendingRevoke"),
     re_path(r"^user/updateUserInfo/", updateUserInfo, name="updateUserInfo"),

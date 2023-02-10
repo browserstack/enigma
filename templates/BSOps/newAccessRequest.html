@@ -1,0 +1,123 @@
+{% extends 'global_layout.html' %}
+{% load static %}
+
+{% block head_body %}
+<script src={% static "js/newAccessRequest.js" %}></script>
+{% endblock %}
+
+{% block nav_breadcrumb %}
+<nav class="flex px-8 py-6 flex-shrink-0" aria-label="Breadcrumb">
+  <ol role="list" class="flex items-center space-x-4">
+    <li>
+      <div>
+        <a href="{% url 'dashboard' %}" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-5 w-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+          </svg>
+          <span class="sr-only">Home</span>
+        </a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'showAccessHistory' %}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">My Access</a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'newAccessRequest' %}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Request Access</a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content_body %}
+<div class="px-4 sm:px-6 lg:px-8">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-xl font-semibold text-gray-900">Request Access</h1>
+    </div>
+  </div>
+  <div class="grid grid-cols-2 gap-4">
+    <div class="mt-8 flex flex-col">
+      <h1 class="text-xl text-gray-900">All modules</h1>
+      <div class="mt-4 flex flex-col">
+        <div class="relative flex items-center">
+          <input type="text" name="search" id="search" class="block w-full rounded-md border-gray-300 pr-12 shadow-sm focus:border-blue-600 focus:ring-blue-600 sm:text-sm" placeholder="Search module">
+          <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
+            <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" class="text-gray-500 h-full" width="18px" fill="currentColor" aria-hidden="true">
+              <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="px-4 sm:px-6 lg:px-8">
+          <div class="mt-8 flex flex-col">
+            <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div class="inline-block min-w-full align-middle">
+                <div class="relative overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                  <table class="min-w-full table-fixed divide-gray-300">
+                    <tbody class="divide-gray-200 bg-white">
+                      {% for each_tag, each_module in modulesList.items %}
+                      <!-- Selected: "bg-gray-50" -->
+                      <tr>
+                        <td class="relative w-12 px-6 sm:w-16 sm:px-8">
+                          <div class="absolute inset-y-0 left-0 w-0.5 bg-blue-600 hidden" id="{{ each_tag }}-marker"></div>
+
+                          <input type="checkbox" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 sm:left-6" onclick="handleModuleSelection(this, '{{ each_tag }}', '{{ each_module.access_desc }}');" id="{{ each_tag }}-checkbox"></input>
+                        </td>
+                        <!-- Selected: "text-blue-600", Not Selected: "text-gray-900" -->
+                        <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium text-gray-900">{{ each_module.access_desc }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mt-8 flex flex-col h-full">
+      <div class="flex flex-row items-center">
+        <h1 class="text-xl text-gray-900">Your selection</h1>
+        <span class="inline-flex items-center rounded-full bg-green-100 ml-4 px-2.5 py-0.5 text-xs font-medium text-green-800 hidden" id="module-selected-count">0 selected</span>
+      </div>
+      <div class="py-24 px-6 sm:py-32 bg-white lg:px-8 mt-4 h-full" id="module-selection-empty">
+        <div class="mx-auto max-w-2xl h-96">
+          <div class="flex gap-4 content-center justify-center min-w-full min-h-full">
+            <div class="block m-auto content-center justify-center">
+              <div class="h-64 w-96 bg-gray-200 block m-auto content-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" class="text-gray-100 h-full w-32 flex-shrink-0 justify-center content-center block m-auto" fill="currentColor" aria-hidden="true">
+                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5v-4.58l.99.99 4-4 4 4 4-3.99L19 12.43V19zm0-9.41l-1.01-1.01-4 4.01-4-4-4 4-.99-1V5h14v4.59z"/>
+                </svg>
+              </div>
+              <h4 class="text-lg tracking-tight text-center text-gray-900 sm:text-lg mt-10">Oops, Nothing Here!</h4>
+              <p class="mt-2 text-sm leading-8 text-center text-gray-600">Please select modules from the left panel</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="py-24 px-6 sm:py-32 bg-white lg:px-8 mt-4 h-full hidden" id="module-selection-list"></div>
+    </div>
+  </div>
+</div> 
+<span class="inline-flex items-center rounded-full bg-blue-100 py-0.5 pl-2.5 pr-2.5 text-sm font-medium text-blue-800 m-1 hidden" id="module-selection-span-template">
+  <div class="inline-flex items-center rounded-full text-sm m-1">Large</div>
+  <button type="button" class="ml-0.5 mr-0.5 inline-flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:bg-blue-500 focus:text-white focus:outline-none" onclick="removeModuleSelectionUI(this);">
+    <span class="sr-only">Remove large option</span>
+    <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+      <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+    </svg>
+  </button>
+</span>
+{% endblock %}

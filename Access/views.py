@@ -70,6 +70,35 @@ def showAccessHistory(request):
         },
     )
 
+@login_required
+def new_access_request(request):
+    if request.method == "POST":
+        return render_error_message(
+            request,
+            "POST for this endpoint is not supported",
+            "Invalid Request",
+            "Error request not found OR Invalid request type",
+        )
+
+    try:
+        access_user = User.objects.get(email=request.user.email)
+    except Exception as e:
+        return render_error_message(
+            request,
+            "Access user with email %s not found. Error: %s"
+            % (request.user.email, str(e)),
+            "Invalid Request",
+            "Please login again",
+        )
+
+    return render(
+        request,
+        "BSOps/newAccessRequest.html",
+        {
+            "modulesList": helper.get_available_access_modules(),
+        },
+    )
+
 
 @login_required
 @user_admin_or_ops

@@ -9,6 +9,8 @@ body {
   position: relative;
 
   background: #F9FAFB;
+  font-family: 'Inter';
+  font-style: normal;
 }
 
 .cust-left-nav-panel {
