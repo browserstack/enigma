@@ -1,5 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
+from django.core.paginator import Paginator
+from django.contrib.auth.models import User as djangoUser
+from .models import UserAccessMapping
+from Access import views_helper
 from django.http import JsonResponse
 from django.shortcuts import render
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
@@ -23,7 +27,7 @@ from Access.userlist_helper import getallUserList, get_identity_templates, creat
 from Access.views_helper import render_error_message
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
-INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type - "
+INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 
 logger = logging.getLogger(__name__)
 
@@ -172,14 +176,6 @@ def createNewGroup(request):
         return render(request, "BSOps/createNewGroup.html", {})
 
 
-@api_view(["GET"])
-@login_required
-@user_with_permission(["VIEW_USER_ACCESS_LIST"])
-@authentication_classes((TokenAuthentication, BasicAuthentication))
-def allUserAccessList(request, load_ui=True):
-    return False
-
-
 @login_required
 def allUsersList(request):
     context = getallUserList(request)
@@ -301,9 +297,9 @@ def accept_bulk(request, selector):
         context["returnIds"] = returnIds
         return JsonResponse(context, status=200)
     except Exception as e:
-        logger.debug(INVALID_REQUEST_MESSAGE + str(str(e)))
+        logger.debug(INVALID_REQUEST_MESSAGE + " - " + str(str(e)))
         json_response = {}
-        json_response["error"] = INVALID_REQUEST_MESSAGE + str(str(e))
+        json_response['error'] = INVALID_REQUEST_MESSAGE + " - " + str(str(e))
         json_response["success"] = False
         json_response["status_code"] = 401
         return JsonResponse(json_response, status=json_response["status_code"])
@@ -318,3 +314,125 @@ def remove_group_member(request):
     except Exception as e:
         logger.exception(str(e))
         return JsonResponse({"error": "Failed to remove the user"}, status=400)
+
+
+@api_view(['GET'])
+@login_required
+@user_with_permission(["VIEW_USER_ACCESS_LIST"])
+@authentication_classes((TokenAuthentication, BasicAuthentication))
+def all_user_access_list(request, load_ui=True):
+    user = None
+    page = 1
+    try:
+        if request.GET.get('username'):
+            username = request.GET.get('username')
+            user = djangoUser.objects.get(username=username)
+    except Exception as e:
+        # show all
+        logger.exception(e)
+
+    try:
+        data_list = []
+        last_page = 1
+        show_tabs = False
+        username = ""
+        generic_accesses = UserAccessMapping.get_accesses_not_declined()
+        response_type = request.GET.get('responseType', "ui")
+        load_ui = request.GET.get('load_ui', "true").lower() == "true"
+        record_date = request.GET.get('recordDate', None)
+
+        if user:
+            generic_accesses = generic_accesses.filter(
+                user_identity__user=user.user).order_by("-requested_on")
+            show_tabs = True
+            username = user.username
+        elif "usersearch" in request.GET:
+            generic_accesses = generic_accesses.filter(
+                user_identity__user__user__username__icontains=request.GET.get('usersearch')) \
+                .order_by("user_identity__user__user__username")
+        else:
+            generic_accesses = generic_accesses.order_by("user_identity__user__user__username")
+
+        filters = views_helper.get_filters_for_access_list(request)
+        generic_accesses = generic_accesses.filter(**filters)
+
+        page = int(request.GET.get('page', 1))
+
+        if load_ui and response_type != "csv":
+            paginator_obj = Paginator(generic_accesses, 10)
+            last_page = paginator_obj.num_pages
+            page = min(page, last_page) if page > last_page else page
+            paginator = paginator_obj.page(page)
+        else:
+            paginator = generic_accesses
+
+        access_types = list(set(generic_accesses.values_list("access__access_tag", flat=True)))
+
+        data_list = views_helper.prepare_datalist(paginator=paginator, record_date=record_date)
+
+        context = {}
+        logger.debug(data_list)
+
+        data_dict = {
+            'dataList': data_list,
+            'last_page': last_page,
+            'current_page': page,
+            'access_types': sorted(access_types, key=str.casefold),
+            'show_tabs': show_tabs,
+            'username': username
+        }
+
+        context.update(data_dict)
+
+        if response_type == "json":
+            return JsonResponse(context, status=200)
+        elif response_type == "csv":
+            return views_helper.gen_all_user_access_list_csv(data_list=data_list)
+        if load_ui:
+            return render(request, 'BSOps/allUserAccessList.html', context)
+        else:
+            return JsonResponse(context)
+
+    except Exception as e:
+        logger.debug("Error in request not found OR Invalid request type")
+        logger.exception(e)
+        json_response = {}
+        json_response['error'] = {'error_msg': str(e), 'msg': INVALID_REQUEST_MESSAGE}
+        return render(request, 'BSOps/accessStatus.html', json_response)
+
+
+@login_required
+@user_with_permission(["VIEW_USER_ACCESS_LIST"])
+def mark_revoked(request):
+    json_response = {}
+    status = 200
+    request_id = None
+    try:
+        request_id = request.GET.get("requestId")
+        if request_id.startswith("module-"):
+            username = request.GET.get("username")
+            if not username:
+                json_response["error"] = "Username is invalid!"
+                status = 403
+                return JsonResponse(json_response, status=status)
+            access_tag = request_id.split("-", 1)[1]
+            user = User.get_user_from_username(username=username)
+            if user:
+                requests = user.get_accesses_by_access_tag_and_status(access_tag=access_tag, status=["Approved", "Offboarding"])
+            else:
+                raise User.DoesNotExist(f"User with username '{username}' does not exist")
+        else:
+            requests = UserAccessMapping.get_unrevoked_accesses_by_request_id(request_id=request_id)
+        success_list = []
+        for mapping_object in requests:
+            logger.info("Marking access revoke - %s by user %s "
+                        % (mapping_object.request_id, request.user.user))
+            mapping_object.revoke(revoker=request.user.user)
+            success_list.append(mapping_object.request_id)
+        json_response["msg"] = "Success"
+        json_response["request_ids"] = success_list
+    except Exception as e:
+        logger.exception(str(e))
+        json_response["error"] = str(e)
+        status = 403
+    return JsonResponse(json_response, status=status)
