@@ -1,29 +1,47 @@
 const handleSelectionView = () => {
-  const finalCount = $('#module-selection-list').children('span').length;
+  const finalCount = $('#module-selection-table').children('tr').length;
 
   if(finalCount < 1) {
     $('#module-selection-empty').show();
     $('#module-selection-list').hide();
+    $('#module-selection-list').children('nav').hide();
     $('#module-selected-count').hide();
   } else {
     $('#module-selection-empty').hide();
     $('#module-selection-list').show();
+    $('#module-selection-list').children('nav').css('display', 'flex');
     $('#module-selected-count').show();
     $('#module-selected-count').text(finalCount + ' selected');
   }
 };
 
-const addModuleSelection = (moduleTag, moduleDesc) => {
-  const selectionList = $('#module-selection-list');
-  const newSpan = $("#module-selection-span-template").clone(true, true);
+const selectCheckbox = (moduleTag, checked) => {
+  if(checked) {
+    $(`#${moduleTag}-marker`).show();
+    $(`#${moduleTag}-checkbox`).prop('checked', true);
+    $(`#${moduleTag}-tablerow`).removeClass('hover:bg-blue-50 hover:text-blue-700').addClass('bg-gray-50');
+    $(`#${moduleTag}-tabledesc`).removeClass('text-gray-900').addClass('text-blue-600');
+  } else {
+    $(`#${moduleTag}-marker`).hide();
+    $(`#${moduleTag}-checkbox`).prop('checked', false);
+    $(`#${moduleTag}-tablerow`).removeClass('bg-gray-50').addClass('hover:bg-blue-50 hover:text-blue-700');
+    $(`#${moduleTag}-tabledesc`).removeClass('text-blue-600').addClass('text-gray-900');
+  }
+};
 
-  $('#' + moduleTag + '-marker').show();
-  $('#' + moduleTag + '-checkbox').prop('checked', true);
+const addModuleSelection = (moduleTag, moduleDesc) => {
+  const selectionList = $('#module-selection-table');
+  const newSpan = $("#module-selection-row-template").clone(true, true);
+
+  selectCheckbox(moduleTag, true);
 
   newSpan.appendTo(selectionList);
   newSpan.show();
-  newSpan.children('div').text(moduleDesc);
+  const tableData = newSpan.children('td');
+  tableData[0].textContent = moduleDesc;
   newSpan.attr('id', `module-selection-${moduleTag}`);
+
+  handleSelectionView();
 };
 
 const removeSelectionSpanElem = (elem) => {
@@ -31,8 +49,8 @@ const removeSelectionSpanElem = (elem) => {
   const moduleTag = spanId.replace('module-selection-', '');
 
   elem.remove();
-  $(`#${moduleTag}-marker`).hide();
-  $(`#${moduleTag}-checkbox`).prop('checked', false);
+  selectCheckbox(moduleTag, false);
+
   handleSelectionView();
 };
 
@@ -41,7 +59,14 @@ const removeModuleSelection = (moduleTag) => {
 };
 
 const removeModuleSelectionUI = (elem) => {
-  removeSelectionSpanElem(elem.parentElement);
+  removeSelectionSpanElem(elem.parentElement.parentElement);
+};
+
+const removeAllModules = () => {
+  const modules = $('#module-selection-table').children('tr');
+  for(iter = 0; iter < modules.length; iter++) {
+    removeSelectionSpanElem(modules[iter]);
+  }
 };
 
 const handleModuleSelection = (elem, moduleTag, moduleDesc) => {
@@ -50,5 +75,4 @@ const handleModuleSelection = (elem, moduleTag, moduleDesc) => {
   } else {
     removeModuleSelection(moduleTag);
   }
-  handleSelectionView();
 };
