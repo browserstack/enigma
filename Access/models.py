@@ -234,6 +234,37 @@ class User(models.Model):
 
         return access_history
 
+    @staticmethod
+    def get_user_from_username(username):
+        try:
+            return User.objects.get(user__username=username)
+        except User.DoesNotExist:
+            return None
+
+    def get_accesses_by_access_tag_and_status(self, access_tag, status):
+        try:
+            user_identities = self.module_identity.filter(access_tag=access_tag)
+        except UserIdentity.DoesNotExist:
+            return None
+        return UserAccessMapping.objects.filter(
+            user_identity__in=user_identities,
+            access__access_tag=access_tag,
+            status__in=status)
+
+    def update_revoker(self, revoker):
+        self.revoker = revoker
+        self.save()
+
+    def offboard(self, revoker):
+        self.change_state("offboarding")
+        self.update_revoker(revoker)
+        self.offbaord_date = datetime.datetime.now()
+        self.user.is_active = False
+        self.save()
+
+    def revoke_all_memberships(self):
+        self.membership_user.filter(status__in=["Pending", "Approved"]).update(status="Revoked")
+
     def __str__(self):
         return "%s" % (self.user)
 
@@ -636,19 +667,30 @@ class UserAccessMapping(models.Model):
         # code metadata
         access_request_data["access_tag"] = access_tag
         # ui metadata
+        access_request_data["user"] = self.user_identity.user.name
         access_request_data["userEmail"] = self.user_identity.user.email
         access_request_data["requestId"] = self.request_id
         access_request_data["accessReason"] = self.request_reason
-        access_request_data["requested_on"] = self.requested_on
+        access_request_data["requested_on"] = str(self.requested_on)[:19] + "UTC" if self.updated_on else ""
 
-        access_request_data["accessType"] = access_module.access_desc()
+        access_request_data["access_desc"] = access_module.access_desc()
         access_request_data["accessCategory"] = access_module.combine_labels_desc(
             access_labels
         )
         access_request_data["accessMeta"] = access_module.combine_labels_meta(
             access_labels
         )
+        access_request_data["access_label"] = [key + "-" + str(val).strip("[]")
+                                              for key,val in list(self.access.access_label.items())
+                                              if key != "keySecret"]
+        access_request_data["access_type"] = self.access_type
+        access_request_data["approver_1"] = self.approver_1.user.username
+        access_request_data["approver_2"] = self.approver_2.user.username
+        access_request_data["approved_on"] = self.approved_on
+        access_request_data["updated_on"] = str(self.updated_on)[:19] + "UTC" if self.updated_on else ""
         access_request_data["status"] = self.status
+        access_request_data["revoker"] = self.revoker.user.username
+        access_request_data["offboarding_date"] = str(self.user_identity.user.offbaord_date)[:19] + "UTC" if self.user_identity.user.offbaord_date else ""
         access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
@@ -662,6 +704,19 @@ class UserAccessMapping(models.Model):
             mapping.meta_data[key] = data
             mapping.save()
         return True
+
+    def revoke(self, revoker):
+        self.status = "Revoked"
+        self.revoker = revoker
+        self.save()
+
+    @staticmethod
+    def get_accesses_not_declined():
+        return UserAccessMapping.objects.exclude(status='Declined')
+
+    @staticmethod
+    def get_unrevoked_accesses_by_request_id(request_id):
+        return UserAccessMapping.objects.filter(request_id=request_id).exclude(status='Revoked')
 
     def is_approved(self):
         return self.status == "Approved"
@@ -846,13 +901,23 @@ class UserIdentity(models.Model):
     )
 
     def deactivate(self):
-        self.status = 0
+        self.status = "Inactive"
         self.save()
 
     def get_active_access_mapping(self):
         return self.user_access_mapping.filter(
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
+
+    def get_all_granted_access_mappings(self):
+        return self.user_access_mapping.filter(status__in=["Approved", "Processing", "Offboarding"], access__access_tag=self.access_tag)
+
+    def get_all_non_approved_access_mappings(self):
+        return self.user_access_mapping.filter(status__in=[ 'approvefailed', 'pending', 'secondarypending', 'grantfailed' ], access__access_tag=self.access_tag)
+
+    def decline_all_non_approved_access_mappings(self):
+        user_mapping = self.get_all_non_approved_access_mappings()
+        user_mapping.update(status="Declined")
 
     def get_granted_access_mapping(self, access):
         return self.user_access_mapping.filter(

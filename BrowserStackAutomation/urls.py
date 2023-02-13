@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import re_path, include
 from Access.views import (
+    user_offboarding,
     showAccessHistory,
     pendingRequests,
     pendingFailure,
@@ -25,7 +26,8 @@ from Access.views import (
     updateUserInfo,
     saveIdentity,
     createNewGroup,
-    allUserAccessList,
+    all_user_access_list,
+    mark_revoked,
     allUsersList,
     requestAccess,
     group_access,
@@ -45,6 +47,7 @@ urlpatterns = [
     re_path(r"^$", dashboard, name="dashboard"),
     re_path(r"^login/$", auth_views.LoginView.as_view(), name="login"),
     re_path(r"^logout/$", logout_view, name="logout"),
+    re_path(r"^access/markRevoked", mark_revoked, name="markRevoked"),
     re_path(r"^oauth/", include("social_django.urls", namespace="social")),
     re_path(r"^access/showAccessHistory$", showAccessHistory, name="showAccessHistory"),
     re_path(r"^access/pendingRequests$", pendingRequests, name="pendingRequests"),
@@ -54,8 +57,9 @@ urlpatterns = [
     re_path(r"^user/saveIdentity/", saveIdentity, name="saveIdentity"),
     re_path(r"^group/create$", createNewGroup, name="createNewGroup"),
     re_path(r"^group/dashboard/$", groupDashboard, name="groupDashboard"),
-    re_path(r"^access/userAccesses$", allUserAccessList, name="allUserAccessList"),
+    re_path(r"^access/userAccesses$", all_user_access_list, name="allUserAccessList"),
     re_path(r"^access/usersList$", allUsersList, name="allUsersList"),
+    re_path(r"^user/offboardUser$", user_offboarding, name="offboarding_user"),
     re_path(r"^access/requestAccess$", requestAccess, name="requestAccess"),
     re_path(r"^group/requestAccess$", group_access, name="groupRequestAccess"),
     re_path(
@@ -85,5 +89,5 @@ urlpatterns = [
     ),
 ]
 
-for each_module in get_available_access_modules():
+for tag, each_module in get_available_access_modules().items():
     urlpatterns.extend(each_module.urlpatterns)
