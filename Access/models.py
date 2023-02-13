@@ -179,8 +179,8 @@ class User(models.Model):
     def isAdminOrOps(self):
         return self.is_ops or self.user.is_superuser
 
-    def get_all_memberships(self):
-        return self.membership_user.all()
+    def get_all_approved_memberships(self):
+        return self.membership_user.filter(status="Approved")
 
     def is_allowed_admin_actions_on_group(self, group):
         return (
@@ -490,7 +490,7 @@ class GroupV2(models.Model):
         return self.membership_group.get(user=user).is_owner
 
     def get_active_accesses(self):
-        return self.groupaccessmapping_set.filter(
+        return self.group_access_mapping.filter(
             status__in=["Approved", "Pending", "Declined", "SecondaryPending"]
         )
 
@@ -539,7 +539,7 @@ class GroupV2(models.Model):
         self.membership_group.filter(status="Approved")
         
     def get_approved_accesses(self):
-        return self.groupaccessmapping_set.filter(status="Approved")
+        return self.group_access_mapping.filter(status="Approved")
 
     def __str__(self):
         return self.name
@@ -812,6 +812,12 @@ class GroupAccessMapping(models.Model):
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
+    
+    def get_by_id(request_id):
+        try:
+            return GroupAccessMapping.objects.get(request_id=request_id)
+        except GroupAccessMapping.DoesNotExist:
+            return None
     
     
 

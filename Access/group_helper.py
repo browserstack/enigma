@@ -1,4 +1,4 @@
-from Access.models import User, GroupV2, MembershipV2, AccessV2
+from Access.models import GroupAccessMapping, User, GroupV2, MembershipV2, AccessV2
 from Access import helpers, views_helper, notifications, accessrequest_helper
 from django.db import transaction
 import datetime
@@ -201,6 +201,7 @@ def get_group_access_list(request, group_name):
     context["genericAccesses"] = [
         get_generic_access(group_mapping) for group_mapping in group_mappings
     ]
+    print(group_mappings)
     if context["genericAccesses"] == [{}]:
         context["genericAccesses"] = []
 
@@ -769,7 +770,7 @@ def remove_member(request):
     ]
 
     other_memberships_groups = (
-        user.get_all_memberships()
+        user.get_all_approved_memberships()
         .exclude(group=membership.group)
         .values_list("group", flat=True)
     )
@@ -800,3 +801,57 @@ def remove_member(request):
     membership.revoke_membership()
 
     return {"message": "Successfully removed user from group"}
+
+
+def mark_revoked(request):
+    try:
+        request_id = request.POST.get("request_id")
+        if not request_id:
+            logger.debug("Cannot find request_id in the http request.")
+            raise Exception("Request id not found in the request.")
+        
+        mapping = GroupAccessMapping.get_by_id(request_id)
+        if not mapping:
+            logger.debug("Group Access Mapping not found in the database")
+            raise Exception("Group Access Mapping not found in the database")
+    except Exception as e:
+        logger.exception(str(e))
+        return {"error": ERROR_MESSAGE}
+
+    group = mapping.group
+    auth_user = request.user
+    if auth_user.user.has_permission("ALLOW_USER_OFFBOARD") and group.member_is_owner(auth_user.user):
+        raise Exception("User Unauthorized to perfrom the action")
+    
+    should_continue = False
+    for membership in group.get_all_approved_members():
+        other_memberships_groups = (
+            membership.user.get_all_approved_memberships()
+            .exclude(group=membership.group)
+            .values_list("group", flat=True)
+        )
+
+        for group in other_memberships_groups:
+            if group.access_exist(mapping.access):
+                should_continue = True
+                break
+        
+        if(should_continue):
+            should_continue = False
+            continue
+
+        user_access_identity = membership.user.get_active_identity(mapping.access.access_tag)
+        user_access_mapping = user_access_identity.get_granted_access_mapping(mapping.access)
+
+        
+        background_task(
+            "run_access_revoke",
+            json.dumps(
+                {
+                    "request_id": user_access_mapping.request_id,
+                    "revoker_email": auth_user.user.email
+                }
+            ),
+        )
+
+    return {"message": "Successfully initiated the revoke"}

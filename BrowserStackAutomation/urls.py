@@ -38,7 +38,7 @@ from Access.views import (
     update_group_owners,
     remove_group_member,
 )
-from Access.helpers import getAvailableAccessModules
+# from Access.helpers import getAvailableAccessModules
 
 urlpatterns = [
     re_path(r"^admin/", admin.site.urls),
@@ -83,5 +83,5 @@ urlpatterns = [
     ),
 ]
 
-for each_module in getAvailableAccessModules():
-    urlpatterns.extend(each_module.urlpatterns)
+# for each_module in getAvailableAccessModules():
+#     urlpatterns.extend(each_module.urlpatterns)

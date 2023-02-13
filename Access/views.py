@@ -395,3 +395,16 @@ def mark_revoked(request):
         json_response["error"] = str(e)
         status = 403
     return JsonResponse(json_response, status=status)
+
+
+def revoke_group_access(request):
+    try:
+        response = group_helper.revoke_access(request)
+        if("error" in response):
+            return JsonResponse(response, status=400)
+
+        return JsonResponse(response)
+    except Exception as e:
+        logger.exception(str(e))
+        logger.debug("Something went wrong while revoking group access")
+        return JsonResponse({"message": "Failed to revoke group Access"}, status=400)
