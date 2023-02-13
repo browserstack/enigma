@@ -22,7 +22,15 @@ from Access.accessrequest_helper import (
     create_request,
 )
 from Access.models import User
-from Access.userlist_helper import getallUserList, get_identity_templates, create_identity, NEW_IDENTITY_CREATE_ERROR_MESSAGE, IDENTITY_UNCHANGED_ERROR_MESSAGE, IdentityNotChangedException
+from Access.userlist_helper import (
+    getallUserList,
+    get_identity_templates,
+    create_identity,
+    offboard_user,
+    NEW_IDENTITY_CREATE_ERROR_MESSAGE,
+    IDENTITY_UNCHANGED_ERROR_MESSAGE,
+    IdentityNotChangedException
+)
 from Access.views_helper import render_error_message
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 
@@ -140,6 +148,16 @@ def allUsersList(request):
     context = getallUserList(request)
     return render(request, "BSOps/allUsersList.html", context)
 
+
+def user_offboarding(request):
+    try:
+        response = offboard_user(request)
+        if "error" in response:
+            return JsonResponse(response, status=400)
+        return JsonResponse(response)
+    except Exception as e:
+        logger.exception(str(e))
+        return JsonResponse({"error": "Failed to offboard User"})
 
 @login_required
 def requestAccess(request):
