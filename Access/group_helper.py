@@ -201,7 +201,6 @@ def get_group_access_list(request, group_name):
     context["genericAccesses"] = [
         get_generic_access(group_mapping) for group_mapping in group_mappings
     ]
-    print(group_mappings)
     if context["genericAccesses"] == [{}]:
         context["genericAccesses"] = []
 
@@ -803,7 +802,7 @@ def remove_member(request):
     return {"message": "Successfully removed user from group"}
 
 
-def mark_revoked(request):
+def revoke_access(request):
     try:
         request_id = request.POST.get("request_id")
         if not request_id:
@@ -820,7 +819,7 @@ def mark_revoked(request):
 
     group = mapping.group
     auth_user = request.user
-    if auth_user.user.has_permission("ALLOW_USER_OFFBOARD") and group.member_is_owner(auth_user.user):
+    if not (auth_user.user.has_permission("ALLOW_USER_OFFBOARD") and group.member_is_owner(auth_user.user)):
         raise Exception("User Unauthorized to perfrom the action")
     
     should_continue = False

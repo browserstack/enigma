@@ -536,7 +536,7 @@ class GroupV2(models.Model):
             return False
 
     def get_all_approved_members(self):
-        self.membership_group.filter(status="Approved")
+        return self.membership_group.filter(status="Approved")
         
     def get_approved_accesses(self):
         return self.group_access_mapping.filter(status="Approved")

@@ -41,24 +41,24 @@ def get_identity_templates(auth_user):
     context["configured_identity_template"] = []
     context["unconfigured_identity_template"] = []
     all_modules = helper.get_available_access_modules()
-    for user_identity in user_identities:
-        is_identity_configured = _is_valid_identity_json(identity=user_identity.identity)
-        if is_identity_configured:
-            module = all_modules[user_identity.access_tag]
-            context["configured_identity_template"].append(
-                {
-                    "accessUserTemplatePath": module.get_identity_template(), 
-                    "identity" : user_identity.identity
-                }            
-            )
-            all_modules.pop(user_identity.access_tag)
+    # for user_identity in user_identities:
+    #     is_identity_configured = _is_valid_identity_json(identity=user_identity.identity)
+    #     if is_identity_configured:
+    #         module = all_modules[user_identity.access_tag]
+    #         context["configured_identity_template"].append(
+    #             {
+    #                 "accessUserTemplatePath": module.get_identity_template(), 
+    #                 "identity" : user_identity.identity
+    #             }            
+    #         )
+    #         all_modules.pop(user_identity.access_tag)
             
-    for mod in all_modules.values():
-        context["unconfigured_identity_template"].append(
-            {
-                "accessUserTemplatePath": mod.get_identity_template(), 
-            }
-        )
+    # for mod in all_modules.values():
+    #     context["unconfigured_identity_template"].append(
+    #         {
+    #             "accessUserTemplatePath": mod.get_identity_template(), 
+    #         }
+    #     )
     # context["aws_username"] = "some name"
     return context
 

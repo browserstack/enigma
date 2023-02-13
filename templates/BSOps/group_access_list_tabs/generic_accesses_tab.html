@@ -28,8 +28,14 @@
 
 $(document).on('click', '.group-revoke-button', function(){
     id = $(this).attr("id");
-    urlBuilder = "/group/markGroupAccessRevoked?requestId="+id
+
+    urlBuilder = "/group/revokeAccess"
     $.ajax({url: urlBuilder,
+        method: "POST",
+        data: {
+          request_id: id,
+          csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
         success: function(result){
           document.getElementById("inactive-"+id+"-revoke-button").innerHTML = "Access Marked Revoked";
         },
