@@ -721,6 +721,12 @@ class UserAccessMapping(models.Model):
     def is_approved(self):
         return self.status == "Approved"
 
+    def is_pending(self):
+        return self.status == "Pending"
+
+    def is_secondary_pending(self):
+        return self.status == "SecondaryPending"
+
     def decline_access(self, decline_reason=None):
         self.status = "Declined"
         self.decline_reason = decline_reason
@@ -731,6 +737,13 @@ class UserAccessMapping(models.Model):
             request_id__contains=request_id,
             status__in=["Pending", "SecondaryPending"]
         ).values_list('request_id', flat=True)
+
+    def update_access_status(self, current_status):
+        self.status = current_status
+        self.save()
+
+    def is_already_processed(self):
+        return self.status in ["Declined", "Approved", "Processing", "Revoked"]
 
 
 class GroupAccessMapping(models.Model):
