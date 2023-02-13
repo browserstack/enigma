@@ -202,6 +202,7 @@ class User(models.Model):
         ).first()
     
     def get_all_active_identity(self):
+        print()
         return self.module_identity.filter(status = "Active")
 
     @staticmethod
@@ -244,6 +245,9 @@ class User(models.Model):
         self.offbaord_date = datetime.datetime.now()
         self.user.is_active = False
         self.save()
+    
+    def revoke_all_memberships(self):
+        self.membership_user.filter(status__in=["Pending", "Approved"]).update(status="Revoked")
 
     def __str__(self):
         return "%s" % (self.user)
@@ -339,10 +343,6 @@ class MembershipV2(models.Model):
     @staticmethod
     def get_membership(membership_id):
         return MembershipV2.objects.get(membership_id=membership_id)
-    
-    @staticmethod
-    def revoke_memberships_of_user(user):
-        MembershipV2.objects.filter(user=user, status__in=["Pending", "Approved"]).update(status="Revoked")
 
     def __str__(self):
         return self.group.name + "-" + self.user.email + "-" + self.status
@@ -852,7 +852,7 @@ class UserIdentity(models.Model):
     )
 
     def deactivate(self):
-        self.status = 0
+        self.status = "Inactive"
         self.save()
 
     def get_active_access_mapping(self):

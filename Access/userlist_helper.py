@@ -220,7 +220,7 @@ def offboard_user(request):
         
         module_identity.deactivate()
     
-    MembershipV2.revoke_memberships_of_user(user)
+    user.revoke_all_memberships()
 
     return {"message": "Successfully initiated Offboard user"}
 
