@@ -255,6 +255,20 @@ class User(models.Model):
             access__access_tag=access_tag,
             status__in=status)
 
+    def update_revoker(self, revoker):
+        self.revoker = revoker
+        self.save()
+
+    def offboard(self, revoker):
+        self.change_state("offboarding")
+        self.update_revoker(revoker)
+        self.offbaord_date = datetime.datetime.now()
+        self.user.is_active = False
+        self.save()
+    
+    def revoke_all_memberships(self):
+        self.membership_user.filter(status__in=["Pending", "Approved"]).update(status="Revoked")
+
     def get_or_create_active_identity(self, access_tag):
         identity, created = self.module_identity.get_or_create(
             access_tag=access_tag, status="Active")
@@ -366,7 +380,7 @@ class MembershipV2(models.Model):
     @staticmethod
     def get_membership(membership_id):
         return MembershipV2.objects.get(membership_id=membership_id)
-    
+
     def __str__(self):
         return self.group.name + "-" + self.user.email + "-" + self.status
 
@@ -936,13 +950,23 @@ class UserIdentity(models.Model):
     )
 
     def deactivate(self):
-        self.status = 0
+        self.status = "Inactive"
         self.save()
 
     def get_active_access_mapping(self):
         return self.user_access_mapping.filter(
             status__in=["Approved", "Pending"], access__access_tag=self.access_tag
         )
+    
+    def get_all_granted_access_mappings(self):
+        return self.user_access_mapping.filter(status__in=["Approved", "Processing", "Offboarding"], access__access_tag=self.access_tag)
+
+    def get_all_non_approved_access_mappings(self):
+        return self.user_access_mapping.filter(status__in=[ 'approvefailed', 'pending', 'secondarypending', 'grantfailed' ], access__access_tag=self.access_tag)
+
+    def decline_all_non_approved_access_mappings(self):
+        user_mapping = self.get_all_non_approved_access_mappings()
+        user_mapping.update(status="Declined")
 
     def get_granted_access_mapping(self, access):
         return self.user_access_mapping.filter(
