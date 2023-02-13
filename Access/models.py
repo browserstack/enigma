@@ -202,7 +202,6 @@ class User(models.Model):
         ).first()
     
     def get_all_active_identity(self):
-        print()
         return self.module_identity.filter(status = "Active")
 
     @staticmethod
