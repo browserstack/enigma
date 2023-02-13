@@ -562,7 +562,9 @@ def accept_user_access_requests(request, access_type, request_id):
 
     return json_response
 
-def run_accept_request_task(is_primary_approver, access_mapping, request, request_id, access_type, access_label):
+
+def run_accept_request_task(is_primary_approver, access_mapping,
+                            request, request_id, access_type, access_label):
     json_response = {}
     json_response["status"] = []
     if is_primary_approver:
