@@ -76,3 +76,15 @@ const handleModuleSelection = (elem, moduleTag, moduleDesc) => {
     removeModuleSelection(moduleTag);
   }
 };
+
+const raiseAccessRequest = () => {
+  const modules = $('#module-selection-table').children('tr');
+  const accessTags = [];
+
+  for(iter = 0; iter < modules.length; iter++) {
+    accessTags.push(`accesses=${modules[iter].id.replace('module-selection-', '')}`);
+  }
+
+  const finalUrl = `/access/requestAccess?${accessTags.join("&")}`;
+  window.location = finalUrl;
+};
