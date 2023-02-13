@@ -271,45 +271,23 @@ def test_grant():
 def run_accept_request(data):
     data = json.loads(data)
     request_id = data["request_id"]
-    request = UserAccessMapping.get_access_request(data["request_id"])
-    approver = request.approver_1.user
-    user = request.user_identity.user
+    user_access_mapping = UserAccessMapping.get_access_request(data["request_id"])
+    approver = user_access_mapping.approver_1.user
+    user = user_access_mapping.user_identity.user
     access_type = data["access_type"]
     response = ""
 
-    try:
-        if access_type == "other":
-            emails = request.GET["checkedEmails"].split(",")
-            accessObj = request.access
-            accessObj.access_label["grant_emails"] = emails
-            accessObj.save()
+    result = background_task("run_access_grant", request_id)
+    if result:
+        return {"status": True}
+    notifications.send_mail_for_request_granted_failure(user, approver, access_type, request_id)
+    logger.debug(
+        {
+            'requestId': request_id,
+            'status': 'GrantFailed',
+            'By': approver,
+            'response': str(response)
+        }
+    )
 
-        result = background_task("run_access_grant", request_id)
-        if result:
-            return True
-
-        request.status = 'Approved'
-        request.save()
-
-        notifications.send_mail_for_request_granted(user, approver, access_type, request_id)
-        logger.debug(
-            {
-                'requestId': request_id,
-                'status': 'Approved',
-                'By': approver,
-                'response': str(response)
-            }
-        )
-    except Exception as e:
-        logger.exception(e)
-        request.status = 'Pending'
-        request.approver = ''
-        request.save()
-
-        logger.debug(
-            "Error in accept of request " + request_id
-            + " error: "
-            + str(e), "Error while Approving "
-            + request_id
-            + " Request", "Error msg : " + str(e)
-        )
+    return {"status": False}

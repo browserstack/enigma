@@ -666,6 +666,17 @@ class UserAccessMapping(models.Model):
     def is_approved(self):
         return self.status == "Approved"
 
+    def decline_access(self, decline_reason=None):
+        self.status = "Declined"
+        self.decline_reason = decline_reason
+        self.save()
+
+    def get_pending_access_mapping(request_id):
+        return UserAccessMapping.objects.filter(
+            request_id__contains=request_id,
+            status__in=["Pending", "SecondaryPending"]
+        ).values_list('request_id', flat=True)
+
 
 class GroupAccessMapping(models.Model):
     """

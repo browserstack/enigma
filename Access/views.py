@@ -16,11 +16,10 @@ from Access.accessrequest_helper import (
     get_pending_revoke_failures,
     getPendingRequests,
     create_request,
-    get_pending_module_access,
     accept_user_access_requests,
     decline_individual_access,
 )
-from Access.models import User
+from Access.models import User, UserAccessMapping
 from Access.userlist_helper import (
     getallUserList,
     get_identity_templates,
@@ -248,7 +247,7 @@ def accept_bulk(request, selector):
         if selector.endswith("-club"):
             for value in inputVals:
                 returnIds.append(value)
-                current_ids = list(get_pending_module_access(request_id=value))
+                current_ids = list(UserAccessMapping.get_pending_access_mapping(request_id=value))
                 requestIds.extend(current_ids)
         else:
             requestIds = inputVals
@@ -288,24 +287,26 @@ def accept_bulk(request, selector):
 
 
 @login_required
-def decline_access(request, access_type, request_id):
+def decline_access(request, accessType, requestId):
     try:
         if request.GET:
             context = {"response": {}}
             reason = request.GET["reason"]
             request_ids = []
             return_ids = []
-            if access_type.endswith("-club"):
-                for value in [request_id]:
+            if accessType.endswith("-club"):
+                for value in [requestId]:
                     return_ids.append(value)
-                    current_ids = list(get_pending_module_access(request_id=value))
+                    current_ids = list(
+                        UserAccessMapping.get_pending_access_mapping(request_id=value)
+                    )
                     request_ids.extend(current_ids)
-                access_type = access_type.rsplit("-", 1)[0]
+                accessType = accessType.rsplit("-", 1)[0]
             else:
-                request_ids = [request_id]
+                request_ids = [requestId]
             for current_request_id in request_ids:
                 response = decline_individual_access(request,
-                                                     access_type,
+                                                     accessType,
                                                      current_request_id,
                                                      reason)
                 if "error" in response:
@@ -318,8 +319,8 @@ def decline_access(request, access_type, request_id):
     except Exception as e:
         json_response = {}
         logger.error("Error in rejecting the request. Please contact admin - " + str(str(e)))
-        json_response['error'] = "Error in rejecting the request. Please contact admin - "
-        + str(str(e))
+        json_response['error'] = "Error in rejecting the request. \
+            Please contact admin - ", str(str(e))
         json_response['status_code'] = 401
         return JsonResponse(json_response, status=json_response["status_code"])
 

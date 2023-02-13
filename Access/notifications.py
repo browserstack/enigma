@@ -21,7 +21,8 @@ MEMBERSHIP_ACCEPTED_BODY = """Access approved for addition of {} to group - {} b
                             </a>."""
 GROUP_ACCESS_ADDED_SUBJECT = "Group: {group_name}  new access added"
 USER_ACCESS_REQUEST_DENIED_SUBJECT = "[Enigma][Access Management] {} - {} - {} Request Denied"
-USER_ACCESS_REQUEST_GRANTED_SUBJECT = "[Enigma][Access Management] {} - {} - {} Request Approved"
+USER_ACCESS_REQUEST_GRANT_FAILURE_SUBJECT = "[Enigma][Access Management] {} - {} - {} \
+    Failed to Approve Request"
 
 
 def send_new_group_create_notification(auth_user, date_time, new_group, member_list):
@@ -140,15 +141,14 @@ def send_mail_for_request_decline(request, description, request_id, reason, acce
     logger.debug("Email sent for " + subject + " to " + str(destination))
 
 
-def send_mail_for_request_granted(user, approver, access_type, request_id):
+def send_mail_for_request_granted_failure(user, approver, access_type, request_id):
     destination = [user.email]
     destination.extend(approver.email)
-    subject = USER_ACCESS_REQUEST_GRANTED_SUBJECT.format(
+    subject = USER_ACCESS_REQUEST_GRANT_FAILURE_SUBJECT.format(
         str(user.email), access_type.upper(), request_id)
-    body = "Request by %s having Request ID %s is Approved by %s" % (
+    body = "Request by %s having Request ID %s could not be approved." % (
         str(user.email),
-        request_id,
-        str(approver)
+        request_id
     )
     general.emailSES(destination, subject, body)
     logger.debug("Email sent for " + subject + " to " + str(destination))

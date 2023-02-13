@@ -1,5 +1,4 @@
 config.json
-env/*
 __pycache__/
 *.py[cod]
 db.sqlite3
@@ -23,5 +22,3 @@ public/
 
 # make lint sideeffect
 lint_issues
-
-Access/access_modules/github_access/*

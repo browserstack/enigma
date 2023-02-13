@@ -259,62 +259,6 @@
             });
         });
 
-        var othermodal = document.getElementById("otherModal");
-        $(".other-accept-button").click(function () {
-            request_id = $(this).val()
-            othermodal.style.display = "block";
-            $('#otherRequestId').val(request_id)
-            $('#OtherAccessType').val($(this).attr("id"))
-            document.getElementById("otherAcceptHeading").innerHTML = "Approve " + request_id
-        });
-
-        $(".otherApproveFinalButton").click(function () {
-            let selector = $('#OtherAccessType').val()
-            let urlBuilder = `/accept_bulk/${selector}?`
-            request_id = $('#otherRequestId').val()
-            reqParams = []
-            reqParams.push(`requestId=${request_id}`)
-
-            var checkboxes = document.getElementsByName("otherApprovalEmails");
-            var checkedEmails = [];
-            for (var i = 0; i < checkboxes.length; i++) {
-                // And stick the checked ones onto an array...
-                if (checkboxes[i].checked) {
-                    checkedEmails.push(checkboxes[i].value);
-                }
-            }
-            extra_emails = $("#otherEmails").val().split(",")
-            for (var i = 0; i < extra_emails.length; i++) {
-                if (extra_emails[i].trim().length > 0) {
-                    checkedEmails.push(extra_emails[i].trim());
-                }
-            }
-            if (checkedEmails.length == 0) {
-                alert("No email ids selected!")
-            }
-            else {
-                reqParams.push(`checkedEmails=${checkedEmails}`)
-
-                urlBuilder = urlBuilder + reqParams.join("&")
-                div_id = request_id + "-action"
-                document.getElementById("other-approve-processing").innerHTML = "<p style='color: green'>Processing...</p>"
-                $.ajax({
-                    url: urlBuilder,
-                    success: function (result) {
-                        updateStatus(result, selector)
-                        document.getElementById("other-approve-processing").innerHTML = ""
-                        othermodal.style.display = "none";
-                    },
-                    error: function (result) {
-                        error = result["responseJSON"]["error"]
-                        document.getElementById(div_id).innerHTML = "<p style='color: red'>" + error + "</p>"
-                        document.getElementById("other-approve-processing").innerHTML = ""
-                        othermodal.style.display = "none";
-                    }
-                });
-            }
-        });
-
         var modal = document.getElementById("declineModal");
         $(".declineFinalButton").click(function () {
             let acceptAnchor = this
@@ -344,9 +288,6 @@
         window.onclick = function (event) {
             if (event.target == modal) {
                 modal.style.display = "none";
-            }
-            else if (event.target == othermodal) {
-                othermodal.style.display = "none";
             }
         }
 
@@ -428,32 +369,6 @@
             <input type="hidden" id="declineReasonText">
             <button class="btn btn-primary declineFinalButton">Decline</button>
             <div id="decline-processing"></div>
-        </div>
-    </div>
-</div>
-
-<!-- OTHER ACCESS RECEPIENT SELECT MODAL -->
-<div id="otherModal" class="modal">
-    <!-- Modal content -->
-    <div class="modal-content">
-        <h2 id="otherAcceptHeading"></h2>
-
-        <div class="form-group">
-            <h3>Mail approval to</h3>
-            <div id="mailto">
-                {% for email in otherAccessRecepients %}
-                <input type="checkbox" value="{{email}}" id="{{email}}-checkbox" name="otherApprovalEmails">
-                <label for="{{email}}-checkbox">&nbsp;{{email}}</label><br>
-                {% endfor %}
-                Other Email IDs (comma separated) : <input type="text" id="otherEmails"
-                    class="form-control"></label><br>
-            </div>
-        </div>
-        <div>
-            <input type="hidden" id="otherRequestId">
-            <input type="hidden" id="OtherAccessType">
-            <button class="btn btn-primary otherApproveFinalButton">Accept</button>
-            <div id="other-approve-processing"></div>
         </div>
     </div>
 </div>
@@ -869,16 +784,11 @@
                     <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#{{ each_module.module_tag }}"
                             data-parent="#pending-accordion">{{ each_module.module_tag }} : </a>
                         <span class="h6 badge badge-light">{{ each_module.requests|length }}</span>
-                        {% if each_module.module_tag == "other" %}
-                        <h6 class="text-warning">Bulk approve not available for other requests.</h6>
-                        {% endif %}
-
                     </h2>
                 </div>
             </div>
             <div id="{{ each_module.module_tag }}" class="panel-collapse collapse">
                 <div class="panel-body">
-                    {% if each_module.module_tag != "other" %}
                     <div class="page-header bulkHeader mx-4">
                         <div class="row">
                             <div class="checkbox col-1">
@@ -899,7 +809,6 @@
                             </div>
                         </div>
                     </div>
-                    {% endif %}
                     {% for eachRequest in each_module.requests %}
                     <div class="row">
                         <div class="card col-xs-12 col-md-12" {% if eachRequest.sla_breached %}
@@ -908,11 +817,9 @@
                                 <div class="row">
                                     <div class="checkbox col-1 pl-1">
                                         <label id="{{ eachRequest.club_id }}-checkbox">
-                                            {% if each_module.module_tag != "other" %}
                                             <input class="{{ each_module.module_tag }}-club" type="checkbox"
                                                 value="{{ eachRequest.club_id }}">
                                             <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                                            {% endif %}
                                         </label>
                                     </div>
                                     <div class="col-8">
@@ -960,15 +867,9 @@
                                     </div>
                                     <div class="col-3">
                                         <div class="row float-right" id="{{ eachRequest.club_id }}-action">
-                                            {% if each_module.module_tag == "other" %}
-                                            <button class="card-link btn btn-primary other-accept-button"
-                                                id="{{ eachRequest.access_tag }}-club"
-                                                value="{{ eachRequest.club_id }}">Accept</button>
-                                            {% else %}
                                             <button class="card-link btn btn-primary accept-button"
                                                 id="{{ eachRequest.access_tag }}-club"
                                                 value="{{ eachRequest.club_id }}">Accept</button>
-                                            {% endif %}
                                             <button class="card-link btn btn-danger decline-button"
                                                 id="{{ eachRequest.access_tag }}-club/{{ eachRequest.club_id }}"
                                                 value="{{ eachRequest.club_id }}">Decline</button>
