@@ -751,6 +751,22 @@ def validate_group_access_create_request(group, auth_user):
     return None
 
 
+def revoke_user_access(user, access, revoker_email):
+    user_identity = user.get_active_identity(access.access_tag)
+    user_identity.decline_non_approved_access_mapping(access)
+    user_identity.offboarding_approved_access_mapping(access)
+    background_task(
+        "run_access_revoke",
+        json.dumps(
+            {
+                "request_id": user_identity.get_granted_access_mapping(access)
+                .first()
+                .request_id,
+                "revoker_email": revoker_email,
+            }
+        ),
+    )
+
 def remove_member(request):
     try:
         membership_id = request.POST.get("membershipId")
@@ -782,27 +798,26 @@ def remove_member(request):
     revoke_accesses = list(set(revoke_group_accesses) - set(other_group_accesses))
 
     for access in revoke_accesses:
-        user_identity = user.get_active_identity(access.access_tag)
-        user_identity.decline_non_approved_access_mapping(access)
-        user_identity.offboarding_approved_access_mapping(access)
-        background_task(
-            "run_access_revoke",
-            json.dumps(
-                {
-                    "request_id": user_identity.get_granted_access_mapping(access)
-                    .first()
-                    .request_id,
-                    "revoker_email": request.user.user.email,
-                }
-            ),
-        )
+        revoke_user_access(user, access, request.user.user.email)
 
     membership.revoke_membership()
 
     return {"message": "Successfully removed user from group"}
 
+def access_exist_in_other_groups_of_user(membership, group, access):
+    other_memberships_groups = (
+        membership.user.get_all_approved_memberships()
+        .exclude(group=membership.group)
+        .values_list("group", flat=True)
+    )
+    for group in other_memberships_groups:
+        if group.access_exist(access):
+            return True
+    
+    return False
 
-def revoke_access(request):
+
+def revoke_access_from_group(request):
     try:
         request_id = request.POST.get("request_id")
         if not request_id:
@@ -821,36 +836,11 @@ def revoke_access(request):
     auth_user = request.user
     if not (auth_user.user.has_permission("ALLOW_USER_OFFBOARD") and group.member_is_owner(auth_user.user)):
         raise Exception("User Unauthorized to perfrom the action")
-    
-    should_continue = False
-    for membership in group.get_all_approved_members():
-        other_memberships_groups = (
-            membership.user.get_all_approved_memberships()
-            .exclude(group=membership.group)
-            .values_list("group", flat=True)
-        )
 
-        for group in other_memberships_groups:
-            if group.access_exist(mapping.access):
-                should_continue = True
-                break
-        
-        if(should_continue):
-            should_continue = False
+    for membership in group.get_all_approved_members():
+        if access_exist_in_other_groups(membership, group, mapping.access):
             continue
 
-        user_access_identity = membership.user.get_active_identity(mapping.access.access_tag)
-        user_access_mapping = user_access_identity.get_granted_access_mapping(mapping.access)
-
-        
-        background_task(
-            "run_access_revoke",
-            json.dumps(
-                {
-                    "request_id": user_access_mapping.request_id,
-                    "revoker_email": auth_user.user.email
-                }
-            ),
-        )
+        revoke_user_access(membership.user, mapping.access, auth_user.user.email)
 
     return {"message": "Successfully initiated the revoke"}

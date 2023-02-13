@@ -43,18 +43,6 @@ $(document).on('click', '.group-revoke-button', function(){
           alert("Error occured while marking revoke! - "+result["responseJSON"]["error"])
         }});
   });
-
-  $(document).on('click', '.inactive-access-button', function(){
-    id = $(this).attr("id");
-    urlBuilder = "/group/markGroupAccessInactive?requestId="+id
-    $.ajax({url: urlBuilder,
-        success: function(result){
-          document.getElementById(id+"-revoke-button").innerHTML = "Access Marked Inactive";
-        },
-        error: function(result){
-          alert("Error occured while marking revoke! - "+result["responseJSON"]["error"])
-        }});
-  });
 </script>
 <div id="genericAcceses" class="container tab-pane fade"><br>
   {% if genericAccesses %}
@@ -78,12 +66,8 @@ $(document).on('click', '.group-revoke-button', function(){
         <td>{{ eachAccess.status }}</td>
         <td>{{ eachAccess.accessMeta }}</td>
         <td id="inactive-{{ eachAccess.requestId }}-revoke-button">
-          {% if user.is_owner %}
-          <button class="btn btn-danger inactive-access-button" id="inactive-{{ eachAccess.requestId }}">Mark Inactive</button><br>(Existing accesses are not revoked)<br><br>
-          {% endif %}
-
           {% if allowRevoke and eachAccess.status == 'Approved' %}
-            <button class="btn btn-danger group-revoke-button" id="{{ eachAccess.requestId }}">Mark Revoked</button><br>(Existing accesses are marked revoked)
+            <button class="btn btn-danger group-revoke-button" id="{{ eachAccess.requestId }}">Mark Revoked</button><br>
           {% endif %}
         </td>
       </tr>

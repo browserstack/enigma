@@ -162,6 +162,7 @@ def user_offboarding(request):
 @login_required
 def requestAccess(request):
     if request.POST:
+        print((request.POST))
         context = create_request(
             auth_user=request.user, access_request_form=request.POST
         )
