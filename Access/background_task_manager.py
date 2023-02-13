@@ -53,7 +53,7 @@ def run_access_grant(request_id):
     user = user_access_mapping.user_identity.user
     approver = user_access_mapping.approver_1.user.username
     message = ""
-    if not user_access_mapping.user_identity.user.state == "1":
+    if not user_access_mapping.user_identity.user.is_active():
         user_access_mapping.decline_access(decline_reason="User is not active")
         logger.debug(
             {

@@ -204,6 +204,9 @@ class User(models.Model):
     
     def get_all_active_identity(self):
         return self.module_identity.filter(status = "Active")
+    
+    def is_active(self):
+        return self.current_state() == "active"
 
     @staticmethod
     def get_user_by_email(email):
@@ -517,7 +520,11 @@ class GroupV2(models.Model):
         return group_member_emails
 
     def member_is_owner(self, user):
-        return self.membership_group.get(user=user).is_owner
+        try:
+            membership = self.membership_group.get(user=user)
+        except MembershipV2.DoesNotExist:
+            return False
+        return membership.is_owner
 
     def get_active_accesses(self):
         return self.group_access_mapping.filter(

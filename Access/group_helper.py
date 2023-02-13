@@ -419,7 +419,7 @@ def add_user_to_group(request):
         group_members_email = group.get_approved_and_pending_member_emails()
         auth_user = request.user
 
-        if not auth_user.user.is_allowed_admin_actions_on_group(group)
+        if not auth_user.user.is_allowed_admin_actions_on_group(group):
             raise Exception("Permission denied, requester is non owner")
 
         duplicate_request_emails = set(
@@ -441,42 +441,44 @@ def add_user_to_group(request):
             return context
 
         selected_users = get_selected_users_by_email(data["selectedUserList"])
+        new_memberships = []
 
         with transaction.atomic():
             for user in selected_users:
                 member = group.add_member(user=user, requested_by=request.user.user,
                                         reason=data["memberReason"][0],
                                         date_time=base_datetime_prefix)
-                membership_id = member.membership_id
+                new_memberships.append(member)
 
-                if not group.needsAccessApprove:
-                    context = {}
-                    context["accessStatus"] = {
-                        "msg": REQUEST_PROCESSING.format(requestId=membership_id),
-                        "desc": (
-                            "A email will be sent after the requested access are granted"
-                        ),
-                    }
-                    member.approve(approver=request.user.user)
-                    user_mappings_list = views_helper.generate_user_mappings(
-                        user, group, member
-                    )
-
-                    views_helper.execute_group_access(user_mappings_list=user_mappings_list)
-                    logger.debug(
-                        "Process has been started for the Approval of request - "
-                        + membership_id
-                        + " - Approver="
-                        + request.user.username
-                    )
-                    return context
-
-                notifications.send_mail_for_member_approval(
-                    user.email,
-                    str(request.user),
-                    data["groupName"][0],
-                    data["memberReason"][0],
+        for membership in new_memberships:
+            membership_id = membership.membership_id
+            if not group.needsAccessApprove:
+                context = {}
+                context["accessStatus"] = {
+                    "msg": REQUEST_PROCESSING.format(requestId=membership_id),
+                    "desc": (
+                        "A email will be sent after the requested access are granted"
+                    ),
+                }
+                membership.approve(approver=request.user.user)
+                user_mappings_list = views_helper.generate_user_mappings(
+                    membership.user, group, membership
                 )
+
+                views_helper.execute_group_access(user_mappings_list=user_mappings_list)
+                logger.debug(
+                    "Process has been started for the Approval of request - "
+                    + membership_id
+                    + " - Approver="
+                    + request.user.username
+                )
+
+        notifications.send_mail_for_member_approval(
+            user.email,
+            str(request.user),
+            data["groupName"][0],
+            data["memberReason"][0],
+        )
 
         context = {}
         context["status"] = {
