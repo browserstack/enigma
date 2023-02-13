@@ -4,6 +4,8 @@ import logging
 from . import helpers as helper
 from django.db import transaction
 import json
+from Access.background_task_manager import background_task
+
 
 logger = logging.getLogger(__name__)
 
@@ -90,29 +92,42 @@ def create_identity(user_identity_form, auth_user):
 
         # get useraccess if an identity already exists
         if existing_user_identity:
-            existing_user_access_mapping = (
-                existing_user_identity.get_active_access_mapping()
-            )
+            existing_user_access_mapping = existing_user_identity.get_active_access_mapping()
+            
 
         # create identity json  # call this verify identity
-        new_user_access_mapping = __change_identity_and_transfer_membership(
+        new_user_access_mapping = __change_identity_and_transfer_access_mapping(
             user=user,
             access_tag=selected_access_module.tag(),
             existing_user_identity=existing_user_identity,
             existing_user_access_mapping=existing_user_access_mapping,
             new_module_identity=new_module_identity_json,
         )
+        system_user = User.get_system_user()
         if True:
             for access_mapping in existing_user_access_mapping:
                 # Create celery task for revoking old access
                 # mod.revoke(membership)
                 if access_mapping.status.lower() == "processing":
                     raise Exception("Not Implemented")
+                else:
+                    background_task("run_access_revoke",
+                                    json.dumps(
+                                                {
+                                                    "request_id": access_mapping.request_id,
+                                                    "revoker_email": system_user.email,
+                                                }
+                                        ),
+                                    )
+                
 
             for access_mapping in new_user_access_mapping:
                 # Create celery task for approval
                 # mod.approve(membership)
-                raise Exception("Not Implemented")
+                background_task("run_access_grant",
+                                                (access_mapping.request_id,
+                                                mappingObj, accessType,
+                                                user, approver))            
 
    
     context["status"] = {
@@ -125,7 +140,7 @@ def create_identity(user_identity_form, auth_user):
 
 
 @transaction.atomic
-def __change_identity_and_transfer_membership(
+def __change_identity_and_transfer_access_mapping(
     user,
     access_tag,
     existing_user_identity,
@@ -140,11 +155,33 @@ def __change_identity_and_transfer_membership(
         access_tag=access_tag, identity=new_module_identity
     )
     # replicate the memberships with new identity
+    new_user_access_mapping = []
     if existing_user_access_mapping:
-        return new_user_identity.replicate_active_access_membership_for_module(
+        new_user_access_mapping = new_user_identity.replicate_active_access_membership_for_module(
             existing_access=existing_user_access_mapping
         )
-
+    system_user = User.get_system_user()
+    
+    for access in existing_user_access_mapping:
+        if access.is_approved():
+            access.revoke(system_user)
+            background_task("run_access_revoke",
+                                    json.dumps(
+                                                {
+                                                    "request_id": access_mapping.request_id,
+                                                    "revoker_email": system_user.email,
+                                                }
+                                        ),
+                                    )
+        elif access.is_pending():
+            print("decline access")
+    
+    for access in new_user_access_mapping:
+        if access.is_approved():
+            background_task("run_access_grant",
+                            (access.request_id,
+                                access, accessType,
+                                user, approver))
 
 def getallUserList(request):
     try:

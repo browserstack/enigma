@@ -789,9 +789,7 @@ def remove_member(request):
             "run_access_revoke",
             json.dumps(
                 {
-                    "request_id": user_identity.get_granted_access_mapping(access)
-                    .first()
-                    .request_id,
+                    "request_id": request_id,
                     "revoker_email": request.user.user.email,
                 }
             ),
