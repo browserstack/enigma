@@ -2,7 +2,6 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User as djangoUser
-from .models import UserAccessMapping
 from Access import views_helper
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -22,17 +21,10 @@ from Access.accessrequest_helper import (
     create_request,
     accept_user_access_requests,
     get_decline_access_request,
+    accept_group_access,
 )
-from Access.models import User, UserAccessMapping
-from Access.userlist_helper import (
-    getallUserList,
-    get_identity_templates,
-    create_identity,
-    NEW_IDENTITY_CREATE_ERROR_MESSAGE,
-    IDENTITY_UNCHANGED_ERROR_MESSAGE,
-    IdentityNotChangedException,
-)
-from Access.models import User
+from Access.models import User, UserAccessMapping, GroupAccessMapping
+
 from Access.userlist_helper import (
     getallUserList,
     get_identity_templates,
@@ -268,6 +260,16 @@ def accept_bulk(request, selector):
                     UserAccessMapping.get_pending_access_mapping(request_id=value)
                 )
                 requestIds.extend(current_ids)
+        elif selector == "clubGroupAccess":
+            for value in inputVals:
+                returnIds.append(value)
+                group_name, date_suffix = value.rsplit("-", 1)
+                current_ids = list(
+                    GroupAccessMapping.get_pending_access_mapping(request_id=group_name)
+                    .filter(request_id__contains=date_suffix)
+                )
+                requestIds.extend(current_ids)
+            selector = "groupAccess"
         else:
             requestIds = inputVals
         for value in requestIds:
@@ -278,6 +280,8 @@ def accept_bulk(request, selector):
                 )
             elif selector == "groupMember" and is_access_approver:
                 json_response = group_helper.accept_member(request, requestId, False)
+            elif selector == "groupAccess":
+                json_response = accept_group_access(request, requestId)
             elif selector.endswith("-club"):
                 access_type = selector.rsplit("-", 1)[0]
                 json_response = accept_user_access_requests(

@@ -3,9 +3,10 @@ import logging
 import time
 from . import helpers as helper
 from Access import notifications
+from Access.views_helper import execute_group_access
 
-from BrowserStackAutomation.settings import DECLINE_REASONS
-from Access.models import UserAccessMapping, User, GroupV2, AccessV2
+from BrowserStackAutomation.settings import DECLINE_REASONS, MAIL_APPROVER_GROUPS
+from Access.models import UserAccessMapping, User, GroupV2, AccessV2, GroupAccessMapping
 import datetime
 import json
 from django.db import transaction
@@ -22,6 +23,7 @@ REQUEST_DUPLICATE_ERR_MSG = {
     "msg": "Access already granted or request in pending state. {access_label}",
 }
 REQUEST_PROCESS_MSG = "The Request ({request_id}) is now being processed"
+REQUEST_DECLINED_MSG = "The Request ({request_id}) is now declined"
 REQUEST_ERR_MSG = {
     "error_msg": "Invalid Request",
     "msg": "Please Contact Admin",
@@ -48,6 +50,24 @@ USER_REQUEST_PERMISSION_DENIED_ERR_MSG = "Permission Denied!"
 USER_REQUEST_DECLINE_MSG = "Declined Request {request_id} - Reason: {decline_reason}"
 USER_REQUEST_SECONDARY_PENDING_MSG = "The Request ({request_id}) is approved by {approved_by} \
                                       Pending on secondary approver"
+INVALID_REQUEST_ERROR_MSG = "Error in request not found OR Invalid request type"
+ALREADY_PROCESSED_REQUEST_MSG = "An Already Approved/Declined/Processing Request \
+    ({request_id}) was accessed by {user}"
+SELF_APPROVAL_ERROR_MSG = (
+    "You cannot approve your own request. Please ask other admins to do that"
+)
+ERROR_APPROVING_REQUEST_LOG_MSG = "Error Occured in acceptGroupAccess : {error} \
+    Error Occured while approving request {request_id}"
+ERROR_APPROVING_REQUEST_DSP_MSG = (
+    "Error Occured while accepting the request. Please contact the Admin - {error}"
+)
+SKIPPING_ACCESS_GRANT_MSG = (
+    "Skipping group access grant for user {username} as user is not active"
+)
+APPROVAL_PROCESS_STARTED_MSG = "Process has been started for the Approval of request \
+- {request_id} - Approver: {approver}"
+ERROR_DECLINING_REQUEST_LOG_MSG = "Error in Decline of request {request_id}. \
+ Error:{error} .Please contact admin."
 
 
 def requestAccessGet(request):
@@ -196,12 +216,25 @@ def get_decline_access_request(request, access_type, request_id):
                 )
                 request_ids.extend(current_ids)
             access_type = access_type.rsplit("-", 1)[0]
+        elif access_type == "clubGroupAccess":
+            for value in [request_id]:  # ready for bulk decline
+                return_ids.append(value)
+                group_name, date_suffix = value.rsplit("-", 1)
+                current_ids = list(
+                    GroupAccessMapping.get_pending_access_mapping(request_id=group_name)
+                    .filter(request_id__contains=date_suffix)
+                )
+                request_ids.extend(current_ids)
+            access_type = "groupAccess"
         else:
             request_ids = [request_id]
         for current_request_id in request_ids:
-            response = decline_individual_access(
-                request, access_type, current_request_id, reason
-            )
+            if access_type == "groupAccess":
+                response = decline_group_access(request, current_request_id, reason)
+            else:
+                response = decline_individual_access(
+                    request, access_type, current_request_id, reason
+                )
             if "error" in response:
                 response["success"] = False
             else:
@@ -261,7 +294,7 @@ def process_individual_requests(
                     "club_id": club_id,
                     "userEmail": accessrequest["userEmail"],
                     "accessReason": accessrequest["accessReason"],
-                    "accessType": accessrequest["accessType"],
+                    "accessType": accessrequest["access_desc"],
                     "access_tag": accessrequest["access_tag"],
                     "requested_on": accessrequest["requested_on"],
                     "sla_breached": helpers.sla_breached(accessrequest["requested_on"]),
@@ -684,3 +717,208 @@ def decline_individual_access(request, access_type, request_id, reason):
         decline_reason=reason,
     )
     return json_response
+
+
+def accept_group_access(request, request_id):
+    json_response = {}
+
+    group_mapping = GroupAccessMapping.get_by_request_id(request_id=request_id)
+    if not group_mapping:
+        logger.debug(INVALID_REQUEST_ERROR_MSG)
+        json_response["error"] = INVALID_REQUEST_ERROR_MSG
+        return json_response
+
+    try:
+        access_type = group_mapping.access.access_tag
+        access_label = group_mapping.access.access_label
+
+        permissions = _get_approver_permissions(access_type, access_label)
+        approver_permissions = permissions["approver_permissions"]
+
+        if not helper.check_user_permissions(
+            request.user, list(approver_permissions.values())
+        ):
+            logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
+            json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+            return json_response
+
+        if group_mapping.is_already_processed():
+            logger.warning(
+                ALREADY_PROCESSED_REQUEST_MSG.format(
+                    request_id=request_id, user=request.user.username
+                )
+            )
+            json_response["error"] = USER_REQUEST_IN_PROCESS_ERR_MSG.format(
+                request_id=request_id
+            )
+            return json_response
+        elif group_mapping.is_self_approval(approver=request.user):
+            json_response["error"] = SELF_APPROVAL_ERROR_MSG
+            return json_response
+        else:
+            primary_approver_bool = (
+                group_mapping.is_pending()
+                and request.user.user.has_permission(approver_permissions["1"])
+            )
+            secondary_approver_bool = (
+                group_mapping.is_secondary_pending()
+                and request.user.user.has_permission(approver_permissions["2"])
+            )
+
+            if not (primary_approver_bool or secondary_approver_bool):
+                logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
+                json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+                return json_response
+            if primary_approver_bool and "2" in approver_permissions:
+                group_mapping.set_primary_approver(request.user.user)
+                json_response["msg"] = USER_REQUEST_SECONDARY_PENDING_MSG.format(
+                    request_id=request_id, approved_by=request.user.username
+                )
+                group_mapping.update_access_status(current_status="SecondaryPending")
+                logger.debug(
+                    USER_REQUEST_SECONDARY_PENDING_MSG.format(
+                        request_id=request_id, approved_by=request.user.username
+                    )
+                )
+            else:
+                if primary_approver_bool:
+                    group_mapping.set_primary_approver(request.user.user)
+                else:
+                    group_mapping.set_secondary_approver(request.user.user)
+                json_response["msg"] = REQUEST_ACCESS_AUTO_APPROVED_MSG["title"].format(
+                    request_id=request_id
+                )
+
+                userMappingsList = []
+
+                with transaction.atomic():
+                    for membership in group_mapping.group.get_all_approved_members():
+                        user = membership.user
+                        access = group_mapping.access
+                        approver_1 = group_mapping.get_primary_approver()
+                        approver_2 = group_mapping.get_secondary_approver()
+                        reason = (
+                            "Added for group request "
+                            + group_mapping.request_id
+                            + " - "
+                            + group_mapping.request_reason
+                        )
+                        request_id = (
+                            user.user.username
+                            + "-"
+                            + group_mapping.access.access_tag
+                            + "-"
+                            + group_mapping.request_id.rsplit("-", 1)[-1]
+                        )
+                        if not user.get_accesses_by_access_tag_and_status(
+                            access_tag=access.access_tag, status=["Approved"]
+                        ):
+                            existing_mapping = UserAccessMapping.get_access_request(
+                                request_id=request_id
+                            )
+                            if not existing_mapping:
+                                user_identity = user.get_or_create_active_identity(
+                                    access_tag=access_type
+                                )
+                                userMappingObj = UserAccessMapping.create(
+                                    request_id=request_id,
+                                    user_identity=user_identity,
+                                    access=access,
+                                    approver_1=approver_1,
+                                    approver_2=approver_2,
+                                    request_reason=reason,
+                                    access_type="Group",
+                                    status="Processing",
+                                )
+                            else:
+                                logger.debug("Regranting " + request_id)
+                                userMappingObj = existing_mapping
+                                existing_mapping.set_processing()
+
+                            userMappingsList.append(userMappingObj)
+                group_mapping.approve_access()
+                execute_group_access(userMappingsList)
+                logger.debug(
+                    APPROVAL_PROCESS_STARTED_MSG.format(
+                        request_id=request_id, approver=request.user.username
+                    )
+                )
+            return json_response
+    except Exception as e:
+        logger.exception(e)
+        destination = [group_mapping.requested_by.email]
+        notifications.send_accept_group_access_failed(
+            destination=destination, request_id=request_id, error=str(e)
+        )
+        json_response = {}
+        json_response["error"] = ERROR_APPROVING_REQUEST_DSP_MSG.format(error=str(e))
+        return json_response
+
+
+def decline_group_access(request, request_id, reason):
+    json_response = {}
+
+    group_mapping = GroupAccessMapping.get_by_request_id(request_id=request_id)
+    if not group_mapping:
+        logger.error(INVALID_REQUEST_ERROR_MSG)
+        json_response["error"] = INVALID_REQUEST_ERROR_MSG
+        return json_response
+
+    access_type = group_mapping.access.access_tag
+
+    json_response = validate_approver_permissions(
+        group_mapping, access_type, request, request_id
+    )
+    if "error" in json_response:
+        return json_response
+
+    if not is_request_valid(request_id=request_id, access_mapping=group_mapping):
+        json_response["error"] = USER_REQUEST_IN_PROCESS_ERR_MSG.format(
+            request_id=request_id
+        )
+        logger.warning(
+            ALREADY_PROCESSED_REQUEST_MSG.format(
+                request_id=request_id, user=request.user.username
+            )
+        )
+        return json_response
+
+    try:
+        group_mapping.decline_access(decline_reason=reason)
+        if group_mapping.get_primary_approver() is not None:
+            group_mapping.set_secondary_approver(approver=request.user.user)
+        else:
+            group_mapping.set_primary_approver(request.user.user)
+
+        destination = [group_mapping.requested_by.email]
+        destination.extend(MAIL_APPROVER_GROUPS)
+
+        notifications.send_group_access_declined(
+            destination=destination,
+            group_name=group_mapping.group.name,
+            requester=group_mapping.requested_by.user.username,
+            decliner=request.user.username,
+            request_id=request_id,
+            declined_access=group_mapping.access.access_tag,
+            reason=reason,
+        )
+        logger.debug(
+            USER_REQUEST_DECLINE_MSG.format(
+                request_id=request_id, decline_reason=reason
+            )
+        )
+        json_response = {}
+        json_response["msg"] = REQUEST_DECLINED_MSG.format(request_id=request_id)
+        return json_response
+    except Exception as e:
+        logger.exception(e)
+        group_mapping.update_access_status(current_status="Pending")
+        destination = [request.user.email]
+        notifications.send_decline_group_access_failed(
+            destination=destination, request_id=request_id, error=str(e)
+        )
+        json_response = {}
+        json_response["error"] = ERROR_DECLINING_REQUEST_LOG_MSG.format(
+            request_id=request_id, error=str(str(e))
+        )
+        return json_response
