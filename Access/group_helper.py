@@ -55,14 +55,16 @@ UPDATE_OWNERS_REQUEST_ERROR = {
     "msg": "The requested URL is of POST method but was called with other.",
 }
 
+
 class GroupAccessExistsException(Exception):
     def __init__(self):
-            self.message = "Group Access Exists"
-            super().__init__(self.message)    
+        self.message = "Group Access Exists"
+        super().__init__(self.message)
+
 
 ERROR_LOADING_PAGE = {
     "error_msg": "Internal Error",
-    "msg": "Error Occured while loading the page. Please contact admin, {exception}"
+    "msg": "Error Occured while loading the page. Please contact admin, {exception}",
 }
 
 ADD_MEMBER_REQUEST_SUBMITTED_MESSAGE = {
@@ -303,7 +305,6 @@ def check_user_is_group_owner(user_name, group):
 
 
 def approve_new_group_request(request, group_id):
-
     try:
         group = GroupV2.get_pending_group(group_id=group_id)
     except Exception as e:
@@ -393,7 +394,7 @@ def get_user_group(request, group_name):
         context = {}
         context["error"] = {
             "error_msg": ERROR_LOADING_PAGE["error_msg"],
-            "msg": ERROR_LOADING_PAGE["msg"].format(exception=str(e))
+            "msg": ERROR_LOADING_PAGE["msg"].format(exception=str(e)),
         }
         return context
 
@@ -410,10 +411,7 @@ def add_user_to_group(request):
         group = GroupV2.get_approved_group_by_name(data["groupName"][0])
         if not group:
             context = {}
-            context["error"] = {
-                "error_msg": "Request failed",
-                "msg": "Group not found"
-            }
+            context["error"] = {"error_msg": "Request failed", "msg": "Group not found"}
             return context
 
         group_members_email = group.get_approved_and_pending_member_emails()
@@ -422,22 +420,22 @@ def add_user_to_group(request):
         if not auth_user.user.is_allowed_admin_actions_on_group(group):
             raise Exception("Permission denied, requester is non owner")
 
-        duplicate_request_emails = set(
-            data["selectedUserList"]).intersection(set(group_members_email))
+        duplicate_request_emails = set(data["selectedUserList"]).intersection(
+            set(group_members_email)
+        )
 
         if duplicate_request_emails:
             context = {}
             if len(duplicate_request_emails) == 1:
                 msg = DUPLICATE_GROUP_MEMBER_ADD_REQUEST.format(
-                    user_email=duplicate_request_emails)
+                    user_email=duplicate_request_emails
+                )
             else:
                 msg = DUPLICATE_GROUP_MEMBERS_ADD_REQUEST.format(
-                    user_emails=duplicate_request_emails)
+                    user_emails=duplicate_request_emails
+                )
 
-            context["error"] = {
-                "error_msg": "Duplicate Request",
-                "msg": msg
-            }
+            context["error"] = {"error_msg": "Duplicate Request", "msg": msg}
             return context
 
         selected_users = get_selected_users_by_email(data["selectedUserList"])
@@ -445,9 +443,12 @@ def add_user_to_group(request):
 
         with transaction.atomic():
             for user in selected_users:
-                member = group.add_member(user=user, requested_by=request.user.user,
-                                        reason=data["memberReason"][0],
-                                        date_time=base_datetime_prefix)
+                member = group.add_member(
+                    user=user,
+                    requested_by=request.user.user,
+                    reason=data["memberReason"][0],
+                    date_time=base_datetime_prefix,
+                )
                 new_memberships.append(member)
 
         for membership in new_memberships:
@@ -483,7 +484,7 @@ def add_user_to_group(request):
         context = {}
         context["status"] = {
             "title": ADD_MEMBER_REQUEST_SUBMITTED_MESSAGE["title"],
-            "msg": ADD_MEMBER_REQUEST_SUBMITTED_MESSAGE["msg"]
+            "msg": ADD_MEMBER_REQUEST_SUBMITTED_MESSAGE["msg"],
         }
         return context
     except Exception as e:
@@ -492,7 +493,7 @@ def add_user_to_group(request):
         context = {}
         context["error"] = {
             "error_msg": ERROR_LOADING_PAGE["error_msg"],
-            "msg": ERROR_LOADING_PAGE["msg"].format(exception=str(e))
+            "msg": ERROR_LOADING_PAGE["msg"].format(exception=str(e)),
         }
         return context
 
@@ -753,11 +754,16 @@ def remove_member(request):
 def get_selected_users_by_email(user_emails):
     selected_users = User.get_users_by_email(emails=user_emails)
     selected_users_email = {user.email: user for user in selected_users}
-    not_found_emails = [email for email in user_emails if email not in selected_users_email]
+    not_found_emails = [
+        email for email in user_emails if email not in selected_users_email
+    ]
 
     if len(not_found_emails) == 1:
-        raise User.DoesNotExist("User with email {} does not exist".format(not_found_emails))
+        raise User.DoesNotExist(
+            "User with email {} does not exist".format(not_found_emails)
+        )
     elif len(not_found_emails) > 1:
-        raise User.DoesNotExist("Users with email {} are not found".format(not_found_emails))
+        raise User.DoesNotExist(
+            "Users with email {} are not found".format(not_found_emails)
+        )
     return selected_users
-

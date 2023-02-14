@@ -288,6 +288,7 @@ test_add_user_to_group_duplicate_request = "DuplicateRequest"
 test_add_user_to_group_needs_approval = "NeedsApproval"
 test_add_user_to_group_doesnot_need_approval = "DoesNotNeedApproval"
 
+
 # TODO: fix this test case and enable it back
 @pytest.mark.skip
 @pytest.mark.skipif(

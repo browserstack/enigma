@@ -398,7 +398,6 @@ def _create_access(auth_user, access_label, access_type, request_id, access_reas
             }
 
     try:
-
         access = _create_access_mapping(
             access=access,
             user_identity=user_identity,

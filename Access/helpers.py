@@ -6,7 +6,7 @@ import re
 import datetime
 import random
 
-from Access.access_modules import * # NOQA
+from Access.access_modules import *  # NOQA
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
 from Access.models import User
 
@@ -27,7 +27,9 @@ def get_available_access_modules():
     global available_accesses
     if len(available_accesses) > 0:
         return available_accesses
-    available_accesses = {access.tag(): access for access in _get_modules_on_disk() if access.available}
+    available_accesses = {
+        access.tag(): access for access in _get_modules_on_disk() if access.available
+    }
     return available_accesses
 
 
@@ -88,8 +90,12 @@ def getPossibleApproverPermissions():
 
 
 def get_approvers():
-    emails = [user.email
-              for user in User.get_active_users_with_permission(permission_label=PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"])]
+    emails = [
+        user.email
+        for user in User.get_active_users_with_permission(
+            permission_label=PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]
+        )
+    ]
     if not emails:
         raise Exception("No user found with approver roles")
     primary_approver = random.choice(emails)
@@ -99,5 +105,5 @@ def get_approvers():
     if not other_approver:
         other_approver = None
     else:
-        other_approver = ', '.join(other_approver)
+        other_approver = ", ".join(other_approver)
     return primary_approver, other_approver

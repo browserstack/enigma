@@ -19,6 +19,7 @@ ACCESS_GRANT_FAILED_MESSAGE = "Request by {} having Request ID {} is GrantFailed
 Please debug and rerun the grant.<BR/>"
 GROUP_ACCESS_ADDED_SUBJECT = "Group: {group_name}  new access added"
 
+
 def send_new_group_create_notification(auth_user, date_time, new_group, member_list):
     subject = NEW_GROUP_EMAIL_SUBJECT + auth_user.email + " -- " + date_time
     body = helpers.generateStringFromTemplate(
@@ -161,7 +162,9 @@ def generate_user_add_to_group_email_body(
     )
 
 
-def send_mail_for_access_grant_failed(destination, access_type, user_email, request_id, message):
+def send_mail_for_access_grant_failed(
+    destination, access_type, user_email, request_id, message
+):
     destination = [destination]
     subject = str("Access Grant Failed - ") + access_type.upper()
     body = ACCESS_GRANT_FAILED_MESSAGE.format(user_email, request_id)

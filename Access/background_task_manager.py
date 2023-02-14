@@ -65,7 +65,9 @@ def run_access_grant(request_id):
         )
         return False
     elif user_access_mapping.user_identity.identity == {}:
-        user_access_mapping.grant_fail_access(fail_reason="Failed since identity is blank for user identity")
+        user_access_mapping.grant_fail_access(
+            fail_reason="Failed since identity is blank for user identity"
+        )
         logger.debug(
             {
                 "requestId": request_id,
@@ -81,11 +83,13 @@ def run_access_grant(request_id):
         return False
 
     try:
-        response = access_module.approve(user_identity=user_access_mapping.user_identity,
-                                         labels=[user_access_mapping.access.access_label],
-                                         approver=approver,
-                                         request=user_access_mapping,
-                                         is_group=False,)
+        response = access_module.approve(
+            user_identity=user_access_mapping.user_identity,
+            labels=[user_access_mapping.access.access_label],
+            approver=approver,
+            request=user_access_mapping,
+            is_group=False,
+        )
         if type(response) is bool:
             approve_success = response
         else:
@@ -93,8 +97,7 @@ def run_access_grant(request_id):
             message = str(response[1])
     except Exception:
         logger.exception(
-            "Error while running approval module: "
-            + str(traceback.format_exc())
+            "Error while running approval module: " + str(traceback.format_exc())
         )
         approve_success = False
         message = str(traceback.format_exc())
@@ -110,7 +113,9 @@ def run_access_grant(request_id):
             }
         )
     else:
-        user_access_mapping.grant_fail_access(fail_reason="Error while running approve in module")
+        user_access_mapping.grant_fail_access(
+            fail_reason="Error while running approve in module"
+        )
         logger.debug(
             {
                 "requestId": request_id,
@@ -121,15 +126,14 @@ def run_access_grant(request_id):
         )
         try:
             destination = access_module.access_mark_revoke_permission(access_type)
-            notifications.send_mail_for_access_grant_failed(destination,
-                                                            access_type.upper(),
-                                                            user.email,
-                                                            request_id=request_id,
-                                                            message=message)
-            logger.debug(
-                "Sending Grant Failed email - "
-                + str(destination)
+            notifications.send_mail_for_access_grant_failed(
+                destination,
+                access_type.upper(),
+                user.email,
+                request_id=request_id,
+                message=message,
             )
+            logger.debug("Sending Grant Failed email - " + str(destination))
         except Exception:
             logger.debug(
                 "Grant Failed - Error while sending email - "
@@ -245,7 +249,7 @@ def fail_func():
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
 def test_grant():
-    access_module = helpers.get_available_access_module_from_tag('confluence_module')
+    access_module = helpers.get_available_access_module_from_tag("confluence_module")
 
     # call access_desc method of confluence module here
     # and return the result to the caller of this function
