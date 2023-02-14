@@ -4,9 +4,11 @@ import glob
 import logging
 import re
 import datetime
+import random
 
-from Access.access_modules import * # NOQA
+from Access.access_modules import *  # NOQA
 from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
+from Access.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -20,11 +22,14 @@ def get_available_access_module_from_tag(tag):
         return get_available_access_modules()[tag]
     return None
 
+
 def get_available_access_modules():
     global available_accesses
     if len(available_accesses) > 0:
         return available_accesses
-    available_accesses = {access.tag(): access for access in _get_modules_on_disk() if access.available}
+    available_accesses = {
+        access.tag(): access for access in _get_modules_on_disk() if access.available
+    }
     return available_accesses
 
 
@@ -83,3 +88,22 @@ def getPossibleApproverPermissions():
         all_approver_permissions.extend(approver_permissions.values())
     return list(set(all_approver_permissions))
 
+
+def get_approvers():
+    emails = [
+        user.email
+        for user in User.get_active_users_with_permission(
+            permission_label=PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]
+        )
+    ]
+    if not emails:
+        raise Exception("No user found with approver roles")
+    primary_approver = random.choice(emails)
+
+    emails.remove(primary_approver)
+    other_approver = emails
+    if not other_approver:
+        other_approver = None
+    else:
+        other_approver = ", ".join(other_approver)
+    return primary_approver, other_approver
