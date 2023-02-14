@@ -930,6 +930,11 @@ class GroupAccessMapping(models.Model):
             return GroupAccessMapping.objects.get(request_id=request_id)
         except GroupAccessMapping.DoesNotExist:
             return None
+        
+    def mark_revoked(self, revoker):
+        self.status = "Revoked"
+        self.revoker = revoker
+        self.save()
     
     
 

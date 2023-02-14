@@ -791,6 +791,8 @@ def revoke_access_from_group(request):
             continue
 
         revoke_user_access(membership.user, mapping.access, auth_user.user.email)
+    
+    mapping.mark_revoked(auth_user.user)
 
     return {"message": "Successfully initiated the revoke"}
 
