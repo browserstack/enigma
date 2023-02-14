@@ -21,7 +21,7 @@ REQUEST_DUPLICATE_ERR_MSG = {
     "title": "{access_tag}: Duplicate Request not submitted",
     "msg": "Access already granted or request in pending state. {access_label}",
 }
-REQUEST_PROCESS_MSG = "The Request ({requets_id}) is now being processed"
+REQUEST_PROCESS_MSG = "The Request ({request_id}) is now being processed"
 REQUEST_ERR_MSG = {
     "error_msg": "Invalid Request",
     "msg": "Please Contact Admin",
@@ -108,7 +108,7 @@ def validate_approver_permissions(access_mapping, access_type, request, request_
             logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
             json_response['error'] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
             return json_response
-    elif "2" in approver_permissions and access_mapping.is_pending():
+    elif access_mapping.is_pending():
         if not request.user.user.has_permission(approver_permissions['1']):
             logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
             json_response['error'] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
@@ -176,6 +176,39 @@ def getPendingRequests(request):
         duration = time.time() - start_time
         logger.info("Time to fetch all pending requests:" + str(duration))
 
+        return context
+    except Exception as e:
+        return process_error_response(e)
+
+
+def get_decline_access_request(request, access_type, request_id):
+    logger.info("Decline Access Request call initiated")
+    try:
+        context = {"response": {}}
+        reason = request.GET["reason"]
+        request_ids = []
+        return_ids = []
+        if access_type.endswith("-club"):
+            for value in [request_id]:
+                return_ids.append(value)
+                current_ids = list(
+                    UserAccessMapping.get_pending_access_mapping(request_id=value)
+                )
+                request_ids.extend(current_ids)
+            access_type = access_type.rsplit("-", 1)[0]
+        else:
+            request_ids = [request_id]
+        for current_request_id in request_ids:
+            response = decline_individual_access(request,
+                                                 access_type,
+                                                 current_request_id,
+                                                 reason)
+            if "error" in response:
+                response["success"] = False
+            else:
+                response["success"] = True
+            context["response"][current_request_id] = response
+        context["returnIds"] = return_ids
         return context
     except Exception as e:
         return process_error_response(e)

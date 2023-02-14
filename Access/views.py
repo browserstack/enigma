@@ -21,7 +21,7 @@ from Access.accessrequest_helper import (
     getPendingRequests,
     create_request,
     accept_user_access_requests,
-    decline_individual_access,
+    get_decline_access_request
 )
 from Access.models import User, UserAccessMapping
 from Access.userlist_helper import (
@@ -304,41 +304,13 @@ def accept_bulk(request, selector):
 
 @login_required
 def decline_access(request, accessType, requestId):
-    try:
-        if request.GET:
-            context = {"response": {}}
-            reason = request.GET["reason"]
-            request_ids = []
-            return_ids = []
-            if accessType.endswith("-club"):
-                for value in [requestId]:
-                    return_ids.append(value)
-                    current_ids = list(
-                        UserAccessMapping.get_pending_access_mapping(request_id=value)
-                    )
-                    request_ids.extend(current_ids)
-                accessType = accessType.rsplit("-", 1)[0]
-            else:
-                request_ids = [requestId]
-            for current_request_id in request_ids:
-                response = decline_individual_access(request,
-                                                     accessType,
-                                                     current_request_id,
-                                                     reason)
-                if "error" in response:
-                    response["success"] = False
-                else:
-                    response["success"] = True
-                context["response"][current_request_id] = response
-            context["returnIds"] = return_ids
+    if request.GET:
+        try:
+            context = get_decline_access_request(request, accessType, requestId)
             return JsonResponse(context, status=200)
-    except Exception as e:
-        json_response = {}
-        logger.error("Error in rejecting the request. Please contact admin - " + str(str(e)))
-        json_response['error'] = "Error in rejecting the request. \
-            Please contact admin - ", str(str(e))
-        json_response['status_code'] = 401
-        return JsonResponse(json_response, status=json_response["status_code"])
+        except Exception as e:
+            logger.exception(str(e))
+            return JsonResponse({"error": "Failed to decline the access request"}, status=400)
 
 
 def remove_group_member(request):
