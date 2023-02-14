@@ -838,7 +838,7 @@ def revoke_access_from_group(request):
         raise Exception("User Unauthorized to perfrom the action")
 
     for membership in group.get_all_approved_members():
-        if access_exist_in_other_groups(membership, group, mapping.access):
+        if access_exist_in_other_groups_of_user(membership, group, mapping.access):
             continue
 
         revoke_user_access(membership.user, mapping.access, auth_user.user.email)
