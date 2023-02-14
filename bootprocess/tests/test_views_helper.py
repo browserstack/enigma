@@ -128,7 +128,7 @@ def test_getDashboardData(
     def mockgenerateUserMappings(*args, **kwargs):
         return []
 
-    views_helper.generateUserMappings = mockgenerateUserMappings
+    views_helper.generate_user_mappings = mockgenerateUserMappings
 
     def mock_Thread(*args, **kwargs):
         return MockThread()

@@ -241,7 +241,7 @@ def add_user_to_group(request, groupName):
         return render(request, "BSOps/accessStatus.html", context)
     else:
         context = group_helper.get_user_group(request, groupName)
-        return render(request, "BSOps/accessStatus.html", context)
+        return render(request, "BSOps/addUserToGroupForm.html", context)
 
 
 @api_view(["GET"])

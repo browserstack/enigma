@@ -288,6 +288,7 @@ test_add_user_to_group_duplicate_request = "DuplicateRequest"
 test_add_user_to_group_needs_approval = "NeedsApproval"
 test_add_user_to_group_doesnot_need_approval = "DoesNotNeedApproval"
 
+
 # TODO: fix this test case and enable it back
 @pytest.mark.skip
 @pytest.mark.skipif(
@@ -479,7 +480,7 @@ def test_add_user_to_group(mocker, test_name, post_data, expected_output):
             "Access.group_helper.isAllowedGroupAdminFunctions", return_value=True
         )
         mocker.patch(
-            "Access.views_helper.generateUserMappings", return_value=mocker.MagicMock()
+            "Access.views_helper.generate_user_mappings", return_value=mocker.MagicMock()
         )
 
         mock_thread = mocker.MagicMock()
