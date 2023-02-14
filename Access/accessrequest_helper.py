@@ -443,8 +443,8 @@ def get_extra_fields(access_request):
 
 
 def _validate_access_request(access_request_form, user):
+    json_response = {}
     if not access_request_form:
-        json_response = {}
         json_response["error"] = {
             "error_msg": REQUEST_ERR_MSG["error_msg"],
             "msg": REQUEST_ERR_MSG["msg"],
