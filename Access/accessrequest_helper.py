@@ -2,12 +2,14 @@ from Access import helpers
 import logging
 import time
 from . import helpers as helper
+from Access import notifications
 
 from BrowserStackAutomation.settings import DECLINE_REASONS
 from Access.models import UserAccessMapping, User, GroupV2, AccessV2
 import datetime
 import json
 from django.db import transaction
+from Access.background_task_manager import background_task
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +21,7 @@ REQUEST_DUPLICATE_ERR_MSG = {
     "title": "{access_tag}: Duplicate Request not submitted",
     "msg": "Access already granted or request in pending state. {access_label}",
 }
+REQUEST_PROCESS_MSG = "The Request ({request_id}) is now being processed"
 REQUEST_ERR_MSG = {
     "error_msg": "Invalid Request",
     "msg": "Please Contact Admin",
@@ -27,12 +30,10 @@ REQUEST_EMPTY_FORM_ERR_MSG = {
     "error_msg": "The submitted form is empty. Tried direct access to reqeust access page",
     "msg": "Error Occured while submitting your Request. Please contact the Admin",
 }
-
 REQUEST_ACCESS_AUTO_APPROVED_MSG = {
     "title": "{request_id}  Request Approved",
     "msg": "Once granted you will receive the update",
 }
-
 REQUEST_DB_ERR_MSG = {
     "error_msg": "Error Saving Request",
     "msg": "Please Contact Admin",
@@ -41,37 +42,12 @@ REQUEST_IDENTITY_NOT_SETUP_ERR_MSG = {
     "error_msg": "Identity not setup",
     "msg": "User Identity for module {access_tag} not setup by the user",
 }
-
-REQUEST_SUCCESS_MSG = {
-    "title": "{request_id}  Request Submitted",
-    "msg": "Once approved you will receive the update. {access_label}",
-}
-REQUEST_DUPLICATE_ERR_MSG = {
-    "title": "{access_tag}: Duplicate Request not submitted",
-    "msg": "Access already granted or request in pending state. {access_label}",
-}
-REQUEST_ERR_MSG = {
-    "error_msg": "Invalid Request",
-    "msg": "Please Contact Admin",
-}
-REQUEST_EMPTY_FORM_ERR_MSG = {
-    "error_msg": "The submitted form is empty. Tried direct access to reqeust access page",
-    "msg": "Error Occured while submitting your Request. Please contact the Admin",
-}
-
-REQUEST_ACCESS_AUTO_APPROVED_MSG = {
-    "title": "{request_id}  Request Approved",
-    "msg": "Once granted you will receive the update",
-}
-
-REQUEST_DB_ERR_MSG = {
-    "error_msg": "Error Saving Request",
-    "msg": "Please Contact Admin",
-}
-REQUEST_IDENTITY_NOT_SETUP_ERR_MSG = {
-    "error_msg": "Identity not setup",
-    "msg": "User Identity for module {access_tag} not setup by the user",
-}
+USER_REQUEST_IN_PROCESS_ERR_MSG = "The Request ({request_id}) has already been processed. \
+                                   Please check Access History for more information"
+USER_REQUEST_PERMISSION_DENIED_ERR_MSG = "Permission Denied!"
+USER_REQUEST_DECLINE_MSG = "Declined Request {request_id} - Reason: {decline_reason}"
+USER_REQUEST_SECONDARY_PENDING_MSG = "The Request ({request_id}) is approved by {approved_by} \
+                                      Pending on secondary approver"
 
 
 def requestAccessGet(request):
@@ -117,6 +93,30 @@ def requestAccessGet(request):
     return context
 
 
+def validate_approver_permissions(access_mapping, access_type, request, request_id):
+    json_response = {}
+
+    access_label = access_mapping.access.access_label
+    try:
+        permissions = _get_approver_permissions(access_type, access_label)
+    except Exception as e:
+        return process_error_response(e)
+
+    approver_permissions = permissions["approver_permissions"]
+    if "2" in approver_permissions and access_mapping.is_secondary_pending():
+        if not request.user.user.has_permission(approver_permissions["2"]):
+            logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
+            json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+            return json_response
+    elif access_mapping.is_pending():
+        if not request.user.user.has_permission(approver_permissions["1"]):
+            logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
+            json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+            return json_response
+
+    return json_response
+
+
 def getGrantFailedRequests(request):
     try:
         failures = UserAccessMapping.objects.filter(
@@ -134,7 +134,7 @@ def getGrantFailedRequests(request):
         context = {"failures": failures, "heading": "Grant Failures"}
         return context
     except Exception as e:
-        return process_error_response(request, e)
+        return process_error_response(e)
 
 
 def get_pending_revoke_failures(request):
@@ -178,7 +178,39 @@ def getPendingRequests(request):
 
         return context
     except Exception as e:
-        return process_error_response(request, e)
+        return process_error_response(e)
+
+
+def get_decline_access_request(request, access_type, request_id):
+    logger.info("Decline Access Request call initiated")
+    try:
+        context = {"response": {}}
+        reason = request.GET["reason"]
+        request_ids = []
+        return_ids = []
+        if access_type.endswith("-club"):
+            for value in [request_id]:
+                return_ids.append(value)
+                current_ids = list(
+                    UserAccessMapping.get_pending_access_mapping(request_id=value)
+                )
+                request_ids.extend(current_ids)
+            access_type = access_type.rsplit("-", 1)[0]
+        else:
+            request_ids = [request_id]
+        for current_request_id in request_ids:
+            response = decline_individual_access(
+                request, access_type, current_request_id, reason
+            )
+            if "error" in response:
+                response["success"] = False
+            else:
+                response["success"] = True
+            context["response"][current_request_id] = response
+        context["returnIds"] = return_ids
+        return context
+    except Exception as e:
+        return process_error_response(e)
 
 
 def get_pending_accesses_from_modules(access_user):
@@ -191,7 +223,6 @@ def get_pending_accesses_from_modules(access_user):
         access_module,
     ) in helpers.get_available_access_modules().items():
         access_module_start_time = time.time()
-
         try:
             pending_accesses = access_module.get_pending_accesses(access_user)
         except Exception as e:
@@ -282,7 +313,7 @@ def process_group_requests(group_pending_requests, group_requests):
             group_requests[club_id]["accessData"].append(accessData)
 
 
-def process_error_response(request, e):
+def process_error_response(e):
     logger.debug("Error in request not found OR Invalid request type")
     logger.exception(e)
     json_response = {}
@@ -398,7 +429,6 @@ def _create_access(auth_user, access_label, access_type, request_id, access_reas
             }
 
     try:
-
         access = _create_access_mapping(
             access=access,
             user_identity=user_identity,
@@ -475,3 +505,182 @@ def validate_access_labels(access_labels_json, access_type):
             )
         )
     return access_labels
+
+
+def _get_approver_permissions(access_type, access_label=None):
+    json_response = {}
+
+    access_module = helper.get_available_access_module_from_tag(access_type)
+    approver_permissions = []
+    approver_permissions = access_module.fetch_approver_permissions(access_label)
+
+    json_response["approver_permissions"] = approver_permissions
+    if len(json_response) == 0:
+        raise Exception("Approver Permissions not found for module %s " % access_module)
+    return json_response
+
+
+def is_request_valid(request_id, access_mapping):
+    if access_mapping.is_already_processed():
+        logger.warning(
+            USER_REQUEST_IN_PROCESS_ERR_MSG.format(
+                request_id=request_id,
+            )
+        )
+        return False
+
+    return True
+
+
+def accept_user_access_requests(request, access_type, request_id):
+    json_response = {}
+    access_mapping = UserAccessMapping.get_access_request(request_id)
+    if not is_request_valid(request_id, access_mapping):
+        json_response["error"] = USER_REQUEST_IN_PROCESS_ERR_MSG.format(
+            request_id=request_id,
+        )
+        return json_response
+
+    requester = access_mapping.user_identity.user.email
+    if request.user.username == requester:
+        json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+        return json_response
+
+    access_label = access_mapping.access.access_label
+
+    try:
+        permissions = _get_approver_permissions(access_type, access_label)
+        approver_permissions = permissions["approver_permissions"]
+        if not helper.check_user_permissions(
+            request.user, list(approver_permissions.values())
+        ):
+            logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
+            json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+            return json_response
+
+        is_primary_approver = (
+            access_mapping.is_pending()
+            and request.user.user.has_permission(approver_permissions["1"])
+        )
+        is_secondary_approver = (
+            access_mapping.is_secondary_pending()
+            and request.user.user.has_permission(approver_permissions["2"])
+        )
+
+        if not (is_primary_approver or is_secondary_approver):
+            logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
+            json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+            return json_response
+        if is_primary_approver and "2" in approver_permissions:
+            access_mapping.approver_1 = request.user.user
+            access_mapping.update_access_status("SecondaryPending")
+            json_response["msg"] = USER_REQUEST_SECONDARY_PENDING_MSG.format(
+                request_id=request_id, approved_by=request.user.username
+            )
+            logger.debug(
+                USER_REQUEST_SECONDARY_PENDING_MSG.format(
+                    request_id=request_id, approved_by=request.user.username
+                )
+            )
+        else:
+            json_response = run_accept_request_task(
+                is_primary_approver,
+                access_mapping,
+                request,
+                request_id,
+                access_type,
+                access_label,
+            )
+    except Exception as e:
+        return process_error_response(e)
+
+    return json_response
+
+
+def run_accept_request_task(
+    is_primary_approver, access_mapping, request, request_id, access_type, access_label
+):
+    json_response = {}
+    json_response["status"] = []
+    if is_primary_approver:
+        access_mapping.approver_1 = request.user.user
+    else:
+        access_mapping.approver_2 = request.user.user
+    json_response["msg"] = REQUEST_PROCESS_MSG.format(request_id=request_id)
+
+    with transaction.atomic():
+        try:
+            access_mapping.update_access_status("Processing")
+
+            background_task(
+                "run_accept_request",
+                json.dumps({"request_id": request_id, "access_type": access_type}),
+            )
+        except Exception as e:
+            logger.exception(e)
+            raise Exception(
+                "Error in accepting the request - {request_id}. Please try again.".format(
+                    request_id=request_id
+                )
+            )
+
+    json_response["status"].append(
+        {
+            "title": REQUEST_SUCCESS_MSG["title"].format(request_id=request_id),
+            "msg": REQUEST_SUCCESS_MSG["msg"].format(
+                access_label=json.dumps(access_label)
+            ),
+        }
+    )
+
+    return json_response
+
+
+def decline_individual_access(request, access_type, request_id, reason):
+    json_response = {}
+    access_mapping = UserAccessMapping.get_access_request(request_id)
+    if not is_request_valid(request_id, access_mapping):
+        json_response["error"] = USER_REQUEST_IN_PROCESS_ERR_MSG.format(
+            request_id=request_id,
+        )
+        return json_response
+
+    json_response = validate_approver_permissions(
+        access_mapping, access_type, request, request_id
+    )
+    if "error" in json_response:
+        return json_response
+
+    with transaction.atomic():
+        access_mapping.decline_access(reason)
+        if hasattr(access_mapping, "approver_1"):
+            access_mapping.decline_reason = reason
+            if access_mapping.approver_1 is not None:
+                access_mapping.approver_2 = request.user.user
+            else:
+                access_mapping.approver_1 = request.user.user
+        else:
+            access_mapping.reason = reason
+            access_mapping.approver = request.user.username
+
+        access_mapping.save()
+
+    access_module = helper.get_available_access_module_from_tag(access_type)
+    access_labels = [access_mapping.access.access_label]
+    description = access_module.combine_labels_desc(access_labels)
+    notifications.send_mail_for_request_decline(
+        request, description, request_id, reason, access_type
+    )
+
+    logger.debug(
+        USER_REQUEST_DECLINE_MSG.format(
+            request_id=request_id,
+            decline_reason=reason,
+        )
+    )
+    json_response = {}
+    json_response["msg"] = USER_REQUEST_DECLINE_MSG.format(
+        request_id=request_id,
+        decline_reason=reason,
+    )
+    return json_response
