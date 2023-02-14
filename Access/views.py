@@ -20,6 +20,17 @@ from Access.accessrequest_helper import (
     get_pending_revoke_failures,
     getPendingRequests,
     create_request,
+    accept_user_access_requests,
+    get_decline_access_request,
+)
+from Access.models import User, UserAccessMapping
+from Access.userlist_helper import (
+    getallUserList,
+    get_identity_templates,
+    create_identity,
+    NEW_IDENTITY_CREATE_ERROR_MESSAGE,
+    IDENTITY_UNCHANGED_ERROR_MESSAGE,
+    IdentityNotChangedException,
 )
 from Access.models import User
 from Access.userlist_helper import (
@@ -250,7 +261,15 @@ def accept_bulk(request, selector):
         returnIds = []
         user = request.user.user
         is_access_approver = user.has_permission("ACCESS_APPROVE")
-        requestIds = inputVals
+        if selector.endswith("-club"):
+            for value in inputVals:
+                returnIds.append(value)
+                current_ids = list(
+                    UserAccessMapping.get_pending_access_mapping(request_id=value)
+                )
+                requestIds.extend(current_ids)
+        else:
+            requestIds = inputVals
         for value in requestIds:
             requestId = value
             if selector == "groupNew" and is_access_approver:
@@ -259,6 +278,11 @@ def accept_bulk(request, selector):
                 )
             elif selector == "groupMember" and is_access_approver:
                 json_response = group_helper.accept_member(request, requestId, False)
+            elif selector.endswith("-club"):
+                access_type = selector.rsplit("-", 1)[0]
+                json_response = accept_user_access_requests(
+                    request, access_type, requestId
+                )
             else:
                 raise ValidationError("Invalid request")
             if "error" in json_response:
@@ -281,6 +305,19 @@ def accept_bulk(request, selector):
         json_response["success"] = False
         json_response["status_code"] = 401
         return JsonResponse(json_response, status=json_response["status_code"])
+
+
+@login_required
+def decline_access(request, accessType, requestId):
+    if request.GET:
+        try:
+            context = get_decline_access_request(request, accessType, requestId)
+            return JsonResponse(context, status=200)
+        except Exception as e:
+            logger.exception(str(e))
+            return JsonResponse(
+                {"error": "Failed to decline the access request"}, status=400
+            )
 
 
 def remove_group_member(request):

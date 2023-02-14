@@ -732,11 +732,9 @@ class UserAccessMapping(models.Model):
         access_request_data["accessMeta"] = access_module.combine_labels_meta(
             access_labels
         )
-        access_request_data["access_label"] = [
-            key + "-" + str(val).strip("[]")
-            for key, val in list(self.access.access_label.items())
-            if key != "keySecret"
-        ]
+        access_request_data["access_label"] = [key + "-" + str(val).strip("[]")
+                                              for key,val in list(self.access.access_label.items())
+                                              if key != "keySecret"]
         access_request_data["access_type"] = self.access_type
         access_request_data["approver_1"] = self.approver_1.user.username
         access_request_data["approver_2"] = self.approver_2.user.username
@@ -782,6 +780,30 @@ class UserAccessMapping(models.Model):
 
     def is_approved(self):
         return self.status == "Approved"
+
+    def is_pending(self):
+        return self.status == "Pending"
+
+    def is_secondary_pending(self):
+        return self.status == "SecondaryPending"
+
+    def decline_access(self, decline_reason=None):
+        self.status = "Declined"
+        self.decline_reason = decline_reason
+        self.save()
+
+    def get_pending_access_mapping(request_id):
+        return UserAccessMapping.objects.filter(
+            request_id__contains=request_id,
+            status__in=["Pending", "SecondaryPending"]
+        ).values_list('request_id', flat=True)
+
+    def update_access_status(self, current_status):
+        self.status = current_status
+        self.save()
+
+    def is_already_processed(self):
+        return self.status in ["Declined", "Approved", "Processing", "Revoked"]
 
     def grant_fail_access(self, fail_reason=None):
         self.status = "GrantFailed"

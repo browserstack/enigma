@@ -27,15 +27,22 @@ def background_task(func, *args):
             run_access_grant.delay(request_id)
         elif func == "test_grant":
             test_grant.delay(*args)
+        elif func == "run_accept_request":
+            run_accept_request.delay(*args)
         elif func == "run_access_revoke":
             run_access_revoke.delay(*args)
-
     else:
         if func == "run_access_grant":
             request_id = args[0]
             accessAcceptThread = threading.Thread(
                 target=run_access_grant,
                 args=(request_id,),
+            )
+            accessAcceptThread.start()
+        elif func == "run_accept_request":
+            accessAcceptThread = threading.Thread(
+                target=run_accept_request,
+                args=args,
             )
             accessAcceptThread.start()
         elif func == "run_access_revoke":
@@ -254,3 +261,33 @@ def test_grant():
     # call access_desc method of confluence module here
     # and return the result to the caller of this function
     return access_module.access_desc()
+
+
+@shared_task(
+    autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
+)
+def run_accept_request(data):
+    data = json.loads(data)
+    request_id = data["request_id"]
+    user_access_mapping = UserAccessMapping.get_access_request(data["request_id"])
+    approver = user_access_mapping.approver_1.user
+    user = user_access_mapping.user_identity.user
+    access_type = data["access_type"]
+    response = ""
+
+    result = background_task("run_access_grant", request_id)
+    if result:
+        return {"status": True}
+    notifications.send_mail_for_request_granted_failure(
+        user, approver, access_type, request_id
+    )
+    logger.debug(
+        {
+            "requestId": request_id,
+            "status": "GrantFailed",
+            "By": approver,
+            "response": str(response),
+        }
+    )
+
+    return {"status": False}
