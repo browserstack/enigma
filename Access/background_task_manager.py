@@ -24,13 +24,12 @@ def background_task(func, *args):
     if background_task_manager_type == "celery":
         if func == "run_access_grant":
             run_access_grant.delay(*args)
-
         elif func == "test_grant":
             test_grant.delay(*args)
-
+        elif func == "run_accept_request":
+            run_accept_request.delay(*args)
         elif func == "run_access_revoke":
             run_access_revoke.delay(*args)
-
     else:
         if func == "run_access_grant":
             accessAcceptThread = threading.Thread(
@@ -38,7 +37,12 @@ def background_task(func, *args):
                 args=args,
             )
             accessAcceptThread.start()
-
+        elif func == "run_accept_request":
+            accessAcceptThread = threading.Thread(
+                target=run_accept_request,
+                args=args,
+            )
+            accessAcceptThread.start()
         elif func == "run_access_revoke":
             access_revoke_thread = threading.Thread(target=run_access_revoke, args=args)
 
@@ -82,8 +86,7 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             message = str(response[1])
     except Exception:
         logger.exception(
-            "Error while running approval module: "
-            + str(traceback.format_exc())
+            "Error while running approval module: " + str(traceback.format_exc())
         )
         approve_success = False
         message = str(traceback.format_exc())
@@ -110,9 +113,7 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             }
         )
         try:
-            destination = [
-                access_module.access_mark_revoke_permission(accessType)
-            ]
+            destination = [access_module.access_mark_revoke_permission(accessType)]
             subject = str("Access Grant Failed - ") + accessType.upper()
             body = (
                 "Request by "
@@ -254,8 +255,38 @@ def fail_func():
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
 def test_grant():
-    access_module = helpers.get_available_access_module_from_tag('confluence_module')
+    access_module = helpers.get_available_access_module_from_tag("confluence_module")
 
     # call access_desc method of confluence module here
     # and return the result to the caller of this function
     return access_module.access_desc()
+
+
+@shared_task(
+    autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
+)
+def run_accept_request(data):
+    data = json.loads(data)
+    request_id = data["request_id"]
+    user_access_mapping = UserAccessMapping.get_access_request(data["request_id"])
+    approver = user_access_mapping.approver_1.user
+    user = user_access_mapping.user_identity.user
+    access_type = data["access_type"]
+    response = ""
+
+    result = background_task("run_access_grant", request_id)
+    if result:
+        return {"status": True}
+    notifications.send_mail_for_request_granted_failure(
+        user, approver, access_type, request_id
+    )
+    logger.debug(
+        {
+            "requestId": request_id,
+            "status": "GrantFailed",
+            "By": approver,
+            "response": str(response),
+        }
+    )
+
+    return {"status": False}

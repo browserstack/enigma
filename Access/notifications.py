@@ -19,8 +19,13 @@ MEMBERSHIP_ACCEPTED_BODY = """Access approved for addition of {} to group - {} b
                             <a href='https://enigma.browserstack.com/access/showAccessHistory'>
                             here
                             </a>."""
-
 GROUP_ACCESS_ADDED_SUBJECT = "Group: {group_name}  new access added"
+USER_ACCESS_REQUEST_DENIED_SUBJECT = (
+    "[Enigma][Access Management] {} - {} - {} Request Denied"
+)
+USER_ACCESS_REQUEST_GRANT_FAILURE_SUBJECT = "[Enigma][Access Management] {} - {} - {} \
+    Failed to Approve Request"
+
 
 def send_new_group_create_notification(auth_user, date_time, new_group, member_list):
     subject = NEW_GROUP_EMAIL_SUBJECT + auth_user.email + " -- " + date_time
@@ -123,3 +128,36 @@ def send_revoke_failure_mail(
     except Exception as e:
         logger.error("Something when wrong while sending membership revoke email")
         logger.exception(str(e))
+
+
+def send_mail_for_request_decline(
+    request, description, request_id, reason, access_type
+):
+    auth_user = request.user
+    destination = [auth_user.email]
+    subject = USER_ACCESS_REQUEST_DENIED_SUBJECT.format(
+        auth_user.email, access_type, description
+    )
+    body = helpers.generateStringFromTemplate(
+        filename="requestDeclineEmail.html",
+        user=auth_user.email,
+        request_id=request_id,
+        approver=request.user.username,
+        reason=reason,
+    )
+    general.emailSES(destination, subject, body)
+    logger.debug("Email sent for " + subject + " to " + str(destination))
+
+
+def send_mail_for_request_granted_failure(user, approver, access_type, request_id):
+    destination = [user.email]
+    destination.extend(approver.email)
+    subject = USER_ACCESS_REQUEST_GRANT_FAILURE_SUBJECT.format(
+        str(user.email), access_type.upper(), request_id
+    )
+    body = "Request by %s having Request ID %s could not be approved." % (
+        str(user.email),
+        request_id,
+    )
+    general.emailSES(destination, subject, body)
+    logger.debug("Email sent for " + subject + " to " + str(destination))

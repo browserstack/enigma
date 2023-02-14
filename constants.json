@@ -1,3 +1,13 @@
 {
-  "declineReasons": []
+  "declineReasons": {
+    "reason1": "Not in adherence with Access Management Policy",
+    "reason2": "Access can be granted to L3 or above only",
+    "reason3": "Duplicate request",
+    "reason4": "This access does not need an Enigma request, please raise with your manager directly.",
+    "reason5": "This request is breaking, please discuss with Security to fix and then re-raise if needed.",
+    "reason6": "Reason supplied is either insufficient or incorrect. Please discuss with manager for a proper reason.",
+    "reason7": "Access to this component is restricted, please discuss with your manager for next steps.",
+    "reason8": "The request raised is incorrect or is not required for the reason supplied. Please re-raise with corrections.",
+    "reason9": "Please raise this via Group Access. Get in touch with your Lead/Manager to get yourself added to relevant Access Groups."
+  }
 }

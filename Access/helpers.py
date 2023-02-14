@@ -20,6 +20,7 @@ def get_available_access_module_from_tag(tag):
         return get_available_access_modules()[tag]
     return None
 
+
 def get_available_access_modules():
     global available_accesses
     if len(available_accesses) > 0:
@@ -82,4 +83,3 @@ def getPossibleApproverPermissions():
         approver_permissions = each_module.fetch_approver_permissions()
         all_approver_permissions.extend(approver_permissions.values())
     return list(set(all_approver_permissions))
-
