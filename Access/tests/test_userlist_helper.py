@@ -1,4 +1,5 @@
 import pytest
+<<<<<<< HEAD
 from Access.userlist_helper import getallUserList, bulk_approve, update_user, ERROR_MESSAGE, EXCEPTION_USER_UNAUTHORIZED
 from Access import models
 from django.http import HttpRequest, QueryDict
@@ -46,26 +47,39 @@ class MockSshPublicKey:
 
   def save(self):
       return True
+=======
+from Access.userlist_helper import (
+    getallUserList,
+    ERROR_MESSAGE,
+    EXCEPTION_USER_UNAUTHORIZED,
+)
+>>>>>>> main
 
-#TESTCASE NAMES
+# TESTCASE NAMES
 UserIsNotAuthorized = "UserIsNotAuthorized"
 UserIsAuthorized = "UserIsAuthorized"
 
-@pytest.mark.parametrize("testname, UserHasPermission, UserHasOffboardPermission,expectedError",
 
+@pytest.mark.parametrize(
+    "testname, UserHasPermission, UserHasOffboardPermission,expectedError",
     [
         # user does not have permission to view the page
-        (UserIsNotAuthorized, False, False,True),
+        (UserIsNotAuthorized, False, False, True),
         # user is authorized, and has offboard access
         (UserIsAuthorized, True, True, False),
         # user is authorized, but does not have offboard access
-        (UserIsAuthorized, True, False, False)
-    ])
-def test_getallUserList(mocker, testname ,UserHasPermission, UserHasOffboardPermission, expectedError):
+        (UserIsAuthorized, True, False, False),
+    ],
+)
+def test_getallUserList(
+    mocker, testname, UserHasPermission, UserHasOffboardPermission, expectedError
+):
     request = mocker.MagicMock()
     userMock = mocker.MagicMock()
     if testname == UserIsNotAuthorized:
-        mocker.patch("Access.helpers.check_user_permissions", return_value=UserHasPermission)
+        mocker.patch(
+            "Access.helpers.check_user_permissions", return_value=UserHasPermission
+        )
         request.user = userMock
 
     elif testname == UserIsAuthorized:
@@ -84,14 +98,15 @@ def test_getallUserList(mocker, testname ,UserHasPermission, UserHasOffboardPerm
 
         request.user = userMock
 
-
-        mocker.patch("Access.helpers.check_user_permissions", return_value=UserHasPermission)
+        mocker.patch(
+            "Access.helpers.check_user_permissions", return_value=UserHasPermission
+        )
         mocker.patch("Access.models.User.objects.all", return_value=[userMock])
 
     context = getallUserList(request)
     if expectedError:
-        assert context["error"]["msg"]  == ERROR_MESSAGE
-        assert context["error"]["error_msg"]  == EXCEPTION_USER_UNAUTHORIZED
+        assert context["error"]["msg"] == ERROR_MESSAGE
+        assert context["error"]["error_msg"] == EXCEPTION_USER_UNAUTHORIZED
     else:
         assert context["dataList"][0]["name"] == userMock.name
         assert context["dataList"][0]["first_name"] == userMock.user.first_name

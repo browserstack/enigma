@@ -6,8 +6,7 @@ from Access.models import (
     UserAccessMapping,
 )
 from BrowserStackAutomation.settings import DEFAULT_ACCESS_GROUP
-from Access.views_helper import executeGroupAccess, generateUserMappings
-import threading
+from Access.views_helper import generateUserMappings, executeGroupAccess
 import json
 import datetime
 
@@ -52,13 +51,8 @@ def getDashboardData(request):
 
             user_mappings_list = generateUserMappings(user, group, member)
             member.save()
-            group_name = member.group.name
 
-            access_accept_thread = threading.Thread(
-                target=executeGroupAccess,
-                args=(request, group_name, user_mappings_list),
-            )
-            access_accept_thread.start()
+            executeGroupAccess(user_mappings_list)
 
             logger.debug(
                 "Process has been started for the Approval of request - "
@@ -67,49 +61,17 @@ def getDashboardData(request):
                 + request.user.username
             )
 
-    if not user.gitusername:
-        logger.debug(
-            "Redirecting User to Fill out git username and his public key for ssh access."
-        )
-        # return redirect('updateUserInfo')
-
     with open("instanceTypes.json") as data_file:
         data = json.load(data_file)
     ec2_regions = list(data.keys())
 
     context = {}
-    dataList = []
 
-    gitCount = 0
-    dashboardCount = 0
-    sshMachineCount = 0
-    groupCount = 0
-
-    dashboardCount = len(
-        UserAccessMapping.objects.filter(
-            user=request.user.user, status="Approved", access__access_tag="other"
-        )
-    )
-    sshMachineCount = len(
-        UserAccessMapping.objects.filter(
-            user=request.user.user, status="Approved", access__access_tag="ssh"
-        )
-    )
-    gitCount = len(
-        UserAccessMapping.objects.filter(
-            user=request.user.user,
-            status="Approved",
-            access__access_tag="github_access",
-        )
-    )
     groupCount = len(
         MembershipV2.objects.filter(user=request.user.user, status="Approved")
     )
 
     context["regions"] = ec2_regions
-    context["gitCount"] = gitCount
-    context["dashboardCount"] = dashboardCount
-    context["sshMachineCount"] = sshMachineCount
     context["groupCount"] = groupCount
 
     return context

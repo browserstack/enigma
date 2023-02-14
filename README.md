@@ -70,6 +70,7 @@ Docker should be running for linter tool:
 
 - Python 3.11.0
 - pre-commit (see rules [below](#rules-enforced-by-the-pre-commit-hooks))
+  - run: `npm install @commitlint/cli @commitlint/config-conventional`
   - run: `pip install pre-commit==2.21.0`
   - run: `pre-commit install --install-hooks --overwrite` in the base directory of this project
   - run: `pre-commit autoupdate`

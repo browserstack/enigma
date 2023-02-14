@@ -46,44 +46,44 @@
 </style>
 
 <script id="js">
-  function startOffboarding(offboard_email) {
-    var custom_alert = $('#custom-alert').clone();
-    custom_alert.removeClass('collapse');
-    custom_alert.addClass('show');
-    message_text_div = custom_alert
-      .children('div')
-      .children('.custom-alert-content');
-    message_text_div.append("Offboarding user with email " + offboard_email + ". Please wait");
-    $('#alert-space').html(custom_alert);
+function startOffboarding(offboard_email) {
+  var custom_alert = $('#custom-alert').clone();
+  custom_alert.removeClass('collapse');
+  custom_alert.addClass('show');
+  message_text_div = custom_alert
+    .children('div')
+    .children('.custom-alert-content');
+  message_text_div.append("Offboarding user with email " + offboard_email + ". Please wait");
+  $('#alert-space').html(custom_alert);
 
-    $.ajax("{% url 'allUsersList' %}", {
-      type: "POST",
-      data: { "offboard_email": offboard_email, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
-      success: function (data) {
-        custom_alert.removeClass('alert-warning');
-        if (data.status == 'success') {
-          custom_alert.addClass('alert-success');
-          $('.loading-spinner').css('visibility', 'hidden')
-          window.location.href = "/access/userAccesses?username=" + data.username;
-        } else {
-          custom_alert.addClass('alert-danger');
-          setTimeout(() => {
-            window.location.reload()
-          }, 5000);
-        }
-        message_text_div.text(data.message);
-      },
-      error: function (jqXHR, exception) {
-        msg = "Got unknown error with status code " + jqXHR.status + ". Please contact Security team";
-        custom_alert.removeClass('alert-warning');
+  $.ajax("{% url 'offboarding_user' %}", {
+    type: "POST",
+    data: { "offboard_email": offboard_email, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
+    success: function(data) {
+      custom_alert.removeClass('alert-warning');
+      if(data.status == 'success') {
+        custom_alert.addClass('alert-success');
+        $('.loading-spinner').css('visibility', 'hidden')
+        window.location.href = "/access/userAccesses?username=" + data.username;
+      } else {
         custom_alert.addClass('alert-danger');
-        message_text_div.text(msg);
         setTimeout(() => {
           window.location.reload()
         }, 5000);
-      },
-    });
-  }
+      }
+      message_text_div.text(data.message);
+    },
+    error: function(jqXHR, exception) {
+      msg = "Got unknown error with status code " + jqXHR.status + ". Please contact Security team";
+      custom_alert.removeClass('alert-warning');
+      custom_alert.addClass('alert-danger');
+      message_text_div.text(msg);
+      setTimeout(() => {
+        window.location.reload()
+      }, 5000);
+    },
+  });
+}
 
   $(function () {
 

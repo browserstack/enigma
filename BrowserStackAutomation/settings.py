@@ -91,7 +91,8 @@ SOCIAL_AUTH_DISCONNECT_PIPELINE = (
 
 ROOT_URLCONF = "BrowserStackAutomation.urls"
 
-template_dirs = glob.glob(join(BASE_DIR, "templates"))
+template_dirs = glob.glob(join(BASE_DIR, "Access", "access_modules", "*", "templates"))
+template_dirs.extend(glob.glob(join(BASE_DIR, "templates")))
 
 TEMPLATES = [
     {
@@ -104,6 +105,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "Access.context_processors.add_variables_to_context",
             ],
         },
     },
@@ -112,23 +114,14 @@ TEMPLATES = [
 WSGI_APPLICATION = "BrowserStackAutomation.wsgi.application"
 
 
-# Database
-# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
-}
-
-
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "NAME": (
+            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+        ),
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
@@ -153,7 +146,11 @@ USE_I18N = True
 
 USE_TZ = True
 
-DECLINE_REASONS = json.load(open('constants.json',))['declineReasons']
+DECLINE_REASONS = json.load(
+    open(
+        "constants.json",
+    )
+)["declineReasons"]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
@@ -179,15 +176,52 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = data["googleapi"][
     "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS"
 ]
 
+if data["background_task_manager"]["type"] == "celery":
+    background_task_manager_config = data["background_task_manager"]["config"]
+    CELERY_BROKER_URL = background_task_manager_config["broker"]
+    CELERY_RESULT_BACKEND = background_task_manager_config["backend"]
+
+    if background_task_manager_config["need_monitoring"]:
+        INSTALLED_APPS.append(background_task_manager_config["monitoring_apps"])
+
 USER_STATUS_CHOICES = [
     ("1", "active"),
     ("2", "offboarding"),
     ("3", "offboarded"),
 ]
 
-DEFAULT_ACCESS_GROUP = "default_access_group"
-MAIL_APPROVER_GROUPS = data['enigmaGroup']['MAIL_APPROVER_GROUPS']
+# Database
+# https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-ACCESS_APPROVE_EMAIL = data['emails']['access-approve']
+DATABASES = {}
+if data['database']['engine'] == "mysql":
+    DATABASES['default'] = {
+        'ENGINE':   'mysql.connector.django',
+        'CONN_MAX_AGE': 0,
+        'NAME': data['database']['dbname'],
+        'USER': data['database']['username'],
+        'PASSWORD': data['database']['password'],
+        'HOST': data['database']['host'],
+        'PORT': data['database']['port'],
+        'OPTIONS': {
+            'auth_plugin': 'mysql_native_password'
+        }
+    }
+elif data['database']['engine'] == "sqlite3":
+    DATABASES['default'] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
+    }
+else:
+    raise Exception("Database engine %s not recognized" % data['database']['engine'])
+
+PERMISSION_CONSTANTS = {"DEFAULT_APPROVER_PERMISSION": "ACCESS_APPROVE"}
+
+DEFAULT_ACCESS_GROUP = "default_access_group"
+MAIL_APPROVER_GROUPS = data["enigmaGroup"]["MAIL_APPROVER_GROUPS"]
+
+ACCESS_APPROVE_EMAIL = data["emails"]["access-approve"]
 
 ACCESS_MODULES = data["access_modules"]
+
+AUTOMATED_EXEC_IDENTIFIER = 'automated-grant'

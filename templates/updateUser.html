@@ -1,0 +1,102 @@
+{% extends 'global_layout.html' %}
+
+{% block content_body %}
+  <!-- Content Wrapper. Contains page content -->
+  <div class="page-header">
+    <div class="container-fluid">
+      <h2 class="h5 no-margin-bottom">Update User Info: {{request.user}}</h2>
+    </div>
+  </div>
+
+  <div class="container">
+    {% for module in configured_identity_template %}
+    <section class="content">
+      <!-- Horizontal Form -->
+      <div class="box box-danger">
+        <form class="form-horizontal" action="create_post" method="post" id="config_usrform{{ forloop.counter }}" name="usrform">
+            {% csrf_token %}
+          <div class="page-header mx-3">
+              <div style="color: red;" id="error-msg">
+              </div>
+              <div style="color: green;" id="success-msg">
+              </div>
+              {% with module.accessUserTemplatePath as includePath %}
+                {% include includePath %}
+              {% endwith %}
+            <div class="form-group">
+                <button id="update_identity" onclick = "form_post('config_usrform{{ forloop.counter }}', 'update')" type="submit" value="update" name="state" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Update</button>
+              </div>
+          </div>
+        </form>
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+  <div class="container">
+    <b>Unconfigured Identity</b>
+    {% for module in unconfigured_identity_template %}
+    <section class="content">
+      <!-- Horizontal Form -->
+      <div class="box box-danger">
+        <form class="form-horizontal" action="create_post" method="post" id="unconfig_usrform{{ forloop.counter }}" name="usrform">
+            {% csrf_token %}
+          <div class="page-header mx-3">
+              <div style="color: red;" id="error-msg">
+              </div>
+              <div style="color: green;" id="success-msg">
+              </div>
+              {% with module.accessUserTemplatePath as includePath %}
+                {% include includePath %}
+              {% endwith %}
+            <div class="form-group">
+                <button id="update_identity" onclick = "form_post('unconfig_usrform{{ forloop.counter }}', 'update')" type="submit" value="update" name="state" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Update</button>
+              </div>
+          </div>
+        </form>
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+
+  <script id="js">
+    function form_post(formId, action) {
+      if (action == 'update'){
+        create_post(formId)
+      }
+      event.preventDefault();
+    }
+
+    function create_post(formId) {
+      modName = $('#' + formId + " input[name='modname']").val()
+      $('#' + formId).find('#error-msg').text("")
+      $('#' + formId).find('#success-msg').text("")
+      error_message = "There was an error in updating User Identity for module " + modName + ". Please contact Admin"
+      $.ajax({
+          url : "{% url 'saveIdentity' %}/", // the endpoint
+          type : "POST", // http method
+          data : $('#' + formId).serialize(),
+
+          // handle a successful response
+          success : function(json, textStatus, jqXHR) {
+              if (jqXHR.status == 200){
+                var msg = jQuery.parseJSON(json);
+                modName = $('#' + formId + " input[name='modname']").val()
+                $('#' + formId).find('#success-msg').text(msg.status.msg)
+              }
+              else {
+                modName = $('#' + formId + " input[name='modname']").val()
+                $('#' + formId).find('#error-msg').text("Error: Identity for " + modName + " could not saved.")
+              }
+          },
+
+          // handle a non-successful response
+          error : function(jqXHR, status, err) {
+            errorObj = JSON.parse(jqXHR.responseJSON);
+            modName = $('#' + formId + " input[name='modname']").val()
+            $('#' + formId).find('#error-msg').text(errorObj.error.msg)
+          }
+      });
+    };
+  </script>
+  <!-- /.content-wrapper -->
+{% endblock %}
