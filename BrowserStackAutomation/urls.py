@@ -80,10 +80,13 @@ urlpatterns = [
         update_group_owners,
         name="updateGroupOwners",
     ),
-
-    re_path(r'^access/pendingRequests$', pendingRequests, name='pendingRequests'),
+    re_path(r"^access/pendingRequests$", pendingRequests, name="pendingRequests"),
     re_path(r"^accept_bulk/(?P<selector>[\w-]+)", accept_bulk, name="accept_bulk"),
-    re_path(r'^decline/(?P<accessType>[\w-]+)/(?P<requestId>.*)$', decline_access, name='decline'),
+    re_path(
+        r"^decline/(?P<accessType>[\w-]+)/(?P<requestId>.*)$",
+        decline_access,
+        name="decline",
+    ),
     re_path(
         r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"
     ),

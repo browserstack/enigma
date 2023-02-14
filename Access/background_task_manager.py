@@ -86,8 +86,7 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             message = str(response[1])
     except Exception:
         logger.exception(
-            "Error while running approval module: "
-            + str(traceback.format_exc())
+            "Error while running approval module: " + str(traceback.format_exc())
         )
         approve_success = False
         message = str(traceback.format_exc())
@@ -114,9 +113,7 @@ def run_access_grant(requestId, requestObject, accessType, user, approver):
             }
         )
         try:
-            destination = [
-                access_module.access_mark_revoke_permission(accessType)
-            ]
+            destination = [access_module.access_mark_revoke_permission(accessType)]
             subject = str("Access Grant Failed - ") + accessType.upper()
             body = (
                 "Request by "
@@ -258,7 +255,7 @@ def fail_func():
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
 def test_grant():
-    access_module = helpers.get_available_access_module_from_tag('confluence_module')
+    access_module = helpers.get_available_access_module_from_tag("confluence_module")
 
     # call access_desc method of confluence module here
     # and return the result to the caller of this function
@@ -280,13 +277,15 @@ def run_accept_request(data):
     result = background_task("run_access_grant", request_id)
     if result:
         return {"status": True}
-    notifications.send_mail_for_request_granted_failure(user, approver, access_type, request_id)
+    notifications.send_mail_for_request_granted_failure(
+        user, approver, access_type, request_id
+    )
     logger.debug(
         {
-            'requestId': request_id,
-            'status': 'GrantFailed',
-            'By': approver,
-            'response': str(response)
+            "requestId": request_id,
+            "status": "GrantFailed",
+            "By": approver,
+            "response": str(response),
         }
     )
 
