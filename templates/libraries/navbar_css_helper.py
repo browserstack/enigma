@@ -5,7 +5,8 @@ def is_current_nav(navType, currentPath):
     pathMapping = {
         "Dashboard": "/",
         "Access": "/access/showAccessHistory",
-        "Groups": "/access/group"
+        "Groups": "/group/dashboard",
+        "PendingActions": "/access/pendingRequests"
     }
 
     return pathMapping[navType] == currentPath
@@ -34,6 +35,6 @@ def svg_class_for_path(navType, currentPath):
 @register.simple_tag
 def count_class_for_path(navType, currentPath):
     if is_current_nav(navType, currentPath):
-        return "bg-white"
+        return "bg-white text-black"
 
-    return "bg-gray-100 group-hover:bg-gray-200"
+    return "bg-blue-600 text-white"
