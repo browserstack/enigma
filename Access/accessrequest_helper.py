@@ -221,8 +221,9 @@ def get_decline_access_request(request, access_type, request_id):
                 return_ids.append(value)
                 group_name, date_suffix = value.rsplit("-", 1)
                 current_ids = list(
-                    GroupAccessMapping.get_pending_access_mapping(request_id=group_name)
-                    .filter(request_id__contains=date_suffix)
+                    GroupAccessMapping.get_pending_access_mapping(
+                        request_id=group_name
+                    ).filter(request_id__contains=date_suffix)
                 )
                 request_ids.extend(current_ids)
             access_type = "groupAccess"
@@ -739,8 +740,9 @@ def accept_group_access(request, request_id):
             request.user, list(approver_permissions.values())
         ):
             logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
-            json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
-            return json_response
+            return create_error_response(
+                error_msg=USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+            )
 
         if group_mapping.is_already_processed():
             logger.warning(
@@ -748,28 +750,23 @@ def accept_group_access(request, request_id):
                     request_id=request_id, user=request.user.username
                 )
             )
-            json_response["error"] = USER_REQUEST_IN_PROCESS_ERR_MSG.format(
-                request_id=request_id
+            return create_error_response(
+                error_msg=USER_REQUEST_IN_PROCESS_ERR_MSG.format(request_id=request_id)
             )
-            return json_response
-        elif group_mapping.is_self_approval(approver=request.user):
-            json_response["error"] = SELF_APPROVAL_ERROR_MSG
-            return json_response
+        elif group_mapping.is_self_approval(approver=request.user.user):
+            return create_error_response(error_msg=SELF_APPROVAL_ERROR_MSG)
         else:
-            primary_approver_bool = (
-                group_mapping.is_pending()
-                and request.user.user.has_permission(approver_permissions["1"])
+            is_primary_approver, is_secondary_approver = is_valid_approver(
+                request=request,
+                group_mapping=group_mapping,
+                approver_permissions=approver_permissions,
             )
-            secondary_approver_bool = (
-                group_mapping.is_secondary_pending()
-                and request.user.user.has_permission(approver_permissions["2"])
-            )
-
-            if not (primary_approver_bool or secondary_approver_bool):
+            if not (is_primary_approver or is_secondary_approver):
                 logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
-                json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
-                return json_response
-            if primary_approver_bool and "2" in approver_permissions:
+                return create_error_response(
+                    error_msg=USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+                )
+            if is_primary_approver and "2" in approver_permissions:
                 group_mapping.set_primary_approver(request.user.user)
                 json_response["msg"] = USER_REQUEST_SECONDARY_PENDING_MSG.format(
                     request_id=request_id, approved_by=request.user.username
@@ -781,7 +778,7 @@ def accept_group_access(request, request_id):
                     )
                 )
             else:
-                if primary_approver_bool:
+                if is_primary_approver:
                     group_mapping.set_primary_approver(request.user.user)
                 else:
                     group_mapping.set_secondary_approver(request.user.user)
@@ -789,53 +786,10 @@ def accept_group_access(request, request_id):
                     request_id=request_id
                 )
 
-                userMappingsList = []
+                userMappingsList = create_members_user_access_mappings(
+                    group_mapping=group_mapping, access_type=access_type
+                )
 
-                with transaction.atomic():
-                    for membership in group_mapping.group.get_all_approved_members():
-                        user = membership.user
-                        access = group_mapping.access
-                        approver_1 = group_mapping.get_primary_approver()
-                        approver_2 = group_mapping.get_secondary_approver()
-                        reason = (
-                            "Added for group request "
-                            + group_mapping.request_id
-                            + " - "
-                            + group_mapping.request_reason
-                        )
-                        request_id = (
-                            user.user.username
-                            + "-"
-                            + group_mapping.access.access_tag
-                            + "-"
-                            + group_mapping.request_id.rsplit("-", 1)[-1]
-                        )
-                        if not user.get_accesses_by_access_tag_and_status(
-                            access_tag=access.access_tag, status=["Approved"]
-                        ):
-                            existing_mapping = UserAccessMapping.get_access_request(
-                                request_id=request_id
-                            )
-                            if not existing_mapping:
-                                user_identity = user.get_or_create_active_identity(
-                                    access_tag=access_type
-                                )
-                                userMappingObj = UserAccessMapping.create(
-                                    request_id=request_id,
-                                    user_identity=user_identity,
-                                    access=access,
-                                    approver_1=approver_1,
-                                    approver_2=approver_2,
-                                    request_reason=reason,
-                                    access_type="Group",
-                                    status="Processing",
-                                )
-                            else:
-                                logger.debug("Regranting " + request_id)
-                                userMappingObj = existing_mapping
-                                existing_mapping.set_processing()
-
-                            userMappingsList.append(userMappingObj)
                 group_mapping.approve_access()
                 execute_group_access(userMappingsList)
                 logger.debug(
@@ -850,9 +804,9 @@ def accept_group_access(request, request_id):
         notifications.send_accept_group_access_failed(
             destination=destination, request_id=request_id, error=str(e)
         )
-        json_response = {}
-        json_response["error"] = ERROR_APPROVING_REQUEST_DSP_MSG.format(error=str(e))
-        return json_response
+        return create_error_response(
+            error_msg=ERROR_APPROVING_REQUEST_DSP_MSG.format(error=str(e))
+        )
 
 
 def decline_group_access(request, request_id, reason):
@@ -884,11 +838,12 @@ def decline_group_access(request, request_id, reason):
         return json_response
 
     try:
-        group_mapping.decline_access(decline_reason=reason)
-        if group_mapping.get_primary_approver() is not None:
-            group_mapping.set_secondary_approver(approver=request.user.user)
-        else:
-            group_mapping.set_primary_approver(request.user.user)
+        with transaction.atomic():
+            group_mapping.decline_access(decline_reason=reason)
+            if group_mapping.get_primary_approver() is not None:
+                group_mapping.set_secondary_approver(approver=request.user.user)
+            else:
+                group_mapping.set_primary_approver(request.user.user)
 
         destination = [group_mapping.requested_by.email]
         destination.extend(MAIL_APPROVER_GROUPS)
@@ -912,13 +867,80 @@ def decline_group_access(request, request_id, reason):
         return json_response
     except Exception as e:
         logger.exception(e)
-        group_mapping.update_access_status(current_status="Pending")
         destination = [request.user.email]
         notifications.send_decline_group_access_failed(
             destination=destination, request_id=request_id, error=str(e)
         )
-        json_response = {}
-        json_response["error"] = ERROR_DECLINING_REQUEST_LOG_MSG.format(
-            request_id=request_id, error=str(str(e))
+        return create_error_response(
+            error_msg=ERROR_DECLINING_REQUEST_LOG_MSG.format(
+                request_id=request_id, error=str(str(e))
+            )
         )
-        return json_response
+
+
+def create_error_response(error_msg):
+    json_response = {}
+    json_response["error"] = error_msg
+    return json_response
+
+
+def is_valid_approver(request, group_mapping, approver_permissions):
+    is_primary_approver = (
+        group_mapping.is_pending()
+        and request.user.user.has_permission(approver_permissions["1"])
+    )
+    is_secondary_approver = (
+        group_mapping.is_secondary_pending()
+        and request.user.user.has_permission(approver_permissions["2"])
+    )
+    return is_primary_approver, is_secondary_approver
+
+
+def create_members_user_access_mappings(group_mapping, access_type):
+    user_mappings_list = []
+    with transaction.atomic():
+        for membership in group_mapping.group.get_all_approved_members():
+            user = membership.user
+            access = group_mapping.access
+            approver_1 = group_mapping.get_primary_approver()
+            approver_2 = group_mapping.get_secondary_approver()
+            reason = (
+                "Added for group request "
+                + group_mapping.request_id
+                + " - "
+                + group_mapping.request_reason
+            )
+            request_id = (
+                user.user.username
+                + "-"
+                + group_mapping.access.access_tag
+                + "-"
+                + group_mapping.request_id.rsplit("-", 1)[-1]
+            )
+            if not user.get_accesses_by_access_tag_and_status(
+                access_tag=access.access_tag, status=["Approved"]
+            ):
+                existing_mapping = UserAccessMapping.get_access_request(
+                    request_id=request_id
+                )
+                if not existing_mapping:
+                    user_identity = user.get_or_create_active_identity(
+                        access_tag=access_type
+                    )
+                    user_mapping = UserAccessMapping.create(
+                        request_id=request_id,
+                        user_identity=user_identity,
+                        access=access,
+                        approver_1=approver_1,
+                        approver_2=approver_2,
+                        request_reason=reason,
+                        access_type="Group",
+                        status="Processing",
+                    )
+                else:
+                    logger.debug("Regranting " + request_id)
+                    user_mapping = existing_mapping
+                    existing_mapping.set_processing()
+
+                user_mappings_list.append(user_mapping)
+    return user_mappings_list

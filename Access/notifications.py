@@ -228,18 +228,26 @@ def send_group_access_declined(
 
 
 def send_accept_group_access_failed(destination, request_id, error):
-    body = helpers.generateStringFromTemplate(
-        "acceptGroupAccessFailed.html", request_id=request_id, error=error
-    )
+    try:
+        body = helpers.generateStringFromTemplate(
+            "acceptGroupAccessFailed.html", request_id=request_id, error=error
+        )
 
-    subject = subject = "Failed Request " + request_id
-    general.emailSES(destination, subject, body)
+        subject = subject = "Failed Request " + request_id
+        general.emailSES(destination, subject, body)
+    except Exception as e:
+        logger.exception(str(e))
+        logger.error("Something when wrong while sending Email.")
 
 
 def send_decline_group_access_failed(destination, request_id, error):
-    body = helpers.generateStringFromTemplate(
-        "declineGroupAccessFailed.html", request_id=request_id, error=error
-    )
+    try:
+        body = helpers.generateStringFromTemplate(
+            "declineGroupAccessFailed.html", request_id=request_id, error=error
+        )
 
-    subject = subject = "Declined Failed Request " + request_id
-    general.emailSES(destination, subject, body)
+        subject = subject = "Declined Failed Request " + request_id
+        general.emailSES(destination, subject, body)
+    except Exception as e:
+        logger.exception(str(e))
+        logger.error("Something when wrong while sending Email.")
