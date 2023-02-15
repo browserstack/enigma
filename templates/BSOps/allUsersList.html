@@ -48,7 +48,7 @@ function startOffboarding(offboard_email) {
   message_text_div.append("Offboarding user with email " + offboard_email + ". Please wait");
   $('#alert-space').html(custom_alert);
 
-  $.ajax("{% url 'allUsersList' %}", {
+  $.ajax("{% url 'offboarding_user' %}", {
     type: "POST",
     data: { "offboard_email": offboard_email, 'csrfmiddlewaretoken': '{{ csrf_token }}' },
     success: function(data) {
@@ -175,7 +175,7 @@ function offboardConfirm(email){
   		<tr>
         <th data-placeholder="Search">Name</th>
         <th data-placeholder="Search">Email</th>
-        <th data-placeholder="Search">Github Username</th>
+        <!-- <th data-placeholder="Search">Github Username</th> -->
         <th class="filter-select filter-exact" data-placeholder="ALL">Is Active</th>
         <th class="filter-select filter-exact" data-placeholder="ALL">Current State</th>
         <th data-placeholder="Search">Accesses List</th>
@@ -210,7 +210,7 @@ function offboardConfirm(email){
       <tr class="userList">
         <td>{{ item.first_name }} {{ item.last_name }}</td>
         <td>{{ item.email }}</td>
-        <td>{{ item.git_username }}</td>
+        <!-- <td>{{ item.git_username }}</td> -->
         <td>{{ item.is_active }}</td>
         <td>{{ item.state }}</td>
         <td>

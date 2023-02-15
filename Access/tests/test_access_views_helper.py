@@ -101,7 +101,7 @@ def test_generateUserMappings(mocker):
     )
     userAccessMappingCreateSpy = mocker.spy(models.UserAccessMapping.objects, "create")
 
-    usermappingList = views_helper.generateUserMappings(
+    usermappingList = views_helper.generate_user_mappings(
         User(user="username1"),
         MemberShipObj(),
         MemberShipObj(membership_id="1", reason="reason"),
@@ -138,7 +138,7 @@ def test_executeGroupAccess(
     mappingObj.user = userMock
     mappingObj.approver_1.user = userMock
     mappingObj.request_id = requestid
-    views_helper.executeGroupAccess([mappingObj])
+    views_helper.execute_group_access([mappingObj])
 
     assert mappingObj.status == expectedStatus
     assert mappingObj.decline_reason == expected_decline_reason

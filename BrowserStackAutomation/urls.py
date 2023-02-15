@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import re_path, include
 from Access.views import (
+    user_offboarding,
     showAccessHistory,
     pendingRequests,
     pendingFailure,
@@ -35,6 +36,7 @@ from Access.views import (
     add_user_to_group,
     groupDashboard,
     accept_bulk,
+    decline_access,
     update_group_owners,
     remove_group_member,
     new_access_request,
@@ -59,6 +61,7 @@ urlpatterns = [
     re_path(r"^group/dashboard/$", groupDashboard, name="groupDashboard"),
     re_path(r"^access/userAccesses$", all_user_access_list, name="allUserAccessList"),
     re_path(r"^access/usersList$", allUsersList, name="allUsersList"),
+    re_path(r"^user/offboardUser$", user_offboarding, name="offboarding_user"),
     re_path(r"^access/requestAccess$", requestAccess, name="requestAccess"),
     re_path(r"^group/requestAccess$", group_access, name="groupRequestAccess"),
     re_path(
@@ -79,7 +82,13 @@ urlpatterns = [
         update_group_owners,
         name="updateGroupOwners",
     ),
+    re_path(r"^access/pendingRequests$", pendingRequests, name="pendingRequests"),
     re_path(r"^accept_bulk/(?P<selector>[\w-]+)", accept_bulk, name="accept_bulk"),
+    re_path(
+        r"^decline/(?P<accessType>[\w-]+)/(?P<requestId>.*)$",
+        decline_access,
+        name="decline",
+    ),
     re_path(
         r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"
     ),

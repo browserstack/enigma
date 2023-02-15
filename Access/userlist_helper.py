@@ -1,9 +1,10 @@
+import json
 from Access import helpers
-from Access.models import User
+from Access.background_task_manager import background_task
+from Access.models import MembershipV2, User
 import logging
 from . import helpers as helper
 from django.db import transaction
-import json
 
 logger = logging.getLogger(__name__)
 
@@ -31,8 +32,8 @@ IDENTITY_UNCHANGED_ERROR_MESSAGE = {
 
 class IdentityNotChangedException(Exception):
     def __init__(self):
-            self.message = "Identity Unchanged"
-            super().__init__(self.message)    
+        self.message = "Identity Unchanged"
+        super().__init__(self.message)
 
 
 def get_identity_templates(auth_user):
@@ -42,35 +43,39 @@ def get_identity_templates(auth_user):
     context["unconfigured_identity_template"] = []
     all_modules = helper.get_available_access_modules()
     for user_identity in user_identities:
-        is_identity_configured = _is_valid_identity_json(identity=user_identity.identity)
+        is_identity_configured = _is_valid_identity_json(
+            identity=user_identity.identity
+        )
         if is_identity_configured:
             module = all_modules[user_identity.access_tag]
             context["configured_identity_template"].append(
                 {
-                    "accessUserTemplatePath": module.get_identity_template(), 
-                    "identity" : user_identity.identity
-                }            
+                    "accessUserTemplatePath": module.get_identity_template(),
+                    "identity": user_identity.identity,
+                }
             )
             all_modules.pop(user_identity.access_tag)
-            
+
     for mod in all_modules.values():
         context["unconfigured_identity_template"].append(
             {
-                "accessUserTemplatePath": mod.get_identity_template(), 
+                "accessUserTemplatePath": mod.get_identity_template(),
             }
         )
     # context["aws_username"] = "some name"
     return context
 
+
 def _is_valid_identity_json(identity):
     try:
         identity_json = json.loads(json.dumps(identity))
         identity_dict = dict(identity_json)
-        if len(identity_dict)>0:
+        if len(identity_dict) > 0:
             return True
         return False
     except Exception:
         return False
+
 
 def create_identity(user_identity_form, auth_user):
     user = auth_user.user
@@ -114,7 +119,6 @@ def create_identity(user_identity_form, auth_user):
                 # mod.approve(membership)
                 raise Exception("Not Implemented")
 
-   
     context["status"] = {
         "title": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["title"],
         "msg": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["msg"].format(
@@ -166,7 +170,7 @@ def getallUserList(request):
                     "last_name": each_user.user.last_name,
                     "email": each_user.email,
                     "username": each_user.user.username,
-                    "git_username": each_user.gitusername,
+                    # "git_username": each_user.gitusername,
                     "is_active": each_user.user.is_active,
                     "offbaord_date": each_user.offbaord_date,
                     "state": each_user.current_state(),
@@ -185,3 +189,50 @@ def getallUserList(request):
         json_response = {}
         json_response["error"] = {"error_msg": str(e), "msg": ERROR_MESSAGE}
         return json_response
+
+
+def offboard_user(request):
+    if not (
+        request.user.user.has_permission("VIEW_USER_LIST")
+        and request.user.user.has_permission("ALLOW_USER_OFFBOARD")
+    ):
+        raise Exception("Requested User is unauthorised to offboard user.")
+    try:
+        offboard_user_email = request.POST.get("offboard_email")
+        if not offboard_user_email:
+            raise Exception("Invalid request, attribute not found")
+
+        user = User.objects.filter(email=offboard_user_email).first()
+        if not user:
+            raise Exception("User not found")
+
+    except Exception as e:
+        logger.debug("Error in request, not found or Invalid request type")
+        logger.exception(str(e))
+        return {"error": ERROR_MESSAGE}
+
+    user.offboard(request.user.user)
+
+    module_identities = user.get_all_active_identity()
+
+    for module_identity in module_identities:
+        module_identity.decline_all_non_approved_access_mappings()
+        access_mappings = module_identity.get_all_granted_access_mappings()
+
+        for access_mapping in access_mappings:
+            module_identity.offboarding_approved_access_mapping(access_mapping.access)
+            background_task(
+                "run_access_revoke",
+                json.dumps(
+                    {
+                        "request_id": access_mapping.request_id,
+                        "revoker_email": request.user.user.email,
+                    }
+                ),
+            )
+
+        module_identity.deactivate()
+
+    user.revoke_all_memberships()
+
+    return {"message": "Successfully initiated Offboard user"}
