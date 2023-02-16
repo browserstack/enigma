@@ -843,7 +843,7 @@ class UserAccessMapping(models.Model):
         self.status = "ProcessingRevoke"
         self.save()        
 
-    def set_processing(self):
+    def processing(self):
         self.status = "Processing"
         self.save()
 
