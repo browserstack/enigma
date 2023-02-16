@@ -91,7 +91,7 @@ urlpatterns = [
     re_path(
         r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"
     ),
-    re_path(r"^individual_resolve$", individual_resolve)
+    re_path(r"^individual_resolve$", individual_resolve, name="individual_resolve")
 ]
 
 for tag, each_module in get_available_access_modules().items():
