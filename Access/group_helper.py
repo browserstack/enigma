@@ -511,7 +511,7 @@ def accept_member(request, requestId, shouldRender=True):
         context["error"] = REQUEST_NOT_FOUND_ERROR + str(e)
         return context
     try:
-        if membership.is_already_processed():
+        if not membership.is_pending():
             logger.warning(
                 "An Already Approved/Declined/Processing Request was accessed by - "
                 + request.user.username
