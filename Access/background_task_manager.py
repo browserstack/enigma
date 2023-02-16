@@ -80,7 +80,7 @@ def run_access_grant(request_id):
         notifications.send_mail_for_request_granted_failure(
             user, approver, access_tag, request_id
         )
-        
+
         logger.debug(
             {
                 "requestId": request_id,
@@ -92,7 +92,7 @@ def run_access_grant(request_id):
         return False
 
     access_module = helpers.get_available_access_module_from_tag(access_tag)
-    if not access_module:   
+    if not access_module:
         return False
 
     try:
@@ -172,9 +172,9 @@ def run_access_revoke(request_id):
         notifications.send_revoke_failure_mail(
             targets, request_id, access_mapping.revoker.email, 0, message
         )
-        return  False
+        return False
     elif access_mapping.status == "Revoked":
-        return  True
+        return True
     access = access_mapping.access
     user_identity = access_mapping.user_identity
 
@@ -283,7 +283,7 @@ def run_accept_request(data):
     result = background_task("run_access_grant", request_id)
     if result:
         return {"status": True}
-    
+
     notifications.send_mail_for_request_granted_failure(
         user, approver, access_type, request_id
     )
@@ -298,7 +298,8 @@ def run_accept_request(data):
 
     return {"status": False}
 
-def accept_request(user_access_mapping, approval_type = "", approver = None):
+
+def accept_request(user_access_mapping, approval_type="", approver=None):
     result = None
 
     if approval_type == ApprovalType.Primary:
@@ -307,28 +308,27 @@ def accept_request(user_access_mapping, approval_type = "", approver = None):
         user_access_mapping.approver_2 = approver
     elif user_access_mapping.approver_1 or user_access_mapping.approver_2:
         raise Exception("Request Not approved")
-        
-   
+
     user_access_mapping.processing()
     try:
         result = run_access_grant.delay(user_access_mapping.request_id)
     except Exception:
-        user_access_mapping.grant_fail_access(fail_reason = "Task could not be queued")
-        
+        user_access_mapping.grant_fail_access(fail_reason="Task could not be queued")
+
     if result:
         return True
     return False
 
-def revoke_request(user_access_mapping, revoker = None):
+
+def revoke_request(user_access_mapping, revoker=None):
     result = None
     # change the status to revoke processing
     user_access_mapping.revoking(revoker)
     try:
         result = run_access_revoke.delay(user_access_mapping.request_id)
     except Exception:
-        user_access_mapping.RevokeFailed(fail_reason = "Task could not be queued")
-    
+        user_access_mapping.RevokeFailed(fail_reason="Task could not be queued")
+
     if result:
         return True
     return False
-    
