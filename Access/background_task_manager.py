@@ -178,7 +178,7 @@ def run_access_revoke(request_id):
     access = access_mapping.access
     user_identity = access_mapping.user_identity
 
-    revoker = access_mapping.revoker.email
+    revoker = access_mapping.revoker
     if not revoker:
         # TODO: Have to add the email targets for failure
         targets = []
@@ -305,7 +305,7 @@ def accept_request(user_access_mapping, approval_type = "", approver = None):
         user_access_mapping.approver_1 = approver
     elif approval_type == ApprovalType.Secondary:
         user_access_mapping.approver_2 = approver
-    elif user_access_mapping.approver_1 == "" or user_access_mapping.approver_2 == "":
+    elif user_access_mapping.approver_1 or user_access_mapping.approver_2:
         raise Exception("Request Not approved")
         
    
