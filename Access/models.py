@@ -370,7 +370,7 @@ class MembershipV2(models.Model):
         return self.requested_by == approver
 
     def is_already_processed(self):
-        return self.status in ["Declined", "Approved", "Processing", "Revoked"]
+        return self.status not in ["Pending"]
 
     @staticmethod
     def approve_membership(membership_id, approver):
@@ -737,18 +737,18 @@ class UserAccessMapping(models.Model):
         ]
         access_request_data["access_type"] = self.access_type
         access_request_data["approver_1"] = (
-            self.approver_1.user.username if self.approver_1 else None
+            self.approver_1.user.username if self.approver_1 else ""
         )
         access_request_data["approver_2"] = (
-            self.approver_2.user.username if self.approver_2 else None
+            self.approver_2.user.username if self.approver_2 else ""
         )
-        access_request_data["approved_on"] = self.approved_on
+        access_request_data["approved_on"] = self.approved_on if self.approved_on else ""
         access_request_data["updated_on"] = (
             str(self.updated_on)[:19] + "UTC" if self.updated_on else ""
         )
         access_request_data["status"] = self.status
         access_request_data["revoker"] = (
-            self.revoker.user.username if self.revoker else None
+            self.revoker.user.username if self.revoker else ""
         )
         access_request_data["offboarding_date"] = (
             str(self.user_identity.user.offbaord_date)[:19] + "UTC"
@@ -822,7 +822,6 @@ class UserAccessMapping(models.Model):
     def set_processing(self):
         self.status = "Processing"
         self.save()
-        return self
 
     @staticmethod
     def create(
@@ -974,7 +973,7 @@ class GroupAccessMapping(models.Model):
         return self.status == "SecondaryPending"
 
     def is_already_processed(self):
-        return self.status in ["Declined", "Approved", "Processing", "Revoked"]
+        return self.status not in ["Pending", "SecondaryPending"]
 
     def set_primary_approver(self, approver):
         self.approver_1 = approver
