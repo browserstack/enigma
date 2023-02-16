@@ -172,7 +172,7 @@ def get_generic_access(group_mapping):
     return access_details
 
 
-def get_group_access_list(request, group_name):
+def get_group_access_list(auth_user, group_name):
     context = {}
     group = GroupV2.get_active_group_by_name(group_name)
     if not group:
@@ -186,7 +186,7 @@ def get_group_access_list(request, group_name):
         return context
 
     group_members = group.get_all_members().filter(status="Approved")
-    auth_user = request.user
+    auth_user = auth_user
 
     if not auth_user.user.is_allowed_admin_actions_on_group(group):
         logger.debug("Permission denied, requester is non owner")
