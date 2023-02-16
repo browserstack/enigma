@@ -16,8 +16,9 @@ from Access.models import (
     User,
     GroupV2,
     AccessV2,
+    ApprovalType,
 )
-from Access.background_task_manager import background_task
+from Access.background_task_manager import background_task, accept_request
 from . import helpers as helper
 
 logger = logging.getLogger(__name__)
@@ -548,10 +549,10 @@ def validate_access_labels(access_labels_json, access_type):
     return access_labels
 
 
-def _get_approver_permissions(access_type, access_label=None):
+def _get_approver_permissions(access_tag, access_label=None):
     json_response = {}
 
-    access_module = helper.get_available_access_module_from_tag(access_type)
+    access_module = helper.get_available_access_module_from_tag(access_tag)
     approver_permissions = []
     approver_permissions = access_module.fetch_approver_permissions(access_label)
 
@@ -573,7 +574,7 @@ def is_request_valid(request_id, access_mapping):
     return True
 
 
-def accept_user_access_requests(request, access_type, request_id):
+def accept_user_access_requests(auth_user, request_id):
     json_response = {}
     access_mapping = UserAccessMapping.get_access_request(request_id)
     if not is_request_valid(request_id, access_mapping):
@@ -583,17 +584,17 @@ def accept_user_access_requests(request, access_type, request_id):
         return json_response
 
     requester = access_mapping.user_identity.user.email
-    if request.user.username == requester:
+    if auth_user.username == requester:
         json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
         return json_response
 
     access_label = access_mapping.access.access_label
 
     try:
-        permissions = _get_approver_permissions(access_type, access_label)
+        permissions = _get_approver_permissions(access_mapping.access.access_tag, access_label)
         approver_permissions = permissions["approver_permissions"]
         if not helper.check_user_permissions(
-            request.user, list(approver_permissions.values())
+            auth_user, list(approver_permissions.values())
         ):
             logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
             json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
@@ -601,11 +602,11 @@ def accept_user_access_requests(request, access_type, request_id):
 
         is_primary_approver = (
             access_mapping.is_pending()
-            and request.user.user.has_permission(approver_permissions["1"])
+            and auth_user.user.has_permission(approver_permissions["1"])
         )
         is_secondary_approver = (
             access_mapping.is_secondary_pending()
-            and request.user.user.has_permission(approver_permissions["2"])
+            and auth_user.user.has_permission(approver_permissions["2"])
         )
 
         if not (is_primary_approver or is_secondary_approver):
@@ -613,24 +614,23 @@ def accept_user_access_requests(request, access_type, request_id):
             json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
             return json_response
         if is_primary_approver and "2" in approver_permissions:
-            access_mapping.approver_1 = request.user.user
+            access_mapping.approver_1 = auth_user.user
             access_mapping.update_access_status("SecondaryPending")
             json_response["msg"] = USER_REQUEST_SECONDARY_PENDING_MSG.format(
-                request_id=request_id, approved_by=request.user.username
+                request_id=request_id, approved_by=auth_user.username
             )
             logger.debug(
                 USER_REQUEST_SECONDARY_PENDING_MSG.format(
-                    request_id=request_id, approved_by=request.user.username
+                    request_id=request_id, approved_by=auth_user.username
                 )
             )
         else:
             json_response = run_accept_request_task(
                 is_primary_approver,
                 access_mapping,
-                request,
-                request_id,
-                access_type,
-                access_label,
+                auth_user=auth_user,
+                request_id=request_id,
+                access_label=access_label,
             )
     except Exception as e:
         return process_error_response(e)
@@ -639,24 +639,21 @@ def accept_user_access_requests(request, access_type, request_id):
 
 
 def run_accept_request_task(
-    is_primary_approver, access_mapping, request, request_id, access_type, access_label
+    is_primary_approver, access_mapping, auth_user, request_id, access_label
 ):
     json_response = {}
     json_response["status"] = []
+    approval_type = ""
     if is_primary_approver:
-        access_mapping.approver_1 = request.user.user
+        approval_type = ApprovalType.Primary
     else:
-        access_mapping.approver_2 = request.user.user
+        approval_type = ApprovalType.Secondary
     json_response["msg"] = REQUEST_PROCESS_MSG.format(request_id=request_id)
 
     with transaction.atomic():
         try:
             access_mapping.update_access_status("Processing")
-
-            background_task(
-                "run_accept_request",
-                json.dumps({"request_id": request_id, "access_type": access_type}),
-            )
+            accept_request(user_access_mapping=access_mapping, approval_type=approval_type, approver = auth_user.user)
         except Exception as e:
             logger.exception(e)
             raise Exception(

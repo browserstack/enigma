@@ -283,9 +283,8 @@ def accept_bulk(request, selector):
             elif selector == "groupAccess":
                 json_response = accept_group_access(request, requestId)
             elif selector.endswith("-club"):
-                access_type = selector.rsplit("-", 1)[0]
                 json_response = accept_user_access_requests(
-                    request, access_type, requestId
+                    request.user, requestId
                 )
             else:
                 raise ValidationError("Invalid request")
