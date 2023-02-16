@@ -1,15 +1,21 @@
-from Access import helpers
 import logging
 import time
-from . import helpers as helper
-from Access import notifications
-
-from BrowserStackAutomation.settings import DECLINE_REASONS
-from Access.models import UserAccessMapping, User, GroupV2, AccessV2
 import datetime
 import json
 from django.db import transaction
+from Access import (
+    helpers,
+    notifications,
+)
+from Access.models import (
+    UserAccessMapping,
+    User,
+    GroupV2,
+    AccessV2,
+)
 from Access.background_task_manager import background_task
+from BrowserStackAutomation.settings import DECLINE_REASONS
+from . import helpers as helper
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +56,7 @@ USER_REQUEST_SECONDARY_PENDING_MSG = "The Request ({request_id}) is approved by 
                                       Pending on secondary approver"
 
 
-def requestAccessGet(request):
+def get_request_access(request):
     context = {}
     try:
         for each_tag, each_module in helpers.get_available_access_modules().items():
@@ -93,7 +99,7 @@ def requestAccessGet(request):
     return context
 
 
-def validate_approver_permissions(access_mapping, access_type, request, request_id):
+def validate_approver_permissions(access_mapping, access_type, request):
     json_response = {}
 
     access_label = access_mapping.access.access_label
@@ -117,7 +123,7 @@ def validate_approver_permissions(access_mapping, access_type, request, request_
     return json_response
 
 
-def getGrantFailedRequests(request):
+def get_grant_failed_requests(request):
     try:
         failures = UserAccessMapping.objects.filter(
             status__in=["GrantFailed"]
@@ -157,7 +163,7 @@ def get_pending_revoke_failures(request):
     return context
 
 
-def getPendingRequests(request):
+def get_pending_requests(request):
     logger.info("Pending Request call initiated")
 
     try:
@@ -174,7 +180,7 @@ def getPendingRequests(request):
         ) = get_pending_accesses_from_modules(user)
 
         duration = time.time() - start_time
-        logger.info("Time to fetch all pending requests:" + str(duration))
+        logger.info("Time to fetch all pending requests: %s " % str(duration))
 
         return context
     except Exception as e:
@@ -240,10 +246,8 @@ def get_pending_accesses_from_modules(access_user):
         process_group_requests(pending_accesses["group_requests"], group_requests)
 
         logger.info(
-            "Time to fetch pending requests of access module: "
-            + access_module_tag
-            + " - "
-            + str(time.time() - access_module_start_time)
+            "Time to fetch pending requests of access module: %s - %s " %
+            access_module_tag, str(time.time() - access_module_start_time)
         )
 
     return individual_requests, list(group_requests.values())
@@ -261,18 +265,18 @@ def process_individual_requests(
                     "club_id": club_id,
                     "userEmail": accessrequest["userEmail"],
                     "accessReason": accessrequest["accessReason"],
-                    "accessType": accessrequest["accessType"],
+                    "accessType": accessrequest["access_type"],
                     "access_tag": accessrequest["access_tag"],
                     "requested_on": accessrequest["requested_on"],
                     "sla_breached": helpers.sla_breached(accessrequest["requested_on"]),
                     "accessData": [],
                 }
-            accessData = {
+            access_data = {
                 "accessCategory": accessrequest["accessCategory"],
                 "accessMeta": accessrequest["accessMeta"],
                 "requestId": accessrequest["requestId"],
             }
-            clubbed_requests[club_id]["accessData"].append(accessData)
+            clubbed_requests[club_id]["accessData"].append(access_data)
         individual_requests.append(
             {"module_tag": access_tag, "requests": list(clubbed_requests.values())}
         )
@@ -302,7 +306,7 @@ def process_group_requests(group_pending_requests, group_requests):
                 }
             if accessrequest["access_tag"] == "other":
                 group_requests[club_id]["hasOtherRequest"] = True
-            accessData = {
+            access_data = {
                 "accessCategory": accessrequest["accessCategory"],
                 "accessMeta": accessrequest["accessMeta"],
                 "requestId": accessrequest["requestId"],
@@ -310,7 +314,7 @@ def process_group_requests(group_pending_requests, group_requests):
                 "accessType": accessrequest["accessType"],
                 "access_tag": accessrequest["access_tag"],
             }
-            group_requests[club_id]["accessData"].append(accessData)
+            group_requests[club_id]["accessData"].append(access_data)
 
 
 def process_error_response(e):
@@ -646,7 +650,7 @@ def decline_individual_access(request, access_type, request_id, reason):
         return json_response
 
     json_response = validate_approver_permissions(
-        access_mapping, access_type, request, request_id
+        access_mapping, access_type, request
     )
     if "error" in json_response:
         return json_response
