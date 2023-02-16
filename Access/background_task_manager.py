@@ -78,7 +78,7 @@ def run_access_grant(request_id):
             fail_reason="Failed since identity is blank for user identity"
         )
         notifications.send_mail_for_request_granted_failure(
-            user, approver, access_tag request_id
+            user, approver, access_tag, request_id
         )
         
         logger.debug(
@@ -298,13 +298,16 @@ def run_accept_request(data):
 
     return {"status": False}
 
-def accept_request(user_access_mapping, approval_type, approver):
+def accept_request(user_access_mapping, approval_type = "", approver = None):
     result = None
 
     if approval_type == ApprovalType.Primary:
         user_access_mapping.approver_1 = approver
-    else:
+    elif approval_type == ApprovalType.Secondary:
         user_access_mapping.approver_2 = approver
+    elif user_access_mapping.approver_1 == "" or user_access_mapping.approver_2 == "":
+        raise Exception("Request Not approved")
+        
    
     user_access_mapping.processing()
     try:
@@ -316,10 +319,10 @@ def accept_request(user_access_mapping, approval_type, approver):
         return True
     return False
 
-def revoke_request(user_access_mapping, revoker):
+def revoke_request(user_access_mapping, revoker = None):
     result = None
     # change the status to revoke processing
-    user_access_mapping.revoking()
+    user_access_mapping.revoking(revoker)
     try:
         result = run_access_revoke.delay(user_access_mapping.request_id)
     except Exception:

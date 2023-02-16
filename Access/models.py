@@ -838,7 +838,8 @@ class UserAccessMapping(models.Model):
         self.status = "Approved"
         self.save()
 
-    def revoking(self):
+    def revoking(self, revoker):
+        self.revoker = revoker
         self.status = "ProcessingRevoke"
         self.save()        
 
