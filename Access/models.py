@@ -219,7 +219,7 @@ class User(models.Model):
         access_request_mappings = []
         for each_identity in all_user_identities:
             access_request_mappings.extend(
-                each_identity.useraccessmapping_set.prefetch_related(
+                each_identity.user_access_mapping.prefetch_related(
                     "access", "approver_1", "approver_2"
                 )
             )
@@ -230,7 +230,7 @@ class User(models.Model):
         access_history = []
 
         for request_mapping in access_request_mappings:
-            access_module = all_access_modules[request_mapping.accessType]
+            access_module = all_access_modules[request_mapping.access.access_tag]
             access_history.append(
                 request_mapping.getAccessRequestDetails(access_module)
             )
@@ -743,7 +743,7 @@ class UserAccessMapping(models.Model):
             str(self.updated_on)[:19] + "UTC" if self.updated_on else ""
         )
         access_request_data["status"] = self.status
-        access_request_data["revoker"] = self.revoker.user.username
+        access_request_data["revoker"] = self.revoker.user.username if self.revoker else ""
         access_request_data["offboarding_date"] = (
             str(self.user_identity.user.offbaord_date)[:19] + "UTC"
             if self.user_identity.user.offbaord_date
@@ -818,6 +818,10 @@ class UserAccessMapping(models.Model):
     def approve_access(self):
         self.status = "Approved"
         self.save()
+    
+    @staticmethod
+    def get_by_id(request_id):
+        return UserAccessMapping.objects.get(request_id=request_id)
 
 
 class GroupAccessMapping(models.Model):

@@ -39,6 +39,7 @@ from Access.views import (
     decline_access,
     update_group_owners,
     remove_group_member,
+    individual_resolve
 )
 from Access.helpers import get_available_access_modules
 
@@ -90,6 +91,7 @@ urlpatterns = [
     re_path(
         r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"
     ),
+    re_path(r"^individual_resolve$", individual_resolve)
 ]
 
 for tag, each_module in get_available_access_modules().items():

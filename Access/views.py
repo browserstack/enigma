@@ -468,3 +468,23 @@ def mark_revoked(request):
         json_response["error"] = str(e)
         status = 403
     return JsonResponse(json_response, status=status)
+
+def individual_resolve(request):
+    json_response = {"status_list":[]}
+    try:
+        request_ids = request.GET.getlist('requestId')
+        if not request_ids:
+            raise Exception("Request id not found in the request")
+        
+        for request_id in request_ids:
+            user_access_mapping = UserAccessMapping.get_by_id(request_id)
+            if user_access_mapping.status.lower() in ["grantfailed", "approved"]:
+                json_response["status_list"].append({"title":"Request ("+request_id+") is now now being processed.", "msg": "A email will be sent after the requested access is granted"})
+                # TODO: need to add celery integration 
+            else:
+                json_response["status_list"].append({'title': 'The Request ('+request_id+') is already resolved.', 'msg': 'The request is already in final state.'})
+        return render(request,'BSOps/accessStatus.html',json_response)
+    except Exception as e:
+        logger.exception(str(e))
+        json_response['error'] = {'error_msg': "Bad request", 'msg': "Error in request not found OR Invalid request type"}
+        return render(request,'BSOps/accessStatus.html',json_response)
