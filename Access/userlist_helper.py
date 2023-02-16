@@ -1,6 +1,6 @@
 import json
 from Access import helpers
-from Access.background_task_manager import background_task
+from Access.background_task_manager import background_task, accept_request, revoke_request
 from Access.models import MembershipV2, User
 import logging
 from . import helpers as helper
@@ -29,6 +29,9 @@ IDENTITY_UNCHANGED_ERROR_MESSAGE = {
     "msg": "Identity could not be updated for {modulename}. The new identity is same as the old identity",
 }
 
+OFFBOARDING_SUCCESS_MESSAGE = {
+    "message": "Successfully initiated Offboard user"
+}
 
 class IdentityNotChangedException(Exception):
     def __init__(self):
@@ -62,7 +65,6 @@ def get_identity_templates(auth_user):
                 "accessUserTemplatePath": mod.get_identity_template(),
             }
         )
-    # context["aws_username"] = "some name"
     return context
 
 
@@ -99,39 +101,17 @@ def create_identity(user_identity_form, auth_user):
             
 
         # create identity json  # call this verify identity
-        new_user_access_mapping = __change_identity_and_transfer_access_mapping(
-            user=user,
-            access_tag=selected_access_module.tag(),
-            existing_user_identity=existing_user_identity,
-            existing_user_access_mapping=existing_user_access_mapping,
-            new_module_identity=new_module_identity_json,
-        )
-        system_user = User.get_system_user()
-        if True:
-            for access_mapping in existing_user_access_mapping:
-                # Create celery task for revoking old access
-                # mod.revoke(membership)
-                if access_mapping.status.lower() == "processing":
-                    raise Exception("Not Implemented")
-                else:
-                    background_task("run_access_revoke",
-                                    json.dumps(
-                                                {
-                                                    "request_id": access_mapping.request_id,
-                                                    "revoker_email": system_user.email,
-                                                }
-                                        ),
-                                    )
-                
-
-            for access_mapping in new_user_access_mapping:
-                # Create celery task for approval
-                # mod.approve(membership)
-                background_task("run_access_grant",
-                                                (access_mapping.request_id,
-                                                mappingObj, accessType,
-                                                user, approver))            
-
+        try:
+            __change_identity_and_transfer_access_mapping(
+                user=user,
+                access_tag=selected_access_module.tag(),
+                existing_user_identity=existing_user_identity,
+                existing_user_access_mapping=existing_user_access_mapping,
+                new_module_identity=new_module_identity_json,
+            )
+        except Exception as ex:
+            raise(ex)
+            
     context["status"] = {
         "title": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["title"],
         "msg": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["msg"].format(
@@ -164,26 +144,15 @@ def __change_identity_and_transfer_access_mapping(
         )
     system_user = User.get_system_user()
     
-    for access in existing_user_access_mapping:
-        if access.is_approved():
-            access.revoke(system_user)
-            background_task("run_access_revoke",
-                                    json.dumps(
-                                                {
-                                                    "request_id": access_mapping.request_id,
-                                                    "revoker_email": system_user.email,
-                                                }
-                                        ),
-                                    )
-        elif access.is_pending():
-            print("decline access")
+    for mapping in existing_user_access_mapping:
+        if mapping.is_approved():
+            revoke_request(user_access_mapping = mapping, revoker = system_user)
+
+    existing_user_identity.decline_all_non_approved_access_mapping("Identity Updated")            
     
-    for access in new_user_access_mapping:
-        if access.is_approved():
-            background_task("run_access_grant",
-                            (access.request_id,
-                                access, accessType,
-                                user, approver))
+    for mapping in new_user_access_mapping:
+        if mapping.is_approved():
+            accept_request(user_access_mapping = mapping)
 
 def getallUserList(request):
     try:
@@ -250,24 +219,15 @@ def offboard_user(request):
 
     module_identities = user.get_all_active_identity()
 
-    for module_identity in module_identities:
-        module_identity.decline_all_non_approved_access_mappings()
-        access_mappings = module_identity.get_all_granted_access_mappings()
+    with transaction.atomic():
+        for module_identity in module_identities:
+            module_identity.decline_all_non_approved_access_mappings()
+            access_mappings = module_identity.get_all_granted_access_mappings()
 
-        for access_mapping in access_mappings:
-            module_identity.offboarding_approved_access_mapping(access_mapping.access)
-            background_task(
-                "run_access_revoke",
-                json.dumps(
-                    {
-                        "request_id": access_mapping.request_id,
-                        "revoker_email": request.user.user.email,
-                    }
-                ),
-            )
+            for access_mapping in access_mappings:
+                revoke_request(user_access_mapping = access_mapping, revoker = request.user.user)
 
-        module_identity.deactivate()
+            module_identity.deactivate()
 
-    user.revoke_all_memberships()
-
-    return {"message": "Successfully initiated Offboard user"}
+        user.revoke_all_memberships()
+    return OFFBOARDING_SUCCESS_MESSAGE

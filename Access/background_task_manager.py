@@ -9,10 +9,16 @@ from celery.signals import task_success, task_failure
 from Access import helpers
 from bootprocess import general
 from BrowserStackAutomation.settings import AUTOMATED_EXEC_IDENTIFIER
-from Access.models import UserAccessMapping, User
+from Access.models import UserAccessMapping, ApprovalType
 from Access import notifications
 
 logger = logging.getLogger(__name__)
+
+class TaskCouldNotBeQueuedException(Exception):
+    def __init__(self):
+        self.message = "Task could not be queued"
+        super().__init__(self.message)
+
 
 with open("config.json") as data_file:
     background_task_manager_type = json.load(data_file)["background_task_manager"][
@@ -30,7 +36,8 @@ def background_task(func, *args):
         elif func == "run_accept_request":
             run_accept_request.delay(*args)
         elif func == "run_access_revoke":
-            run_access_revoke.delay(*args)
+            request_id = args[0]
+            run_access_revoke.delay(request_id)
     else:
         if func == "run_access_grant":
             request_id = args[0]
@@ -56,7 +63,7 @@ def background_task(func, *args):
 )
 def run_access_grant(request_id):
     user_access_mapping = UserAccessMapping.get_access_request(request_id=request_id)
-    access_type = user_access_mapping.access.access_tag
+    access_tag = user_access_mapping.access.access_tag
     user = user_access_mapping.user_identity.user
     approver = user_access_mapping.approver_1.user.username
     message = ""
@@ -75,6 +82,10 @@ def run_access_grant(request_id):
         user_access_mapping.grant_fail_access(
             fail_reason="Failed since identity is blank for user identity"
         )
+        notifications.send_mail_for_request_granted_failure(
+            user, approver, access_tag request_id
+        )
+        
         logger.debug(
             {
                 "requestId": request_id,
@@ -85,8 +96,8 @@ def run_access_grant(request_id):
         )
         return False
 
-    access_module = helpers.get_available_access_module_from_tag(access_type)
-    if not access_module:
+    access_module = helpers.get_available_access_module_from_tag(access_tag)
+    if not access_module:   
         return False
 
     try:
@@ -132,10 +143,10 @@ def run_access_grant(request_id):
             }
         )
         try:
-            destination = access_module.access_mark_revoke_permission(access_type)
+            destination = access_module.access_mark_revoke_permission(access_tag)
             notifications.send_mail_for_access_grant_failed(
                 destination,
-                access_type.upper(),
+                access_tag.upper(),
                 user.email,
                 request_id=request_id,
                 message=message,
@@ -157,37 +168,36 @@ def run_access_grant(request_id):
 @shared_task(
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
-def run_access_revoke(data):
-    data = json.loads(data)
-    access_mapping = UserAccessMapping.get_access_request(data["request_id"])
+def run_access_revoke(request_id):
+    access_mapping = UserAccessMapping.get_access_request(request_id=request_id)
     if not access_mapping:
         # TODO: Have to add the email targets for failure
         targets = []
         message = "Request not found"
         notifications.send_revoke_failure_mail(
-            targets, data["request_id"], data["revoker_email"], 0, message
+            targets, request_id, access_mapping.revoker.email, 0, message
         )
-        return {"status": False}
+        return  False
     elif access_mapping.status == "Revoked":
-        return {"status": True}
+        return  True
     access = access_mapping.access
     user_identity = access_mapping.user_identity
 
-    revoker = User.get_user_by_email(data["revoker_email"])
+    revoker = access_mapping.revoker.email
     if not revoker:
         # TODO: Have to add the email targets for failure
         targets = []
         message = "Revoker not found"
         notifications.send_revoke_failure_mail(
             targets,
-            data["request_id"],
-            data["revoker_email"],
+            request_id,
+            access_mapping.revoker.email,
             0,
             message,
             access.access_tag,
         )
         user_identity.mark_revoke_failed_for_approved_access_mapping(access)
-        return {"status": False}
+        return False
 
     access_modules = helpers.get_available_access_modules()
 
@@ -227,7 +237,7 @@ def run_access_revoke(data):
             user_identity.mark_revoke_failed_for_approved_access_mapping(access)
         raise Exception("Failed to revoke the access due to: " + str(message))
 
-    return {"status": True}
+    return True
 
 
 @task_success.connect(sender=run_access_grant)
@@ -278,6 +288,7 @@ def run_accept_request(data):
     result = background_task("run_access_grant", request_id)
     if result:
         return {"status": True}
+    
     notifications.send_mail_for_request_granted_failure(
         user, approver, access_type, request_id
     )
@@ -291,3 +302,35 @@ def run_accept_request(data):
     )
 
     return {"status": False}
+
+def accept_request(user_access_mapping, approval_type, approver):
+    result = None
+
+    if approval_type == ApprovalType.Primary:
+        user_access_mapping.approver_1 = approver
+    else:
+        user_access_mapping.approver_2 = approver
+   
+    user_access_mapping.processing()
+    try:
+        result = run_access_grant.delay(user_access_mapping.request_id)
+    except Exception:
+        user_access_mapping.grant_fail_access(fail_reason = "Task could not be queued")
+        
+    if result:
+        return True
+    return False
+
+def revoke_request(user_access_mapping, revoker):
+    result = None
+    # change the status to revoke processing
+    user_access_mapping.revoking()
+    try:
+        result = run_access_revoke.delay(user_access_mapping.request_id)
+    except Exception:
+        user_access_mapping.RevokeFailed(fail_reason = "Task could not be queued")
+    
+    if result:
+        return True
+    return False
+    
