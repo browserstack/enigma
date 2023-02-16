@@ -276,12 +276,12 @@ def accept_bulk(request, selector):
             requestId = value
             if selector == "groupNew" and is_access_approver:
                 json_response = group_helper.approve_new_group_request(
-                    request, requestId
+                    request.user, requestId
                 )
             elif selector == "groupMember" and is_access_approver:
-                json_response = group_helper.accept_member(request, requestId, False)
+                json_response = group_helper.accept_member(request.user, requestId, False)
             elif selector == "groupAccess":
-                json_response = accept_group_access(request, requestId)
+                json_response = accept_group_access(request.user, requestId)
             elif selector.endswith("-club"):
                 json_response = accept_user_access_requests(
                     request.user, requestId

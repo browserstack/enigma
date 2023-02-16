@@ -722,7 +722,7 @@ def decline_individual_access(request, access_type, request_id, reason):
     return json_response
 
 
-def accept_group_access(request, request_id):
+def accept_group_access(auth_user, request_id):
     json_response = {}
 
     group_mapping = GroupAccessMapping.get_by_request_id(request_id=request_id)
@@ -739,7 +739,7 @@ def accept_group_access(request, request_id):
         approver_permissions = permissions["approver_permissions"]
 
         if not helper.check_user_permissions(
-            request.user, list(approver_permissions.values())
+            auth_user, list(approver_permissions.values())
         ):
             logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
             return create_error_response(
@@ -749,17 +749,17 @@ def accept_group_access(request, request_id):
         if not (group_mapping.is_pending() or group_mapping.is_secondary_pending()):
             logger.warning(
                 ALREADY_PROCESSED_REQUEST_MSG.format(
-                    request_id=request_id, user=request.user.username
+                    request_id=request_id, user=auth_user.username
                 )
             )
             return create_error_response(
                 error_msg=USER_REQUEST_IN_PROCESS_ERR_MSG.format(request_id=request_id)
             )
-        elif group_mapping.is_self_approval(approver=request.user.user):
+        elif group_mapping.is_self_approval(approver=auth_user.user):
             return create_error_response(error_msg=SELF_APPROVAL_ERROR_MSG)
         else:
             is_primary_approver, is_secondary_approver = is_valid_approver(
-                request=request,
+                auth_user=auth_user,
                 group_mapping=group_mapping,
                 approver_permissions=approver_permissions,
             )
@@ -769,21 +769,21 @@ def accept_group_access(request, request_id):
                     error_msg=USER_REQUEST_PERMISSION_DENIED_ERR_MSG
                 )
             if is_primary_approver and "2" in approver_permissions:
-                group_mapping.set_primary_approver(request.user.user)
+                group_mapping.set_primary_approver(auth_user.user)
                 json_response["msg"] = USER_REQUEST_SECONDARY_PENDING_MSG.format(
-                    request_id=request_id, approved_by=request.user.username
+                    request_id=request_id, approved_by=auth_user.username
                 )
                 group_mapping.update_access_status(current_status="SecondaryPending")
                 logger.debug(
                     USER_REQUEST_SECONDARY_PENDING_MSG.format(
-                        request_id=request_id, approved_by=request.user.username
+                        request_id=request_id, approved_by=auth_user.username
                     )
                 )
             else:
                 if is_primary_approver:
-                    group_mapping.set_primary_approver(request.user.user)
+                    group_mapping.set_primary_approver(auth_user.user)
                 else:
-                    group_mapping.set_secondary_approver(request.user.user)
+                    group_mapping.set_secondary_approver(auth_user.user)
                 json_response["msg"] = REQUEST_ACCESS_AUTO_APPROVED_MSG["title"].format(
                     request_id=request_id
                 )
@@ -796,7 +796,7 @@ def accept_group_access(request, request_id):
                 execute_group_access(userMappingsList)
                 logger.debug(
                     APPROVAL_PROCESS_STARTED_MSG.format(
-                        request_id=request_id, approver=request.user.username
+                        request_id=request_id, approver=auth_user.username
                     )
                 )
             return json_response
@@ -886,14 +886,14 @@ def create_error_response(error_msg):
     return json_response
 
 
-def is_valid_approver(request, group_mapping, approver_permissions):
+def is_valid_approver(auth_user, group_mapping, approver_permissions):
     is_primary_approver = (
         group_mapping.is_pending()
-        and request.user.user.has_permission(approver_permissions["1"])
+        and auth_user.user.has_permission(approver_permissions["1"])
     )
     is_secondary_approver = (
         group_mapping.is_secondary_pending()
-        and request.user.user.has_permission(approver_permissions["2"])
+        and auth_user.user.has_permission(approver_permissions["2"])
     )
     return is_primary_approver, is_secondary_approver
 
