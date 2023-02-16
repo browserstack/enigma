@@ -4,8 +4,6 @@ from BrowserStackAutomation.settings import USER_STATUS_CHOICES, PERMISSION_CONS
 import datetime
 import enum
 
-APPROVER_TYPE_PRIMARY = "Primary"
-APPROVER_TYPE_SECONDARY = "Secondary"
 
 class ApprovalType(enum.Enum):
     Primary = "Primary"
@@ -1028,13 +1026,12 @@ class UserIdentity(models.Model):
 
     def get_all_non_approved_access_mappings(self):
         return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"],
-            access__access_tag=self.access_tag,
+            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"]
         )
 
-    def decline_all_non_approved_access_mappings(self):
+    def decline_all_non_approved_access_mappings(self, decline_reason):
         user_mapping = self.get_all_non_approved_access_mappings()
-        user_mapping.update(status="Declined")
+        user_mapping.update(status="Declined", decline_reason = decline_reason)
 
     def get_granted_access_mapping(self, access):
         return self.user_access_mapping.filter(
@@ -1046,15 +1043,6 @@ class UserIdentity(models.Model):
             status__in=["approvefailed", "pending", "secondarypending", "grantfailed"],
             access=access,
         )
-    def get_all_non_approved_access_mapping(self):
-        return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"]
-        )    
-
-    def decline_all_non_approved_access_mapping(self, decline_reason):
-        user_mapping = self.get_all_non_approved_access_mapping()
-        user_mapping.update(status="Declined", decline_reason = decline_reason)
-
     
     def decline_non_approved_access_mapping(self, access, decline_reason):
         user_mapping = self.get_non_approved_access_mapping(access)

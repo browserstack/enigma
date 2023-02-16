@@ -148,7 +148,7 @@ def __change_identity_and_transfer_access_mapping(
         if mapping.is_approved():
             revoke_request(user_access_mapping = mapping, revoker = system_user)
 
-    existing_user_identity.decline_all_non_approved_access_mapping("Identity Updated")            
+    existing_user_identity.decline_all_non_approved_access_mappings("Identity Updated")            
     
     for mapping in new_user_access_mapping:
         if mapping.is_approved():

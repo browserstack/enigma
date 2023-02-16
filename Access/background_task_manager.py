@@ -14,11 +14,6 @@ from Access import notifications
 
 logger = logging.getLogger(__name__)
 
-class TaskCouldNotBeQueuedException(Exception):
-    def __init__(self):
-        self.message = "Task could not be queued"
-        super().__init__(self.message)
-
 
 with open("config.json") as data_file:
     background_task_manager_type = json.load(data_file)["background_task_manager"][
