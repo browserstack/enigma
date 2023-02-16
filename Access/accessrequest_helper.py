@@ -749,7 +749,7 @@ def accept_group_access(request, request_id):
                 error_msg=USER_REQUEST_PERMISSION_DENIED_ERR_MSG
             )
 
-        if group_mapping.is_already_processed():
+        if not (group_mapping.is_pending() or group_mapping.is_secondary_pending()):
             logger.warning(
                 ALREADY_PROCESSED_REQUEST_MSG.format(
                     request_id=request_id, user=request.user.username

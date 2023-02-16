@@ -369,8 +369,8 @@ class MembershipV2(models.Model):
     def is_self_approval(self, approver):
         return self.requested_by == approver
 
-    def is_already_processed(self):
-        return self.status not in ["Pending"]
+    def is_pending(self):
+        return self.status == "Pending"
 
     @staticmethod
     def approve_membership(membership_id, approver):
@@ -717,7 +717,7 @@ class UserAccessMapping(models.Model):
         # code metadata
         access_request_data["access_tag"] = access_tag
         # ui metadata
-        access_request_data["user"] = self.user_identity.user.name 
+        access_request_data["user"] = self.user_identity.user.name
         access_request_data["userEmail"] = self.user_identity.user.email
         access_request_data["requestId"] = self.request_id
         access_request_data["accessReason"] = self.request_reason
@@ -971,9 +971,6 @@ class GroupAccessMapping(models.Model):
 
     def is_secondary_pending(self):
         return self.status == "SecondaryPending"
-
-    def is_already_processed(self):
-        return self.status not in ["Pending", "SecondaryPending"]
 
     def set_primary_approver(self, approver):
         self.approver_1 = approver
