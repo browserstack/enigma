@@ -107,3 +107,14 @@ django-celery-results==2.4.0
 sqlalchemy==1.4.45
 redis==4.4.0
 celery==5.2.7
+django-stubs==1.14.0
+pycodestyle==2.10.0
+pylint==2.16.2
+pylint-django==2.5.3
+pylint-plugin-utils==0.7
+mccabe==0.7.0
+radon==5.1.0
+eradicate==2.1.0
+mypy==1.0.0
+mypy-extensions==1.0.0
+vulture==2.7

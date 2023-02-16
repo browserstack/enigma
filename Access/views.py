@@ -14,10 +14,10 @@ from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from Access import group_helper
 from Access.accessrequest_helper import (
-    requestAccessGet,
-    getGrantFailedRequests,
+    get_request_access,
+    get_grant_failed_requests,
     get_pending_revoke_failures,
-    getPendingRequests,
+    get_pending_requests,
     create_request,
     accept_user_access_requests,
     get_decline_access_request,
@@ -78,7 +78,7 @@ def showAccessHistory(request):
 @user_admin_or_ops
 def pendingFailure(request):
     try:
-        response = getGrantFailedRequests(request)
+        response = get_grant_failed_requests(request)
         return render(request, "BSOps/failureAdminRequests.html", response)
     except Exception as e:
         logger.debug("Error in request not found OR Invalid request type")
@@ -171,7 +171,7 @@ def requestAccess(request):
         )
         return render(request, "BSOps/accessStatus.html", context)
     else:
-        context = requestAccessGet(request)
+        context = get_request_access(request)
         return render(request, "BSOps/accessRequestForm.html", context)
 
 
@@ -240,7 +240,7 @@ def add_user_to_group(request, groupName):
 @login_required
 @user_with_permission([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])
 def pendingRequests(request):
-    context = getPendingRequests(request)
+    context = get_pending_requests(request)
     return render(request, "BSOps/pendingRequests.html", context)
 
 
