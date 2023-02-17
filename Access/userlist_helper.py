@@ -152,7 +152,7 @@ def __change_identity_and_transfer_access_mapping(
     
     for mapping in new_user_access_mapping:
         if mapping.is_approved():
-            accept_request(user_access_mapping = mapping)
+            accept_request(user_access_mapping = mapping, is_migrated=True)
 
 def getallUserList(request):
     try:

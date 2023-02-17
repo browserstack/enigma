@@ -843,7 +843,12 @@ class UserAccessMapping(models.Model):
         self.status = "ProcessingRevoke"
         self.save()        
 
-    def processing(self):
+    def processing(self, approval_type, approver):
+        if approval_type == ApprovalType.Primary:
+            self.approver_1 = approver
+        else: 
+            self.approver_2 = approver
+
         self.status = "Processing"
         self.save()
 

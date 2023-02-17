@@ -643,16 +643,11 @@ def run_accept_request_task(
 ):
     json_response = {}
     json_response["status"] = []
-    approval_type = ""
-    if is_primary_approver:
-        approval_type = ApprovalType.Primary
-    else:
-        approval_type = ApprovalType.Secondary
+    approval_type = ApprovalType.Primary if is_primary_approver else ApprovalType.Secondary
     json_response["msg"] = REQUEST_PROCESS_MSG.format(request_id=request_id)
 
     with transaction.atomic():
         try:
-            access_mapping.update_access_status("Processing")
             accept_request(user_access_mapping=access_mapping, approval_type=approval_type, approver = auth_user.user)
         except Exception as e:
             logger.exception(e)
