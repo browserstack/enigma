@@ -299,10 +299,10 @@ def run_accept_request(data):
     return {"status": False}
 
 
-def accept_request(user_access_mapping, approval_type, approver=None, is_migrated = False):
+def accept_request(user_access_mapping, approval_type, approver):
     result = None
-    if approval_type != ApprovalType.Primary and approval_type != ApprovalType.Secondary and not is_migrated:
-        raise Exception("trying to grant access without apporval ")
+    if approval_type != ApprovalType.Primary and approval_type != ApprovalType.Secondary:
+        raise Exception("Invalid Approval Type")
 
     user_access_mapping.processing(approval_type = approval_type, approver=approver)
     try:
