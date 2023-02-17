@@ -1,7 +1,7 @@
 import json
 from Access import helpers
 from Access.background_task_manager import background_task, accept_request, revoke_request
-from Access.models import MembershipV2, User
+from Access.models import User, ApprovalType
 import logging
 from . import helpers as helper
 from django.db import transaction
@@ -151,8 +151,14 @@ def __change_identity_and_transfer_access_mapping(
     existing_user_identity.decline_all_non_approved_access_mappings("Identity Updated")            
     
     for mapping in new_user_access_mapping:
-        if mapping.is_approved():
-            accept_request(user_access_mapping = mapping)
+        if mapping.is_approved() or mapping.is_grantfailed():
+            if mapping.approver_2:
+                accept_request(user_access_mapping = mapping, approval_type=ApprovalType.Secondary, approver = mapping.approver_2)
+            elif mapping.approver_1:
+                accept_request(user_access_mapping=mapping, approval_type=ApprovalType.Primary, approver = mapping.approver_1)
+            else:
+                logger.fatal("migration failed for request_id:%s mapping is approved but approvers are missing: %s", 
+                mapping.request_id)
 
 def getallUserList(request):
     try:

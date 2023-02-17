@@ -299,17 +299,12 @@ def run_accept_request(data):
     return {"status": False}
 
 
-def accept_request(user_access_mapping, approval_type="", approver=None):
+def accept_request(user_access_mapping, approval_type, approver):
     result = None
+    if approval_type != ApprovalType.Primary and approval_type != ApprovalType.Secondary:
+        raise Exception("Invalid Approval Type")
 
-    if approval_type == ApprovalType.Primary:
-        user_access_mapping.approver_1 = approver
-    elif approval_type == ApprovalType.Secondary:
-        user_access_mapping.approver_2 = approver
-    elif user_access_mapping.approver_1 or user_access_mapping.approver_2:
-        raise Exception("Request Not approved")
-
-    user_access_mapping.processing()
+    user_access_mapping.processing(approval_type = approval_type, approver=approver)
     try:
         result = run_access_grant.delay(user_access_mapping.request_id)
     except Exception:
@@ -318,7 +313,6 @@ def accept_request(user_access_mapping, approval_type="", approver=None):
     if result:
         return True
     return False
-
 
 def revoke_request(user_access_mapping, revoker=None):
     result = None
