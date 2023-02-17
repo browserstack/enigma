@@ -268,7 +268,44 @@ def update_group_owners(request, groupName):
 
 @login_required
 def groupDashboard(request):
-    return render(request, "BSOps/createNewGroup.html")
+    if request.method == "POST":
+        return render_error_message(
+            request,
+            "POST for groupHistory not supported",
+            "Invalid Request",
+            "Error request not found OR Invalid request type",
+        )
+
+    try:
+        access_user = User.objects.get(email=request.user.email)
+    except Exception as e:
+        return render_error_message(
+            request,
+            "Access user with email %s not found. Error: %s"
+            % (request.user.email, str(e)),
+            "Invalid Request",
+            "Please login again",
+        )
+
+    page = int(request.GET.get('page') or 1) - 1
+    limit = 20
+
+    start_index = page * limit
+    max_pagination = math.ceil(access_user.get_group_access_count() / limit)
+
+    return render(
+        request,
+        "BSOps/showGroupHistory.html",
+        {
+            "dataList": access_user.get_groups_history(
+                start_index,
+                limit
+            ),
+            "maxPagination": max_pagination,
+            "allPages": range(1, max_pagination + 1),
+            "currentPagination": page + 1,
+        },
+    )
 
 
 def approveNewGroup(request, group_id):

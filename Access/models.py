@@ -217,7 +217,41 @@ class User(models.Model):
             return User.objects.get(email=email)
         except User.DoesNotExist:
             return None
-    
+
+    def get_group_access_mapping_related_manager(self):
+        all_user_memberships = self.get_all_memberships()
+        group_mapping_related_manager = []
+        for each_membership in all_user_memberships:
+            group_mapping_related_manager.append(each_membership.group)
+
+        return group_mapping_related_manager
+
+
+    def get_groups_history(self, start_index, count):
+        group_request_mapping_related_manager = self.get_group_access_mapping_related_manager()
+        group_history = []
+        for request_mapping_related_manager in group_request_mapping_related_manager:
+            group_access = request_mapping_related_manager.get_user_group_details(self)
+            if len(group_access) > 1:
+                group_history.append(group_access)
+
+            # skip till start_index
+            if start_index <= len(group_history):
+                group_history = group_history[start_index:]
+                start_index = 0
+            else:
+                start_index = start_index - len(group_history)
+                group_history = []
+
+            # end loop if count to return is reached
+            if start_index == 0 and len(group_history) >= count:
+                break
+
+        return group_history[0:count]
+
+    def get_group_access_count(self):
+        return MembershipV2.objects.filter(user=self).count()
+
     def get_user_access_mapping_related_manager(self):
         all_user_identities = self.module_identity.order_by('id').reverse()
         access_request_mapping_related_manager = []
@@ -252,7 +286,7 @@ class User(models.Model):
 
     def get_total_access_count(self):
         return UserAccessMapping.objects.filter(user_identity__user=self).count()
-    
+
     @staticmethod
     def get_user_from_username(username):
         try:
@@ -560,6 +594,22 @@ class GroupV2(models.Model):
         except MembershipV2.DoesNotExist:
             return False
         return membership.is_owner
+
+    def member_status(self, user):
+        try:
+            membership = self.membership_group.get(user=user)
+        except MembershipV2.DoesNotExist:
+            return False
+        return membership.status
+
+    def get_user_group_details(self, user):
+        access_request_data = {}
+        if self.get_approved_group_by_name(self.name):
+            access_request_data["name"] = self.name
+            access_request_data["status"] = self.member_status(user)
+            access_request_data["role"] = "Owner" if self.member_is_owner(user) else "Member"
+
+        return access_request_data
 
     def get_active_accesses(self):
         return self.group_access_mapping.filter(
