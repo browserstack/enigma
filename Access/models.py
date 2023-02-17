@@ -846,9 +846,8 @@ class UserAccessMapping(models.Model):
     def processing(self, approval_type, approver):
         if approval_type == ApprovalType.Primary:
             self.approver_1 = approver
-        else: 
+        if approval_type == ApprovalType.Secondary: 
             self.approver_2 = approver
-
         self.status = "Processing"
         self.save()
 
