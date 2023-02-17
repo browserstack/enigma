@@ -25,7 +25,6 @@ USER_ACCESS_REQUEST_GRANT_FAILURE_SUBJECT = "[Enigma][Access Management] {} - {}
     Failed to Approve Request"
 
 
-
 def send_new_group_create_notification(auth_user, date_time, new_group, member_list):
     subject = NEW_GROUP_EMAIL_SUBJECT + auth_user.email + " -- " + date_time
     body = helpers.generateStringFromTemplate(
@@ -209,3 +208,46 @@ def send_mail_for_access_grant_failed(
     body = ACCESS_GRANT_FAILED_MESSAGE.format(user_email, request_id)
     body = body + "Failure Reason - " + message
     general.emailSES(destination, subject, body)
+
+
+def send_group_access_declined(
+    destination, group_name, requester, decliner, request_id, declined_access, reason
+):
+    body = helpers.generateStringFromTemplate(
+        "groupAccessDeclined.html",
+        request_id=request_id,
+        requester=requester,
+        decliner=decliner,
+        group_name=group_name,
+        declined_access=declined_access,
+        reason=reason,
+    )
+
+    subject = subject = "Declined Request " + request_id
+    general.emailSES(destination, subject, body)
+
+
+def send_accept_group_access_failed(destination, request_id, error):
+    try:
+        body = helpers.generateStringFromTemplate(
+            "acceptGroupAccessFailed.html", request_id=request_id, error=error
+        )
+
+        subject = subject = "Failed Request " + request_id
+        general.emailSES(destination, subject, body)
+    except Exception as e:
+        logger.exception(str(e))
+        logger.error("Something when wrong while sending Email.")
+
+
+def send_decline_group_access_failed(destination, request_id, error):
+    try:
+        body = helpers.generateStringFromTemplate(
+            "declineGroupAccessFailed.html", request_id=request_id, error=error
+        )
+
+        subject = subject = "Declined Failed Request " + request_id
+        general.emailSES(destination, subject, body)
+    except Exception as e:
+        logger.exception(str(e))
+        logger.error("Something when wrong while sending Email.")
