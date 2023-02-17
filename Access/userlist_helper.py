@@ -153,9 +153,9 @@ def __change_identity_and_transfer_access_mapping(
     for mapping in new_user_access_mapping:
         if mapping.is_approved() or mapping.is_grantfailed():
             if mapping.approver_2:
-                accept_request(user_access_mapping = mapping, approval_type=ApprovalType.Secondary)
+                accept_request(user_access_mapping = mapping, approval_type=ApprovalType.Secondary, approver = mapping.approver_2)
             elif mapping.approver_1:
-                accept_request(user_access_mapping=mapping, approval_type=ApprovalType.Primary)
+                accept_request(user_access_mapping=mapping, approval_type=ApprovalType.Primary, approver = mapping.approver_1)
             else:
                 logger.fatal("migration failed for request_id:%s mapping is approved but approvers are missing: %s", 
                 mapping.request_id)
