@@ -2,6 +2,10 @@
 {% load myaccess_css_helpers %}
 {% load static %}
 
+{% block head_body %}
+<script src={% static "js/showAccessHistory.js" %}></script>
+{% endblock %}
+
 {% block nav_breadcrumb %}
 <nav class="flex px-8 py-6 flex-shrink-0" aria-label="Breadcrumb">
   <ol role="list" class="flex items-center space-x-4">
@@ -36,8 +40,47 @@
     </div>
     <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
       <a href="{% url 'newAccessRequest' %}" class="text-blue-600 hover:text-blue-900">
-        <button type="button" class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">Request Access</button>
+        <button type="button" class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto">Request Access</button>
       </a>
+    </div>
+  </div>
+  <div class="flex flex-row gap-4 place-content-end mt-8">
+    <div class="w-2/12">
+      <div class="relative" onclick="focusFilterStatus(this);">
+        <button type="button" class="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+          <span class="block truncate text-gray-500">Status</span>
+          <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#000000" aria-hidden="true">
+              <path d="M0 0h24v24H0z" fill="none"/>
+              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" clip-rule="evenodd"/>
+            </svg>
+          </span>
+        </button>
+
+        <ul class="hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label" aria-activedescendant="listbox-option-3">
+          <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0" role="option" onclick="selectLI(this);">
+            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
+              <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
+            </span>
+
+            <span class="font-normal block truncate ml-8">Wade Cooper</span>
+          </li>
+          <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0" role="option" onclick="selectLI(this);">
+            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
+              <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
+            </span>
+
+            <span class="font-normal block truncate ml-8">Wade Cooper</span>
+          </li>
+          <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0" role="option" onclick="selectLI(this);">
+            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
+              <input type="checkbox" id="vehicle1" name="vehicle1" value="Bike">
+            </span>
+
+            <span class="font-normal block truncate ml-8">Wade Cooper</span>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
   <div class="mt-8 flex flex-col">
@@ -65,7 +108,9 @@
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-2xl truncate">{{ each_access.accessCategory }}</td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ each_access.accessRequestType }}</td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  <a href="#" class="text-blue-600 hover:text-blue-900">Regrant Access<span class="sr-only">, {{ each_access.requestId }}</span></a>
+                  <a href="#" class="text-blue-100 hover:text-blue-200">
+                    <button type="button" class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto">Regrant Access</button>
+                  </a>
                 </td>
               </tr>
               {% endfor %}

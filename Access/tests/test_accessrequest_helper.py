@@ -86,7 +86,7 @@ from django.http import HttpRequest, QueryDict
         ),
     ],
 )
-def test_requestAccessGet(
+def test_get_request_access(
     mocker,
     contextoutput,
     getAvailableAccessModulesThrowsException,
@@ -115,19 +115,20 @@ def test_requestAccessGet(
 
     if not getAvailableAccessModulesThrowsException:
         mocker.patch(
-            "Access.helpers.get_available_access_modules", return_value={'AccModule1': accessModule}
+            "Access.helpers.get_available_access_modules",
+            return_value={"AccModule1": accessModule},
         )
     else:
         mocker.patch(
             "Access.helpers.get_available_access_modules",
-            return_value={'AccModule1': accessModule},
+            return_value={"AccModule1": accessModule},
             side_effect=Exception("getAvailableAccessModules error"),
         )
 
     request = HttpRequest()
     request.method = "GET"
     request.GET = QueryDict("accesses=access_AccModule1")
-    context = accessrequest_helper.requestAccessGet(request)
+    context = accessrequest_helper.get_request_access(request)
     if not getAvailableAccessModulesThrowsException:
         assert str(context["accesses"][0]) == str(contextoutput["accesses"][0])
     else:
@@ -230,7 +231,7 @@ def test_pendingFailure(
             side_effect=Exception(getUserExceptionString),
         )
 
-    context = accessrequest_helper.getGrantFailedRequests(request)
+    context = accessrequest_helper.get_grant_failed_requests(request)
     assert str(context) == expectedOutput
 
 
