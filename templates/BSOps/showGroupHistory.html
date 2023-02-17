@@ -36,10 +36,22 @@
 {% endblock %}
 
 {% block content_body %}
+
+<style>
+    /* clears the ‘X’ from Internet Explorer */
+    input[type=search]::-ms-clear { display: none; width : 0; height: 0; }
+    input[type=search]::-ms-reveal { display: none; width : 0; height: 0; }
+    /* clears the ‘X’ from Chrome */
+    input[type="search"]::-webkit-search-decoration,
+    input[type="search"]::-webkit-search-cancel-button,
+    input[type="search"]::-webkit-search-results-button,
+    input[type="search"]::-webkit-search-results-decoration { display: none; }
+</style>
+
 <div class="px-4 sm:px-6 lg:px-8 w-full">
     <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
-            <h1 class="text-xl font-semibold text-gray-900">Groups</h1>
+            <h1 class="text-2xl font-bold text-gray-900">Groups</h1>
         </div>
         <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
             <a href="{% url 'createNewGroup' %}" class="text-blue-600 hover:text-blue-900">
@@ -51,6 +63,27 @@
             </a>
         </div>
     </div>
+
+    <div class="mt-8 flex flex-col gap-4">
+        <div class="sm:flex-auto">
+            <h1 class="text-lg font-medium text-gray-900">All Groups</h1>
+        </div>
+
+        <form class="flex items-center">
+            <div class="relative w-2/6 box-border shadow-sm border border-solid bg-white">
+                <input type="search" class="flex-none border-none text-gray-500 text-sm font-normal px-4 py-2 min-w-full"
+                       placeholder="Search by group name, role type or status" required>
+                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                    <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd"
+                         d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                         clip-rule="evenodd"></path></svg>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
     <div class="mt-8 flex flex-col">
         <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
@@ -59,7 +92,7 @@
                         <thead class="bg-gray-50">
                             <tr>
                                 <th scope="col"
-                                    class="py-3.5 pl-4 pr-3 text-left text-sm font-normal text-gray-400 sm:pl-6 uppercase w-1/6">
+                                    class="py-3.5 pl-4 pr-3 text-left text-sm font-normal text-gray-400 sm:pl-6 uppercase w-2/6">
                                     Groups</th>
                                 <th scope="col"
                                     class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-1/6">
@@ -86,9 +119,24 @@
                                 </td>
                                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-sm font-medium sm:pr-6">
                                     {% if each_group.role == "Owner" %}
-                                        <a href="#" class="text-blue-600 hover:text-blue-900">Add Member<span
-                                            class="sr-only">, {{ each_group.name }}</span></a> |
-                                        <a href="#" class="text-blue-600 hover:text-blue-900">Add Module</a>
+                                        <a href="#" class="text-blue-100 hover:text-blue-200">
+                                            <button type="button"
+                                                    class="inline-flex items-center justify-center rounded-md border
+                                                           border-transparent bg-blue-100 px-4 py-2 text-sm font-medium
+                                                           text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none
+                                                           focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
+                                                           sm:w-auto">Add Module
+                                            </button>
+                                        </a>
+                                        <a href="#" class="text-blue-100 hover:text-blue-200">
+                                            <button type="button"
+                                                    class="inline-flex items-center justify-center rounded-md border
+                                                           border-transparent bg-blue-100 px-4 py-2 text-sm font-medium
+                                                           text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none
+                                                           focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
+                                                           sm:w-auto">Add Member
+                                            </button>
+                                        </a>
                                     {%else%}
                                         NA
                                     {%endif%}

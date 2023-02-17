@@ -282,9 +282,11 @@ def get_pending_accesses_from_modules(access_user):
         process_group_requests(pending_accesses["group_requests"], group_requests)
 
         logger.info(
-            "Time to fetch pending requests of access module: %s - %s "
-            % access_module_tag,
-            str(time.time() - access_module_start_time),
+            "Time to fetch pending requests of access module: %s - %s " %
+            (
+                access_module_tag,
+                str(time.time() - access_module_start_time)
+            ),
         )
 
     return individual_requests, list(group_requests.values())
