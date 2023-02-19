@@ -23,8 +23,8 @@
   "background_task_manager": {
     "type": "celery",
     "config": {
-      "broker": "<celery-broker-url>",
-      "backend": "<celery-result-backend-url>",
+      "broker": "redis://redis:6379/0",
+      "backend": "redis://redis:6379/0",
       "need_monitoring": true,
       "monitoring_apps": "django_celery_results"
     }
