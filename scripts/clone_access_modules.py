@@ -11,6 +11,7 @@ try:
     for url in urls:
         folder_name = url.split("/").pop()[:-4]
         folder_path = "./Access/access_modules/" + folder_name
+        print(folder_name)
         try:
             if os.path.exists(folder_path):
                 Repo(folder_path).remotes.origin.pull()
@@ -24,7 +25,7 @@ try:
                         and file != ".git"
                         and file != ".github"
                         and file != "secrets"
-                    ):
+                    ) or (file == "requirements.txt"):
                         os.rename(
                             folder_path + "/" + file, "./Access/access_modules/" + file
                         )
@@ -33,11 +34,12 @@ try:
                 # includes folders and files using shutil.rmtree()
                 # shutil.rmtree() sometimes throws an error on windows,
                 # so we use try and except to ignore the error
-                try:
-                    shutil.rmtree(folder_path)
-                except Exception as e:
-                    print(e)
-                    print("failed to remove " + folder_path + " folder.")
+            try:
+                print("REMOVED" ,folder_path)
+                shutil.rmtree(folder_path)
+            except Exception as e:
+                print(e)
+                print("failed to remove " + folder_path + " folder.")
 
             print("Cloning successful!")
 

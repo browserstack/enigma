@@ -5,7 +5,7 @@ all: build test lint
 ## make dev : Build and start docker containers - (web/test/db)
 .PHONY: dev
 dev:
-	@docker-compose build && docker-compose up -d
+	@python3 scripts/make_config_and_env_and_readme.py && python3 scripts/clone_access_modules.py && python3 scripts/merge_requirements.py && python3 scripts/merge_config.py && docker-compose build && docker-compose up -d
 
 ## make build : Build and start docker containers - (web and db)
 .PHONY: build
@@ -44,7 +44,7 @@ lint_issues:
 .PHONY: lint
 lint: lint_issues
 	@python3 -m pylama --version
-	@pylama -r lint_issues || echo "Linter run returned errors. Check lint_issues file for details." && false
+	@pylama --skip "env/*" -r lint_issues || echo "Linter run returned errors. Check lint_issues file for details." && false
 
 schema_validate:
 	@echo $(shell python3 scripts/clone_access_modules.py && python3 scripts/validator.py)

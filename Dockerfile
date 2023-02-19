@@ -22,7 +22,7 @@ RUN chown -R app /srv/code/dev
 USER app
 
 # Copy just requirements.txt
-COPY requirements.txt /tmp/requirements.txt
+COPY merged_requirements.txt /tmp/requirements.txt
 COPY config.json.sample config.json
 
 # Install Python dependencies
@@ -33,6 +33,11 @@ COPY --chown=app:root . .
 FROM base as test
 ENTRYPOINT [ "python" ]
 CMD [ "-m", "pytest", "-v", "--cov", "--disable-warnings" ]
+
+
+FROM base as celery
+ENTRYPOINT [ "python" ]
+CMD ["-m","celery", "-A", "BrowserStackAutomation", "worker" ,"-n","worker1"]
 
 FROM base as web
 COPY ./docker-entrypoint.sh /tmp/entrypoint.sh

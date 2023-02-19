@@ -17,6 +17,7 @@ services:
     - 8000:8000
     depends_on:
     - db
+
     command: >
       /bin/bash -c "
         while ! nc -z db 3306;
@@ -34,6 +35,39 @@ services:
     - ./secrets/ops_mysql_dev.env
     volumes:
     - ./dbs:/var/lib/mysql --socket=/tmp/mysql.sock
+
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    command: --port 6379
+    ports:
+      - "6379:6379"
+    expose:
+      - "6379"
+
+  celery:
+    container_name: celery
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target : celery
+
+    volumes:
+      - ./:/app/
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - C_FORCE_ROOT=true
+      - MYSQL_ROOT_PASSWORD=testtest
+      - MYSQL_DATABASE=enigma
+      - MYSQL_ROOT_HOST=%
+
+    depends_on:
+      - db
+      - redis
+      - web
+      
   test:
     container_name: test
     build:
