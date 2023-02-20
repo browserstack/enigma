@@ -341,6 +341,278 @@
     });
 
 </script>
+<div class="px-8 py-6 sm:px-6 lg:px-8 w-full">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-xl font-semibold text-gray-900">Pending Action</h1>
+		</div>
+	</div><br>
+	<div class="overflow-hidden bg-white shadow sm:rounded-md">
+		<ul role="list" class="divide-y divide-gray-200">
+			<li>
+				<div class="relative px-4 py-4 sm:px-6">
+					<input type="checkbox" id="test" class="absolute w-full h-20px opacity-0 cursor-pointer peer">
+					<div class="flex">
+						<div class="peer-checked:opacity-0">
+							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+						</div>
+
+						<div class="px-2 peer-checked:opacity-0">
+							<p class="truncate text-sm font-medium text-grey-900">Group Access Requests</p>
+						</div>
+					</div>
+					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
+						{% if groupGenericRequests|length %}
+						<div class="divide-y divide-gray-200">
+							{% for group in groupGenericRequests %}
+								<div class="py-7">
+									<H1 class="text-xl py-2">{{group.group_club_id}}</H1>
+									<!-- <div class="divide-y divide-gray-200">
+
+									</div> -->
+									<table class="table-auto text-left text-sm w-7/12">
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Requested for group</td>
+											<td class="text-gray-700 py-4">{{ group.groupName }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Requested by</td>
+											<td class="text-gray-700 py-4">{{ group.userEmail }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Requested on</td>
+											<td class="text-gray-700 py-4">{{ group.requested_on }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Approval SLA Breached</td>
+											<td class="text-gray-700 py-4">{{ group.sla_breached }}</td>
+										</tr>
+									</table>
+									{% if not group.needsAccessApprove %}
+									<div class="border-b border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
+										<div class="pr-3"><svg class="fill-current h-6 w-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+										<div class="text-blue-800 text-sm"><p>Note - This group does not require approval for adding new members</p></div>
+									</div>
+									{% endif %}
+									<p class="font-bold text-sm pt-6">Access Requested</p>
+									{% for eachAccessDetails in group.accessData %}
+										<div class="border-b drop-shadow-lg border-gray-200 bg-white px-4 py-5 my-4 rounded-md border flex-none w-7/12">
+											<table class="table-auto text-left text-sm w-full">
+												<tr class="bg-white border-b dark:border-gray-700">
+													<td class="font-bold py-4">{{ eachAccessDetails.accessType }}</td>
+													<td class="text-gray-600 py-4">{{ eachAccessDetails.accessCategory }}</td>
+												</tr>
+												<tr class="bg-white border-b dark:border-gray-700">
+													<td class="text-gray-600 py-4">Reason</td>
+													<td class="text-gray-600 py-4">{{ eachAccessDetails.accessReason }}</td>
+												</tr>
+											</table>
+											<div class="text-sm pt-5">
+												<button class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+												<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium">Decline</button>
+											</div>
+										</div>
+									{% endfor %}
+								</div>
+							{% endfor %}
+						</div>
+						{% endif %}
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="relative px-4 py-4 sm:px-6">
+					<input type="checkbox" id="test" class="absolute w-full h-20px opacity-0 cursor-pointer peer">
+					<div class="flex">
+						<div class="peer-checked:opacity-0">
+							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+						</div>
+
+						<div class="px-2 peer-checked:opacity-0">
+							<p class="truncate text-sm font-medium text-grey-900">Group Creation Requests</p>
+						</div>
+					</div>
+					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
+						{% if newGroupPending|length %}
+						<div class="divide-y divide-gray-200">
+							{% for group in newGroupPending %}
+								<div class="py-7">
+									<H1 class="text-xl py-2">{{group.groupRequest.group_id}}</H1>
+									<table class="table-auto text-left text-sm w-7/12">
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Group Name</td>
+											<td class="text-gray-700 py-4">{{ group.groupRequest.name }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Group Description</td>
+											<td class="text-gray-700 py-4">{{ group.groupRequest.description }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Requested by</td>
+											<td class="text-gray-700 py-4">{{ group.groupRequest.requester.email }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Requested on</td>
+											<td class="text-gray-700 py-4">{{ group.groupRequest.requested_on }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Initial Members</td>
+											<td class="text-gray-700 py-4">{{ group.initialMembers }}</td>
+										</tr>
+									</table>
+									<div class="border-b border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
+										<div class="pr-3"><svg class="fill-current h-6 w-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+										{% if not group.needsAccessApprove %}
+										<div class="text-blue-800 text-sm"><p>Note - Further addition of users will not require permission from access_approve</p></div>
+										{% else %}
+										<div class="text-blue-800 text-sm"><p>Note - Further addition of users will require permission from access_approve</p></div>
+										{% endif %}
+									</div>
+									<div class="border-b border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
+										<div class="pr-3"><svg class="fill-current h-6 w-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+										<div class="text-blue-800 text-sm"><p>Note - Initial members will be automatically added to group.</p></div>
+									</div>
+									<div class="text-sm pt-5">
+										<button class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+										<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium">Decline</button>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+						{% endif %}
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="relative px-4 py-4 sm:px-6">
+					<input type="checkbox" id="test" class="absolute w-full h-20px opacity-0 cursor-pointer peer">
+					<div class="flex">
+						<div class="peer-checked:opacity-0">
+							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+						</div>
+
+						<div class="px-2 peer-checked:opacity-0">
+							<p class="truncate text-sm font-medium text-grey-900">Group Membership Addition Request</p>
+						</div>
+					</div>
+					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
+						{% if membershipPending|length %}
+						<div class="divide-y divide-gray-200">
+							{% for member in membershipPending %}
+								<div class="py-7">
+									<H1 class="text-xl py-2">{{member.membership_id}}</H1>
+									<table class="table-auto text-left text-sm w-7/12">
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Group Name</td>
+											<td class="text-gray-700 py-4">{{ member.group.name }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">New Member</td>
+											<td class="text-gray-700 py-4">{{ member.user.email }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Requested by</td>
+											<td class="text-gray-700 py-4">{{ member.requested_by.email }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Requested on</td>
+											<td class="text-gray-700 py-4">{{ member.requested_on }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Reason for Request</td>
+											<td class="text-gray-700 py-4">{{ member.reason }}</td>
+										</tr>
+									</table>
+									<div class="text-sm pt-5">
+										<button class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+										<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium">Decline</button>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+						{% endif %}
+					</div>
+				</div>
+			</li>
+			{% for each_module in genericRequests %}
+			{% if each_module.requests|length %}
+			<li>
+				<div class="relative px-4 py-4 sm:px-6">
+					<input type="checkbox" id="test" class="absolute w-full h-20px opacity-0 cursor-pointer peer">
+					<div class="flex">
+						<div class="peer-checked:opacity-0">
+							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+						</div>
+
+						<div class="px-2 peer-checked:opacity-0">
+							<p class="truncate text-sm font-medium text-grey-900">{{ each_module.module_tag }}</p>
+						</div>
+					</div>
+					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
+						<div class="divide-y divide-gray-200">
+							{% for eachRequest in each_module.requests %}
+								<div class="py-7">
+									<H1 class="text-xl py-2">{{eachRequest.club_id}}</H1>
+									<table class="table-auto text-left text-sm w-7/12">
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Requested by</td>
+											<td classs="text-gray-700 py-4">{{ eachRequest.userEmail }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Requested On</td>
+											<td class="text-gray-700 py-4">{{ eachRequest.requested_on }} UTC</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Approval SLA Breached</td>
+											<td class="text-gray-700 py-4">{{ eachRequest.sla_breached}}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Access type</td>
+											<td class="text-gray-700 py-4">{{ eachRequest.accessType }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Reason for Request</td>
+											<td class="text-gray-700 py-4">{{ eachRequest.accessReason }}</td>
+										</tr>
+									</table>
+									<p class="font-bold text-sm pt-6">Accesses</p>
+									{% for accessData in eachRequest.accessData %}
+									<div>
+										<p class="text-gray-700 text-sm pt-2">{{ accessData.accessCategory }}</p>
+										<b class="text-sm pt-5">Access Metadata</b>
+										<div class="border-b drop-shadow-lg border-gray-200 bg-white px-4 py-5 my-4 rounded-md border flex-none w-7/12">
+											<table class="table-auto text-left text-sm w-full">
+												{% for key, value in accessData.accessMeta.items %}
+												<tr class="bg-white border-b dark:border-gray-700">
+													<td class="text-gray-600 py-4">{{ key }}</td>
+													<td class="text-gray-600 py-4">{{ value }}</td>
+												</tr>
+												{% endfor %}
+											</table>
+											<div class="text-sm pt-5">
+												<button class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+												<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium">Decline</button>
+											</div>
+										</div>
+									</div>
+									{% endfor %}
+									<div class="text-sm pt-5">
+										<button class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+										<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium">Decline</button>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+			</li>
+			{% endif %}
+			{% endfor %}
+		</ul>
+	</div>
+</div>
+
+
 
 <!-- DECLINE REASON MODAL -->
 <div id="declineModal" class="modal">
