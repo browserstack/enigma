@@ -14,7 +14,6 @@ RUN DEBIAN_FRONTEND=noninteractive \
 
 # Set env variables used in this Dockerfile (add a unique prefix, such as DEV)
 RUN apt update && apt install -y netcat dnsutils libmariadbclient-dev
-
 RUN useradd -rm -d /home/app -s /bin/bash -g root -G sudo -u 1001 app
 WORKDIR /srv/code/dev
 RUN mkdir -p logs
@@ -37,7 +36,7 @@ CMD [ "-m", "pytest", "-v", "--cov", "--disable-warnings" ]
 
 FROM base as celery
 ENTRYPOINT [ "python" ]
-CMD ["-m","celery", "-A", "BrowserStackAutomation", "worker" ,"-n","worker1"]
+CMD ["-m","celery", "-A", "BrowserStackAutomation", "worker" ,"-n","worker1" ,"-l","DEBUG"]
 
 FROM base as web
 COPY ./docker-entrypoint.sh /tmp/entrypoint.sh

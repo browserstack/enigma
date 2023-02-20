@@ -13,39 +13,39 @@ try:
         folder_path = "./Access/access_modules/" + folder_name
         print(folder_name)
         try:
-            if os.path.exists(folder_path):
-                Repo(folder_path).remotes.origin.pull()
-            else:
-                Repo.clone_from(url, folder_path)
+               Repo.clone_from(url, folder_path)
                 # move all folders, not files in the cloned repo to the access_modules
                 # folder except the .git, .github and secrets folder
-                for file in os.listdir(folder_path):
+               for file in os.listdir(folder_path):
                     if (
                         os.path.isdir(folder_path + "/" + file)
                         and file != ".git"
                         and file != ".github"
                         and file != "secrets"
                     ) or (file == "requirements.txt"):
-                        os.rename(
-                            folder_path + "/" + file, "./Access/access_modules/" + file
-                        )
+                        try:
+                            os.rename(
+                                folder_path + "/" + file, "./Access/access_modules/" + file
+                            )
+                        except:
+                            shutil.rmtree(folder_path)
 
                 # remove the cloned repo folder entirely with all its contents which
                 # includes folders and files using shutil.rmtree()
                 # shutil.rmtree() sometimes throws an error on windows,
                 # so we use try and except to ignore the error
-            try:
-                print("REMOVED" ,folder_path)
-                shutil.rmtree(folder_path)
-            except Exception as e:
-                print(e)
-                print("failed to remove " + folder_path + " folder.")
+               try:
+                   print("REMOVED" ,folder_path)
+                   shutil.rmtree(folder_path)
+               except Exception as e:
+                    print(e)
+                    print("failed to remove " + folder_path + " folder.")
 
-            print("Cloning successful!")
+               print("Cloning successful!")
 
         except Exception as e:
-            print(e)
-            print("failed cloning " + folder_name + ".")
+           print(e)
+           print("failed cloning " + folder_name + ".")
 except Exception as e:
     print("Access module cloning failed!")
     print(str(e))

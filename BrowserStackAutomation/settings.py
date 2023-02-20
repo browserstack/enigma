@@ -29,7 +29,7 @@ SECRET_KEY = "abc"
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['0.0.0.0']
+ALLOWED_HOSTS = ['0.0.0.0','127.0.0.1']
 
 
 # Application definition
@@ -225,4 +225,6 @@ ACCESS_APPROVE_EMAIL = data["emails"]["access-approve"]
 ACCESS_MODULES = data["access_modules"]
 
 AUTOMATED_EXEC_IDENTIFIER = 'automated-grant'
+
+
 
