@@ -1,6 +1,6 @@
 import logging
 import time
-from Access.views_helper import execute_group_access
+from Access.views_helper import execute_group_access, accept_request
 
 from BrowserStackAutomation.settings import DECLINE_REASONS, MAIL_APPROVER_GROUPS
 import datetime
@@ -536,14 +536,14 @@ def _validate_access_request(access_request_form, user):
     return {}, access_request
 
 
-def validate_access_labels(access_labels_json, access_type):
+def validate_access_labels(access_labels_json, access_tag):
     if access_labels_json is None or access_labels_json == "":
         raise Exception("No fields were selected in the request. Please try again.")
     access_labels = json.loads(access_labels_json)
     if len(access_labels) == 0:
         raise Exception(
-            "No fields were selected in the request for {access_type}. Please try again.".format(
-                access_type=access_type
+            "No fields were selected in the request for {access_tag}. Please try again.".format(
+                access_tag=access_tag
             )
         )
     return access_labels
@@ -648,7 +648,7 @@ def run_accept_request_task(
 
     with transaction.atomic():
         try:
-            accept_request(user_access_mapping=access_mapping, approval_type=approval_type, approver = auth_user.user)
+            access_mapping.processing(approval_type = approval_type, approver=auth_user.user)
         except Exception as e:
             logger.exception(e)
             raise Exception(
@@ -656,7 +656,7 @@ def run_accept_request_task(
                     request_id=request_id
                 )
             )
-
+    accept_request(access_mapping)
     json_response["status"].append(
         {
             "title": REQUEST_SUCCESS_MSG["title"].format(request_id=request_id),

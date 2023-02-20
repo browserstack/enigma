@@ -152,6 +152,7 @@ def allUsersList(request):
     return render(request, "BSOps/allUsersList.html", context)
 
 
+@login_required
 def user_offboarding(request):
     try:
         response = offboard_user(request)
@@ -160,7 +161,7 @@ def user_offboarding(request):
         return JsonResponse(response)
     except Exception as e:
         logger.exception(str(e))
-        return JsonResponse({"error": "Failed to offboard User"})
+        return JsonResponse({"error": "Failed to offboard User"}, status=400)
 
 
 @login_required

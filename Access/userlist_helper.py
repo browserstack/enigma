@@ -151,11 +151,11 @@ def __change_identity_and_transfer_access_mapping(
     existing_user_identity.decline_all_non_approved_access_mappings("Identity Updated")            
     
     for mapping in new_user_access_mapping:
-        if mapping.is_approved() or mapping.is_grantfailed():
+        if mapping.is_processing() or mapping.is_grantfailed():
             if mapping.approver_2:
-                accept_request(user_access_mapping = mapping, approval_type=ApprovalType.Secondary, approver = mapping.approver_2)
+                accept_request(user_access_mapping = mapping)
             elif mapping.approver_1:
-                accept_request(user_access_mapping=mapping, approval_type=ApprovalType.Primary, approver = mapping.approver_1)
+                accept_request(user_access_mapping=mapping)
             else:
                 logger.fatal("migration failed for request_id:%s mapping is approved but approvers are missing: %s", 
                 mapping.request_id)
@@ -211,15 +211,14 @@ def offboard_user(request):
         offboard_user_email = request.POST.get("offboard_email")
         if not offboard_user_email:
             raise Exception("Invalid request, attribute not found")
-
-        user = User.objects.filter(email=offboard_user_email).first()
-        if not user:
-            raise Exception("User not found")
-
     except Exception as e:
         logger.debug("Error in request, not found or Invalid request type")
         logger.exception(str(e))
         return {"error": ERROR_MESSAGE}
+
+    user = User.get_user_by_email(email=offboard_user_email)
+    if not user:
+        raise Exception("User not found")
 
     user.offboard(request.user.user)
 
