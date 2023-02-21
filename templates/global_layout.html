@@ -43,7 +43,7 @@
             </svg>
             <span class="truncate">Pending Actions</span>
 
-            <span class="{% count_class_for_path "PendingActions" request.path %} ml-auto inline-block py-0.5 px-3 text-xs rounded-full">{{ totalAccessCount }}</span>
+            <span class="{% count_class_for_path "PendingActions" request.path %} ml-auto inline-block py-0.5 px-3 text-xs rounded-full">{{ pendingActionsCount }}</span>
           </a>
 
           <a href="{% url 'showAccessHistory' %}" class="{% ahref_class_for_path "Access" request.path %} group flex items-center px-3 py-2 text-sm font-medium rounded-md cust-each-nav-tab" aria-current={% ahref_ariacurrent "Access" request.path %}">

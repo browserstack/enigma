@@ -253,6 +253,15 @@ class User(models.Model):
     def get_total_access_count(self):
         return UserAccessMapping.objects.filter(user_identity__user=self).count()
     
+    def get_pending_action_count(self):
+        pending_user_mapping = UserAccessMapping.objects.filter(status="Pending").count()
+        pending_new_groups = GroupV2.objects.filter(status="Pending").count()
+        members_new_groups = MembershipV2.objects.filter(group__status="Pending").count()
+        pending_memberships = MembershipV2.objects.filter(status="Pending").count()
+        pending_group_mapping = GroupAccessMapping.objects.filter(status="Pending").count()
+
+        return pending_group_mapping+pending_memberships-members_new_groups+pending_new_groups+pending_user_mapping
+    
     @staticmethod
     def get_user_from_username(username):
         try:
