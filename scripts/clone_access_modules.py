@@ -23,29 +23,26 @@ try:
                         and file != ".github"
                         and file != "secrets"
                     ) or (file == "requirements.txt"):
-                        try:
-                            os.rename(
+                         os.rename(
                                 folder_path + "/" + file, "./Access/access_modules/" + file
                             )
-                        except:
-                            shutil.rmtree(folder_path)
-
-                # remove the cloned repo folder entirely with all its contents which
-                # includes folders and files using shutil.rmtree()
-                # shutil.rmtree() sometimes throws an error on windows,
-                # so we use try and except to ignore the error
-               try:
-                   print("REMOVED" ,folder_path)
-                   shutil.rmtree(folder_path)
-               except Exception as e:
-                    print(e)
-                    print("failed to remove " + folder_path + " folder.")
 
                print("Cloning successful!")
 
         except Exception as e:
            print(e)
-           print("failed cloning " + folder_name + ".")
+
+        print("failed cloning " + folder_name + ".")
+                # remove the cloned repo folder entirely with all its contents which
+                # includes folders and files using shutil.rmtree()
+                # shutil.rmtree() sometimes throws an error on windows,
+                # so we use try and except to ignore the error
+        try:
+            shutil.rmtree(folder_path)
+        except Exception as e:
+            print(e)
+            print("failed to remove " + folder_path + " folder.")
+        
 except Exception as e:
     print("Access module cloning failed!")
     print(str(e))

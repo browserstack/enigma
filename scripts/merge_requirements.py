@@ -21,5 +21,3 @@ merged_requirements = list(set(requirements1 + requirements2))
 with open(output_file, 'w') as out_file:
     for requirement in sorted(merged_requirements):
         out_file.write(requirement)
-
-

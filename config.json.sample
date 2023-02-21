@@ -1,60 +1,32 @@
 {
-    "googleapi": {
-        "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "",
-        "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "",
-        "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS": ""
-    },
-    "database": {
-        "engine": "sqlite3"
-    },
-    "access_modules": {
-        "git_urls": [
-            "https://github.com/browserstack/enigma-public-access-modules.git"
-        ],
-        "aws_access": {
-            "aws_accounts": [
-                {
-                    "account": "Dev",
-                    "access_key_id": "id",
-                    "secret_access_key": "key"
-                }
-            ]
-        },
-        "confluence_module": {
-            "CONFLUENCE_BASE_URL": "https://test.atlassian.net",
-            "ADMIN_EMAIL": "test@browserstack.com",
-            "API_TOKEN": "xyz"
-        },
-        "gcp_access": {
-            "domains": [
-                {
-                    "domain_id": "browserstack.com",
-                    "admin_id": "test@browserstack.com",
-                    "service_account_path": "./gcp.json"
-                }
-            ]
-        },
-        "github_access": {
-            "GITHUB_TOKEN": "test-token",
-            "GITHUB_BASE_URL": "https://api.github.com",
-            "GITHUB_ORG": "browserstack"
-        }
-    },
-    "enigmaGroup": {
-        "MAIL_APPROVER_GROUPS": [
-            "devnull@browserstack.com"
-        ]
-    },
-    "emails": {
-        "access-approve": "<access-approve-email>"
-    },
-    "background_task_manager": {
-        "type": "celery",
-        "config": {
-            "broker": "redis://localhost:6379/0",
-            "backend": "redis://localhost:6379/0",
-            "need_monitoring": true,
-            "monitoring_apps": "django_celery_results"
-        }
+  "googleapi": {
+    "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "",
+    "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "",
+    "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS": ""
+  },
+  "database": {
+    "engine": "sqlite3"
+  },
+  "access_modules": {
+    "git_urls": [
+      "https://github.com/browserstack/enigma-public-access-modules.git"
+    ]
+  },
+  "enigmaGroup": {
+    "MAIL_APPROVER_GROUPS": [
+      "devnull@browserstack.com"
+    ]
+  },
+  "emails": {
+    "access-approve": "<access-approve-email>"
+  },
+  "background_task_manager": {
+    "type": "celery",
+    "config": {
+      "broker": "redis://redis:6379/0",
+      "backend": "redis://redis:6379/0",
+      "need_monitoring": true,
+      "monitoring_apps": "django_celery_results"
     }
+  }
 }

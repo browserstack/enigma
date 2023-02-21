@@ -5,7 +5,7 @@ all: build test lint
 ## make dev : Build and start docker containers - (web/test/db)
 .PHONY: dev
 dev:
-	@export DJANGO_SETTINGS_MODULE=BrowserStackAutomation.settings && python3 scripts/make_config_and_env_and_readme.py && python3 scripts/clone_access_modules.py && python3 scripts/github_test.py && python3 scripts/merge_requirements.py && python3 scripts/merge_config.py && docker-compose build && docker-compose up -d
+	@export DJANGO_SETTINGS_MODULE=BrowserStackAutomation.settings && python3 scripts/make_config_and_readme.py && python3 scripts/clone_access_modules.py && python3 scripts/github_test.py && python3 scripts/merge_requirements.py && python3 scripts/merge_config.py && docker-compose build && docker-compose up -d
 
 ## make build : Build and start docker containers - (web and db)
 .PHONY: build
@@ -44,7 +44,7 @@ lint_issues:
 .PHONY: lint
 lint: lint_issues
 	@python3 -m pylama --version
-	@pylama --skip "env/*" -r lint_issues || echo "Linter run returned errors. Check lint_issues file for details." && false
+	@pylama -r lint_issues || echo "Linter run returned errors. Check lint_issues file for details." && false
 
 schema_validate:
 	@echo $(shell python3 scripts/clone_access_modules.py && python3 scripts/validator.py)

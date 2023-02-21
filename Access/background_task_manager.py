@@ -327,8 +327,3 @@ def revoke_request(user_access_mapping, revoker=None):
         return True
     return False
 
-@shared_task(
-    autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
-)
-def add(x, y):
-    return x + y

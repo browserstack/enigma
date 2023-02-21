@@ -12,17 +12,6 @@ if not os.path.exists(output_file):
     shutil.copy(sample_file, output_file)
 
 
-# Set the names of the input and output files
-sample_file = '.env.sample'
-output_file = '.env'
-
-# Check if the output file exists, and create it if it doesn't
-if not os.path.exists(output_file):
-    open(output_file, 'w').close()
-    # Copy the sample file to the output file
-    shutil.copy(sample_file, output_file)
-
-
 # Set the name of the file to be created
 filename = 'README.md'
 
@@ -48,3 +37,5 @@ else:
         f.write('## License\n\n')
         f.write('This project is licensed under the MIT License - see the LICENSE file for details.\n')
         print(f"{filename} created successfully!")
+
+

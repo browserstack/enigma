@@ -23,14 +23,8 @@ for path, subdirs, files in os.walk(directory):
 
         if file_name == 'config.json.sample':
             sample_file = 'config.json.sample'
-            output_file = 'config.json'
             sample_file_path = (os.path.join('/'.join(curr_path_array) , sample_file))
-            output_file_path = (os.path.join('/'.join(curr_path_array) , output_file))
-            access_module_paths.append(output_file_path)
-            
-            if not os.path.exists(output_file_path):
-               open(output_file_path, 'w').close()
-               shutil.copy(sample_file_path, output_file_path)
+            access_module_paths.append(sample_file_path)
     
 
 access_module_tags = []

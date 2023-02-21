@@ -5,6 +5,7 @@
 # Set the base image to use to Ubuntu
 FROM python:3.11-slim-buster AS base
 
+ENV DJANGO_SETTINGS_MODULE=BrowserStackAutomation.settings
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update -y \
   && apt-get install --no-install-recommends -y \
