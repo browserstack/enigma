@@ -6,7 +6,7 @@ import logging
 from Access.views_helper import execute_group_access
 from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 from . import helpers as helper
-from Access.background_task_manager import background_task
+from Access.background_task_manager import background_task, revoke_request
 import json
 
 logger = logging.getLogger(__name__)
@@ -23,6 +23,9 @@ NEW_GROUP_CREATE_ERROR_MESSAGE = {
     "error_msg": "Internal Error",
     "msg": "Error Occured while loading the page. Please contact admin",
 }
+
+USER_UNAUTHORIZED_MESSAGE = "User unauthorised to perform the action."
+GROUP_ACCESS_MAPPING_NOT_FOUND = "Group Access Mapping not found in the database."
 
 NEW_GROUP_CREATE_ERROR_GROUP_EXISTS = {
     "error_msg": "Invalid Group Name",
@@ -172,7 +175,7 @@ def get_generic_access(group_mapping):
     return access_details
 
 
-def get_group_access_list(request, group_name):
+def get_group_access_list(auth_user, group_name):
     context = {}
     group = GroupV2.get_active_group_by_name(group_name)
     if not group:
@@ -186,7 +189,7 @@ def get_group_access_list(request, group_name):
         return context
 
     group_members = group.get_all_members().filter(status="Approved")
-    auth_user = request.user
+    auth_user = auth_user
 
     if not auth_user.user.is_allowed_admin_actions_on_group(group):
         logger.debug("Permission denied, requester is non owner")
@@ -304,7 +307,7 @@ def check_user_is_group_owner(user_name, group):
         return False
 
 
-def approve_new_group_request(request, group_id):
+def approve_new_group_request(auth_user, group_id):
     try:
         group = GroupV2.get_pending_group(group_id=group_id)
     except Exception as e:
@@ -316,7 +319,7 @@ def approve_new_group_request(request, group_id):
         context["error"] = REQUEST_NOT_FOUND_ERROR
         return context
     try:
-        if group.is_self_approval(approver=request.user.user):
+        if group.is_self_approval(approver=auth_user.user):
             context = {}
             context["error"] = SELF_APPROVAL_ERROR
             return context
@@ -325,8 +328,8 @@ def approve_new_group_request(request, group_id):
             context["msg"] = REQUEST_PROCESSING.format(requestId=group_id)
 
             with transaction.atomic():
-                group.approve(approved_by=request.user.user)
-                group.approve_all_pending_users(approved_by=request.user.user)
+                group.approve(approved_by=auth_user.user)
+                group.approve_all_pending_users(approved_by=auth_user.user)
             initial_members = group.get_all_members()
             initial_member_names = [user.user.name for user in initial_members]
             try:
@@ -344,7 +347,7 @@ def approve_new_group_request(request, group_id):
                 "Approved group creation for - "
                 + group_id
                 + " - Approver="
-                + request.user.username
+                + auth_user.username
             )
             if initial_members:
                 logger.debug(
@@ -502,7 +505,7 @@ def is_user_in_group(user_email, group_members_email):
     return user_email in group_members_email
 
 
-def accept_member(request, requestId, shouldRender=True):
+def accept_member(auth_user, requestId, shouldRender=True):
     try:
         membership = MembershipV2.get_membership(membership_id=requestId)
     except Exception as e:
@@ -511,17 +514,17 @@ def accept_member(request, requestId, shouldRender=True):
         context["error"] = REQUEST_NOT_FOUND_ERROR + str(e)
         return context
     try:
-        if membership.is_already_processed():
+        if not membership.is_pending():
             logger.warning(
                 "An Already Approved/Declined/Processing Request was accessed by - "
-                + request.user.username
+                + auth_user.username
             )
             context = {}
             context["error"] = REQUEST_PROCESSED_BY.format(
                 requestId=requestId, user=membership.approver.user.username
             )
             return context
-        elif membership.is_self_approval(approver=request.user.user):
+        elif membership.is_self_approval(approver=auth_user.user):
             context = {}
             context["error"] = SELF_APPROVAL_ERROR
             return context
@@ -529,7 +532,7 @@ def accept_member(request, requestId, shouldRender=True):
             context = {}
             context["msg"] = REQUEST_PROCESSING.format(requestId=requestId)
             with transaction.atomic():
-                membership.approve(request.user.user)
+                membership.approve(auth_user.user)
                 group = membership.group
                 user = membership.user
                 user_mappings_list = views_helper.generate_user_mappings(
@@ -545,7 +548,7 @@ def accept_member(request, requestId, shouldRender=True):
                 "Process has been started for the Approval of request - "
                 + requestId
                 + " - Approver="
-                + request.user.username
+                + auth_user.username
             )
             return context
     except Exception as e:
@@ -700,21 +703,10 @@ def validate_group_access_create_request(group, auth_user):
     return None
 
 
-def revoke_user_access(user, access, revoker_email):
+def revoke_user_access(user, access, revoker, decline_message):
     user_identity = user.get_active_identity(access.access_tag)
-    user_identity.decline_non_approved_access_mapping(access)
-    user_identity.offboarding_approved_access_mapping(access)
-    background_task(
-        "run_access_revoke",
-        json.dumps(
-            {
-                "request_id": user_identity.get_granted_access_mapping(access)
-                .first()
-                .request_id,
-                "revoker_email": revoker_email,
-            }
-        ),
-    )
+    user_identity.decline_non_approved_access_mapping(access, decline_message)
+    revoke_request(user_identity.get_granted_access_mapping(access).first(), revoker)
 
 def remove_member(request):
     try:
@@ -747,7 +739,8 @@ def remove_member(request):
     revoke_accesses = list(set(revoke_group_accesses) - set(other_group_accesses))
 
     for access in revoke_accesses:
-        revoke_user_access(user, access, request.user.user.email)
+        with transaction.atomic():
+            revoke_user_access(user, access, request.user.user, "User removed from the group")
 
     membership.revoke_membership()
 
@@ -771,12 +764,12 @@ def revoke_access_from_group(request):
         request_id = request.POST.get("request_id")
         if not request_id:
             logger.debug("Cannot find request_id in the http request.")
-            raise Exception("Request id not found in the request.")
+            return {"error": ERROR_MESSAGE}
         
         mapping = GroupAccessMapping.get_by_id(request_id)
         if not mapping:
             logger.debug("Group Access Mapping not found in the database")
-            raise Exception("Group Access Mapping not found in the database")
+            return {"error": GROUP_ACCESS_MAPPING_NOT_FOUND}
     except Exception as e:
         logger.exception(str(e))
         return {"error": ERROR_MESSAGE}
@@ -784,13 +777,14 @@ def revoke_access_from_group(request):
     group = mapping.group
     auth_user = request.user
     if not (auth_user.user.has_permission("ALLOW_USER_OFFBOARD") and group.member_is_owner(auth_user.user)):
-        raise Exception("User Unauthorized to perfrom the action")
+        return {"error": USER_UNAUTHORIZED_MESSAGE}
 
     for membership in group.get_all_approved_members():
         if access_exist_in_other_groups_of_user(membership, group, mapping.access):
             continue
 
-        revoke_user_access(membership.user, mapping.access, auth_user.user.email)
+        with transaction.atomic():
+            revoke_user_access(membership.user, mapping.access, auth_user.user, "Access revoked for the group")
     
     mapping.mark_revoked(auth_user.user)
 

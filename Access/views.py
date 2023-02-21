@@ -2,7 +2,6 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User as djangoUser
-from .models import UserAccessMapping
 from Access import views_helper
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -15,24 +14,17 @@ from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
 from Access import group_helper
 from Access.accessrequest_helper import (
-    requestAccessGet,
-    getGrantFailedRequests,
+    get_request_access,
+    get_grant_failed_requests,
     get_pending_revoke_failures,
-    getPendingRequests,
+    get_pending_requests,
     create_request,
     accept_user_access_requests,
     get_decline_access_request,
+    accept_group_access,
 )
-from Access.models import User, UserAccessMapping
-from Access.userlist_helper import (
-    getallUserList,
-    get_identity_templates,
-    create_identity,
-    NEW_IDENTITY_CREATE_ERROR_MESSAGE,
-    IDENTITY_UNCHANGED_ERROR_MESSAGE,
-    IdentityNotChangedException,
-)
-from Access.models import User
+from Access.models import User, UserAccessMapping, GroupAccessMapping
+
 from Access.userlist_helper import (
     getallUserList,
     get_identity_templates,
@@ -86,7 +78,7 @@ def showAccessHistory(request):
 @user_admin_or_ops
 def pendingFailure(request):
     try:
-        response = getGrantFailedRequests(request)
+        response = get_grant_failed_requests(request)
         return render(request, "BSOps/failureAdminRequests.html", response)
     except Exception as e:
         logger.debug("Error in request not found OR Invalid request type")
@@ -180,7 +172,7 @@ def requestAccess(request):
         )
         return render(request, "BSOps/accessStatus.html", context)
     else:
-        context = requestAccessGet(request)
+        context = get_request_access(request)
         return render(request, "BSOps/accessRequestForm.html", context)
 
 
@@ -197,7 +189,7 @@ def group_access(request):
 @login_required
 def group_access_list(request, groupName):
     try:
-        context = group_helper.get_group_access_list(request, groupName)
+        context = group_helper.get_group_access_list(request.user, groupName)
         if "error" in context:
             return render(request, "BSOps/accessStatus.html", context)
 
@@ -249,7 +241,7 @@ def add_user_to_group(request, groupName):
 @login_required
 @user_with_permission([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])
 def pendingRequests(request):
-    context = getPendingRequests(request)
+    context = get_pending_requests(request)
     return render(request, "BSOps/pendingRequests.html", context)
 
 
@@ -269,20 +261,31 @@ def accept_bulk(request, selector):
                     UserAccessMapping.get_pending_access_mapping(request_id=value)
                 )
                 requestIds.extend(current_ids)
+        elif selector == "clubGroupAccess":
+            for value in inputVals:
+                returnIds.append(value)
+                group_name, date_suffix = value.rsplit("-", 1)
+                current_ids = list(
+                    GroupAccessMapping.get_pending_access_mapping(request_id=group_name)
+                    .filter(request_id__contains=date_suffix)
+                )
+                requestIds.extend(current_ids)
+            selector = "groupAccess"
         else:
             requestIds = inputVals
         for value in requestIds:
             requestId = value
             if selector == "groupNew" and is_access_approver:
                 json_response = group_helper.approve_new_group_request(
-                    request, requestId
+                    request.user, requestId
                 )
             elif selector == "groupMember" and is_access_approver:
-                json_response = group_helper.accept_member(request, requestId, False)
+                json_response = group_helper.accept_member(request.user, requestId, False)
+            elif selector == "groupAccess":
+                json_response = accept_group_access(request.user, requestId)
             elif selector.endswith("-club"):
-                access_type = selector.rsplit("-", 1)[0]
                 json_response = accept_user_access_requests(
-                    request, access_type, requestId
+                    request.user, requestId
                 )
             else:
                 raise ValidationError("Invalid request")

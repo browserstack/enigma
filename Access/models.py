@@ -2,7 +2,13 @@ from django.contrib.auth.models import User as user
 from django.db import models, transaction
 from BrowserStackAutomation.settings import USER_STATUS_CHOICES, PERMISSION_CONSTANTS
 import datetime
+import enum
 
+
+class ApprovalType(enum.Enum):
+    Primary = "Primary"
+    Secondary = "Secondary"
+    
 
 class Permission(models.Model):
     """
@@ -260,8 +266,8 @@ class User(models.Model):
         self.save()
 
     def offboard(self, revoker):
-        self.change_state("offboarding")
-        self.update_revoker(revoker)
+        self.state = "offboarding"
+        self.revoker = revoker
         self.offbaord_date = datetime.datetime.now()
         self.user.is_active = False
         self.save()
@@ -369,8 +375,8 @@ class MembershipV2(models.Model):
     def is_self_approval(self, approver):
         return self.requested_by == approver
 
-    def is_already_processed(self):
-        return self.status in ["Declined", "Approved", "Processing", "Revoked"]
+    def is_pending(self):
+        return self.status == "Pending"
 
     @staticmethod
     def approve_membership(membership_id, approver):
@@ -721,9 +727,7 @@ class UserAccessMapping(models.Model):
         access_request_data["userEmail"] = self.user_identity.user.email
         access_request_data["requestId"] = self.request_id
         access_request_data["accessReason"] = self.request_reason
-        access_request_data["requested_on"] = (
-            str(self.requested_on)[:19] + "UTC" if self.updated_on else ""
-        )
+        access_request_data["requested_on"] = self.requested_on
 
         access_request_data["access_desc"] = access_module.access_desc()
         access_request_data["accessCategory"] = access_module.combine_labels_desc(
@@ -732,18 +736,26 @@ class UserAccessMapping(models.Model):
         access_request_data["accessMeta"] = access_module.combine_labels_meta(
             access_labels
         )
-        access_request_data["access_label"] = [key + "-" + str(val).strip("[]")
-                                              for key,val in list(self.access.access_label.items())
-                                              if key != "keySecret"]
+        access_request_data["access_label"] = [
+            key + "-" + str(val).strip("[]")
+            for key, val in list(self.access.access_label.items())
+            if key != "keySecret"
+        ]
         access_request_data["access_type"] = self.access_type
-        access_request_data["approver_1"] = self.approver_1.user.username
-        access_request_data["approver_2"] = self.approver_2.user.username
-        access_request_data["approved_on"] = self.approved_on
+        access_request_data["approver_1"] = (
+            self.approver_1.user.username if self.approver_1 else ""
+        )
+        access_request_data["approver_2"] = (
+            self.approver_2.user.username if self.approver_2 else ""
+        )
+        access_request_data["approved_on"] = self.approved_on if self.approved_on else ""
         access_request_data["updated_on"] = (
             str(self.updated_on)[:19] + "UTC" if self.updated_on else ""
         )
         access_request_data["status"] = self.status
-        access_request_data["revoker"] = self.revoker.user.username
+        access_request_data["revoker"] = (
+            self.revoker.user.username if self.revoker else ""
+        )
         access_request_data["offboarding_date"] = (
             str(self.user_identity.user.offbaord_date)[:19] + "UTC"
             if self.user_identity.user.offbaord_date
@@ -787,6 +799,9 @@ class UserAccessMapping(models.Model):
     def is_secondary_pending(self):
         return self.status == "SecondaryPending"
 
+    def is_grantfailed(self):
+        return self.status == "GrantFailed"
+
     def decline_access(self, decline_reason=None):
         self.status = "Declined"
         self.decline_reason = decline_reason
@@ -794,9 +809,8 @@ class UserAccessMapping(models.Model):
 
     def get_pending_access_mapping(request_id):
         return UserAccessMapping.objects.filter(
-            request_id__contains=request_id,
-            status__in=["Pending", "SecondaryPending"]
-        ).values_list('request_id', flat=True)
+            request_id__contains=request_id, status__in=["Pending", "SecondaryPending"]
+        ).values_list("request_id", flat=True)
 
     def update_access_status(self, current_status):
         self.status = current_status
@@ -810,6 +824,11 @@ class UserAccessMapping(models.Model):
         self.fail_reason = fail_reason
         self.save()
 
+    def revoke_failed(self, fail_reason=None):
+        self.status = "RevokeFailed"
+        self.fail_reason = fail_reason
+        self.save()
+
     def decline_access(self, decline_reason=None):
         self.status = "Declined"
         self.decline_reason = decline_reason
@@ -818,6 +837,45 @@ class UserAccessMapping(models.Model):
     def approve_access(self):
         self.status = "Approved"
         self.save()
+
+    def revoking(self, revoker):
+        self.revoker = revoker
+        self.status = "ProcessingRevoke"
+        self.save()        
+
+    def processing(self, approval_type, approver):
+        if approval_type == ApprovalType.Primary:
+            self.approver_1 = approver
+        elif approval_type == ApprovalType.Secondary: 
+            self.approver_2 = approver
+        else:
+            raise Exception("Invalid ApprovalType")
+        self.status = "Processing"
+        self.save()
+
+    @staticmethod
+    def create(
+        request_id,
+        user_identity,
+        access,
+        approver_1,
+        approver_2,
+        request_reason,
+        access_type,
+        status,
+    ):
+        mapping = UserAccessMapping(
+            request_id=request_id,
+            user_identity=user_identity,
+            access=access,
+            approver_1=approver_1,
+            approver_2=approver_2,
+            request_reason=request_reason,
+            access_type=access_type,
+            status=status,
+        )
+        mapping.save()
+        return mapping
 
 
 class GroupAccessMapping(models.Model):
@@ -938,6 +996,55 @@ class GroupAccessMapping(models.Model):
     
     
 
+    @staticmethod
+    def get_by_request_id(request_id):
+        try:
+            return GroupAccessMapping.objects.get(request_id=request_id)
+        except GroupAccessMapping.DoesNotExist:
+            return None
+
+    @staticmethod
+    def get_pending_access_mapping(request_id):
+        return GroupAccessMapping.objects.filter(
+            request_id__contains=request_id, status__in=["Pending", "SecondaryPending"]
+        ).values_list("request_id", flat=True)
+
+    def is_pending(self):
+        return self.status == "Pending"
+
+    def is_secondary_pending(self):
+        return self.status == "SecondaryPending"
+
+    def set_primary_approver(self, approver):
+        self.approver_1 = approver
+        self.save()
+
+    def set_secondary_approver(self, approver):
+        self.approver_2 = approver
+        self.save()
+
+    def get_primary_approver(self):
+        return self.approver_1
+
+    def get_secondary_approver(self):
+        return self.approver_2
+
+    def approve_access(self):
+        self.status = "Approved"
+        self.save()
+
+    def decline_access(self, decline_reason):
+        self.status = "Declined"
+        self.decline_reason = decline_reason
+        self.save()
+
+    def update_access_status(self, current_status):
+        self.status = current_status
+        self.save()
+
+    def is_self_approval(self, approver):
+        return self.requested_by == approver
+
 
 class AccessV2(models.Model):
     access_tag = models.CharField(max_length=255)
@@ -1017,13 +1124,12 @@ class UserIdentity(models.Model):
 
     def get_all_non_approved_access_mappings(self):
         return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"],
-            access__access_tag=self.access_tag,
+            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"]
         )
 
-    def decline_all_non_approved_access_mappings(self):
+    def decline_all_non_approved_access_mappings(self, decline_reason):
         user_mapping = self.get_all_non_approved_access_mappings()
-        user_mapping.update(status="Declined")
+        user_mapping.update(status="Declined", decline_reason = decline_reason)
 
     def get_granted_access_mapping(self, access):
         return self.user_access_mapping.filter(
@@ -1035,10 +1141,10 @@ class UserIdentity(models.Model):
             status__in=["approvefailed", "pending", "secondarypending", "grantfailed"],
             access=access,
         )
-
-    def decline_non_approved_access_mapping(self, access):
+    
+    def decline_non_approved_access_mapping(self, access, decline_reason):
         user_mapping = self.get_non_approved_access_mapping(access)
-        user_mapping.update(status="Declined")
+        user_mapping.update(status="Declined", decline_reason = decline_reason)
 
     def offboarding_approved_access_mapping(self, access):
         user_mapping = self.get_granted_access_mapping(access)
@@ -1069,7 +1175,7 @@ class UserIdentity(models.Model):
         for i, user_access in enumerate(existing_user_access_mapping):
             base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
             request_id = (
-                self.user.username
+                self.user.user.username
                 + "-"
                 + user_access.access_type
                 + "-"
@@ -1084,7 +1190,6 @@ class UserIdentity(models.Model):
             new_user_access_mapping.append(
                 self.user_access_mapping.create(
                     request_id=request_id,
-                    user=self,
                     access=user_access.access,
                     approver_1=user_access.approver_1,
                     approver_2=user_access.approver_2,
@@ -1093,7 +1198,6 @@ class UserIdentity(models.Model):
                     status=access_status,
                 )
             )
-            user_access.deactivate()
         return new_user_access_mapping
 
     def create_access_mapping(
