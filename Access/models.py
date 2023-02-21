@@ -266,8 +266,8 @@ class User(models.Model):
         self.save()
 
     def offboard(self, revoker):
-        self.change_state("offboarding")
-        self.update_revoker(revoker)
+        self.state = "offboarding"
+        self.revoker = revoker
         self.offbaord_date = datetime.datetime.now()
         self.user.is_active = False
         self.save()
