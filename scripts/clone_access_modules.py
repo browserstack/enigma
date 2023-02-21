@@ -11,7 +11,6 @@ try:
     for url in urls:
         folder_name = url.split("/").pop()[:-4]
         folder_path = "./Access/access_modules/" + folder_name
-        print(folder_name)
         try:
                Repo.clone_from(url, folder_path)
                 # move all folders, not files in the cloned repo to the access_modules
