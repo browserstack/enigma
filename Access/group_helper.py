@@ -471,7 +471,7 @@ def add_user_to_group(request):
                     str(e),
                 )
                 user_not_added.append(user.email)
-        if not group.needsAccessApprove:
+        if group.needsAccessApprove:
             notifications.send_mail_for_member_approval(
                 user.email,
                 str(request.user),
