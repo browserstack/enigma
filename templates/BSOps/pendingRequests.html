@@ -144,203 +144,277 @@
 
 </style>
 <script>
-    jQuery(document).ready(function ($) {
+	jQuery(document).ready(function ($) {
 
-        function showSSHCardWithTitle(environment) {
-            $(".filter").each(function (idx, elem) {
-                if ($(this).find("div div h4.card-title").text().indexOf(environment) > -1)
-                    $(this).show()
-                else
-                    $(this).hide()
-            })
-        }
+		function showSSHCardWithTitle(environment) {
+			$(".filter").each(function (idx, elem) {
+				if ($(this).find("div div h4.card-title").text().indexOf(environment) > -1)
+					$(this).show()
+				else
+					$(this).hide()
+			})
+		}
 
-        $(".dropdown-menu a").click(function () {
-            let selected_dropdown = $(this).text()
+		$(".dropdown-menu a").click(function () {
+			let selected_dropdown = $(this).text()
 
-            $(this).parents(".dropdown").find('.btn').html($(this).text());
-            $(this).parents(".dropdown").find('.btn').val($(this).data('value'));
+			$(this).parents(".dropdown").find('.btn').html($(this).text());
+			$(this).parents(".dropdown").find('.btn').val($(this).data('value'));
 
-            if (selected_dropdown === "Production") {
-                showSSHCardWithTitle("prod")
+			if (selected_dropdown === "Production") {
+				showSSHCardWithTitle("prod")
 
-            }
-            else if (selected_dropdown === "Staging") {
-                showSSHCardWithTitle("staging")
-            }
+			}
+			else if (selected_dropdown === "Staging") {
+				showSSHCardWithTitle("staging")
+			}
 
-        });
+		});
 
-        $(".dropdown-menu a:first-child").trigger('click')
+		$(".dropdown-menu a:first-child").trigger('click')
 
-        function updateStatus(result, selector) {
-            for (var request_id in result["response"]) {
-                div_id = request_id + "-action"
-                chkbox = request_id + "-checkbox"
-                if (document.getElementById(chkbox))
-                    document.getElementById(chkbox).innerHTML = ""
-                if (result["response"][request_id]["success"]) {
-                    msg = result["response"][request_id]["msg"]
-                    if (document.getElementById(div_id))
-                        document.getElementById(div_id).innerHTML = "<p style='color: #68e068'>" + msg + "</p>"
-                }
-                else {
-                    error = result["response"][request_id]["error"];
-                    if (document.getElementById(div_id))
-                        document.getElementById(div_id).innerHTML = "<p style='color: red'>" + error + "</p>"
-                }
-            }
-            if (selector.endsWith("-club") || selector == "clubGroupAccess") {
-                const overallarray = result["returnIds"]
-                for (var i = 0; i < overallarray.length; i++) {
-                    club = overallarray[i];
-                    div_id = club + "-action"
-                    chkbox = club + "-checkbox"
-                    if (document.getElementById(div_id))
-                        document.getElementById(div_id).innerHTML = "<p style='color: green'>Submitted!</p>"
-                    if (document.getElementById(chkbox))
-                        document.getElementById(chkbox).innerHTML = ""
-                }
-            }
-        }
+		// function updateStatus(result, selector) {
+		// 	for (var request_id in result["response"]) {
+		// 		div_id = request_id + "-action"
+		// 		chkbox = request_id + "-checkbox"
+		// 		if (document.getElementById(chkbox))
+		// 			document.getElementById(chkbox).innerHTML = ""
+		// 		if (result["response"][request_id]["success"]) {
+		// 			msg = result["response"][request_id]["msg"]
+		// 			if (document.getElementById(div_id))
+		// 				document.getElementById(div_id).innerHTML = "<p style='color: #68e068'>" + msg + "</p>"
+		// 		}
+		// 		else {
+		// 			error = result["response"][request_id]["error"];
+		// 			if (document.getElementById(div_id))
+		// 				document.getElementById(div_id).innerHTML = "<p style='color: red'>" + error + "</p>"
+		// 		}
+		// 	}
+		// 	if (selector.endsWith("-club") || selector == "clubGroupAccess") {
+		// 		const overallarray = result["returnIds"]
+		// 		for (var i = 0; i < overallarray.length; i++) {
+		// 			club = overallarray[i];
+		// 			div_id = club + "-action"
+		// 			chkbox = club + "-checkbox"
+		// 			if (document.getElementById(div_id))
+		// 				document.getElementById(div_id).innerHTML = "<p style='color: green'>Submitted!</p>"
+		// 			if (document.getElementById(chkbox))
+		// 				document.getElementById(chkbox).innerHTML = ""
+		// 		}
+		// 	}
+		// }
 
-        $(".bulkAccept-button").click(function () {
-            let bulkAcceptAnchor = this
-            let selector = $(this).attr("id")
-            let urlBuilder = `/accept_bulk/${selector}?`
-            reqParams = []
-            request_ids = []
+		$(".bulkAccept-button").click(function () {
+			let bulkAcceptAnchor = this
+			let selector = $(this).attr("id")
+			let urlBuilder = `/accept_bulk/${selector}?`
+			reqParams = []
+			request_ids = []
 
-            $(`.${selector}`).each(function () {
-                if ($(this).is(":checked"))
-                    reqParams.push(`requestId=${$(this).val()}`)
-                request_ids.push($(this).val())
-            });
+			$(`.${selector}`).each(function () {
+				if ($(this).is(":checked"))
+					reqParams.push(`requestId=${$(this).val()}`)
+				request_ids.push($(this).val())
+			});
 
-            if (reqParams.length == 0) {
-                alert("please select check boxes before")
-            }
-            else {
-                urlBuilder = urlBuilder + reqParams.join("&")
+			if (reqParams.length == 0) {
+				alert("please select check boxes before")
+			}
+			else {
+				urlBuilder = urlBuilder + reqParams.join("&")
 
-                $.ajax({
-                    url: urlBuilder,
-                    success: function (result) {
-                        updateStatus(result, selector)
-                    },
-                    error: function (result) {
-                        error = result["responseJSON"]["error"]
-                        alert("Error occured while approving - " + error)
-                    }
-                });
-            }
-        });
+				$.ajax({
+					url: urlBuilder,
+					success: function (result) {
+						updateStatus(result, selector)
+					},
+					error: function (result) {
+						error = result["responseJSON"]["error"]
+						alert("Error occured while approving - " + error)
+					}
+				});
+			}
+		});
 
-        $(".accept-button").click(function () {
-            let acceptAnchor = this
-            let selector = $(this).attr("id")
-            let urlBuilder = `/accept_bulk/${selector}?`
-            request_id = $(this).val()
-            reqParams = []
-            reqParams.push(`requestId=${request_id}`)
+		$(".accept-button").click(function () {
+			let acceptAnchor = this
+			let selector = $(this).attr("id")
+			let urlBuilder = `/accept_bulk/${selector}?`
+			request_id = $(this).val()
+			reqParams = []
+			reqParams.push(`requestId=${request_id}`)
 
-            urlBuilder = urlBuilder + reqParams.join("&")
-            div_id = request_id + "-action"
-            document.getElementById(div_id).innerHTML = "<p style='color: green'>Processing...</p>"
-            $.ajax({
-                url: urlBuilder,
-                success: function (result) {
-                    updateStatus(result, selector)
-                },
-                error: function (result) {
-                    error = result["responseJSON"]["error"]
-                    alert("Error occured while approving - " + error)
-                }
-            });
-        });
+			urlBuilder = urlBuilder + reqParams.join("&")
+			div_id = request_id + "-action"
+			document.getElementById(div_id).innerHTML = "<p style='color: green'>Processing...</p>"
+			$.ajax({
+				url: urlBuilder,
+				success: function (result) {
+					updateStatus(result, selector)
+				},
+				error: function (result) {
+					error = result["responseJSON"]["error"]
+					alert("Error occured while approving - " + error)
+				}
+			});
+		});
 
-        var modal = document.getElementById("declineModal");
-        $(".declineFinalButton").click(function () {
-            let acceptAnchor = this
-            let selector = $('#declineUrlParams').val()
-            let urlBuilder = `/decline/${selector}`
-            request_id = selector.split("/")[1]
+		var modal = document.getElementById("declineModal");
+		// $(".declineFinalButton").click(function () {
+		// 	let acceptAnchor = this
+		// 	let selector = $('#declineUrlParams').val()
+		// 	let urlBuilder = `/decline/${selector}`
+		// 	request_id = selector.split("/")[1]
 
-            div_id = request_id + "-action"
-            data = { reason: $('#declineReasonText').val() }
-            document.getElementById("decline-processing").innerHTML = "<p style='color: green'>Processing</p>"
-            $.ajax({
-                url: urlBuilder, data: data,
-                success: function (result) {
-                    updateStatus(result, selector.split("/")[0])
-                    modal.style.display = "none";
-                    document.getElementById("decline-processing").innerHTML = ""
-                },
-                error: function (result) {
-                    error = result["responseJSON"]["error"]
-                    document.getElementById(div_id).innerHTML = "<p style='color: red'>" + error + "</p>"
-                    modal.style.display = "none";
-                    document.getElementById("decline-processing").innerHTML = ""
-                }
-            });
-        });
+		// 	div_id = request_id + "-action"
+		// 	data = { reason: $('#declineReasonText').val() }
+		// 	document.getElementById("decline-processing").innerHTML = "<p style='color: green'>Processing</p>"
+		// 	$.ajax({
+		// 		url: urlBuilder, data: data,
+		// 		success: function (result) {
+		// 			updateStatus(result, selector.split("/")[0])
+		// 			modal.style.display = "none";
+		// 			document.getElementById("decline-processing").innerHTML = ""
+		// 		},
+		// 		error: function (result) {
+		// 			error = result["responseJSON"]["error"]
+		// 			document.getElementById(div_id).innerHTML = "<p style='color: red'>" + error + "</p>"
+		// 			modal.style.display = "none";
+		// 			document.getElementById("decline-processing").innerHTML = ""
+		// 		}
+		// 	});
+		// });
 
-        window.onclick = function (event) {
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
+		window.onclick = function (event) {
+			if (event.target == modal) {
+				modal.style.display = "none";
+			}
+		}
 
-        $(".decline-button").click(function () {
-            let acceptAnchor = this
-            let selector = $(this).attr("id")
-            request_id = $(this).val()
-            modal.style.display = "block";
-            $('#declineUrlParams').val(selector)
-            document.getElementById("declineHeading").innerHTML = "Decline " + request_id
-        });
+		$(".decline-button").click(function () {
+			let acceptAnchor = this
+			let selector = $(this).attr("id")
+			request_id = $(this).val()
+			modal.style.display = "block";
+			$('#declineUrlParams').val(selector)
+			document.getElementById("declineHeading").innerHTML = "Decline " + request_id
+		});
 
-        $('#declineReason').on('change', function () {
-            if ($(this).val() === "customInput") {
-                $("#otherType").show()
-                document.getElementById("reason_box").required = true;
-            }
-            else {
-                document.getElementById("reason_box").required = false;
-                $("#otherType").hide()
-                $('#declineReasonText').val($(this).val())
-            }
-        });
+		$('#declineReason').on('change', function () {
+			if ($(this).val() === "customInput") {
+				$("#otherType").show()
+				document.getElementById("reason_box").required = true;
+			}
+			else {
+				document.getElementById("reason_box").required = false;
+				$("#otherType").hide()
+				$('#declineReasonText').val($(this).val())
+			}
+		});
 
-        function checkSSHCardWithTitle(environment, checked) {
-            $(".filter").each(function (idx, elem) {
-                if ($(this).find("div div h4.card-title").text().indexOf(environment) > -1)
-                    $(this).find("div.checkbox input.ssh").prop('checked', checked)
-            })
-        }
+		function checkSSHCardWithTitle(environment, checked) {
+			$(".filter").each(function (idx, elem) {
+				if ($(this).find("div div h4.card-title").text().indexOf(environment) > -1)
+					$(this).find("div.checkbox input.ssh").prop('checked', checked)
+			})
+		}
 
-        $(".bulkAcceptAll-checkbox").change(function () {
-            let bulkCheckValue = $(this).prop('checked');
-            // for ssh
-            // sshCheckedAllOption = $("#dropdownMenuButton").text()
+		$(".bulkAcceptAll-checkbox").change(function () {
+			let bulkCheckValue = $(this).prop('checked');
+			// for ssh
+			// sshCheckedAllOption = $("#dropdownMenuButton").text()
 
-            // if (sshCheckedAllOption === "Production") {
-            //   checkSSHCardWithTitle("prod", bulkCheckValue)
-            // }
-            // else if (sshCheckedAllOption === "Staging") {
-            //   checkSSHCardWithTitle("staging", bulkCheckValue)
-            // }
+			// if (sshCheckedAllOption === "Production") {
+			//   checkSSHCardWithTitle("prod", bulkCheckValue)
+			// }
+			// else if (sshCheckedAllOption === "Staging") {
+			//   checkSSHCardWithTitle("staging", bulkCheckValue)
+			// }
 
-            let selector = $(this).val()
-            $(`.${selector}`).each(function (idx, elem) {
-                $(elem).prop('checked', bulkCheckValue)
-            })
+			let selector = $(this).val()
+			$(`.${selector}`).each(function (idx, elem) {
+				$(elem).prop('checked', bulkCheckValue)
+			})
 
-        });
+		});
 
-    });
+		$(".close_decline_modal").on("click", () => {
+			$('#decline_modal').addClass("hidden")
+		})
 
+		$("#declineReason").on("change", ()=> {
+			if($(this).val() === "customInput") {
+				$("#otherType").show()
+			}
+		})
+
+		$(".declineFinalButton").on("click", () => {
+			$('#decline_modal').addClass("hidden")
+			showNotificiation("failed", "Request Declined");
+		})
+		
+		function showNotificiation(type, message) {
+			if(type === "success"){
+				$(".notification_success").removeClass("hidden")
+				$(".notification_fail").addClass("hidden")
+				console.log("success")
+			}
+			else if(type === "failed") {
+				$(".notification_success").addClass("hidden")
+				$(".notification_fail").removeClass("hidden")
+			}
+			$(".notification_message").html(message)
+			$("#notification_bar").removeClass("hidden")
+		}
+	});
+	
+	function showDeclineModal() {
+		$('#decline_modal').removeClass("hidden")
+	}
+
+
+	function closeNotification(){
+		$("#notification_bar").addClass("hidden")
+	}
 </script>
+
+
+<div aria-live="assertive" id="notification_bar" class="hidden pointer-events-none z-10 fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6">
+  <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
+    <div class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5">
+      <div class="p-4">
+        <div class="flex items-start">
+          <div class="flex-shrink-0">
+						<div class="notification_success hidden">
+							<svg class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+						</div>
+						<div class="notification_fail hidden">
+							<svg xmlns="http://www.w3.org/2000/svg" class="fill-current text-red-600" height="24px" viewBox="0 0 24 24" width="24px" fill="none"><path d="M0 0h24v24H0z" fill="none"/>
+								<path d="M14.59 8L12 10.59 9.41 8 8 9.41 10.59 12 8 14.59 9.41 16 12 13.41 14.59 16 16 14.59 13.41 12 16 9.41 14.59 8zM12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+							</svg>
+						</div>
+          </div>
+          <div class="ml-3 w-0 flex-1 pt-0.5">
+            <p class="notification_message text-sm font-medium text-gray-900"></p>
+          </div>
+          <div class="ml-4 flex flex-shrink-0">
+            <button type="button" class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" onclick="closeNotification()">
+              <span class="sr-only">Close</span>
+              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
 <div class="px-8 py-6 sm:px-6 lg:px-8 w-full">
 	<div class="sm:flex sm:items-center">
 		<div class="sm:flex-auto">
@@ -360,6 +434,7 @@
 						<div class="px-2 peer-checked:opacity-0">
 							<p class="truncate text-sm font-medium text-grey-900">Group Access Requests</p>
 						</div>
+						<span class="bg-blue-200 ml-auto inline-block py-1 px-3 text-xs text-blue-600 rounded-full">{{ groupGenericRequests|length }}</span>
 					</div>
 					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
 						{% if groupGenericRequests|length %}
@@ -409,7 +484,7 @@
 											</table>
 											<div class="text-sm pt-5">
 												<button class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
-												<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium">Decline</button>
+												<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium" onclick="showDeclineModal()">Decline</button>
 											</div>
 										</div>
 									{% endfor %}
@@ -431,6 +506,7 @@
 						<div class="px-2 peer-checked:opacity-0">
 							<p class="truncate text-sm font-medium text-grey-900">Group Creation Requests</p>
 						</div>
+						<span class="bg-blue-200 ml-auto inline-block py-1 px-3 text-xs text-blue-600 rounded-full">{{ newGroupPending|length }}</span>
 					</div>
 					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
 						{% if newGroupPending|length %}
@@ -494,6 +570,7 @@
 						<div class="px-2 peer-checked:opacity-0">
 							<p class="truncate text-sm font-medium text-grey-900">Group Membership Addition Request</p>
 						</div>
+						<span class="bg-blue-200 ml-auto inline-block py-1 px-3 text-xs text-blue-600 rounded-full">{{ membershipPending|length }}</span>
 					</div>
 					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
 						{% if membershipPending|length %}
@@ -547,6 +624,7 @@
 						<div class="px-2 peer-checked:opacity-0">
 							<p class="truncate text-sm font-medium text-grey-900">{{ each_module.module_tag }}</p>
 						</div>
+						<span class="bg-blue-200 ml-auto inline-block py-1 px-3 text-xs text-blue-600 rounded-full">{{ each_module.requests|length }}</span>
 					</div>
 					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
 						<div class="divide-y divide-gray-200">
@@ -596,10 +674,6 @@
 										</div>
 									</div>
 									{% endfor %}
-									<div class="text-sm pt-5">
-										<button class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
-										<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium">Decline</button>
-									</div>
 								</div>
 							{% endfor %}
 						</div>
@@ -612,6 +686,45 @@
 	</div>
 </div>
 
+<div id="decline_modal" class="decline_modal relative z-10 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+  <div class="fixed inset-0 z-10 overflow-y-auto">
+    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+      <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+				<!-- HEADER -->
+				<div class="border-b px-4 py-3 bg-gray-100 flex">
+					<div class="declineHeading">
+					</div>
+					<div class="close_decline_modal ml-auto inline-block text-sm cursor-pointer">
+						<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+					</div>
+				</div>
+				<!-- HEADER END -->
+				<div class="flex-row text-sm px-4 pt-4 pb-8">
+					<label for="declineReason">Reason</label>
+					<select id="declineReason" class="w-full text-sm rounded-md border-gray-200 mt-1 mb-5" name="reason" placeholder="--select--"
+						class="ui fluid search dropdown generic-access-select-dropdown" required>
+						<option selected disabled>Select</option>
+						{% for key,value in declineReasons.items %}
+						<option value="{{value}}">{{value}}</option>
+						{% endfor %}
+						<option value="customInput">Other</option>
+					</select>
+					<div id="otherType" style="display:none;">
+						<label for="">Details</label>
+						<input class="text-sm rounded-md border-gray-200 w-full mt-1" type="text" name="" id="" placeholder="Please mention the reason for request decline">
+					</div>
+				</div>
+				<!-- FOOTER -->
+				<div class="border-t w-full p-3 justify-end bg-gray-100 flex">
+					<button class="declineFinalButton rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Decline</button>
+				</div>
+				<!-- FOOTER END -->
+			</div>
+    </div>
+  </div>
+</div>
 
 
 <!-- DECLINE REASON MODAL -->
