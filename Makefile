@@ -5,7 +5,7 @@ all: build test lint
 ## make dev : Build and start docker containers - (web/test/db)
 .PHONY: dev
 dev:
-	@export DJANGO_SETTINGS_MODULE=BrowserStackAutomation.settings && python3 scripts/make_config_and_readme.py && python3 scripts/clone_access_modules.py && python3 scripts/github_test.py && python3 scripts/merge_config.py && docker-compose build && docker-compose up -d
+	@export DJANGO_SETTINGS_MODULE=BrowserStackAutomation.settings && docker-compose build && docker-compose up -d
 
 ## make build : Build and start docker containers - (web and db)
 .PHONY: build

@@ -10,8 +10,6 @@ mkdir -p /ebs/logs
 touch /ebs/logs/bstack.log
 tail -n 0 -f /ebs/logs/bstack.log &
 
-
-
 # run scripts/clone_access_modules.py to clone access modules
 python scripts/clone_access_modules.py
 python scripts/make_config_and_readme.py
