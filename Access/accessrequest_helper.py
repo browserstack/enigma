@@ -646,16 +646,15 @@ def run_accept_request_task(
     approval_type = ApprovalType.Primary if is_primary_approver else ApprovalType.Secondary
     json_response["msg"] = REQUEST_PROCESS_MSG.format(request_id=request_id)
 
-    with transaction.atomic():
-        try:
-            access_mapping.processing(approval_type = approval_type, approver=auth_user.user)
-        except Exception as e:
-            logger.exception(e)
-            raise Exception(
-                "Error in accepting the request - {request_id}. Please try again.".format(
-                    request_id=request_id
-                )
+    try:
+        access_mapping.processing(approval_type = approval_type, approver=auth_user.user)
+    except Exception as e:
+        logger.exception(e)
+        raise Exception(
+            "Error in accepting the request - {request_id}. Please try again.".format(
+                request_id=request_id
             )
+        )
     accept_request(access_mapping)
     json_response["status"].append(
         {

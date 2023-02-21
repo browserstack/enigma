@@ -298,7 +298,6 @@ def run_accept_request(data):
 
     return {"status": False}
 
-
 def accept_request(user_access_mapping):
     try:
         result = run_access_grant.delay(user_access_mapping.request_id)
@@ -308,7 +307,6 @@ def accept_request(user_access_mapping):
     if result:
         return True
     return False
-
 
 def revoke_request(user_access_mapping, revoker=None):
     result = None
