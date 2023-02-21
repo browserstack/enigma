@@ -8,10 +8,15 @@ try:
     f = open("./config.json", "r")
     config = json.load(f)
     urls = config["access_modules"]["git_urls"]
+
+    requirements_file = 'Access/access_modules/requirements.txt'
+    if not os.path.exists(requirements_file):
+          open(requirements_file, 'w').close()
+
     for url in urls:
         folder_name = url.split("/").pop()[:-4]
         folder_path = "./Access/access_modules/" + folder_name
-        print(folder_name)
+     
         try:
                Repo.clone_from(url, folder_path)
                 # move all folders, not files in the cloned repo to the access_modules
@@ -22,10 +27,30 @@ try:
                         and file != ".git"
                         and file != ".github"
                         and file != "secrets"
-                    ) or (file == "requirements.txt"):
-                         os.rename(
+                    ) :
+                            os.rename(
                                 folder_path + "/" + file, "./Access/access_modules/" + file
                             )
+                            
+                    if(file == "requirements.txt"):
+
+                       current_requirements_file = folder_path + "/" + file
+                       #Read the requirements
+                       with open(requirements_file, 'r') as f1:
+                             requirements1 = f1.readlines()
+
+                       with open(current_requirements_file, 'r') as f1:
+                             requirements2 = f1.readlines()
+
+                       # Merge the requirements
+                       merged_requirements = list(set(requirements1 + requirements2))
+                       
+                       #update the requirements.txt
+                       with open(requirements_file, 'w') as out_file:
+                        for requirement in sorted(merged_requirements):
+                             out_file.write(requirement)
+                       
+
 
                print("Cloning successful!")
 
@@ -33,10 +58,10 @@ try:
            print(e)
 
         print("failed cloning " + folder_name + ".")
-                # remove the cloned repo folder entirely with all its contents which
-                # includes folders and files using shutil.rmtree()
-                # shutil.rmtree() sometimes throws an error on windows,
-                # so we use try and except to ignore the error
+         # remove the cloned repo folder entirely with all its contents which
+         # includes folders and files using shutil.rmtree()
+        # shutil.rmtree() sometimes throws an error on windows,
+        # so we use try and except to ignore the error
         try:
             shutil.rmtree(folder_path)
         except Exception as e:
