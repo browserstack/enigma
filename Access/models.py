@@ -554,10 +554,6 @@ class GroupV2(models.Model):
         group_members = self.membership_group.all()
         return group_members
 
-    def get_all_approved_members(self):
-        group_members = self.get_all_members().filter(status="Approved")
-        return group_members
-
     def get_approved_and_pending_member_emails(self):
         group_member_emails = self.membership_group.filter(
             status__in=["Approved", "Pending"]

@@ -463,7 +463,7 @@ def add_user_to_group(request):
                             + " - Approver="
                             + request.user.username
                         )
-                        users_added[user.email] = membership_id
+                    users_added[user.email] = membership_id
             except Exception as e:
                 logger.debug(
                     "Error adding User: %s could not be added to the group, Exception: %s ",
@@ -473,7 +473,7 @@ def add_user_to_group(request):
                 user_not_added.append(user.email)
         if group.needsAccessApprove:
             notifications.send_mail_for_member_approval(
-                user.email,
+                ",".join(user_not_added),
                 str(request.user),
                 data["groupName"][0],
                 data["memberReason"][0],
@@ -486,7 +486,6 @@ def add_user_to_group(request):
 
         else:
             notifications.send_mulitple_membership_accepted_notification(
-                user.email,
                 users_added,
                 data["groupName"][0],
                 data["memberReason"][0],
