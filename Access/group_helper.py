@@ -259,9 +259,7 @@ def update_owners(request, group_name):
     auth_user = request.user
     destination = [auth_user.user.email]
 
-    group_members = (
-        group.get_all_approved_members().exclude(user=auth_user.user)
-    )
+    group_members = group.get_all_approved_members().exclude(user=auth_user.user)
 
     # we will only get data["owners"] as owners who are checked in UI
     # (exluding disabled checkbox owner who requested the change)
@@ -301,22 +299,16 @@ def approve_new_group_request(auth_user, group_id):
     try:
         group = GroupV2.get_pending_group(group_id=group_id)
     except Exception as e:
-        logger.error(
-            "Error in approveNewGroup request, Unable to fetch group"
-            + str(e)
-        )
+        logger.error("Error in approveNewGroup request, Unable to fetch group" + str(e))
         context = {}
         context["error"] = INTERNAL_ERROR_MESSAGE["msg"]
         return context
     if not group:
-        logger.error(
-            "No pending group found, Unable to fetch group"
-            + str(e)
-        )
+        logger.error("No pending group found, Unable to fetch group" + str(e))
         context = {}
         context["error"] = REQUEST_NOT_FOUND_ERROR
         return context
-        
+
     try:
         if group.is_self_approval(approver=auth_user.user):
             context = {}
@@ -423,14 +415,16 @@ def add_user_to_group(request):
                 "msg": NON_OWNER_PERMISSION_DENIED_ERROR["msg"],
             }
             return context
-        
-        duplicate_request_emails = _check_if_members_in_group(group=group, selected_members=data["selectedUserList"])
+
+        duplicate_request_emails = _check_if_members_in_group(
+            group=group, selected_members=data["selectedUserList"]
+        )
 
         if duplicate_request_emails:
             context = {}
             msg = DUPLICATE_GROUP_MEMBER_ADD_REQUEST.format(
                 user_emails=duplicate_request_emails
-            )                
+            )
             context["error"] = {"error_msg": "Duplicate Request", "msg": msg}
             return context
 
@@ -460,7 +454,9 @@ def add_user_to_group(request):
                             membership.user, group, membership
                         )
                         membership.approve(approver=request.user.user)
-                        views_helper.execute_group_access(user_mappings_list=user_mappings_list)
+                        views_helper.execute_group_access(
+                            user_mappings_list=user_mappings_list
+                        )
                         logger.debug(
                             "Process has been started for the Approval of request - "
                             + membership_id
@@ -470,7 +466,9 @@ def add_user_to_group(request):
                         users_added[user.email] = membership_id
             except Exception as e:
                 logger.debug(
-                    "Error adding User: %s could not be added to the group, Exception: %s ", user.email, str(e)
+                    "Error adding User: %s could not be added to the group, Exception: %s ",
+                    user.email,
+                    str(e),
                 )
                 user_not_added.append(user.email)
         if not group.needsAccessApprove:
@@ -503,10 +501,12 @@ def add_user_to_group(request):
                 context = {}
                 context["status"] = {
                     "title": ALL_USERS_NOT_ADDED["title"],
-                    "msg": ALL_USERS_NOT_ADDED["msg"].format(user_not_added = ",".join(user_not_added), 
-                                                             users_added = ",".join(users_added)),
+                    "msg": ALL_USERS_NOT_ADDED["msg"].format(
+                        user_not_added=",".join(user_not_added),
+                        users_added=",".join(users_added),
+                    ),
                 }
-          
+
         return context
     except Exception as e:
         logger.exception(e)
@@ -517,6 +517,7 @@ def add_user_to_group(request):
             "msg": ERROR_LOADING_PAGE["msg"],
         }
         return context
+
 
 def _check_if_members_in_group(group, selected_members):
     group_members_email = group.get_approved_and_pending_member_emails()
@@ -687,8 +688,7 @@ def save_group_access_request(form_data, auth_user):
                     context["status_list"].append(
                         {
                             "title": "Access Exists",
-                            "msg": "Access already exists"
-                            + json.dumps(access_label),
+                            "msg": "Access already exists" + json.dumps(access_label),
                         }
                     )
         email_destination = access_module.get_approvers()
@@ -708,9 +708,7 @@ def _create_group_access_mapping(
 ):
     access = AccessV2.get(access_type=access_tag, access_label=access_label)
     if not access:
-        access = AccessV2.create(
-            access_tag=access_tag, access_label=access_label
-        )
+        access = AccessV2.create(access_tag=access_tag, access_label=access_label)
     else:
         if group.check_access_exist(access):
             raise GroupAccessExistsException()
@@ -767,7 +765,7 @@ def remove_member(request):
         user_identity = user.get_active_identity(access.access_tag)
         user_identity.decline_non_approved_access_mapping(access)
         user_identity.offboarding_approved_access_mapping(access)
-        revoke_request(user_access_mapping = access, revoker = request.user.user)
+        revoke_request(user_access_mapping=access, revoker=request.user.user)
 
     membership.revoke_membership()
 
