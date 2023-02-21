@@ -261,7 +261,7 @@ def process_individual_requests(
                     "club_id": club_id,
                     "userEmail": accessrequest["userEmail"],
                     "accessReason": accessrequest["accessReason"],
-                    "accessType": accessrequest["accessType"],
+                    "accessType": accessrequest["access_desc"],
                     "access_tag": accessrequest["access_tag"],
                     "requested_on": accessrequest["requested_on"],
                     "sla_breached": helpers.sla_breached(accessrequest["requested_on"]),
