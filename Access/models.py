@@ -737,7 +737,9 @@ class UserAccessMapping(models.Model):
         access_request_data["userEmail"] = self.user_identity.user.email
         access_request_data["requestId"] = self.request_id
         access_request_data["accessReason"] = self.request_reason
-        access_request_data["requested_on"] = self.requested_on
+        access_request_data["requested_on"] = (
+            str(self.requested_on)[:19] + "UTC" if self.updated_on else ""
+        )
 
         access_request_data["access_desc"] = access_module.access_desc()
         access_request_data["accessCategory"] = access_module.combine_labels_desc(
@@ -750,7 +752,7 @@ class UserAccessMapping(models.Model):
                                               for key,val in list(self.access.access_label.items())
                                               if key != "keySecret"]
         access_request_data["access_type"] = self.access_type
-        access_request_data["approver_1"] = self.approver_1.user.username if self.approver_1 else ""
+        access_request_data["approver_1"] = self.approver_1.user.username
         access_request_data["approver_2"] = self.approver_2.user.username if self.approver_2 else ""
         access_request_data["approved_on"] = self.approved_on
         access_request_data["updated_on"] = (
