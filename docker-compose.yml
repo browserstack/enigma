@@ -52,16 +52,10 @@ services:
       context: .
       dockerfile: Dockerfile
       target : celery
-
     volumes:
       - ./:/app/
-    environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
-      - CELERY_RESULT_BACKEND=redis://redis:6379/0
-      - C_FORCE_ROOT=true
-      - MYSQL_ROOT_PASSWORD=testtest
-      - MYSQL_DATABASE=enigma
-      - MYSQL_ROOT_HOST=%
+    env_file:
+    - ./secrets/ops_app_celery.env
 
     depends_on:
       - db
