@@ -251,6 +251,11 @@ LOGGING = {
             'filename': './bstack.log',
             'formatter': 'verbose',
         },
+        'console': {
+            'level': 'INFO',
+            'filters': ['require_debug_true'],
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'django.request': {
