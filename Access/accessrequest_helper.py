@@ -1,6 +1,6 @@
 import logging
 import time
-from Access.views_helper import execute_group_access
+from Access.views_helper import execute_group_access, accept_request
 
 from BrowserStackAutomation.settings import DECLINE_REASONS, MAIL_APPROVER_GROUPS
 import datetime
@@ -536,14 +536,14 @@ def _validate_access_request(access_request_form, user):
     return {}, access_request
 
 
-def validate_access_labels(access_labels_json, access_type):
+def validate_access_labels(access_labels_json, access_tag):
     if access_labels_json is None or access_labels_json == "":
         raise Exception("No fields were selected in the request. Please try again.")
     access_labels = json.loads(access_labels_json)
     if len(access_labels) == 0:
         raise Exception(
-            "No fields were selected in the request for {access_type}. Please try again.".format(
-                access_type=access_type
+            "No fields were selected in the request for {access_tag}. Please try again.".format(
+                access_tag=access_tag
             )
         )
     return access_labels
@@ -591,7 +591,9 @@ def accept_user_access_requests(auth_user, request_id):
     access_label = access_mapping.access.access_label
 
     try:
-        permissions = _get_approver_permissions(access_mapping.access.access_tag, access_label)
+        permissions = _get_approver_permissions(
+            access_mapping.access.access_tag, access_label
+        )
         approver_permissions = permissions["approver_permissions"]
         if not helper.check_user_permissions(
             auth_user, list(approver_permissions.values())
@@ -643,20 +645,21 @@ def run_accept_request_task(
 ):
     json_response = {}
     json_response["status"] = []
-    approval_type = ApprovalType.Primary if is_primary_approver else ApprovalType.Secondary
+    approval_type = (
+        ApprovalType.Primary if is_primary_approver else ApprovalType.Secondary
+    )
     json_response["msg"] = REQUEST_PROCESS_MSG.format(request_id=request_id)
 
-    with transaction.atomic():
-        try:
-            accept_request(user_access_mapping=access_mapping, approval_type=approval_type, approver = auth_user.user)
-        except Exception as e:
-            logger.exception(e)
-            raise Exception(
-                "Error in accepting the request - {request_id}. Please try again.".format(
-                    request_id=request_id
-                )
+    try:
+        access_mapping.processing(approval_type=approval_type, approver=auth_user.user)
+    except Exception as e:
+        logger.exception(e)
+        raise Exception(
+            "Error in accepting the request - {request_id}. Please try again.".format(
+                request_id=request_id
             )
-
+        )
+    accept_request(access_mapping)
     json_response["status"].append(
         {
             "title": REQUEST_SUCCESS_MSG["title"].format(request_id=request_id),
@@ -882,9 +885,8 @@ def create_error_response(error_msg):
 
 
 def is_valid_approver(auth_user, group_mapping, approver_permissions):
-    is_primary_approver = (
-        group_mapping.is_pending()
-        and auth_user.user.has_permission(approver_permissions["1"])
+    is_primary_approver = group_mapping.is_pending() and auth_user.user.has_permission(
+        approver_permissions["1"]
     )
     is_secondary_approver = (
         group_mapping.is_secondary_pending()
