@@ -517,6 +517,13 @@ def add_user_to_group(request):
         }
         return context
 
+def _check_if_members_in_group(group, selected_members):
+    group_members_email = group.get_approved_and_pending_member_emails()
+    duplicate_request_emails = set(selected_members).intersection(
+        set(group_members_email)
+    )
+    return duplicate_request_emails
+
 
 def _check_if_members_in_group(group, selected_members):
     group_members_email = group.get_approved_and_pending_member_emails()

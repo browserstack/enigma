@@ -298,7 +298,6 @@ def run_accept_request(data):
 
     return {"status": False}
 
-
 def accept_request(user_access_mapping):
     try:
         result = run_access_grant.delay(user_access_mapping.request_id)

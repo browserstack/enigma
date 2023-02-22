@@ -39,7 +39,7 @@
 	```
 7. Requirements:
 	```bash
-	django==4.1.3
+	django==4.1.7
 	social-auth-app-django==5.0.0
 	djangorestframework==3.14.0
 	mysqlclient==2.1.1
