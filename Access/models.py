@@ -8,7 +8,7 @@ import enum
 class ApprovalType(enum.Enum):
     Primary = "Primary"
     Secondary = "Secondary"
-    
+
 
 class Permission(models.Model):
     """
@@ -91,7 +91,7 @@ class User(models.Model):
         ("1", "active"),
         ("2", "offboarding"),
         ("3", "offboarded"),
-]
+    ]
 
     state = models.CharField(
         max_length=255, null=False, blank=False, choices=USER_STATUS_CHOICES, default=1
@@ -123,7 +123,7 @@ class User(models.Model):
         return dict(self.USER_STATUS_CHOICES).get(self.state)
 
     def change_state(self, final_state):
-        user_states = dict(self.    USER_STATUS_CHOICES)
+        user_states = dict(self.USER_STATUS_CHOICES)
         state_key = self.state
         for key in user_states:
             if user_states[key] == final_state:
@@ -299,7 +299,6 @@ class User(models.Model):
             return User.objects.get(email=email)
         except User.DoesNotExist:
             return None
-
 
     @staticmethod
     def get_active_users_with_permission(permission_label):
@@ -770,7 +769,9 @@ class UserAccessMapping(models.Model):
         access_request_data["approver_2"] = (
             self.approver_2.user.username if self.approver_2 else ""
         )
-        access_request_data["approved_on"] = self.approved_on if self.approved_on else ""
+        access_request_data["approved_on"] = (
+            self.approved_on if self.approved_on else ""
+        )
         access_request_data["updated_on"] = (
             str(self.updated_on)[:19] + "UTC" if self.updated_on else ""
         )
@@ -866,12 +867,12 @@ class UserAccessMapping(models.Model):
     def revoking(self, revoker):
         self.revoker = revoker
         self.status = "ProcessingRevoke"
-        self.save()        
+        self.save()
 
     def processing(self, approval_type, approver):
         if approval_type == ApprovalType.Primary:
             self.approver_1 = approver
-        elif approval_type == ApprovalType.Secondary: 
+        elif approval_type == ApprovalType.Secondary:
             self.approver_2 = approver
         else:
             raise Exception("Invalid ApprovalType")
@@ -1083,13 +1084,12 @@ class AccessV2(models.Model):
             )
         except AccessV2.DoesNotExist:
             return None
-        
-    @staticmethod        
+
+    @staticmethod
     def create(access_tag, access_label):
-        return AccessV2.objects.create(
-            access_tag=access_tag, access_label=access_label
-        )
-        
+        return AccessV2.objects.create(access_tag=access_tag, access_label=access_label)
+
+
 class UserIdentity(models.Model):
     class Meta:
         constraints = [
@@ -1146,7 +1146,7 @@ class UserIdentity(models.Model):
 
     def decline_all_non_approved_access_mappings(self, decline_reason):
         user_mapping = self.get_all_non_approved_access_mappings()
-        user_mapping.update(status="Declined", decline_reason = decline_reason)
+        user_mapping.update(status="Declined", decline_reason=decline_reason)
 
     def get_granted_access_mapping(self, access):
         return self.user_access_mapping.filter(
@@ -1158,10 +1158,10 @@ class UserIdentity(models.Model):
             status__in=["approvefailed", "pending", "secondarypending", "grantfailed"],
             access=access,
         )
-    
+
     def decline_non_approved_access_mapping(self, access, decline_reason):
         user_mapping = self.get_non_approved_access_mapping(access)
-        user_mapping.update(status="Declined", decline_reason = decline_reason)
+        user_mapping.update(status="Declined", decline_reason=decline_reason)
 
     def offboarding_approved_access_mapping(self, access):
         user_mapping = self.get_granted_access_mapping(access)

@@ -266,8 +266,9 @@ def accept_bulk(request, selector):
                 returnIds.append(value)
                 group_name, date_suffix = value.rsplit("-", 1)
                 current_ids = list(
-                    GroupAccessMapping.get_pending_access_mapping(request_id=group_name)
-                    .filter(request_id__contains=date_suffix)
+                    GroupAccessMapping.get_pending_access_mapping(
+                        request_id=group_name
+                    ).filter(request_id__contains=date_suffix)
                 )
                 requestIds.extend(current_ids)
             selector = "groupAccess"
@@ -280,13 +281,13 @@ def accept_bulk(request, selector):
                     request.user, requestId
                 )
             elif selector == "groupMember" and is_access_approver:
-                json_response = group_helper.accept_member(request.user, requestId, False)
+                json_response = group_helper.accept_member(
+                    request.user, requestId, False
+                )
             elif selector == "groupAccess":
                 json_response = accept_group_access(request.user, requestId)
             elif selector.endswith("-club"):
-                json_response = accept_user_access_requests(
-                    request.user, requestId
-                )
+                json_response = accept_user_access_requests(request.user, requestId)
             else:
                 raise ValidationError("Invalid request")
             if "error" in json_response:

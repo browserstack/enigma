@@ -1,6 +1,10 @@
 import json
 from Access import helpers
-from Access.background_task_manager import background_task, accept_request, revoke_request
+from Access.background_task_manager import (
+    background_task,
+    accept_request,
+    revoke_request,
+)
 from Access.models import User, ApprovalType
 import logging
 from . import helpers as helper
@@ -29,9 +33,8 @@ IDENTITY_UNCHANGED_ERROR_MESSAGE = {
     "msg": "Identity could not be updated for {modulename}. The new identity is same as the old identity",
 }
 
-OFFBOARDING_SUCCESS_MESSAGE = {
-    "message": "Successfully initiated Offboard user"
-}
+OFFBOARDING_SUCCESS_MESSAGE = {"message": "Successfully initiated Offboard user"}
+
 
 class IdentityNotChangedException(Exception):
     def __init__(self):
@@ -97,8 +100,9 @@ def create_identity(user_identity_form, auth_user):
 
         # get useraccess if an identity already exists
         if existing_user_identity:
-            existing_user_access_mapping = existing_user_identity.get_active_access_mapping()
-            
+            existing_user_access_mapping = (
+                existing_user_identity.get_active_access_mapping()
+            )
 
         # create identity json  # call this verify identity
         try:
@@ -110,8 +114,8 @@ def create_identity(user_identity_form, auth_user):
                 new_module_identity=new_module_identity_json,
             )
         except Exception as ex:
-            raise(ex)
-            
+            raise (ex)
+
     context["status"] = {
         "title": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["title"],
         "msg": NEW_IDENTITY_CREATE_SUCCESS_MESSAGE["msg"].format(
@@ -139,26 +143,31 @@ def __change_identity_and_transfer_access_mapping(
     # replicate the memberships with new identity
     new_user_access_mapping = []
     if existing_user_access_mapping:
-        new_user_access_mapping = new_user_identity.replicate_active_access_membership_for_module(
-            existing_access=existing_user_access_mapping
+        new_user_access_mapping = (
+            new_user_identity.replicate_active_access_membership_for_module(
+                existing_access=existing_user_access_mapping
+            )
         )
     system_user = User.get_system_user()
-    
+
     for mapping in existing_user_access_mapping:
         if mapping.is_approved():
-            revoke_request(user_access_mapping = mapping, revoker = system_user)
+            revoke_request(user_access_mapping=mapping, revoker=system_user)
 
-    existing_user_identity.decline_all_non_approved_access_mappings("Identity Updated")            
-    
+    existing_user_identity.decline_all_non_approved_access_mappings("Identity Updated")
+
     for mapping in new_user_access_mapping:
         if mapping.is_processing() or mapping.is_grantfailed():
             if mapping.approver_2:
-                accept_request(user_access_mapping = mapping)
+                accept_request(user_access_mapping=mapping)
             elif mapping.approver_1:
                 accept_request(user_access_mapping=mapping)
             else:
-                logger.fatal("migration failed for request_id:%s mapping is approved but approvers are missing: %s", 
-                mapping.request_id)
+                logger.fatal(
+                    "migration failed for request_id:%s mapping is approved but approvers are missing: %s",
+                    mapping.request_id,
+                )
+
 
 def getallUserList(request):
     try:
@@ -230,7 +239,9 @@ def offboard_user(request):
             access_mappings = module_identity.get_all_granted_access_mappings()
 
             for access_mapping in access_mappings:
-                revoke_request(user_access_mapping = access_mapping, revoker = request.user.user)
+                revoke_request(
+                    user_access_mapping=access_mapping, revoker=request.user.user
+                )
 
             module_identity.deactivate()
 

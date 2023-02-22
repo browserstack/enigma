@@ -591,7 +591,9 @@ def accept_user_access_requests(auth_user, request_id):
     access_label = access_mapping.access.access_label
 
     try:
-        permissions = _get_approver_permissions(access_mapping.access.access_tag, access_label)
+        permissions = _get_approver_permissions(
+            access_mapping.access.access_tag, access_label
+        )
         approver_permissions = permissions["approver_permissions"]
         if not helper.check_user_permissions(
             auth_user, list(approver_permissions.values())
@@ -643,11 +645,13 @@ def run_accept_request_task(
 ):
     json_response = {}
     json_response["status"] = []
-    approval_type = ApprovalType.Primary if is_primary_approver else ApprovalType.Secondary
+    approval_type = (
+        ApprovalType.Primary if is_primary_approver else ApprovalType.Secondary
+    )
     json_response["msg"] = REQUEST_PROCESS_MSG.format(request_id=request_id)
 
     try:
-        access_mapping.processing(approval_type = approval_type, approver=auth_user.user)
+        access_mapping.processing(approval_type=approval_type, approver=auth_user.user)
     except Exception as e:
         logger.exception(e)
         raise Exception(
@@ -881,9 +885,8 @@ def create_error_response(error_msg):
 
 
 def is_valid_approver(auth_user, group_mapping, approver_permissions):
-    is_primary_approver = (
-        group_mapping.is_pending()
-        and auth_user.user.has_permission(approver_permissions["1"])
+    is_primary_approver = group_mapping.is_pending() and auth_user.user.has_permission(
+        approver_permissions["1"]
     )
     is_secondary_approver = (
         group_mapping.is_secondary_pending()

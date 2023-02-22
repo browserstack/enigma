@@ -308,6 +308,7 @@ def accept_request(user_access_mapping):
         return True
     return False
 
+
 def revoke_request(user_access_mapping, revoker=None):
     result = None
     # change the status to revoke processing
