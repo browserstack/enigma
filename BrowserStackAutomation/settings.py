@@ -253,35 +253,34 @@ LOGGING = {
         },
         'console': {
             'level': 'INFO',
-            'filters': ['require_debug_true'],
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
     'loggers': {
         'django.request': {
-            'handlers': ['console'],
+            'handlers': ['file', 'console'],
             'level': 'INFO',
             'propagate': True,
             'formatter' : 'verbose',
         },
         'inventory': {
-            'handlers': ['console'],
+            'handlers': ['file', 'console'],
             'level': 'INFO',
             'propagate': True,
             'formatter' : 'verbose',
         },
         'Access':{
-            'handlers': ['console'],
+            'handlers': ['file', 'console'],
             'level': 'INFO',
             'propagate': True,
             'formatter' : 'verbose',
         },
         'bootprocess':{
-            'handlers': ['console'],
+            'handlers': ['file', 'console'],
             'level': 'INFO',
             'propagate': True,
             'formatter' : 'verbose',
         },
     },
-
 }
