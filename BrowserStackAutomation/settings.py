@@ -254,25 +254,25 @@ LOGGING = {
     },
     'loggers': {
         'django.request': {
-            'handlers': ['file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
             'formatter' : 'verbose',
         },
         'inventory': {
-            'handlers': ['file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
             'formatter' : 'verbose',
         },
         'Access':{
-            'handlers': ['file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
             'formatter' : 'verbose',
         },
         'bootprocess':{
-            'handlers': ['file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
             'formatter' : 'verbose',
