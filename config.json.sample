@@ -9,7 +9,7 @@
   },
   "access_modules": {
     "git_urls": [
-      "https://<user>:<github-token>@github.com/browserstack/enigma-public-access-modules.git"
+      "https://github.com/browserstack/enigma-public-access-modules.git"
     ]
   },
   "enigmaGroup": {

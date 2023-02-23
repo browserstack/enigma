@@ -1,14 +1,17 @@
-# one-click-dev-setup
+# Setup for Local Development
 
+## Pre-requisistes
 
-### Pre-requisistes
+### Install Docker
 
-- Install Docker
-```
-brew install docker docker-compose
-```
+- For macOS(brew)
+    ```
+    brew install docker docker-compose
+    ```
+-  For windows/linux/macOS refer to
+  https://docs.docker.com/get-docker/ 
 
-- Install Docker Container Runtime
+### Install Docker Container Runtime
 https://github.com/abiosoft/colima
 ```bash
 brew install colima
@@ -22,7 +25,7 @@ git clone https://github.com/browserstack/enigma-public-central.git
 ```
 1. Create .env file from .env.sample file. Edit the DOCKERIMAGE to the latest image URL.
 2. copy config.json.sample to config.json
-```pan
+```bash
 {
   "googleapi": {
     "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "",
@@ -34,7 +37,7 @@ git clone https://github.com/browserstack/enigma-public-central.git
   },
   "access_modules": {
     "git_urls": [
-      "https://<user>:<github-token>@github.com/browserstack/enigma-public-access-modules.git"
+      "https://github.com/browserstack/enigma-public-access-modules.git"
     ]
   },
   "enigmaGroup": {
@@ -55,12 +58,45 @@ git clone https://github.com/browserstack/enigma-public-central.git
     }
   }
 }
-
-replace this values in config.json
-celery-broker-url= "redis://localhost:6379"
-celery-result-backend-url = "redis://localhost:6379"
-
 ```
+### for private repo in git_urls in `config.json`
+```bash
+ "https://<git-username>:<github-token>@github.com/browserstack/enigma-public-access-modules.git"
+```
+where `github-token` is a pat token from https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
+
+
+### Add the config of broker and database in `config.json`
+-  For self-hosted celery
+    ```bash
+    celery-broker-url="redis://localhost:6379/0"
+    celery-result-backend-url="redis://localhost:6379/0"
+    ```
+-  For self-hosted databases
+      ```bash
+    celery-broker-url="redis://localhost:6379/0"
+    celery-result-backend-url="db+mysql://root@localhost:3306/<name_of_db>"
+      ```
+### Add the config of custom access-module repos `config.json`
+
+```bash
+   "access_modules": {
+    ....
+
+        "aws_access": {
+            "aws_accounts": [
+                {
+                    "account": "<your-account>",
+                    "access_key_id": "<access_key_id>",
+                    "secret_access_key": "<secret_access_key>"
+                }
+            ]
+        },
+        .....
+    },
+```
+Add configuration for all access_module as here added for aws_access.
+
 3. Start the service
 ```bash
 make dev
@@ -69,5 +105,3 @@ make dev
 ```bash
 make logs
 ```
-
-

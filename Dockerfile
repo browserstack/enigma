@@ -31,13 +31,12 @@ RUN pip install -r /tmp/requirements.txt --no-cache-dir --ignore-installed
 COPY --chown=app:root . .
 
 FROM base as test
-ENTRYPOINT [ "python" ]
-CMD [ "-m", "pytest", "-v", "--cov", "--disable-warnings" ]
+CMD ["python" "-m", "pytest", "-v", "--cov", "--disable-warnings" ]
 
 
 FROM base as celery
-ENTRYPOINT [ "python" ]
-CMD ["-m","celery", "-A", "BrowserStackAutomation", "worker" ,"-n","worker1" ,"-l","DEBUG"]
+COPY ./docker-entrypoint-celery.sh /tmp/entrypoint-celery.sh
+ENTRYPOINT ["/tmp/entrypoint-celery.sh"]
 
 FROM base as web
 COPY ./docker-entrypoint.sh /tmp/entrypoint.sh

@@ -11,10 +11,8 @@ touch /ebs/logs/bstack.log
 tail -n 0 -f /ebs/logs/bstack.log &
 
 # run scripts/clone_access_modules.py to clone access modules
-
 python scripts/clone_access_modules.py
 pip install -r Access/access_modules/requirements.txt --no-cache-dir --ignore-installed
 
-
-echo Starting Django runserver.
-python manage.py runserver 0.0.0.0:8000
+echo Starting celery
+python3 -m celery -A BrowserStackAutomation worker -n worker1 -l DEBUG
