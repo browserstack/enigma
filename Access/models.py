@@ -9,7 +9,7 @@ from BrowserStackAutomation.settings import USER_STATUS_CHOICES, PERMISSION_CONS
 class ApprovalType(enum.Enum):
     Primary = "Primary"
     Secondary = "Secondary"
-    
+
 
 class Permission(models.Model):
     """
@@ -611,6 +611,7 @@ class GroupV2(models.Model):
     def get_user_group_details(self, user):
         access_request_data = {}
         if self.get_approved_group_by_name(self.name):
+            access_request_data["group_id"] = self.group_id
             access_request_data["name"] = self.name
             access_request_data["status"] = self.member_status(user)
             access_request_data["role"] = "Owner" if self.member_is_owner(user) else "Member"
@@ -908,12 +909,12 @@ class UserAccessMapping(models.Model):
     def revoking(self, revoker):
         self.revoker = revoker
         self.status = "ProcessingRevoke"
-        self.save()        
+        self.save()
 
     def processing(self, approval_type, approver):
         if approval_type == ApprovalType.Primary:
             self.approver_1 = approver
-        elif approval_type == ApprovalType.Secondary: 
+        elif approval_type == ApprovalType.Secondary:
             self.approver_2 = approver
         else:
             raise Exception("Invalid ApprovalType")
@@ -1196,7 +1197,7 @@ class UserIdentity(models.Model):
             status__in=["approvefailed", "pending", "secondarypending", "grantfailed"],
             access=access,
         )
-    
+
     def decline_non_approved_access_mapping(self, access, decline_reason):
         user_mapping = self.get_non_approved_access_mapping(access)
         user_mapping.update(status="Declined", decline_reason = decline_reason)
