@@ -223,6 +223,8 @@ def get_group_access_list(request, group_name):
     if context["genericAccesses"] == [{}]:
         context["genericAccesses"] = []
 
+    context["statusFilter"] = get_group_status_list()
+
     return context
 
 
@@ -767,3 +769,10 @@ def get_selected_users_by_email(user_emails):
             "Users with email {} are not found".format(not_found_emails)
         )
     return selected_users
+
+def get_group_status_list():
+    status_list = []
+    for status in MembershipV2.STATUS:
+        status_list.append(status[0])
+
+    return status_list

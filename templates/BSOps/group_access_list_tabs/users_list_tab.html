@@ -1,194 +1,220 @@
-<script id="js">
-  $(function() {
-  $(".users-list-table").tablesorter({
-    theme : "bootstrap",
-    widthFixed: true,
-    widgets : [ "filter", "columns" ],
-    widgetOptions : {
-      zebra : ["even", "odd"],
-      columns: [ "primary", "secondary", "tertiary" ],
-      filter_reset : ".reset",
-      filter_cssFilter: [
-        'form-control',
-        'form-control',
-        'form-control',
-        'form-control',
-        'form-control'
-      ]
+{% load myaccess_css_helpers %}
+{% load static %}
 
-    }
-  })
-  .tablesorterPager({
-    container: $(".ts-pager-users-list"),
-    cssGoto  : ".pagenum-users-list",
-    removeRows: false,
-    cssPageDisplay: '.pagedisplay-users-list',
-    cssPageSize: '.pagesize-users-list',
-    output: '{startRow} - {endRow} / {filteredRows} ({totalRows})'
-  });
-});
+{% block head_body %}
+<script src={% static "js/showAccessHistory.js" %}></script>
+{% endblock %}
 
-$(document).on("submit", "#updateOwners", function(e){
-  e.preventDefault()
-
-  let form = $(this)
-  let actionUrl = form.attr('action');
-
-  $.ajax({
-    type: "POST",
-    url: actionUrl,
-    data: form.serialize(),
-    error: (xhr, status, error) => {
-      alert("Failed to Update Owners");
-    }
-  }).done(function(data, statusText, xhr){
-    let status = xhr.status;
-    if(status !== 200) {
-      alert(data["error"] || "Failed to update Owners")
-    }
-    else {
-      location.reload(true);
-    }
-  })
-
-})
-
-
-$(document).on('click', '.user-remove-button', function(){
-    id = $(this).attr("id");
-    urlBuilder = "/group/removeGroupMember"
-    $.ajax({url: urlBuilder,
-        type: "POST",
-        data: {
-          membershipId: id,
-          csrfmiddlewaretoken: '{{ csrf_token }}'
-        },
-        success: function(result){
-          document.getElementById(id+"-remove-user-button").innerHTML = "";
-          document.getElementById(id+"-user-state").innerHTML = "revoked";
-        },
-        error: function(result){
-          alert("Error occured while marking revoke! - "+result["responseJSON"]["error"])
-        }});
-    $("#closeRemoveModal").click()
-  });
-
-function userRemoveConfirm(membership_id){
-  $("#remove-details").html("<h4>Confirm User removal "+ membership_id +"</h4>")
-  button_elem = document.getElementsByName("final-remove-button")[0]
-  button_elem.id = membership_id
-}
-</script>
-
-<div class="modal fade" id="userRemoveModal">
-  <div class="modal-dialog generic-access-modal">
-    <div class="modal-content">
-      <!-- Modal Header -->
-      <div class="modal-header">
-        <h4 class="modal-title"></h4>
-        <button type="button" id="closeRemoveModal" class="close" data-dismiss="modal">&times;</button>
+{% block content_body %}
+<div id="users" class="mt-8 px-4 sm:px-6 lg:px-8 w-full">
+  <div class="flex flex-col gap-4">
+    <div class="flex flex-row gap-4 items-center">
+      <div>
+        <form class="w-96 relative">
+          <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white">
+            <input id="global-search" type="search"
+              class="flex-none rounded-md border-none text-gray-500 text-sm font-normal px-4 py-2 min-w-full"
+              placeholder="Search by module name, access type or status" required>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+              <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor"
+                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd"
+                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                  clip-rule="evenodd"></path>
+              </svg>
+            </div>
+          </div>
+        </form>
       </div>
-      <!-- Modal body -->
-      <div class="modal-body generic-access-modal-body">
-        <div id="remove-details"></div><br>
-        <button class="btn btn-danger user-remove-button" name="final-remove-button" id="">Confirm Offboarding</button></a>
+
+      <div class="w-1/6 relative" onclick="focusFilterStatus(this);">
+        <button type="button"
+          class="min-w-full cursor-default rounded-md border
+                                            border-gray-300 bg-white px-4 py-2 text-left shadow-sm focus:border-blue-500
+                                            focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+          aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+          <span class="block truncate text-gray-500">Access Type</span>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24" fill="#000000" aria-hidden="true">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" clip-rule="evenodd" />
+            </svg>
+          </div>
+        </button>
+
+        <ul
+          class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+          tabindex="-1" role="listbox" aria-labelledby="listbox-label"
+          aria-activedescendant="listbox-option-3">
+          <li
+            class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+            id="listbox-option-0" role="option" onclick="selectLI(this);">
+            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
+              <input type="checkbox" id="group_owner" name="group_owner" value="group_owner">
+            </span>
+            <span class="font-normal block truncate ml-8">Type 1</span>
+          </li>
+          <li
+            class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+            id="listbox-option-0" role="option" onclick="selectLI(this);">
+            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
+              <input type="checkbox" id="group_member" name="group_member" value="group_member">
+            </span>
+
+            <span class="font-normal block truncate ml-8">Type 2</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="w-1/6 relative" onclick="focusFilterStatus(this);">
+        <button type="button"
+          class="min-w-full cursor-default rounded-md border
+                                            border-gray-300 bg-white px-4 py-2 text-left shadow-sm focus:border-blue-500
+                                            focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+          aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+          <span class="block truncate text-gray-500">Status</span>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24" fill="#000000" aria-hidden="true">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" clip-rule="evenodd" />
+            </svg>
+          </div>
+        </button>
+
+        <ul
+          class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+          tabindex="-1" role="listbox" aria-labelledby="listbox-label"
+          aria-activedescendant="listbox-option-3">
+          {% for filter in statusFilter %}
+          <li
+            class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+            id="listbox-option-0" role="option" onclick="selectLI(this);">
+            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
+              <input type="checkbox" id="group_approved" name="group_approved"
+                value="group_approved">
+            </span>
+
+            <span class="font-normal block truncate ml-8">{{ filter }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="sm:ml-auto sm:flex-none">
+        <a href="#" class="text-blue-600 hover:text-blue-900">
+          <button type="button"
+            class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
+            Add member
+          </button>
+        </a>
       </div>
     </div>
   </div>
-</div>
 
-<div id="users" class="container tab-pane active"><br>
-  <form id="updateOwners" action="{% url 'updateGroupOwners' groupName %}" method="POST">
-    {% csrf_token %}
-    <table class="table table-bordered table-striped users-list-table">
-      <thead class="thead-dark">
-        <tr>
-          <th data-placeholder="Search">Owner</th>
-          <th data-placeholder="Search">Name</th>
-          <th data-placeholder="Search">Email</th>
-          <th data-placeholder="Search">Role</th>
-          <th data-placeholder="Search">Current State</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for user in userList %}
-        <tr>
-          <td style="width:10%; text-align: center;">
-            {% if request.user.email == user.email %}
-            <input type="checkbox" name="owners" value="{{ user.is_owner }}" checked disabled="true"></input>
-            {% else %}
-            {% if user.is_owner %}
-            <input type="checkbox" name="owners" value="{{ user.email }}" checked></input>
-            {% else %}
-            <input type="checkbox" name="owners" value="{{ user.email }}" > </input>
-            {% endif %}
-            {% endif %}
-          </td>
-          <td>{{user.name}}</td>
-          <td>{{user.email}}</td>
-          <td>
-            {% if user.is_owner %}
-            Owner
-            {% else %}
-            Member
-            {% endif %}
-          </td>
-          <td id="{{ user.membership_id }}-user-state">{{ user.current_state }}</td>
-          <td id="{{ user.membership_id }}-remove-user-button">
-            {% if allowRevoke and user.current_state == "active" %}
-              <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#userRemoveModal" onclick='userRemoveConfirm("{{ user.membership_id }}")'>Remove User</button>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-      <tfoot>
-        <tr class="tablesorter-ignoreRow">
-          <th colspan="6" class="ts-pager ts-pager-users-list form-horizontal" style="padding:1%">
-            <button type="button" class="btn btn-primary first" style="padding: 0px 30px;"><i class="small material-icons">first_page</i></button>
-            <button type="button" class="btn btn-primary prev" style="padding: 0px 30px;"><i class="small material-icons">navigate_before</i></button>
-            <span class="pagedisplay-users-list"></span>
-            <button type="button" class="btn btn-primary next" style="padding: 0px 30px;"><i class="small material-icons">navigate_next</i></button>
-            <button type="button" class="btn btn-primary last" style="padding: 0px 30px;"><i class="small material-icons">last_page</i></button>
-            <select class="pagesize-users-list browser-default form-control col-sm-1" title="Select page size" style="display:  inherit;">
-              <option selected="selected" value="10">10</option>
-              <option value="20">20</option>
-              <option value="30">30</option>
-              <option value="40">40</option>
-            </select>
-            <select class="pagenum-users-list browser-default form-control col-sm-1" title="Select page number" style="display:  inherit;"></select>
-          </th>
-        </tr>
-      </tfoot>
-    </table>
-    <div class="row">
-      <div class="col-10">
-        <strong>
-          <span class="text-danger">
-            NOTE:
-          </span>
-          <br>
-          <span class="text-danger">
-            1. Changing owner(s) means, new owner(s) will be able to add new members, raise access request on behalf of the group.
-          </span>
-          <br>
-          <span class="text-danger">2. An Email will be sent to access approvers with updated owner(s) of the group.</span>
-          <br>
-          <span class="text-danger">3. You can't make yourself Owner/Member.</span>
-        </strong>
-      </div>
-      <div class="col-2">
-        <button type="submit" class="mt-2 float-right btn btn-primary">Update Owners</button>
+  <div class="mt-4 flex flex-col">
+    <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col"
+                  class="py-3.5 pl-4 pr-3 text-sm font-normal text-gray-400 sm:pl-6 uppercase w-1/10">
+                  Owner</th>
+                <th scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-2/10">
+                  Name</th>
+                <th scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-3/10 max-w-md">
+                  Email</th>
+                <th scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-1/10">
+                  Role</th>
+                <th scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-1/10">
+                  Current State</th>
+                <th scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-2/10">
+                  Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white">
+              {% for user in userList %}
+              <tr>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-center text-gray-500">
+                    {% if request.user.email == user.email %}
+                      <input type="checkbox" name="owners" value="{{ user.is_owner }}" checked disabled="true"></input>
+                    {% else %}
+                      {% if user.is_owner %}
+                      <input type="checkbox" name="owners" value="{{ user.email }}" checked></input>
+                      {% else %}
+                      <input type="checkbox" name="owners" value="{{ user.email }}" > </input>
+                      {% endif %}
+                    {% endif %}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  {{user.name}}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  {{user.email}}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  {% if user.is_owner %}
+                    Owner
+                  {% else %}
+                    Member
+                  {% endif %}
+                </td>
+                <td id="{{ user.membership_id }}-user-state" class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  {{ user.current_state }}
+                </td>
+                <td id="{{ user.membership_id }}-remove-user-button">
+                  {% if allowRevoke and user.current_state == "active" %}
+                  <button type="button"
+                    class="inline-flex items-center justify-center rounded-md border border-transparent
+                           bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-200
+                           focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto">
+                    Remove user
+                  </button>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
       </div>
     </div>
-  </form>
-  {% if notification %}
-  <div class="alert alert-success alert-dismissible fade show">
-    {{ notification }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
+  </div>
+  <div class="mt-8 bg-blue-50">
+    <div class="text-sm font-medium px-3 py-4 text-blue-800">
+      <span aria-current="page" class="inline-flex gap-1">
+        <svg class="pt-1 w-4 h-4" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M16 8C16 12.4183 12.4183 16 8 16C3.58172 16 0 12.4183 0 8C0 3.58172 3.58172 0 8 0C12.4183 0 16 3.58172 16 8ZM9 4C9 4.55228 8.55228 5 8 5C7.44772 5 7 4.55228 7 4C7 3.44772 7.44772 3 8 3C8.55228 3 9 3.44772 9 4ZM7 7C6.44772 7 6 7.44772 6 8C6 8.55229 6.44772 9 7 9V12C7 12.5523 7.44772 13 8 13H9C9.55228 13 10 12.5523 10 12C10 11.4477 9.55228 11 9 11V8C9 7.44772 8.55228 7 8 7H7Z" fill="#60A5FA"/>
+        </svg> Note- </span><br>
+      <span class="pl-4">
+        1. Changing owner(s) means new owner(s) will be able to add new members, raise access request on behalf of the group.
+      </span><br>
+      <span class="pl-4">
+        2. An Email will be sent to access approvers with updated owner(s) of the group.
+      </span><br>
+      <span class="pl-4">
+        3. You can't make yourself Owner/Member.
+      </span>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    <button type="button"
+            class="inline-flex items-center justify-center rounded-md border border-gray-300
+                   px-4 py-2 text-sm font-medium shadow-sm hover:bg-gray-50
+                  focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 sm:w-auto">
+            Update owners
     </button>
   </div>
-  {% endif %}
+  </div>
 </div>
+{% endblock %}

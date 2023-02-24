@@ -296,6 +296,7 @@ def groupDashboard(request):
             "maxPagination": max_pagination,
             "allPages": range(1, max_pagination + 1),
             "currentPagination": page + 1,
+            "statusFilter": group_helper.get_group_status_list(),
         },
     )
 
