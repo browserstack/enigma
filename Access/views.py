@@ -193,6 +193,7 @@ def allUsersList(request):
     return render(request, "BSOps/allUsersList.html", context)
 
 
+@login_required
 def user_offboarding(request):
     try:
         response = offboard_user(request)
@@ -201,7 +202,7 @@ def user_offboarding(request):
         return JsonResponse(response)
     except Exception as e:
         logger.exception(str(e))
-        return JsonResponse({"error": "Failed to offboard User"})
+        return JsonResponse({"error": "Failed to offboard User"}, status=400)
 
 
 @login_required
@@ -229,7 +230,7 @@ def group_access(request):
 @login_required
 def group_access_list(request, groupName):
     try:
-        context = group_helper.get_group_access_list(request, groupName)
+        context = group_helper.get_group_access_list(request.user, groupName)
         if "error" in context:
             return render(request, "BSOps/accessStatus.html", context)
 
@@ -344,8 +345,9 @@ def accept_bulk(request, selector):
                 returnIds.append(value)
                 group_name, date_suffix = value.rsplit("-", 1)
                 current_ids = list(
-                    GroupAccessMapping.get_pending_access_mapping(request_id=group_name)
-                    .filter(request_id__contains=date_suffix)
+                    GroupAccessMapping.get_pending_access_mapping(
+                        request_id=group_name
+                    ).filter(request_id__contains=date_suffix)
                 )
                 requestIds.extend(current_ids)
             selector = "groupAccess"
@@ -355,17 +357,16 @@ def accept_bulk(request, selector):
             requestId = value
             if selector == "groupNew" and is_access_approver:
                 json_response = group_helper.approve_new_group_request(
-                    request, requestId
+                    request.user, requestId
                 )
             elif selector == "groupMember" and is_access_approver:
-                json_response = group_helper.accept_member(request, requestId, False)
-            elif selector == "groupAccess":
-                json_response = accept_group_access(request, requestId)
-            elif selector.endswith("-club"):
-                access_type = selector.rsplit("-", 1)[0]
-                json_response = accept_user_access_requests(
-                    request, access_type, requestId
+                json_response = group_helper.accept_member(
+                    request.user, requestId, False
                 )
+            elif selector == "groupAccess":
+                json_response = accept_group_access(request.user, requestId)
+            elif selector.endswith("-club"):
+                json_response = accept_user_access_requests(request.user, requestId)
             else:
                 raise ValidationError("Invalid request")
             if "error" in json_response:

@@ -8,7 +8,7 @@ import csv
 from . import helpers as helper
 from .models import UserAccessMapping
 from bootprocess import general
-from Access.background_task_manager import background_task
+from Access.background_task_manager import background_task, accept_request
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ def execute_group_access(user_mappings_list):
             if "other" in mapping.request_id:
                 decline_group_other_access(mapping)
             else:
-                background_task("run_access_grant", mapping.request_id)
+                accept_request(mapping)
                 logger.debug("Successful group access grant for " + mapping.request_id)
         else:
             mapping.decline_access(decline_reason="User is not active")
