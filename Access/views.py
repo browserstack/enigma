@@ -180,9 +180,9 @@ def saveIdentity(request):
 def createNewGroup(request):
     if request.POST:
         context = group_helper.create_group(request)
-        if "status" in context or "error" in context:
-            return render(request, "BSOps/accessStatus.html", context)
-        return render(request, "BSOps/createNewGroup.html", context)
+        if "error" in context:
+            return JsonResponse(context, status=400)
+        return JsonResponse(context, status=200)
     else:
         return render(request, "BSOps/createNewGroup.html", {})
 

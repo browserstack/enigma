@@ -26,7 +26,7 @@ INTERNAL_ERROR_MESSAGE = {
 
 NEW_GROUP_CREATE_ERROR_GROUP_EXISTS = {
     "error_msg": "Invalid Group Name",
-    "msg": "A group with name {group_name} already exists. Please choose a new name.",
+    "msg": "This group name already exists. Please choose a new name.",
 }
 
 REQUEST_NOT_FOUND_ERROR = "Error request not found OR Invalid request type"
@@ -95,14 +95,15 @@ def create_group(request):
     try:
         data = request.POST
         data = dict(data.lists())
+        group_members = []
         new_group_name = (data["newGroupName"][0]).lower()
         reason = data["newGroupReason"][0]
         needs_access_approve = (
             "requiresAccessApprove" in data
             and data["requiresAccessApprove"][0] == "true"
         )
-        if "selectedUserList" in data:
-            selected_users = data["selectedUserList"]
+        if "selectedUserList[]" in data:
+            group_members = data["selectedUserList[]"]
     except Exception as e:
         logger.exception(e)
         logger.error("Error in Create New Group request.")
@@ -139,8 +140,8 @@ def create_group(request):
         date_time=base_datetime_prefix,
     )
 
-    if "selectedUserList" in data:
-        initial_members = list(map(str, selected_users))
+    if group_members:
+        initial_members = list(map(str, group_members))
         new_group.add_members(
             users=User.objects.filter(email__in=initial_members),
             requested_by=request.user.user,
@@ -379,6 +380,8 @@ def get_user_group(request, group_name):
             raise Exception("Permission denied, you're not owner of this group")
 
         group_members = get_users_from_groupmembers(group_members)
+        group_existing_member_emails = group.get_approved_and_pending_member_emails()
+        context["group_existing_member_emails"] = set([email for email in group_existing_member_emails])
         context["groupMembers"] = group_members
         context["groupName"] = group_name
         return context
