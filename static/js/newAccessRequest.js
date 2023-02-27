@@ -19,13 +19,13 @@ const selectCheckbox = (moduleTag, checked) => {
   if(checked) {
     $(`#${moduleTag}-marker`).show();
     $(`#${moduleTag}-checkbox`).prop('checked', true);
-    $(`#${moduleTag}-tablerow`).removeClass('hover:bg-blue-50 hover:text-blue-700').addClass('bg-gray-50');
-    $(`#${moduleTag}-tabledesc`).removeClass('text-gray-900').addClass('text-blue-600');
+    $(`#${moduleTag}-tablerow`).removeClass('hover:bg-blue-50 hover:text-blue-700');
+    $(`#${moduleTag}-tabledesc`).addClass('text-blue-600');
   } else {
     $(`#${moduleTag}-marker`).hide();
     $(`#${moduleTag}-checkbox`).prop('checked', false);
-    $(`#${moduleTag}-tablerow`).removeClass('bg-gray-50').addClass('hover:bg-blue-50 hover:text-blue-700');
-    $(`#${moduleTag}-tabledesc`).removeClass('text-blue-600').addClass('text-gray-900');
+    $(`#${moduleTag}-tablerow`).addClass('hover:bg-blue-50 hover:text-blue-700');
+    $(`#${moduleTag}-tabledesc`).removeClass('text-blue-600');
   }
 };
 

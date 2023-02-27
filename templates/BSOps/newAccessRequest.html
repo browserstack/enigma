@@ -69,7 +69,7 @@
                       {% for each_tag, each_module in modulesList.items %}
                       <tr id="{{ each_tag }}-tablerow" class="hover:bg-blue-50 hover:text-blue-700">
                         <td class="relative w-12 px-6 sm:w-16 sm:px-8">
-                          <div class="absolute inset-y-0 left-0 w-0.5 bg-blue-600 hidden" id="{{ each_tag }}-marker"></div>
+                          <div class="absolute inset-y-0 left-0 w-0.5 hidden" id="{{ each_tag }}-marker"></div>
 
                           <input type="checkbox" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6" onclick="handleModuleSelection(this, '{{ each_tag }}', '{{ each_module.access_desc }}');" id="{{ each_tag }}-checkbox"></input>
                         </td>
@@ -128,7 +128,7 @@
 <table class="hidden">
   <tr id="module-selection-row-template" class="hidden max-h-4 px-6 hover:bg-blue-50 hover:text-blue-700">
     <td class="relative w-full px-4" id="module-selection-row-tabledesc">Module Desc</td>
-    <td class="whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-900 justify-right content-right max-w-2" id="module-selection-row-cancel">
+    <td class="whitespace-nowrap px-4 py-4 text-sm font-medium justify-right content-right max-w-2" id="module-selection-row-cancel">
       <button type="button" class="ml-0.5 mr-0.5 inline-flex max-w-2 flex-shrink-0 items-center justify-center rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:bg-blue-500 focus:text-white focus:outline-none" onclick="removeModuleSelectionUI(this);">
         <span class="sr-only">Remove large option</span>
         <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
