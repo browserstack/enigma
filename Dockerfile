@@ -21,6 +21,8 @@ RUN mkdir -p logs
 RUN chown -R app /srv/code/dev
 USER app
 
+
+
 # Copy just requirements.txt
 COPY requirements.txt /tmp/requirements.txt
 COPY config.json.sample config.json
@@ -29,7 +31,6 @@ COPY config.json.sample config.json
 RUN pip install -r /tmp/requirements.txt --no-cache-dir --ignore-installed
 
 COPY --chown=app:root . .
-
 FROM base as test
 CMD ["python" "-m", "pytest", "-v", "--cov", "--disable-warnings" ]
 

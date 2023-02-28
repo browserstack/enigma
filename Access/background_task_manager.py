@@ -326,4 +326,3 @@ def revoke_request(user_access_mapping, revoker=None):
     if result:
         return True
     return False
-

@@ -3,7 +3,6 @@ version: '3'
 services:
   web:
     container_name: dev
-    image: ${DOCKERIMAGE}
     build:
       context: .
       dockerfile: Dockerfile
@@ -11,7 +10,6 @@ services:
     env_file:
     - ./secrets/ops_app_dev.env
     volumes:
-    - .:/srv/code/dev
     - ./mounts/logs/:/ebs/logs/
     ports:
     - 8000:8000
@@ -42,9 +40,7 @@ services:
     image: redis:alpine
     command: --port 6379
     ports:
-      - "6379:6379"
-    expose:
-      - "6379"
+      - "6381:6379"
 
   celery:
     container_name: celery

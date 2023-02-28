@@ -27,9 +27,12 @@ try:
                         and file != ".github"
                         and file != "secrets"
                     ) :
+                    try :
                         os.rename(
                             folder_path + "/" + file, "./Access/access_modules/" + file
                         )
+                    except:
+                         print("File is already present.")
                             
                 if(file == "requirements.txt"):
                     current_requirements_file = folder_path + "/" + file
@@ -50,8 +53,8 @@ try:
                        
             print("Cloning successful!")
         except Exception as e:
-           print(e)
-        print("failed cloning " + folder_name + ".")
+           print("error-->",e)
+           print("failed cloning " + folder_name + ".")
 
         # remove the cloned repo folder entirely with all its contents which
         # includes folders and files using shutil.rmtree()
