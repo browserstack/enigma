@@ -40,7 +40,7 @@ services:
     image: redis:alpine
     command: --port 6379
     ports:
-      - "6381:6379"
+      - "6379:6379"
 
   celery:
     container_name: celery
