@@ -58,7 +58,6 @@ colima start
 
 
 ### Add the config of broker and database in `config.json`
--  For self-hosted celery
     ```bash
       "config": {
             "broker": "redis://host.docker.internal:6379/0",
@@ -96,7 +95,7 @@ Add configuration for all access_module as here added for aws_access.
 2.redis
 3.mysql/mysql-server 
 ```
-then run following commands
+Then run following commands
 ```cmd
 #run the web container
 docker run -p 8000:8000 -v $(pwd)/config.json:/srv/code/dev/config.json enigma-public-central-web
