@@ -57,17 +57,17 @@
 <div class="px-4 sm:px-6 lg:px-8 h-4/5 w-full">
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
-      <h1 class="text-xl font-semibold text-gray-900">Create a group</h1>
+      <h1 class="text-2xl font-bold text-gray-900">Create a group</h1>
     </div>
   </div>
 
   <div class="relative flex items-center w-9/12 mt-7">
     <div class="w-full flex flex-col">
-      <label class="leading-loose">Name for Group</label>
+      <label class="leading-loose text-sm font-medium">Name for Group</label>
       <input type="text" pattern="[A-Za-z0-9][A-Za-z0-9-]{2,}"
-        class="w-full h-42 px-4 py-2 border-2 rounded-lg border-gray-200 focus:outline-none focus:border-yellow-500"
+        class="w-full h-42 px-4 py-2 text-base font-normal border-2 rounded-lg border-gray-200 focus:outline-none focus:border-yellow-500"
         id="newGroupName" name="newGroupName"
-        placeholder="Minimum 3 chars with no spaces and special chars - hyphens allowed. e.g. engineering-managers,team-engineering"
+        placeholder="Minimum 3 chars with no spaces and special chars - hyphens allowed."
         required>
       <p id="invalidGroupName" class="text-sm text-red-600 hidden mt-1"> Invalid Group name</p>
     </div>
@@ -80,9 +80,9 @@
       <div class="flex flex-row mt-5">
         <div class="sm:flex-auto">
           <form class="w-11/12 float:left relative">
-            <label class="leading-loose">Add members</label>
+            <label class="leading-loose text-sm font-medium">Add members</label>
             <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white">
-              <input id="global-search" type="search"
+              <input id="member-search" name="global-search" type="search"
                 class="flex-none rounded-md border-none text-gray-500 text-sm font-normal px-4 py-2 min-w-full"
                 placeholder="Search by name or email ID" required>
               <div class="pointer-events-none absolute inset-y-11 right-0 flex items-center pt-2 pr-2">
@@ -100,11 +100,11 @@
           <input type="checkbox" onclick="selectAllToggleSelection(this);"
             class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:border-gray-600"
             id="selectAllUsers" name="selectAllUsers" class="ml-2">
-          <label for="selectAllUsers" class="ml-1">Select All</label>
+          <label for="selectAllUsers" class="ml-1 text-base font-normal">Select All</label>
         </div>
       </div>
 
-      <div class="h-3/4 overflow-y-scroll">
+      <div class="h-[17rem] overflow-y-scroll bg-white mt-6">
         <div class="px-4 sm:px-6 lg:px-8">
           <div class="mt-8 flex flex-col">
             <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -146,9 +146,9 @@
     </div>
 
     <div class="max-h-96">
-      <div class="flex flex-col mt-14 ml-4 h-[20.2rem]">
+      <div class="flex flex-col mt-[3.7rem] ml-4 h-[20.2rem]">
         <div class="flex flex-row items-center">
-          <h1 class="text-xl text-gray-900">Selected members</h1>
+          <h1 class="text-large font-medium text-gray-900">Selected members</h1>
           <span
             class="inline-flex items-center rounded-full bg-green-100 ml-4 px-2.5 py-0.5 text-xs font-medium text-green-800 hidden"
             id="member-selected-count">0 selected</span>
@@ -173,7 +173,7 @@
         </div>
         <div class="min-y-full w-full bg-white mt-7 flex flex-1 md:flex-col md:flex hidden" style="display: none;"
           id="member-selection-list">
-          <div class="flex-1 relative overflow-auto max-h-[12.5rem] space-y-1 inline-block min-w-full align-middle">
+          <div class="flex-1 relative overflow-auto max-h-[12rem] space-y-1 inline-block min-w-full align-middle">
             <table class="min-w-full table-fixed divide-gray-300">
               <tbody class="divide-gray-200 bg-white" id="member-selection-table">
               </tbody>
@@ -198,7 +198,7 @@
     <div>
 
       <div class="mt-2 flex flex-col">
-        <label class="leading-loose">Reason for group</label>
+        <label class="leading-loose text-sm font-medium">Reason for group</label>
         <input type="text" id="newGroupReason" name="newGroupReason"
           class="w-30 h-42 px-4 py-2 border-2 rounded-lg border-gray-200 focus:outline-none focus:border-yellow-500"
           placeholder="Please mention the reason for creating this group" required>
@@ -211,7 +211,7 @@
       <div class="mt-8 flex items-center ml-4 mt-6">
         <input checked type="checkbox" value="true" id="requiresAccessApprove" name="requiresAccessApprove"
           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:border-gray-600">
-        <label for="checked-checkbox" class="ml-2 text-sm font-bold text-gray-900 dark:text-black-300">Needs premission
+        <label for="checked-checkbox" class="ml-2 text-sm font-semibold text-gray-900 dark:text-black-300">Needs premission
           from access_approve to add new users to group</label>
       </div>
 
@@ -219,8 +219,8 @@
 
     <div>
       <button type="submit" id="submitNewGroup"
-        class="items-center rounded-md border border-transparent w-24 bg-blue-600 mt-8 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-        Submit
+        class="items-center rounded-md border border-transparent w-40 bg-blue-500 mt-8 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        Submit request
       </button>
 
     </div>
@@ -229,7 +229,7 @@
 </div>
 <table class="hidden">
   <tr id="member-selection-row-template" class="hidden max-h-4 px-6 hover:bg-blue-50 hover:text-blue-700">
-    <td class="relative w-full px-4" id="member-selection-row-tabledesc" value="email_val">Member Desc</td>
+    <td class="relative w-full px-4" id="member-selection-row-tabledesc">Member Desc</td>
     <td class="whitespace-nowrap px-4 py-4 text-sm font-medium justify-right content-right max-w-2"
       id="member-selection-row-cancel">
       <button type="button"
