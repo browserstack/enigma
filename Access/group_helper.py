@@ -8,6 +8,7 @@ from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CON
 from . import helpers as helper
 from Access.background_task_manager import revoke_request
 import json
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -162,21 +163,42 @@ def create_group(request):
     return context
 
 
-def get_generic_access(group_mapping):
-    access_details = {}
-    access_module = helpers.get_available_access_module_from_tag(
-        group_mapping.access.access_tag
-    )
-    if not access_module:
-        return {}
+def get_generic_access(group_mappings, start_index, count):
+    group_history = []
+    for group_mapping in group_mappings:
+        access_module = helpers.get_available_access_module_from_tag(
+            group_mapping.access.access_tag
+        )
+        if not access_module:
+            break
 
-    access_details = group_mapping.getAccessRequestDetails(access_module)
-    logger.debug("Generic access generated: " + str(access_details))
-    return access_details
+        access_details = group_mapping.getAccessRequestDetails(access_module)
+        if len(access_details) > 1:
+            group_history.append(access_details)
+
+        # skip till start_index
+        if start_index <= len(group_history):
+            group_history = group_history[start_index:]
+            start_index = 0
+        else:
+            start_index = start_index - len(group_history)
+            group_history = []
+
+        # end loop if count to return is reached
+        if start_index == 0 and len(group_history) >= count:
+            break
+
+    logger.debug("Generic access generated: " + str(group_history[0:count]))
+    return group_history[0:count]
 
 
-def get_group_access_list(auth_user, group_name):
+def get_group_access_list(request, group_name):
     context = {}
+    auth_user = request.user
+    page = int(request.GET.get('page') or 1) - 1
+    limit = 20
+    start_index = page * limit
+
     group = GroupV2.get_active_group_by_name(group_name)
     if not group:
         logger.debug(f"Group does not exist with group name {group_name}")
@@ -219,14 +241,17 @@ def get_group_access_list(auth_user, group_name):
         allow_revoke = True
     context["allowRevoke"] = allow_revoke
 
-    group_mappings = group.get_active_accesses()
-    context["genericAccesses"] = [
-        get_generic_access(group_mapping) for group_mapping in group_mappings
-    ]
-    if context["genericAccesses"] == [{}]:
-        context["genericAccesses"] = []
+    max_pagination = math.ceil(group.get_group_access_count() / limit)
 
+    group_mappings = group.get_active_accesses()
+    context["genericAccesses"] = get_generic_access(group_mappings, start_index, limit)
+    context["accessTypeFilter"] = get_access_types(group_mappings)
     context["statusFilter"] = get_group_status_list()
+    context["userStateFilter"] = get_user_current_state()
+
+    context["maxPagination"] = max_pagination
+    context["allPages"] = range(1, max_pagination + 1)
+    context["currentPagination"] = page + 1
 
     return context
 
@@ -803,3 +828,21 @@ def get_group_status_list():
         status_list.append(status[0])
 
     return status_list
+
+def get_user_current_state():
+    current_state = []
+    for state in User.USER_STATUS_CHOICES:
+        current_state.append(state[1].capitalize())
+
+    return current_state
+
+def get_access_types(group_mappings):
+    status_list = []
+
+    for group_mapping in group_mappings:
+        access_module = helpers.get_available_access_module_from_tag(
+            group_mapping.access.access_tag
+        )
+        status_list.append(access_module.access_desc())
+
+    return set(status_list)

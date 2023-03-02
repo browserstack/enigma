@@ -17,14 +17,10 @@ const selectLI = (elem) => {
   const textSpan = $(elem).children('span')[1];
 
   if(inputElem.is(':checked')) {
-    $(elem).removeClass("text-white bg-blue-600").addClass("text-gray-900");
     inputElem.prop('checked', false);
-    $(checkboxSpan).removeClass("text-white").addClass("text-blue-600");
     $(textSpan).removeClass("font-semibold").addClass("font-normal");
   } else {
-    $(elem).removeClass("text-gray-900").addClass("text-white bg-blue-600");
     inputElem.prop('checked', true);
-    $(checkboxSpan).removeClass("text-blue-600").addClass("text-white");
     $(textSpan).removeClass("font-normal").addClass("font-semibold");
   }
 };

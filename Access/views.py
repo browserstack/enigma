@@ -230,7 +230,7 @@ def group_access(request):
 @login_required
 def group_access_list(request, groupName):
     try:
-        context = group_helper.get_group_access_list(request.user, groupName)
+        context = group_helper.get_group_access_list(request, groupName)
         if "error" in context:
             return render(request, "BSOps/accessStatus.html", context)
 

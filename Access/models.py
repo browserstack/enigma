@@ -643,6 +643,9 @@ class GroupV2(models.Model):
             status__in=["Approved", "Pending", "Declined", "SecondaryPending"]
         )
 
+    def get_group_access_count(self):
+        return self.get_active_accesses().count()
+
     def is_self_approval(self, approver):
         return self.requester == approver
 
@@ -1074,6 +1077,7 @@ class GroupAccessMapping(models.Model):
         access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
         access_request_data["accessRequestType"] = "Group Request"
+        access_request_data["module"] = access_tag.split('_')[0].capitalize()
 
         return access_request_data
 

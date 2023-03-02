@@ -106,17 +106,17 @@
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
             id="listbox-option-0" role="option" onclick="selectLI(this);">
             <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type="checkbox" id="group_owner" name="group_owner" value="group_owner">
+              <input type="checkbox" class="rounded" id="group_owner" name="group_owner" value="group_owner">
             </span>
-            <span class="font-normal block truncate ml-8">Owner</span>
+            <span class="font-normal block truncate ml-6">Owner</span>
           </li>
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
             id="listbox-option-0" role="option" onclick="selectLI(this);">
             <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type="checkbox" id="group_member" name="group_member" value="group_member">
+              <input type="checkbox" class="rounded" id="group_member" name="group_member" value="group_member">
             </span>
-            <span class="font-normal block truncate ml-8">Member</span>
+            <span class="font-normal block truncate ml-6">Member</span>
           </li>
         </ul>
       </div>
@@ -146,11 +146,11 @@
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
             id="listbox-option-0" role="option" onclick="selectLI(this);">
             <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type="checkbox" id="group_approved" name="group_approved"
+              <input type="checkbox" class="rounded" id="group_approved" name="group_approved"
                 value="group_approved">
             </span>
 
-            <span class="font-normal block truncate ml-8">{{filter}}</span>
+            <span class="font-normal block truncate ml-6">{{filter}}</span>
           </li>
           {% endfor %}
         </ul>
