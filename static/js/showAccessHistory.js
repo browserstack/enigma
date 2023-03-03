@@ -11,6 +11,17 @@ const focusFilterStatus = (elem) => {
   }
 };
 
+const focusGroupFilter = (elem) => {
+  const ulElem = $(elem).children('form').children('ul');
+  if(currentStatusFilterState == 'hidden') {
+    currentStatusFilterState = 'shown';
+    ulElem.show();
+  } else {
+    currentStatusFilterState = 'hidden';
+    ulElem.hide();
+  }
+};
+
 const selectLI = (elem) => {
   const inputElem = $(elem).children('span').children('input');
   const checkboxSpan = $(elem).children('span')[0];

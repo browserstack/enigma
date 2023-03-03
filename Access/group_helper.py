@@ -199,6 +199,8 @@ def get_group_access_list(request, group_name):
     limit = 20
     start_index = page * limit
 
+    access_type_filter_list = request.POST.getlist('access_type_filter')
+
     group = GroupV2.get_active_group_by_name(group_name)
     if not group:
         logger.debug(f"Group does not exist with group name {group_name}")
@@ -252,6 +254,7 @@ def get_group_access_list(request, group_name):
     context["maxPagination"] = max_pagination
     context["allPages"] = range(1, max_pagination + 1)
     context["currentPagination"] = page + 1
+    context["access_type_filter"] = access_type_filter_list
 
     return context
 
@@ -843,6 +846,8 @@ def get_access_types(group_mappings):
         access_module = helpers.get_available_access_module_from_tag(
             group_mapping.access.access_tag
         )
+        if not access_module:
+            break
         status_list.append(access_module.access_desc())
 
     return set(status_list)

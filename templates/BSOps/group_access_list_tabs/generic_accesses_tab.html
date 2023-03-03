@@ -28,7 +28,7 @@
         </form>
       </div>
 
-      <div class="w-1/6 relative" onclick="focusFilterStatus(this);">
+      <div class="w-1/6 relative" onclick="focusGroupFilter(this);">
         <button type="button"
           class="min-w-full cursor-default rounded-md border
                                             border-gray-300 bg-white px-4 py-2 text-left shadow-sm focus:border-blue-500
@@ -44,23 +44,29 @@
           </div>
         </button>
 
-        <ul
-          class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
-          tabindex="-1" role="listbox" aria-labelledby="listbox-label"
-          aria-activedescendant="listbox-option-3">
-          {% for filter in accessTypeFilter %}
-          <li
-            class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option" onclick="selectLI(this);">
-            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type="checkbox" class="rounded" id="group_approved" name="group_approved"
-                value="group_approved">
-            </span>
+        <form action="{% url 'groupAccessList' groupName %}" method="post" enctype="multipart/form-data">
+          <ul
+            class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1
+                   ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+            tabindex="-1" role="listbox" aria-labelledby="listbox-label"
+            aria-activedescendant="listbox-option-3">
+            {% for filter in accessTypeFilter %}
+              {% csrf_token %}
+              <button type="submit" class="btn w-full">
+                <li
+                  class="block text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+                  id="listbox-option-0" role="option" onclick="selectLI(this);">
+                  <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
+                    <input type="checkbox" class="rounded" id="access_type_filter" name="access_type_filter"
+                      value="{{ filter }}" {% if access_type_filter %}checked{% endif %}>
+                  </span>
+                  <span class="font-normal block truncate ml-6">{{ filter }}</span>
+                </li>
+              </button>
+            {% endfor %}
+          </ul>
+        </form>
 
-            <span class="font-normal block truncate ml-6">{{ filter }}</span>
-          </li>
-          {% endfor %}
-        </ul>
       </div>
 
       <div class="w-1/6 relative" onclick="focusFilterStatus(this);">
