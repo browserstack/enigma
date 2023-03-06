@@ -16,6 +16,8 @@ import glob
 import json
 import logging.config
 import os
+import time
+import random
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -46,7 +48,13 @@ INSTALLED_APPS = [
     "social_django",
     "Access",
     "rest_framework",
+    'cid.apps.CidAppConfig',
 ]
+CID_GENERATE = True
+CID_GENERATOR = lambda: f'{time.time()}-{random.random()}'
+CID_HEADER = 'X_CORRELATION_ID'
+CID_GENERATE = True
+CID_CONCATENATE_IDS = True
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -57,6 +65,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "social_django.middleware.SocialAuthExceptionMiddleware",
+    "cid.middleware.CidMiddleware",
 ]
 
 AUTHENTICATION_BACKENDS = (
@@ -255,3 +264,52 @@ ACCESS_MODULES = data["access_modules"]
 
 AUTOMATED_EXEC_IDENTIFIER = 'automated-grant'
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': "[cid: %(cid)s]:{\"meta\":{\"timestamp\":\"%(asctime)s.%(msecs)03dZ\",\"component\":\"django\",\"application\":\"enigma\",\"team\":\"core\"},\"log\":{\"kind\":\"ENIGMA_APP\",\"dynamic_data\":\"[%(name)s:%(funcName)s:%(lineno)s] --- %(message)s\",\"level\":\"%(levelname)s\"}}",
+            'datefmt': "%Y-%m-%dT%H:%M:%S"
+        }
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': './bstack.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+            'formatter' : 'verbose',
+        },
+        'inventory': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+            'formatter' : 'verbose',
+        },
+        'Access':{
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+            'formatter' : 'verbose',
+        },
+        'bootprocess':{
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+            'formatter' : 'verbose',
+        },
+    },
+}
