@@ -83,6 +83,7 @@ def show_access_history(request):
             "maxPagination": max_pagination,
             "allPages": range(1, max_pagination + 1),
             "currentPagination": page + 1,
+            "possibleStatuses": UserAccessMapping.get_unique_statuses(),
         },
     )
 

@@ -186,7 +186,6 @@ body {
   align-items: flex-start;
   padding: 0px;
 
-  width: 68px;
   height: 36px;
 
   flex: none;
@@ -195,7 +194,6 @@ body {
 }
 
 .cust-avatar-name-title {
-  width: 68px;
   height: 20px;
 
   font-family: 'Inter';

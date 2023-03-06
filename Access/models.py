@@ -829,6 +829,13 @@ class UserAccessMapping(models.Model):
             status="Revoked"
         )
 
+    @staticmethod
+    def get_unique_statuses():
+        return [
+            status[0]
+            for status in UserAccessMapping.objects.order_by().values_list('status').distinct()
+        ]
+
     def is_approved(self):
         return self.status == "Approved"
 
