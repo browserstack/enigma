@@ -31,13 +31,9 @@ COPY config.json.sample config.json
 RUN pip install -r /tmp/requirements.txt --no-cache-dir --ignore-installed
 
 COPY --chown=app:root . .
+
 FROM base as test
 CMD ["python" "-m", "pytest", "-v", "--cov", "--disable-warnings" ]
-
-
-FROM base as celery
-COPY ./docker-entrypoint-celery.sh /tmp/entrypoint-celery.sh
-ENTRYPOINT ["/tmp/entrypoint-celery.sh"]
 
 FROM base as web
 COPY ./docker-entrypoint.sh /tmp/entrypoint.sh
