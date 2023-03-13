@@ -1076,7 +1076,6 @@ class GroupAccessMapping(models.Model):
         access_request_data["status"] = self.status
         access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
-        access_request_data["accessRequestType"] = "Group Request"
         access_request_data["module"] = access_tag.split('_')[0].capitalize()
 
         return access_request_data

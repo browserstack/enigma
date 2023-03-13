@@ -163,7 +163,7 @@ def create_group(request):
     return context
 
 
-def get_generic_access(group_mappings, start_index, count):
+def get_generic_access(group_mappings):
     group_history = []
     for group_mapping in group_mappings:
         access_module = helpers.get_available_access_module_from_tag(
@@ -176,30 +176,12 @@ def get_generic_access(group_mappings, start_index, count):
         if len(access_details) > 1:
             group_history.append(access_details)
 
-        # skip till start_index
-        if start_index <= len(group_history):
-            group_history = group_history[start_index:]
-            start_index = 0
-        else:
-            start_index = start_index - len(group_history)
-            group_history = []
-
-        # end loop if count to return is reached
-        if start_index == 0 and len(group_history) >= count:
-            break
-
-    logger.debug("Generic access generated: " + str(group_history[0:count]))
-    return group_history[0:count]
+    return group_history
 
 
 def get_group_access_list(request, group_name):
     context = {}
     auth_user = request.user
-    page = int(request.GET.get('page') or 1) - 1
-    limit = 20
-    start_index = page * limit
-
-    access_type_filter_list = request.POST.getlist('access_type_filter')
 
     group = GroupV2.get_active_group_by_name(group_name)
     if not group:
@@ -230,7 +212,7 @@ def get_group_access_list(request, group_name):
             "name": member.user.name,
             "email": member.user.email,
             "is_owner": member.is_owner,
-            "current_state": member.user.current_state(),
+            "current_state": member.user.current_state().capitalize(),
             "membership_id": member.membership_id,
         }
         for member in group_members
@@ -243,18 +225,11 @@ def get_group_access_list(request, group_name):
         allow_revoke = True
     context["allowRevoke"] = allow_revoke
 
-    max_pagination = math.ceil(group.get_group_access_count() / limit)
-
     group_mappings = group.get_active_accesses()
-    context["genericAccesses"] = get_generic_access(group_mappings, start_index, limit)
+    context["genericAccesses"] = get_generic_access(group_mappings)
     context["accessTypeFilter"] = get_access_types(group_mappings)
     context["statusFilter"] = get_group_status_list()
     context["userStateFilter"] = get_user_current_state()
-
-    context["maxPagination"] = max_pagination
-    context["allPages"] = range(1, max_pagination + 1)
-    context["currentPagination"] = page + 1
-    context["access_type_filter"] = access_type_filter_list
 
     return context
 

@@ -2,7 +2,9 @@
 {% load static %}
 
 {% block head_body %}
+<script src={% static "js/pagination.js" %}></script>
 <script src={% static "js/groupAccessList.js" %}></script>
+<script src={% static "js/showAccessHistory.js" %}></script>
 {% endblock %}
 
 {% block nav_breadcrumb %}
@@ -99,7 +101,7 @@
     </div>
 
     <div id="users"
-      class="-mx-8 pb-6 border-t border-gray-200 border-solid h-screen fade bg-white">
+      class="-mx-8 pb-6 border-t border-gray-200 border-solid fade bg-white">
       {% include "BSOps/group_access_list_tabs/users_list_tab.html" %}
     </div>
 
