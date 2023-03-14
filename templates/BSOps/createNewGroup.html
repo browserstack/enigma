@@ -1,6 +1,6 @@
 {% extends 'global_layout.html' %}
 {% load static %}
-{% include 'shared/components/notification-modal/notificationModalTemplate.html' %}
+{% load myaccess_css_helpers %}
 
 {% block head_body %}
 <script src={% static "js/createNewGroup.js" %}></script>
@@ -54,40 +54,39 @@
 
 {% block content_body %}
 {% csrf_token %}
-<div class="px-4 sm:px-6 lg:px-8 h-4/5 w-full">
+<div class="px-4 sm:px-6 lg:px-8 w-full">
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
       <h1 class="text-2xl font-bold text-gray-900">Create a group</h1>
     </div>
   </div>
 
-  <div class="relative flex items-center w-9/12 mt-7">
+  <div class="relative flex items-center">
     <div class="w-full flex flex-col">
-      <label class="leading-loose text-sm font-medium">Name for Group</label>
+      <label class="flex-none leading-5 mt-8 text-sm font-medium text-gray-700">Name for group</label>
       <input type="text" pattern="[A-Za-z0-9][A-Za-z0-9-]{2,}"
-        class="w-full h-42 px-4 py-2 text-base font-normal border-2 rounded-lg border-gray-200 focus:outline-none focus:border-yellow-500"
+        class="w-9/12 px-4 py-2 mt-1 bg-white border border-gray-300 box-border rounded-md shadow-sm focus:outline-none focus:border-blue-500
+               items-center text-base leading-6 font-normal text-gray-500"
         id="newGroupName" name="newGroupName"
-        placeholder="Minimum 3 chars with no spaces and special chars - hyphens allowed."
+        placeholder="Minimum 3 chars with no spaces and special chars, hyphens allowed"
         required>
       <p id="invalidGroupName" class="text-sm text-red-600 hidden mt-1"> Invalid Group name</p>
     </div>
   </div>
 
-  <div class="grid grid-cols-2 gap-4 max-h-min">
-
-    <div class="max-h-96">
-
-      <div class="flex flex-row mt-5">
+  <div class="grid grid-cols-2 max-h-min">
+    <div>
+      <div class="flex flex-row mt-6 items-center">
         <div class="sm:flex-auto">
           <form class="w-11/12 float:left relative">
-            <label class="leading-loose text-sm font-medium">Add members</label>
+            <label class="text-sm font-medium text-gray-700">Add members</label>
             <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white">
-              <input id="member-search" name="global-search" type="search"
-                class="flex-none rounded-md border-none text-gray-500 text-sm font-normal px-4 py-2 min-w-full"
-                placeholder="Search by name or email ID" required>
-              <div class="pointer-events-none absolute inset-y-11 right-0 flex items-center pt-2 pr-2">
-                <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg">
+              <input id="global-search" type="search"
+              class="flex-none rounded-md border-none text-gray-500 text-base leading-6 font-normal px-4 py-2 min-w-full"
+              placeholder="Search by name or email ID" required>
+              <div class="pointer-events-none absolute right-0 flex items-center pr-2 bottom-2.5">
+                <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor"
+                  viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path fill-rule="evenodd"
                     d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
                     clip-rule="evenodd"></path>
@@ -98,13 +97,14 @@
         </div>
         <div class="ml-auto flex items-center mt-8">
           <input type="checkbox" onclick="selectAllToggleSelection(this);"
-            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:border-gray-600"
-            id="selectAllUsers" name="selectAllUsers" class="ml-2">
-          <label for="selectAllUsers" class="ml-1 text-base font-normal">Select All</label>
+            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800
+                   focus:ring-2 dark:border-gray-600 -ml-3 mb-2.5"
+            id="selectAllUsers" name="selectAllUsers">
+          <label for="selectAllUsers" class="ml-1 mr-3 mb-2.5 text-base leading-6 font-normal text-gray-900">Select all</label>
         </div>
       </div>
 
-      <div class="h-[17rem] overflow-y-scroll bg-white mt-6">
+      <div class="h-80 overflow-y-scroll bg-white mt-6">
         <div class="px-4 sm:px-6 lg:px-8">
           <div class="mt-8 flex flex-col">
             <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -142,36 +142,32 @@
           </div>
         </div>
       </div>
-
     </div>
 
-    <div class="max-h-96">
-      <div class="flex flex-col mt-[3.7rem] ml-4 h-[20.2rem]">
+    <div>
+      <div class="flex flex-col mt-16 ml-4">
         <div class="flex flex-row items-center">
-          <h1 class="text-large font-medium text-gray-900">Selected members</h1>
+          <h1 class="text-lg font-medium text-gray-900 mb-0.5">Selected members</h1>
           <span
             class="inline-flex items-center rounded-full bg-green-100 ml-4 px-2.5 py-0.5 text-xs font-medium text-green-800 hidden"
             id="member-selected-count">0 selected</span>
         </div>
-        <div class="px-6 bg-white h-80 lg:px-8 mt-7 flex justify-center" id="member-selection-empty">
-          <!--sm:py-[105px] -->
+        <div class="px-6 bg-white h-80 lg:px-8 mt-5 flex justify-center" id="member-selection-empty">
           <div class="mx-auto max-w-2xl">
             <div class="flex gap-4 content-center  min-w-full min-h-full">
               <div class="block m-auto content-center">
-                <div class="py-1"><svg class="fill-current h-6 w-6 text-gray-400 m-auto"
+                <div class="py-1"><svg class="fill-current h-10 w-10 text-gray-400 m-auto"
                     xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                     <path
                       d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
                     </svg></div>
-                <h4 class="text-lg tracking-tight text-center text-gray-900 sm:text-lg mt-4">You have not selected any
-                  members yet!</h4>
-                <p class="mt-2 text-sm leading-8 text-center text-gray-600">Please select members from the left panel
-                </p>
+                <h1 class="text-sm font-medium text-gray-900 text-center mt-2.5">You have not selected any member yet</h1>
+                <h1 class="mt-1.5 text-sm text-center text-gray-700">Please select members from the left panel.</h1>
               </div>
             </div>
           </div>
         </div>
-        <div class="min-y-full w-full bg-white mt-7 flex flex-1 md:flex-col md:flex hidden" style="display: none;"
+        <div class="min-y-full w-full bg-white mt-5 flex flex-1 md:flex-col md:flex hidden" style="display: none;"
           id="member-selection-list">
           <div class="flex-1 relative overflow-auto max-h-[12rem] space-y-1 inline-block min-w-full align-middle">
             <table class="min-w-full table-fixed divide-gray-300">
