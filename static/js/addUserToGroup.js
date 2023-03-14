@@ -1,0 +1,204 @@
+const handleSelectionView = () => {
+  var finalCount = $('#member-selection-table').children('tr').length;
+  const groupMembers = $('input[name="groupMembers"]').val();
+  const existingMembers = groupMembers.match(/<User: (\w+)>/g);
+  finalCount -= existingMembers.length;
+
+  if(finalCount < 1) {
+    $('#member-selection-empty').show();
+    $('#member-selection-list').hide();
+    $('#member-selection-list').children('nav').hide();
+    $('#member-selected-count').hide();
+  } else {
+    $('#member-selection-empty').hide();
+    $('#member-selection-list').show();
+    $('#member-selection-list').children('nav').css('display', 'flex');
+    $('#member-selected-count').show();
+    $('#member-selected-count').text(finalCount + ' selected');
+  }
+};
+
+const selectAllToggleSelection = (source) => {
+checkboxes = $('[name="selectedUserList"]');
+
+for(var i=0, n=checkboxes.length; i<n; i++){
+    if(source.checked && checkboxes[i].checked==false){
+        checkboxes[i].checked = source.checked;
+        handleMemberSelection({elem: checkboxes[i], username: checkboxes[i].getAttribute("username"), firstName: checkboxes[i].getAttribute("firstName"), lastName: checkboxes[i].getAttribute("lastName"), email: checkboxes[i].getAttribute("value")})
+    }else if(source.checked == false){
+        checkboxes[i].checked = source.checked;
+        handleMemberSelection({elem: checkboxes[i], username: checkboxes[i].getAttribute("username"), firstName: checkboxes[i].getAttribute("firstName"), lastName: checkboxes[i].getAttribute("lastName"), email: checkboxes[i].getAttribute("value")})
+    }
+}
+};
+
+const selectMemberSelectionCheckbox = (username, checked) => {
+if(checked) {
+  $(`#${username}-marker`).show();
+  $(`#${username}-checkbox`).prop('checked', true);
+  $(`#${username}-tablerow`).removeClass('hover:bg-blue-50 hover:text-blue-700');
+  $(`#${username}-tabledesc`).removeClass('text-gray-900').addClass('text-black-600');
+  $(`#${username}-tabledesc`).removeClass('font-normal').addClass('font-bold');
+} else {
+  $('#selectAllUsers').prop('checked', false)
+  $(`#${username}-marker`).hide();
+  $(`#${username}-checkbox`).prop('checked', false);
+  $(`#${username}-tablerow`).removeClass('bg-gray-50').addClass('hover:bg-blue-50 hover:text-blue-700');
+  $(`#${username}-tabledesc`).removeClass('text-black-600');
+  $(`#${username}-tabledesc`).removeClass('font-bold').addClass('font-normal');
+}
+};
+
+const addMemberSelection = (username, firstName, lastName, email) => {
+const selectionList = $('#member-selection-table');
+const newSpan = $("#member-selection-row-template").clone(true, true);
+selectMemberSelectionCheckbox(username, true);
+
+newSpan.appendTo(selectionList);
+newSpan.show();
+const tableData = newSpan.children('td');
+tableData[0].textContent = firstName+" "+lastName;
+newSpan.attr('id', `member-selection-${username}`);
+newSpan.attr('email', email)
+id = `member-selection-${username}`
+
+handleSelectionView();
+};
+
+
+const removeSelectionSpanElem = (elem) => {
+const spanId = elem.id || elem.attr('id');
+const username = spanId.replace('member-selection-', '');
+
+elem.remove();
+selectMemberSelectionCheckbox(username, false);
+
+handleSelectionView();
+};
+
+const removeMemberSelection = (username) => {
+removeSelectionSpanElem($(`#member-selection-${username}`));
+};
+
+const removeMemberSelectionUI = (elem) => {
+removeSelectionSpanElem(elem.parentElement.parentElement);
+};
+
+const removeAllMembers = () => {
+const members = $('#member-selection-table').children('tr');
+for(iter = 0; iter < members.length; iter++) {
+  removeSelectionSpanElem(members[iter]);
+}
+};
+
+const handleMemberSelection = ({elem, username, firstName, lastName, email}) => {
+if(elem.checked) {
+  addMemberSelection(username, firstName, lastName, email);
+} else {
+  removeMemberSelection(username);
+}
+};
+
+
+$(function(){
+  $('#newGroupReason').on('input', function(){
+      var groupReason = $(this).val();
+      var groupReasonPattern = /.+/;
+      var error = document.getElementById("invalidGroupReason")
+      if(groupReasonPattern.test(groupReason)){
+          $(this).removeClass("border-red-500");
+          error.classList.add("hidden");
+      }else{
+          $(this).addClass("border-red-500");
+          error.classList.remove("hidden");
+      }
+  });
+});
+
+function showNotificiation(type, message, title) {
+  if(type === "success"){
+    $(".notification_success").removeClass("hidden")
+    $(".notification_fail").addClass("hidden")
+    console.log("success")
+  }
+  else if(type === "failed") {
+    $(".notification_success").addClass("hidden")
+    $(".notification_fail").removeClass("hidden")
+  }
+  $(".notification_message").html(message)
+  $(".notification_title").html(title)
+  $("#notification_bar").removeClass("hidden")
+}
+
+function showRequestSuccessMessage(message) {
+const successMessage = document.getElementById('request-success-message')
+successMessage.innerText = message;
+const modal = document.getElementById("request-submitted-modal");
+const modalOverlay = document.getElementById("modalOverlay");
+modal.classList.remove("hidden");
+modalOverlay.classList.remove("hidden");
+}
+
+function closeNotification(){
+$("#notification_bar").addClass("hidden")
+}
+
+$(document).on('click', '#submitGroupMembers', function(){
+  const members = $('#member-selection-table').children('tr');
+  const emails = [];
+  var isValid = true;
+  var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
+  var newGroupReasonPattern = /.+/;
+  const groupName = $('input[name="groupName"]').val();
+  console.log("grp nam",groupName)
+  var urlBuilder = `/group/adduser/${groupName}`;
+
+  
+  for(iter = 0; iter < members.length; iter++) {
+    email = $(members[iter])[0].getAttribute("email");
+    if (email)
+      emails.push(email);
+  }
+
+  const selectedUserList = emails
+  const memberReason = document.getElementById('memberReason').value;
+
+  if(!newGroupReasonPattern.test(memberReason)){
+    var error = document.getElementById("invalidGroupReason");
+    var memberReasonElement = document.getElementById("memberReason");
+    memberReasonElement.classList.add("border-red-500");
+    error.classList.remove("hidden");
+    isValid = false;
+  }
+
+  if(!isValid)
+    return;
+  else{
+    $.ajax({url: urlBuilder,
+      type: "POST",
+      data: {
+        groupName: groupName,
+        memberReason: memberReason,
+        selectedUserList: selectedUserList,
+        csrfmiddlewaretoken: csrf_token
+      },
+      success: function(result){
+        var msg = result.status.msg;
+        showRequestSuccessMessage(msg)
+      },
+      error: function(response){
+        var error_title = response.responseJSON.error.error_msg;
+        var error_message = response.responseJSON.error.msg;
+        showNotificiation("failed", error_message, error_title)
+      }});
+  }
+});
+
+$(document).ready(function() {
+  var error = "{{ error|safe|escapejs}}"
+  if (error){
+    var errorData = JSON.parse(error);
+    showNotificiation("failed", errorData.msg, errorData.title);
+    $('#submitGroupMembers').prop('disabled', true);
+  }
+});

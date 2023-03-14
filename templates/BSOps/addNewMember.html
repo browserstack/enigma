@@ -1,0 +1,41 @@
+<!-- for adding new member -->
+<!-- Modal backdrop -->
+<div class="fixed z-10 inset-0 overflow-y-auto">
+    <div class="flex items-center justify-center min-h-screen p-4">
+      <!-- Modal container -->
+      <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
+        <!-- Modal header -->
+        <div class="bg-gray-100 rounded-t-lg px-6 py-4 flex justify-between items-center">
+          <h3 class="text-lg font-medium text-gray-800">Add new members</h3>
+          <button class="text-gray-600 hover:text-gray-800 focus:outline-none">
+            <svg class="h-6 w-6 fill-current" viewBox="0 0 24 24">
+              <path
+                d="M6.292 6.293a1 1 0 011.414 0L12 10.586l4.293-4.293a1 1 0 011.414 1.414L13.414 12l4.293 4.293a1 1 0 01-1.414 1.414L12 13.414l-4.293 4.293a1 1 0 01-1.414-1.414L10.586 12 6.292 7.707a1 1 0 010-1.414z"
+              />
+            </svg>
+          </button>
+        </div>
+        <!-- Modal body -->
+        <div class="p-6">
+          <div class="mb-4">
+            <label for="group" class="block text-gray-700 font-medium mb-2">Select a group:</label>
+            <div class="relative">
+              <select
+                id="group"
+                name="group"
+                class="block appearance-none w-full bg-white border border-gray-400 hover:border-gray-500 px-4 py-2 pr-8 rounded shadow leading-tight focus:outline-none focus:shadow-outline"
+              >
+                {% for group in groups %}
+                <option value="{{group}}" >{{group}}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button class="bg-gray-100 text-gray-700 px-4 py-2 rounded mr-2 hover:bg-gray-200 focus:outline-none focus:shadow-outline" type="button">Cancel</button>
+            <button class="bg-blue-500 text-white px-4 py-2 rounded mr-2 hover:bg-gray-200 focus:outline-none focus:shadow-outline" type="button">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>

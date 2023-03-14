@@ -272,10 +272,19 @@ def approveNewGroup(request, group_id):
 def add_user_to_group(request, groupName):
     if request.POST:
         context = group_helper.add_user_to_group(request)
-        return render(request, "BSOps/accessStatus.html", context)
+        if "error" in context:
+            context["error"] = json.dumps(context["error"])
+            return JsonResponse(context, status=400)
+        return JsonResponse(context, status=200)
+        
     else:
         context = group_helper.get_user_group(request, groupName)
+        if "error" in context:
+            context["error"] = json.dumps(context["error"])
         return render(request, "BSOps/addUserToGroupForm.html", context)
+    
+def add_group_members(request):
+    return render(request, "BSOps/addNewMember.html")
 
 
 @api_view(["GET"])

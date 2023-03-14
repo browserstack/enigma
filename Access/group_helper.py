@@ -80,7 +80,7 @@ ADD_MEMBER_REQUEST_SUBMITTED_MESSAGE = {
 
 DUPLICATE_GROUP_MEMBER_ADD_REQUEST = "User or User's, {user_emails} is already added to \
 group/or pending approval for group addition"
-NO_GROUP_ERROR = "There is no group named {group_name}. Please contact admin for \
+NO_GROUP_ERROR = "Requested group not found. Please contact admin for \
     any queries."
 
 
@@ -366,19 +366,21 @@ def get_user_group(request, group_name):
                 + request.user.username
             )
             context = {}
-            context["status"] = {
+            context["error"] = {
                 "title": "Invalid Group",
                 "msg": NO_GROUP_ERROR.format(group_name=group_name),
             }
             return context
 
         group_members = group.get_all_approved_members().only("user")
+        group_existing_member_emails = group.get_approved_and_pending_member_emails()
         auth_user = request.user
 
         if not auth_user.user.is_allowed_admin_actions_on_group(group):
             raise Exception("Permission denied, you're not owner of this group")
 
         group_members = get_users_from_groupmembers(group_members)
+        context["group_existing_member_emails"] = set([email for email in group_existing_member_emails])
         context["groupMembers"] = group_members
         context["groupName"] = group_name
         return context

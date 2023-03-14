@@ -32,6 +32,7 @@ from Access.views import (
     requestAccess,
     group_access,
     group_access_list,
+    add_group_members,
     approveNewGroup,
     add_user_to_group,
     groupDashboard,
@@ -76,6 +77,11 @@ urlpatterns = [
         r"^group/adduser/(?P<groupName>[\w -]+)$",
         add_user_to_group,
         name="addUserToGroup",
+    ),
+    re_path(
+        r"^group/addGroupMembers$",
+        add_group_members,
+        name="add_group_members",
     ),
     re_path(
         r"^group/updateOwners/(?P<groupName>[\w -]+)$",
