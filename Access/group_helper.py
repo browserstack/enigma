@@ -419,7 +419,7 @@ def add_user_to_group(request):
             return context
 
         duplicate_request_emails = _check_if_members_in_group(
-            group=group, selected_members=data["selectedUserList"]
+            group=group, selected_members=data["selectedUserList[]"]
         )
 
         if duplicate_request_emails:
@@ -430,7 +430,7 @@ def add_user_to_group(request):
             context["error"] = {"error_msg": "Duplicate Request", "msg": msg}
             return context
 
-        selected_users = get_selected_users_by_email(data["selectedUserList"])
+        selected_users = get_selected_users_by_email(data["selectedUserList[]"])
 
         users_added = {}
         user_not_added = []
