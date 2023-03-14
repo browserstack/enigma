@@ -136,7 +136,7 @@
                     Action</th>
                 </tr>
               </thead>
-              <tbody class="block w-full overflow-auto h-24 divide-y divide-gray-200 bg-white">
+              <tbody class="block w-full overflow-auto h-96 divide-y divide-gray-200 bg-white">
                 {% for user in userList %}
                 <tr data-status-1="{% if user.is_owner %}Owner{% else %}Member{% endif %}" data-status-2="{{ user.current_state }}">
                   <td class="w-1/12 whitespace-nowrap pl-3 py-4 text-sm font-normal text-center text-gray-900">
