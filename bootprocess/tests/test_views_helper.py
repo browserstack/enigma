@@ -2,7 +2,7 @@ import pytest
 from bootprocess import views_helper
 from Access import models
 import threading
-from BrowserStackAutomation.settings import DEFAULT_ACCESS_GROUP
+from EnigmaAutomation.settings import DEFAULT_ACCESS_GROUP
 
 
 class MockAuthUser:

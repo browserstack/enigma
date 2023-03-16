@@ -7,7 +7,7 @@ import datetime
 import random
 
 from Access.access_modules import *  # NOQA
-from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
+from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 from Access.models import User
 
 logger = logging.getLogger(__name__)

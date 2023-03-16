@@ -13,13 +13,13 @@
 
 	```bash
 	CELERY_BROKER_URL = "redis://localhost:6379"
-	CELERY_RESULT_BACKEND = "db+mysql://root@localhost:3306/BrowserStackAutomation"
+	CELERY_RESULT_BACKEND = "db+mysql://root@localhost:3306/EnigmaAutomation"
 	```
 3. Import the required modules in `Access.celery_helper.py` .
 4. You are all set to run celery task from terminal or by calling `generate_celery_task`  function.
 5. To start a worker use the following command:
 	```bash
-	python3 -m celery -A BrowserStackAutomation worker -n worker1 -l DEBUG
+	python3 -m celery -A EnigmaAutomation worker -n worker1 -l DEBUG
 	```
 6. To use the celery function from the terminal follow below steps:
 	```bash

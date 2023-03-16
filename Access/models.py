@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User as user
 from django.db import models, transaction
-from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
+from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 import datetime
 import enum
 
@@ -863,7 +863,7 @@ class UserAccessMapping(models.Model):
     def approve_access(self):
         self.status = "Approved"
         self.save()
-    
+
     @staticmethod
     def get_by_id(request_id):
         return UserAccessMapping.objects.get(request_id=request_id)

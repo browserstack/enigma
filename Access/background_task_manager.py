@@ -8,7 +8,7 @@ from celery.signals import task_success, task_failure
 
 from Access import helpers
 from bootprocess import general
-from BrowserStackAutomation.settings import AUTOMATED_EXEC_IDENTIFIER
+from EnigmaAutomation.settings import AUTOMATED_EXEC_IDENTIFIER
 from Access.models import UserAccessMapping, ApprovalType
 from Access import notifications
 

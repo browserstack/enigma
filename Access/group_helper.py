@@ -4,7 +4,7 @@ from django.db import transaction
 import datetime
 import logging
 from Access.views_helper import execute_group_access
-from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
+from EnigmaAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 from . import helpers as helper
 from Access.background_task_manager import revoke_request
 import json

@@ -1,4 +1,4 @@
-"""BrowserStackAutomation URL Configuration
+"""EnigmaAutomation URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.1/topics/http/urls/
@@ -51,7 +51,6 @@ urlpatterns = [
     re_path(r"^access/markRevoked", mark_revoked, name="markRevoked"),
     re_path(r"^oauth/", include("social_django.urls", namespace="social")),
     re_path(r"^access/showAccessHistory$", show_access_history, name="showAccessHistory"),
-    re_path(r"^access/pendingRequests$", pending_requests, name="pendingRequests"),
     re_path(r"^resolve/pendingFailure", pending_failure, name="pendingFailure"),
     re_path(r"^resolve/pendingRevoke", pending_revoke, name="pendingRevoke"),
     re_path(r"^user/updateUserInfo/", update_user_info, name="updateUserInfo"),
