@@ -21,6 +21,7 @@ from Access.accessrequest_helper import (
     accept_user_access_requests,
     get_decline_access_request,
     accept_group_access,
+    run_accept_request_task,
 )
 from Access.models import User, UserAccessMapping, GroupAccessMapping
 
@@ -618,3 +619,24 @@ def mark_revoked(request):
         logger.exception("Error Revoking User Access, Error: %s", str(ex))
         json_response["error"] = "Error Revoking User Access"
     return JsonResponse(json_response, status=403)
+
+def individual_resolve(request):
+    json_response = {"status_list":[]}
+    try:
+        request_ids = request.GET.getlist('requestId')
+        if not request_ids:
+            raise Exception("Request id not found in the request")
+        
+        for request_id in request_ids:
+            user_access_mapping = UserAccessMapping.get_by_id(request_id)
+            if user_access_mapping.status.lower() in ["grantfailed", "approved"]:
+                response = run_accept_request_task(False, user_access_mapping, request.user, user_access_mapping.request_id, user_access_mapping.access.access_label)
+                json_response["status_list"] += response["status"]
+            else:
+                json_response["status_list"].append({'title': 'The Request ('+request_id+') is already resolved.', 'msg': 'The request is already in final state.'})
+        return render(request,'BSOps/accessStatus.html',json_response)
+    except Exception as e:
+        logger.exception(str(e))
+        json_response['error'] = {'error_msg': "Bad request", 'msg': "Error in request not found OR Invalid request type"}
+        return render(request,'BSOps/accessStatus.html',json_response)
+    
