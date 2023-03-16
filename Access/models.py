@@ -231,7 +231,7 @@ class User(models.Model):
         access_request_mappings = []
         for each_identity in all_user_identities:
             access_request_mappings.extend(
-                each_identity.useraccessmapping_set.prefetch_related(
+                each_identity.user_access_mapping.prefetch_related(
                     "access", "approver_1", "approver_2"
                 )
             )
@@ -242,7 +242,7 @@ class User(models.Model):
         access_history = []
 
         for request_mapping in access_request_mappings:
-            access_module = all_access_modules[request_mapping.accessType]
+            access_module = all_access_modules[request_mapping.access.access_tag]
             access_history.append(
                 request_mapping.getAccessRequestDetails(access_module)
             )
@@ -863,6 +863,10 @@ class UserAccessMapping(models.Model):
     def approve_access(self):
         self.status = "Approved"
         self.save()
+    
+    @staticmethod
+    def get_by_id(request_id):
+        return UserAccessMapping.objects.get(request_id=request_id)
 
     def revoking(self, revoker):
         self.revoker = revoker
