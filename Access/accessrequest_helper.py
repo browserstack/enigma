@@ -382,7 +382,7 @@ def create_request(auth_user, access_request_form):
     for index1, access_type in enumerate(access_request["accessRequests"]):
         access_labels = validate_access_labels(
             access_labels_json=access_request["accessLabel"][index1],
-            access_type=access_type,
+            access_tag=access_type,
         )
         access_reason = access_request["accessReason"][index1]
 
