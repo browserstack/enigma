@@ -321,15 +321,6 @@
 
         $(".bulkAcceptAll-checkbox").change(function () {
             let bulkCheckValue = $(this).prop('checked');
-            // for ssh
-            // sshCheckedAllOption = $("#dropdownMenuButton").text()
-
-            // if (sshCheckedAllOption === "Production") {
-            //   checkSSHCardWithTitle("prod", bulkCheckValue)
-            // }
-            // else if (sshCheckedAllOption === "Staging") {
-            //   checkSSHCardWithTitle("staging", bulkCheckValue)
-            // }
 
             let selector = $(this).val()
             $(`.${selector}`).each(function (idx, elem) {

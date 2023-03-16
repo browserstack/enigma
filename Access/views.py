@@ -232,6 +232,8 @@ def group_access(request):
         return render(request, "BSOps/accessStatus.html", context)
 
     context = group_helper.get_group_access(request.GET, request.user)
+    if "status" in context:
+        return render(request, 'BSOps/accessStatus.html',context)
     return render(request, "BSOps/groupAccessRequestForm.html", context)
 
 

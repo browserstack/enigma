@@ -16,6 +16,7 @@ from Access.models import (
     User,
     GroupV2,
     AccessV2,
+    MembershipV2,
     ApprovalType,
 )
 from Access.background_task_manager import background_task, accept_request
@@ -283,9 +284,11 @@ def get_pending_accesses_from_modules(access_user):
         process_group_requests(pending_accesses["group_requests"], group_requests)
 
         logger.info(
-            "Time to fetch pending requests of access module: %s - %s "
-            % access_module_tag,
-            str(time.time() - access_module_start_time),
+            "Time to fetch pending requests of access module: %s - %s " %
+            (
+                access_module_tag,
+                str(time.time() - access_module_start_time)
+            ),
         )
 
     return individual_requests, list(group_requests.values())
@@ -382,7 +385,7 @@ def create_request(auth_user, access_request_form):
     for index1, access_type in enumerate(access_request["accessRequests"]):
         access_labels = validate_access_labels(
             access_labels_json=access_request["accessLabel"][index1],
-            access_type=access_type,
+            access_tag=access_type,
         )
         access_reason = access_request["accessReason"][index1]
 
@@ -399,16 +402,15 @@ def create_request(auth_user, access_request_form):
         }
 
         access_module = helper.get_available_access_modules()[access_type]
+        extra_field_labels = get_extra_field_labels(access_module)
+        if extra_fields and extra_field_labels:
+            for field in extra_field_labels:
+                access_labels[0][field] = extra_fields[0]
+                extra_fields = extra_fields[1:]
+
         module_access_labels = access_module.validate_request(
             access_labels, auth_user, is_group=False
         )
-
-        extra_field_labels = get_extra_field_labels(access_module)
-
-        if extra_fields and extra_field_labels:
-            for field in extra_field_labels:
-                module_access_labels[0][field] = extra_fields[0]
-                extra_fields = extra_fields[1:]
 
         for index2, access_label in enumerate(module_access_labels):
             request_id = request_id + "_" + str(index2)
@@ -511,7 +513,10 @@ def get_extra_field_labels(access_module):
 def get_extra_fields(access_request):
     if "extraFields" in access_request:
         return access_request["extraFields"]
-    return []
+    elif "extraFields[]" in access_request:
+        return [access_request["extraFields[]"]]
+    else:
+        return []
 
 
 def _validate_access_request(access_request_form, user):
@@ -674,37 +679,49 @@ def run_accept_request_task(
 
 def decline_individual_access(request, access_type, request_id, reason):
     json_response = {}
-    access_mapping = UserAccessMapping.get_access_request(request_id)
+    access_mapping = {}
+    decline_new_group = False
+    if access_type == "declineNewGroup":
+        access_mapping = GroupV2.get_pending_group(request_id)
+        decline_new_group = True
+    else:
+        access_mapping = UserAccessMapping.get_access_request(request_id)
+
     if not is_request_valid(request_id, access_mapping):
         json_response["error"] = USER_REQUEST_IN_PROCESS_ERR_MSG.format(
             request_id=request_id,
         )
         return json_response
 
-    json_response = validate_approver_permissions(access_mapping, access_type, request)
-    if "error" in json_response:
-        return json_response
+    if not decline_new_group:
+        json_response = validate_approver_permissions(access_mapping, access_type, request)
+        if "error" in json_response:
+            return json_response
 
     with transaction.atomic():
         access_mapping.decline_access(reason)
         if hasattr(access_mapping, "approver_1"):
-            access_mapping.decline_reason = reason
             if access_mapping.approver_1 is not None:
                 access_mapping.approver_2 = request.user.user
             else:
                 access_mapping.approver_1 = request.user.user
         else:
-            access_mapping.reason = reason
-            access_mapping.approver = request.user.username
+            access_mapping.approver = request.user.user
 
         access_mapping.save()
 
-    access_module = helper.get_available_access_module_from_tag(access_type)
-    access_labels = [access_mapping.access.access_label]
-    description = access_module.combine_labels_desc(access_labels)
-    notifications.send_mail_for_request_decline(
-        request, description, request_id, reason, access_type
-    )
+    if not decline_new_group:
+        access_module = helper.get_available_access_module_from_tag(access_type)
+        access_labels = [access_mapping.access.access_label]
+        description = access_module.combine_labels_desc(access_labels)
+        notifications.send_mail_for_request_decline(
+            request, description, request_id, reason, access_type
+        )
+    else:
+        MembershipV2.update_membership(access_mapping, reason)
+        notifications.send_mail_for_request_decline(
+            request, "Group Creation", request_id, reason, access_type
+        )
 
     logger.debug(
         USER_REQUEST_DECLINE_MSG.format(

@@ -400,6 +400,10 @@ class MembershipV2(models.Model):
         self.status = "Revoked"
         self.save()
 
+    def update_membership(group, reason):
+        membership = MembershipV2.objects.filter(group=group)
+        membership.update(status="Declined", decline_reason=reason)
+
     @staticmethod
     def get_membership(membership_id):
         try:
@@ -500,6 +504,14 @@ class GroupV2(models.Model):
     def getPendingMemberships():
         return MembershipV2.objects.filter(status="Pending", group__status="Approved")
 
+    def is_already_processed(self):
+        return self.status in ['Declined','Approved','Processing','Revoked']
+
+    def decline_access(self, decline_reason=None):
+        self.status = "Declined"
+        self.decline_reason = decline_reason
+        self.save()
+
     @staticmethod
     def getPendingCreation():
         new_group_pending = GroupV2.objects.filter(status="Pending")
@@ -597,7 +609,9 @@ class GroupV2(models.Model):
 
     def is_owner(self, user):
         return (
-            self.membership_group.filter(is_owner=True).filter(user=user).first()
+            self.membership_group.filter(is_owner=True)
+            .filter(user=user)
+            .first()
             is not None
         )
 
