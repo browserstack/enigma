@@ -19,26 +19,27 @@ from django.contrib.auth import views as auth_views
 from django.urls import re_path, include
 from Access.views import (
     user_offboarding,
-    showAccessHistory,
-    pendingRequests,
-    pendingFailure,
+    show_access_history,
+    pending_requests,
+    pending_failure,
     pending_revoke,
-    updateUserInfo,
-    saveIdentity,
-    createNewGroup,
+    update_user_info,
+    save_identity,
+    create_new_group,
     all_user_access_list,
     mark_revoked,
-    allUsersList,
-    requestAccess,
+    all_users_list,
+    request_access,
     group_access,
     group_access_list,
-    approveNewGroup,
+    approve_new_group,
     add_user_to_group,
-    groupDashboard,
+    group_dashboard,
     accept_bulk,
     decline_access,
     update_group_owners,
     remove_group_member,
+    individual_resolve
 )
 from Access.helpers import get_available_access_modules
 
@@ -49,18 +50,18 @@ urlpatterns = [
     re_path(r"^logout/$", logout_view, name="logout"),
     re_path(r"^access/markRevoked", mark_revoked, name="markRevoked"),
     re_path(r"^oauth/", include("social_django.urls", namespace="social")),
-    re_path(r"^access/showAccessHistory$", showAccessHistory, name="showAccessHistory"),
-    re_path(r"^access/pendingRequests$", pendingRequests, name="pendingRequests"),
-    re_path(r"^resolve/pendingFailure", pendingFailure, name="pendingFailure"),
+    re_path(r"^access/showAccessHistory$", show_access_history, name="showAccessHistory"),
+    re_path(r"^access/pendingRequests$", pending_requests, name="pendingRequests"),
+    re_path(r"^resolve/pendingFailure", pending_failure, name="pendingFailure"),
     re_path(r"^resolve/pendingRevoke", pending_revoke, name="pendingRevoke"),
-    re_path(r"^user/updateUserInfo/", updateUserInfo, name="updateUserInfo"),
-    re_path(r"^user/saveIdentity/", saveIdentity, name="saveIdentity"),
-    re_path(r"^group/create$", createNewGroup, name="createNewGroup"),
-    re_path(r"^group/dashboard/$", groupDashboard, name="groupDashboard"),
+    re_path(r"^user/updateUserInfo/", update_user_info, name="updateUserInfo"),
+    re_path(r"^user/saveIdentity/", save_identity, name="saveIdentity"),
+    re_path(r"^group/create$", create_new_group, name="createNewGroup"),
+    re_path(r"^group/dashboard/$", group_dashboard, name="groupDashboard"),
     re_path(r"^access/userAccesses$", all_user_access_list, name="allUserAccessList"),
-    re_path(r"^access/usersList$", allUsersList, name="allUsersList"),
+    re_path(r"^access/usersList$", all_users_list, name="allUsersList"),
     re_path(r"^user/offboardUser$", user_offboarding, name="offboarding_user"),
-    re_path(r"^access/requestAccess$", requestAccess, name="requestAccess"),
+    re_path(r"^access/requestAccess$", request_access, name="requestAccess"),
     re_path(r"^group/requestAccess$", group_access, name="groupRequestAccess"),
     re_path(
         r"^group/access/list/(?P<groupName>[\w -]+)$",
@@ -68,7 +69,7 @@ urlpatterns = [
         name="groupAccessList",
     ),
     re_path(
-        r"^group/new/accept/(?P<requestId>.*)$", approveNewGroup, name="approveNewGroup"
+        r"^group/new/accept/(?P<requestId>.*)$", approve_new_group, name="approveNewGroup"
     ),
     re_path(
         r"^group/adduser/(?P<groupName>[\w -]+)$",
@@ -80,7 +81,7 @@ urlpatterns = [
         update_group_owners,
         name="updateGroupOwners",
     ),
-    re_path(r"^access/pendingRequests$", pendingRequests, name="pendingRequests"),
+    re_path(r"^access/pendingRequests$", pending_requests, name="pendingRequests"),
     re_path(r"^accept_bulk/(?P<selector>[\w-]+)", accept_bulk, name="accept_bulk"),
     re_path(
         r"^decline/(?P<accessType>[\w-]+)/(?P<requestId>.*)$",
@@ -90,6 +91,7 @@ urlpatterns = [
     re_path(
         r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"
     ),
+    re_path(r"^individual_resolve$", individual_resolve, name="individual_resolve")
 ]
 
 for tag, each_module in get_available_access_modules().items():
