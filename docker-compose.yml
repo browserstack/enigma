@@ -15,15 +15,9 @@ services:
     - 8000:8000
     depends_on:
     - db
-
     command: >
-      /bin/bash -c "
-        while ! nc -z db 3306;
-        do
-          echo sleeping;
-          sleep 1;
-        done;
-        echo Connected!;"
+      bash -c "echo Starting Django runserver;
+      python manage.py runserver 0.0.0.0:8000"
   db:
     container_name: db
     image: mysql/mysql-server:8.0.31
@@ -33,31 +27,30 @@ services:
     - ./secrets/ops_mysql_dev.env
     volumes:
     - ./dbs:/var/lib/mysql --socket=/tmp/mysql.sock
-
-
   redis:
     container_name: redis
     image: redis:alpine
     command: --port 6379
     ports:
       - "6379:6379"
-
   celery:
     container_name: celery
     build:
       context: .
       dockerfile: Dockerfile
-      target : celery
+      target: web
     volumes:
       - ./:/app/
     env_file:
     - ./secrets/ops_app_celery.env
-
     depends_on:
       - db
       - redis
       - web
-      
+    command: >
+      bash -c "
+      echo Starting celery;
+      python3 -m celery -A BrowserStackAutomation worker -n worker1 -l DEBUG"
   test:
     container_name: test
     build:
