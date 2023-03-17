@@ -385,26 +385,26 @@ def create_request(auth_user, access_request_form):
     json_response["status_list"] = []
     extra_fields = get_extra_fields(access_request=access_request)
 
-    for index1, access_type in enumerate(access_request["accessRequests"]):
+    for index1, access_tag in enumerate(access_request["accessRequests"]):
         access_labels = validate_access_labels(
             access_labels_json=access_request["accessLabel"][index1],
-            access_tag=access_type,
+            access_tag=access_tag,
         )
         access_reason = access_request["accessReason"][index1]
 
         request_id = (
             auth_user.username
             + "-"
-            + access_type
+            + access_tag
             + "-"
             + datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
         )
-        json_response[access_type] = {
+        json_response[access_tag] = {
             "requestId": request_id,
             "dateTime": current_date_time,
         }
 
-        access_module = helper.get_available_access_modules()[access_type]
+        access_module = helper.get_available_access_modules()[access_tag]
         extra_field_labels = get_extra_field_labels(access_module)
         if extra_fields and extra_field_labels:
             for field in extra_field_labels:
@@ -420,7 +420,7 @@ def create_request(auth_user, access_request_form):
             access_create_error = _create_access(
                 auth_user=auth_user,
                 access_label=access_label,
-                access_type=access_type,
+                access_tag=access_tag,
                 request_id=request_id,
                 access_reason=access_reason,
             )
@@ -453,17 +453,17 @@ def create_request(auth_user, access_request_form):
     return json_response
 
 
-def _create_access(auth_user, access_label, access_type, request_id, access_reason):
-    user_identity = auth_user.user.get_active_identity(access_tag=access_type)
+def _create_access(auth_user, access_label, access_tag, request_id, access_reason):
+    user_identity = auth_user.user.get_active_identity(access_tag=access_tag)
     if not user_identity:
         return {
             "title": REQUEST_IDENTITY_NOT_SETUP_ERR_MSG["error_msg"],
             "msg": REQUEST_IDENTITY_NOT_SETUP_ERR_MSG["msg"].format(
-                access_tag=access_type
+                access_tag=access_tag
             ),
         }
 
-    access = AccessV2.get(access_type=access_type, access_label=access_label)
+    access = AccessV2.get(access_tag=access_tag, access_label=access_label)
     if access:
         if user_identity.access_mapping_exists(access):
             return {
@@ -481,7 +481,7 @@ def _create_access(auth_user, access_label, access_type, request_id, access_reas
             user_identity=user_identity,
             request_id=request_id,
             access_label=access_label,
-            access_type=access_type,
+            access_tag=access_tag,
             access_reason=access_reason,
         )
     except Exception:
@@ -493,11 +493,11 @@ def _create_access(auth_user, access_label, access_type, request_id, access_reas
 
 @transaction.atomic
 def _create_access_mapping(
-    user_identity, access, request_id, access_type, access_label, access_reason
+    user_identity, access, request_id, access_tag, access_label, access_reason
 ):
     if not access:
         access = AccessV2.objects.create(
-            access_tag=access_type, access_label=access_label
+            access_tag=access_tag, access_label=access_label
         )
 
     user_identity.user_access_mapping.create(

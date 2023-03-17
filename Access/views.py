@@ -652,7 +652,7 @@ def individual_resolve(request):
             "error_msg": "Bad request",
             "msg": "Error in request not found OR Invalid request type",
         }
-        return render(request, "BSOps/accessStatus.html", json_response)
+        return render(request, "EnigmaOps/accessStatus.html", json_response)
 
 
 @login_required
@@ -689,7 +689,7 @@ def ignore_failure(request, selector):
                         "msg": "The request is already in final state.",
                     }
                 )
-        return render(request, "BSOps/accessStatus.html", json_response)
+        return render(request, "EnigmaOps/accessStatus.html", json_response)
     except Exception as e:
         logger.debug("Error in request not found OR Invalid request type")
         logger.exception(e)
@@ -698,7 +698,7 @@ def ignore_failure(request, selector):
             "error_msg": str(e),
             "msg": "Error in request not found OR Invalid request type",
         }
-        return render(request, "BSOps/accessStatus.html", json_response)
+        return render(request, "EnigmaOps/accessStatus.html", json_response)
 
 
 @login_required
@@ -727,7 +727,7 @@ def resolve_bulk(request):
                         "msg": "The request is already in final state.",
                     }
                 )
-        return render(request, "BSOps/accessStatus.html", json_response)
+        return render(request, "EnigmaOps/accessStatus.html", json_response)
     except Exception as e:
         logger.debug("Error in request not found OR Invalid request type")
         logger.exception(e)
