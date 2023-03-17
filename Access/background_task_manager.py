@@ -298,13 +298,7 @@ def run_accept_request(data):
 
     return {"status": False}
 
-
-def accept_request(user_access_mapping, approval_type, approver):
-    result = None
-    if approval_type != ApprovalType.Primary and approval_type != ApprovalType.Secondary:
-        raise Exception("Invalid Approval Type")
-
-    user_access_mapping.processing(approval_type = approval_type, approver=approver)
+def accept_request(user_access_mapping):
     try:
         result = run_access_grant.delay(user_access_mapping.request_id)
     except Exception:
@@ -313,6 +307,7 @@ def accept_request(user_access_mapping, approval_type, approver):
     if result:
         return True
     return False
+
 
 def revoke_request(user_access_mapping, revoker=None):
     result = None
