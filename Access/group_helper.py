@@ -743,7 +743,10 @@ def validate_group_access_create_request(group, auth_user):
 def revoke_user_access(user, access, revoker, decline_message):
     user_identity = user.get_active_identity(access.access_tag)
     user_identity.decline_non_approved_access_mapping(access, decline_message)
-    revoke_request(user_identity.get_granted_access_mapping(access).first(), revoker)
+    access_mapping = user_identity.get_granted_access_mapping(access).first()
+    if not access_mapping:
+        return False
+    revoke_request(access_mapping, revoker)
 
 def remove_member(request):
     try:
@@ -812,7 +815,7 @@ def revoke_access_from_group(request):
 
     group = mapping.group
     auth_user = request.user
-    if not (auth_user.user.has_permission("ALLOW_USER_OFFBOARD") and group.member_is_owner(auth_user.user)):
+    if not (auth_user.user.has_permission("ALLOW_USER_OFFBOARD") or group.member_is_owner(auth_user.user)):
         return {"error": USER_UNAUTHORIZED_MESSAGE}
 
     revoke_access_memberships = []
