@@ -5,7 +5,7 @@ from Access.models import (
     GroupV2,
     UserAccessMapping,
 )
-from BrowserStackAutomation.settings import DEFAULT_ACCESS_GROUP
+from EnigmaAutomation.settings import DEFAULT_ACCESS_GROUP
 from Access.views_helper import generate_user_mappings, execute_group_access
 import json
 import datetime

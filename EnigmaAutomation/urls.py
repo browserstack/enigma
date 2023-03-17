@@ -1,4 +1,4 @@
-"""BrowserStackAutomation URL Configuration
+"""EnigmaAutomation URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.1/topics/http/urls/
@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import re_path, include
 from Access.views import (
+    revoke_group_access,
     user_offboarding,
     show_access_history,
     pending_requests,
@@ -39,7 +40,9 @@ from Access.views import (
     decline_access,
     update_group_owners,
     remove_group_member,
-    individual_resolve
+    individual_resolve,
+    ignore_failure,
+    resolve_bulk,
 )
 from Access.helpers import get_available_access_modules
 
@@ -51,7 +54,6 @@ urlpatterns = [
     re_path(r"^access/markRevoked", mark_revoked, name="markRevoked"),
     re_path(r"^oauth/", include("social_django.urls", namespace="social")),
     re_path(r"^access/showAccessHistory$", show_access_history, name="showAccessHistory"),
-    re_path(r"^access/pendingRequests$", pending_requests, name="pendingRequests"),
     re_path(r"^resolve/pendingFailure", pending_failure, name="pendingFailure"),
     re_path(r"^resolve/pendingRevoke", pending_revoke, name="pendingRevoke"),
     re_path(r"^user/updateUserInfo/", update_user_info, name="updateUserInfo"),
@@ -64,34 +66,39 @@ urlpatterns = [
     re_path(r"^access/requestAccess$", request_access, name="requestAccess"),
     re_path(r"^group/requestAccess$", group_access, name="groupRequestAccess"),
     re_path(
-        r"^group/access/list/(?P<groupName>[\w -]+)$",
+        r"^group/access/list/(?P<group_name>[\w -]+)$",
         group_access_list,
         name="groupAccessList",
     ),
     re_path(
-        r"^group/new/accept/(?P<requestId>.*)$", approve_new_group, name="approveNewGroup"
+        r"^group/new/accept/(?P<requestId>.*)$",
+        approve_new_group,
+        name="approveNewGroup",
     ),
     re_path(
-        r"^group/adduser/(?P<groupName>[\w -]+)$",
+        r"^group/adduser/(?P<group_name>[\w -]+)$",
         add_user_to_group,
         name="addUserToGroup",
     ),
     re_path(
-        r"^group/updateOwners/(?P<groupName>[\w -]+)$",
+        r"^group/updateOwners/(?P<group_name>[\w -]+)$",
         update_group_owners,
         name="updateGroupOwners",
     ),
     re_path(r"^access/pendingRequests$", pending_requests, name="pendingRequests"),
     re_path(r"^accept_bulk/(?P<selector>[\w-]+)", accept_bulk, name="accept_bulk"),
     re_path(
-        r"^decline/(?P<accessType>[\w-]+)/(?P<requestId>.*)$",
+        r"^decline/(?P<access_type>[\w-]+)/(?P<request_id>.*)$",
         decline_access,
         name="decline",
     ),
     re_path(
         r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"
     ),
-    re_path(r"^individual_resolve$", individual_resolve, name="individual_resolve")
+    re_path(r"^individual_resolve$", individual_resolve, name="individual_resolve"),
+    re_path(r"^resolve_bulk", resolve_bulk, name="resolve_bulk"),
+    re_path(r"^ignore/(?P<selector>.*)$", ignore_failure, name="ignoreFailure"),
+    re_path(r"^group/revokeAccess", revoke_group_access, name="revoke_group_access"),
 ]
 
 for tag, each_module in get_available_access_modules().items():

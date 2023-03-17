@@ -3,7 +3,7 @@ import logging
 import traceback
 
 from Access.models import UserAccessMapping, GroupAccessMapping
-from BrowserStackAutomation.settings import ACCESS_APPROVE_EMAIL, PERMISSION_CONSTANTS
+from EnigmaAutomation.settings import ACCESS_APPROVE_EMAIL, PERMISSION_CONSTANTS
 from bootprocess.general import emailSES
 
 logger = logging.getLogger(__name__)
@@ -173,6 +173,9 @@ class BaseEmailAccess(object):
 
     def get_extra_fields(self):
         return []
+
+    def can_auto_approve(self):
+        return False
 
     # return valid access label array which will be added in db or raise exception
     def validate_request(self, access_labels_data, request_user, is_group=False):

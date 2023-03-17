@@ -3,8 +3,8 @@ import os
 from celery import Celery
 from django.conf import settings
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "BrowserStackAutomation.settings")
-app = Celery("BrowserStackAutomation")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "EnigmaAutomation.settings")
+app = Celery("EnigmaAutomation")
 app.config_from_object("django.conf:settings", namespace="CELERY")
 app.conf.task_default_queue = "default_queue"
 app.conf.update(task_track_started=True)

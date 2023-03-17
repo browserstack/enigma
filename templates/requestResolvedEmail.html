@@ -1,0 +1,9 @@
+Hi {{ user }},
+
+Request {{ request_id }} has been marked as resolved.
+<BR/><BR/>
+{% if access_type == "decline" %}
+  "Request is being marked as declined as it was invalid. Reach out to Admin to know more."
+{% else %}
+  "Request is being marked as approved. The failure was resolved."
+{% endif %}

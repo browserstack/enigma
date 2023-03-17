@@ -104,7 +104,7 @@ def render_error_message(request, log_message, user_message, user_message_descri
     logger.error(log_message)
     return render(
         request,
-        "BSOps/accessStatus.html",
+        "EnigmaOps/accessStatus.html",
         {
             "error": {
                 "error_msg": user_message,
