@@ -74,7 +74,8 @@ function inputRegion(e) {
 
           {% if anyApprover %}
           <div class="list-inline-item" style="padding-right:15px">
-            <a href="{% url 'pendingRequests' %}"><i class="far fa-bell" style="font-size:28px;color:white"></i><span class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ pendingCount }}</span></a>
+            <a href="{% url 'pendingRequests' %}" title="Pending Requests"><i class="far fa-bell" style="font-size:28px;color:white"></i><span
+                class="badge dashbg-3" style="color:white;background-color:#1AC98E">{{ pendingCount }}</span></a>
           </div>
           {% endif %}
 

@@ -60,7 +60,7 @@ def run_access_grant(request_id):
     user_access_mapping = UserAccessMapping.get_access_request(request_id=request_id)
     access_tag = user_access_mapping.access.access_tag
     user = user_access_mapping.user_identity.user
-    approver = user_access_mapping.approver_1.user.username
+    approver = user_access_mapping.approver_1.user
     message = ""
     if not user_access_mapping.user_identity.user.is_active():
         user_access_mapping.decline_access(decline_reason="User is not active")
@@ -68,7 +68,7 @@ def run_access_grant(request_id):
             {
                 "requestId": request_id,
                 "status": "Declined",
-                "by": approver,
+                "by": approver.username,
                 "response": message,
             }
         )
@@ -297,6 +297,7 @@ def run_accept_request(data):
     )
 
     return {"status": False}
+
 
 def accept_request(user_access_mapping):
     try:

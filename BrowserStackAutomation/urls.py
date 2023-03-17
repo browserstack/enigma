@@ -39,7 +39,9 @@ from Access.views import (
     decline_access,
     update_group_owners,
     remove_group_member,
-    individual_resolve
+    individual_resolve,
+    ignore_failure,
+    resolve_bulk,
 )
 from Access.helpers import get_available_access_modules
 
@@ -50,7 +52,9 @@ urlpatterns = [
     re_path(r"^logout/$", logout_view, name="logout"),
     re_path(r"^access/markRevoked", mark_revoked, name="markRevoked"),
     re_path(r"^oauth/", include("social_django.urls", namespace="social")),
-    re_path(r"^access/showAccessHistory$", show_access_history, name="showAccessHistory"),
+    re_path(
+        r"^access/showAccessHistory$", show_access_history, name="showAccessHistory"
+    ),
     re_path(r"^access/pendingRequests$", pending_requests, name="pendingRequests"),
     re_path(r"^resolve/pendingFailure", pending_failure, name="pendingFailure"),
     re_path(r"^resolve/pendingRevoke", pending_revoke, name="pendingRevoke"),
@@ -69,7 +73,9 @@ urlpatterns = [
         name="groupAccessList",
     ),
     re_path(
-        r"^group/new/accept/(?P<requestId>.*)$", approve_new_group, name="approveNewGroup"
+        r"^group/new/accept/(?P<requestId>.*)$",
+        approve_new_group,
+        name="approveNewGroup",
     ),
     re_path(
         r"^group/adduser/(?P<groupName>[\w -]+)$",
@@ -91,7 +97,9 @@ urlpatterns = [
     re_path(
         r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"
     ),
-    re_path(r"^individual_resolve$", individual_resolve, name="individual_resolve")
+    re_path(r"^individual_resolve$", individual_resolve, name="individual_resolve"),
+    re_path(r"^resolve_bulk", resolve_bulk, name="resolve_bulk"),
+    re_path(r"^ignore/(?P<selector>.*)$", ignore_failure, name="ignoreFailure"),
 ]
 
 for tag, each_module in get_available_access_modules().items():
