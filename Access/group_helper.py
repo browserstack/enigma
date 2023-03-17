@@ -42,7 +42,7 @@ REQUEST_PROCESSED_BY = "The Request {requestId} is already Processed By : {user}
 
 LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR = {
     "error_msg": "Invalid Group Name",
-    "msg": "A group with {group_name} doesn't exist.",
+    "msg": "A group with name {group_name} doesn't exist.",
 }
 
 NON_OWNER_PERMISSION_DENIED_ERROR = {
@@ -129,6 +129,7 @@ def create_group(request):
         requester=request.user.user,
         description=reason,
         needsAccessApprove=needs_access_approve,
+        date_time=base_datetime_prefix,
     )
 
     new_group.add_member(
@@ -183,7 +184,9 @@ def get_group_access_list(auth_user, group_name):
         context = {
             "error": {
                 "error_msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["error_msg"],
-                "msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["msg"],
+                "msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["msg"].format(
+                    group_name=group_name
+                ),
             }
         }
         return context
@@ -236,7 +239,9 @@ def update_owners(request, group_name):
         context = {
             "error": {
                 "error_msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["error_msg"],
-                "msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["msg"],
+                "msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["msg"].format(
+                    group_name=group_name
+                ),
             }
         }
         return context
@@ -441,8 +446,8 @@ def add_user_to_group(request):
                         reason=data["memberReason"][0],
                         date_time=base_datetime_prefix,
                     )
+                    membership_id = membership.membership_id
                     if not group.needsAccessApprove:
-                        membership_id = membership.membership_id
                         context = {}
                         context["accessStatus"] = {
                             "msg": REQUEST_PROCESSING.format(requestId=membership_id),
@@ -485,10 +490,11 @@ def add_user_to_group(request):
             }
 
         else:
+            membership = MembershipV2.get_membership(membership_id=membership_id)
             notifications.send_mulitple_membership_accepted_notification(
                 users_added,
                 data["groupName"][0],
-                data["memberReason"][0],
+                membership,
             )
             if len(selected_users) - len(users_added) == 0:
                 context = {}
@@ -609,6 +615,7 @@ def get_group_access(form_data, auth_user):
     )
     if validation_error:
         context["status"] = validation_error
+        return context
 
     access_module_list = data["accessList"]
     for module_value in access_module_list:
@@ -656,16 +663,17 @@ def save_group_access_request(form_data, auth_user):
         extra_fields = accessrequest_helper.get_extra_fields(access_request)
         extra_field_labels = accessrequest_helper.get_extra_field_labels(access_module)
 
+        if extra_fields and extra_field_labels:
+            for field in extra_field_labels:
+                access_labels[0][field] = extra_fields[0]
+                extra_fields = extra_fields[1:]
+
         module_access_labels = access_module.validate_request(
             access_labels, auth_user, is_group=False
         )
-        if extra_fields and extra_field_labels:
-            for field in extra_field_labels:
-                module_access_labels[0][field] = extra_fields[0]
-                extra_fields = extra_fields[1:]
 
         request_id = (
-            auth_user.username
+            group.name
             + "-"
             + access_tag
             + "-"
@@ -697,15 +705,15 @@ def save_group_access_request(form_data, auth_user):
                             "msg": "Access already exists" + json.dumps(access_label),
                         }
                     )
-        email_destination = access_module.get_approvers()
-        member_list = group.get_all_approved_members()
-        notifications.send_group_access_add_email(
-            destination=email_destination,
-            group_name=group_name,
-            requester=auth_user.user.email,
-            request_id=request_id,
-            member_list=member_list,
-        )
+        # email_destination = access_module.get_approvers()
+        # member_list = group.get_all_approved_members()
+        # notifications.send_group_access_add_email(
+        #     destination=email_destination,
+        #     group_name=group_name,
+        #     requester=auth_user.user.email,
+        #     request_id=request_id,
+        #     member_list=member_list,
+        # )
     return context
 
 
@@ -731,7 +739,7 @@ def validate_group_access_create_request(group, auth_user):
         logger.exception("This Group is not yet approved")
         return {"title": "Permisison Denied", "msg": "This Group is not yet approved"}
 
-    if not (group.is_owner(auth_user.user) or auth_user.is_superuser):
+    if not auth_user.user.is_allowed_admin_actions_on_group(group):
         logger.exception("Permission denied, you're not owner of this group")
         return {"title": "Permision Denied", "msg": "You're not owner of this group"}
     return None
