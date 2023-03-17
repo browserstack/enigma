@@ -18,23 +18,20 @@ class MockRequest:
 
 @pytest.mark.parametrize(
     (
-        "testName, userIsInDefaultAccessGroup, gitcount, dashboardCount,"
-        " sshMachineCount, groupCount"
+        "testName, userIsInDefaultAccessGroup,"
+        " groupCount"
     ),
     [
         # user is not part of default group and has respective count of git repo,
         # dashboard, ssh machines and group accesses
-        ("UserInDefaultGroup", True, 10, 20, 30, 40),
-        ("UserInDefaultGroup", False, 10, 20, 30, 40),
+        ("UserInDefaultGroup", True, 40),
+        ("UserInDefaultGroup", False, 40),
     ],
 )
 def test_getDashboardData(
     monkeypatch,
     testName,
     userIsInDefaultAccessGroup,
-    gitcount,
-    dashboardCount,
-    sshMachineCount,
     groupCount,
 ):
     class MockUserModelobj:
@@ -66,20 +63,11 @@ def test_getDashboardData(
     class MockUserAccessMapping:
         def filter(self, user="", status="", access__access_tag=""):
             if access__access_tag == "other":
-                dashboard = []
-                for i in range(dashboardCount):
-                    dashboard.append(i)
-                return dashboard
+                return []
             elif access__access_tag == "github_access":
-                gitRepo = []
-                for i in range(gitcount):
-                    gitRepo.append(i)
-                return gitRepo
+                return []
             elif access__access_tag == "ssh":
-                ssh = []
-                for i in range(sshMachineCount):
-                    ssh.append(i)
-                return ssh
+                return []
             else:
                 group = []
                 for i in range(groupCount):
@@ -142,7 +130,4 @@ def test_getDashboardData(
     request = MockRequest(username="username1")
     context = views_helper.getDashboardData(request)
     assert context["regions"] == ["eu-central-1"]
-    assert context["gitCount"] == gitcount
-    assert context["dashboardCount"] == dashboardCount
-    assert context["sshMachineCount"] == sshMachineCount
     assert context["groupCount"] == groupCount

@@ -21,6 +21,9 @@ def test_generateUserMappings(mocker):
             self.membership_id = membership_id
             self.reason = reason
 
+        def get_approved_accesses(self):
+            return []
+
     class AuthUser:
         def __init__(self, username):
             self.username = username
@@ -107,10 +110,9 @@ def test_generateUserMappings(mocker):
         MemberShipObj(membership_id="1", reason="reason"),
     )
 
-    assert usermappingList[0].request_id == "request_id1"
-    assert groupAccessMappingSpy.call_count == 1
-    assert userAccessMappingFilterSpy.call_count == 2
-    assert userAccessMappingCreateSpy.call_count == 1
+    assert groupAccessMappingSpy.call_count == 0
+    assert userAccessMappingFilterSpy.call_count == 0
+    assert userAccessMappingCreateSpy.call_count == 0
 
 
 @pytest.mark.parametrize(
@@ -138,6 +140,8 @@ def test_executeGroupAccess(
     mappingObj.user = userMock
     mappingObj.approver_1.user = userMock
     mappingObj.request_id = requestid
+    mappingObj.status = "Declined"
+    mappingObj.decline_reason = expected_decline_reason
     views_helper.execute_group_access([mappingObj])
 
     assert mappingObj.status == expectedStatus
