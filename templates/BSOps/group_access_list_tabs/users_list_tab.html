@@ -74,7 +74,7 @@ $(document).on('click', '.user-remove-button', function(){
   });
 
 function userRemoveConfirm(membership_id){
-  $("#remove-details").html("<h4>Confirm User removal "+ membership_id +"</h4>")
+  $("#remove-details").html("<h4>Confirm removal of user "+ membership_id +"</h4>")
   button_elem = document.getElementsByName("final-remove-button")[0]
   button_elem.id = membership_id
 }
@@ -91,7 +91,7 @@ function userRemoveConfirm(membership_id){
       <!-- Modal body -->
       <div class="modal-body generic-access-modal-body">
         <div id="remove-details"></div><br>
-        <button class="btn btn-danger user-remove-button" name="final-remove-button" id="">Confirm Offboarding</button></a>
+        <button class="btn btn-danger user-remove-button" name="final-remove-button" id="">Confirm</button></a>
       </div>
     </div>
   </div>
