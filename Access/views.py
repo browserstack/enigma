@@ -351,10 +351,9 @@ def accept_bulk(request, selector):
         input_vals = request.GET.getlist("requestId")
         user = request.user.user
         is_access_approver = user.has_permission("ACCESS_APPROVE")
-        request_ids, return_ids = _get_request_ids_for_bulk_processing(
+        request_ids, return_ids, selector = _get_request_ids_for_bulk_processing(
             input_vals, selector
         )
-
         for value in request_ids:
             request_id = value
             if selector == "groupNew" and is_access_approver:
@@ -367,7 +366,7 @@ def accept_bulk(request, selector):
                 )
             elif selector == "groupAccess":
                 json_response = accept_group_access(request.user, request_id)
-            elif selector.endswith("-club"):
+            elif selector == "moduleAccess":
                 json_response = accept_user_access_requests(request.user, request_id)
             else:
                 raise ValidationError("Invalid request")
@@ -403,6 +402,7 @@ def _get_request_ids_for_bulk_processing(posted_request_ids, selector):
                 UserAccessMapping.get_pending_access_mapping(request_id=value)
             )
             access_request_ids.extend(current_ids)
+        selector = "moduleAccess"
     elif selector == "clubGroupAccess":
         for value in input_vals:
             return_ids.append(value)
@@ -416,7 +416,7 @@ def _get_request_ids_for_bulk_processing(posted_request_ids, selector):
         selector = "groupAccess"
     else:
         access_request_ids = input_vals
-    return access_request_ids, return_ids
+    return access_request_ids, return_ids, selector
 
 
 @login_required
@@ -626,7 +626,7 @@ def individual_resolve(request):
         request_ids = request.GET.getlist('requestId')
         if not request_ids:
             raise Exception("Request id not found in the request")
-        
+
         for request_id in request_ids:
             user_access_mapping = UserAccessMapping.get_by_id(request_id)
             if user_access_mapping.status.lower() in ["grantfailed", "approved"]:
@@ -639,4 +639,3 @@ def individual_resolve(request):
         logger.exception(str(e))
         json_response['error'] = {'error_msg': "Bad request", 'msg': "Error in request not found OR Invalid request type"}
         return render(request,'BSOps/accessStatus.html',json_response)
-    

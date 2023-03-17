@@ -877,7 +877,7 @@ class UserAccessMapping(models.Model):
     def approve_access(self):
         self.status = "Approved"
         self.save()
-    
+
     @staticmethod
     def get_by_id(request_id):
         return UserAccessMapping.objects.get(request_id=request_id)
@@ -1075,6 +1075,9 @@ class GroupAccessMapping(models.Model):
 
     def is_self_approval(self, approver):
         return self.requested_by == approver
+
+    def is_already_processed(self):
+        return self.status in ['Declined','Approved','Processing','Revoked']
 
 
 class AccessV2(models.Model):

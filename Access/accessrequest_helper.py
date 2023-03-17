@@ -225,7 +225,7 @@ def get_decline_access_request(request, access_type, request_id):
                     UserAccessMapping.get_pending_access_mapping(request_id=value)
                 )
                 request_ids.extend(current_ids)
-            access_type = access_type.rsplit("-", 1)[0]
+            access_type = "moduleAccess"
         elif access_type == "clubGroupAccess":
             for value in [request_id]:  # ready for bulk decline
                 return_ids.append(value)
@@ -239,6 +239,7 @@ def get_decline_access_request(request, access_type, request_id):
             access_type = "groupAccess"
         else:
             request_ids = [request_id]
+
         for current_request_id in request_ids:
             if access_type == "groupAccess":
                 response = decline_group_access(request, current_request_id, reason)
@@ -300,7 +301,7 @@ def process_individual_requests(
     if len(individual_pending_requests):
         clubbed_requests = {}
         for accessrequest in individual_pending_requests:
-            club_id = accessrequest["requestId"].rsplit("_", 1)[0]
+            club_id = accessrequest["requestId"].rsplit("_")[0]
             if club_id not in clubbed_requests:
                 clubbed_requests[club_id] = {
                     "club_id": club_id,
@@ -329,7 +330,7 @@ def process_group_requests(group_pending_requests, group_requests):
             club_id = (
                 accessrequest["groupName"]
                 + "-"
-                + accessrequest["requestId"].rsplit("-", 1)[-1].rsplit("_", 1)[0]
+                + accessrequest["requestId"].rsplit("-", 1)[-1].rsplit("_")[0]
             )
             needs_access_approve = GroupV2.objects.get(
                 name=accessrequest["groupName"], status="Approved"
@@ -556,7 +557,6 @@ def validate_access_labels(access_labels_json, access_tag):
 
 def _get_approver_permissions(access_tag, access_label=None):
     json_response = {}
-
     access_module = helper.get_available_access_module_from_tag(access_tag)
     approver_permissions = []
     approver_permissions = access_module.fetch_approver_permissions(access_label)
@@ -588,9 +588,9 @@ def accept_user_access_requests(auth_user, request_id):
         )
         return json_response
 
-    requester = access_mapping.user_identity.user.email
-    if auth_user.username == requester:
-        json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+    requester = access_mapping.user_identity.user
+    if auth_user.user == requester:
+        json_response["error"] = SELF_APPROVAL_ERROR_MSG
         return json_response
 
     access_label = access_mapping.access.access_label
@@ -686,6 +686,7 @@ def decline_individual_access(request, access_type, request_id, reason):
         decline_new_group = True
     else:
         access_mapping = UserAccessMapping.get_access_request(request_id)
+        access_type = access_mapping.access.access_tag
 
     if not is_request_valid(request_id, access_mapping):
         json_response["error"] = USER_REQUEST_IN_PROCESS_ERR_MSG.format(
@@ -838,7 +839,7 @@ def decline_group_access(request, request_id, reason):
     access_type = group_mapping.access.access_tag
 
     json_response = validate_approver_permissions(
-        group_mapping, access_type, request, request_id
+        group_mapping, access_type, request
     )
     if "error" in json_response:
         return json_response

@@ -490,10 +490,11 @@ def add_user_to_group(request):
             }
 
         else:
+            membership = MembershipV2.get_membership(membership_id=membership_id)
             notifications.send_mulitple_membership_accepted_notification(
                 users_added,
                 data["groupName"][0],
-                data["memberReason"][0],
+                membership,
             )
             if len(selected_users) - len(users_added) == 0:
                 context = {}
@@ -672,7 +673,7 @@ def save_group_access_request(form_data, auth_user):
         )
 
         request_id = (
-            auth_user.username
+            group.name
             + "-"
             + access_tag
             + "-"
