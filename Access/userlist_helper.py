@@ -49,9 +49,6 @@ def get_identity_templates(auth_user):
     context["unconfigured_identity_template"] = []
     all_modules = helper.get_available_access_modules()
     for user_identity in user_identities:
-        if not all_modules[user_identity.access_tag].get_identity_template():
-            all_modules.pop(user_identity.access_tag)
-            continue
         is_identity_configured = _is_valid_identity_json(
             identity=user_identity.identity
         )
@@ -67,9 +64,10 @@ def get_identity_templates(auth_user):
 
     for mod in all_modules.values():
         if not mod.get_identity_template():
-            auth_user.user.create_new_identity(
-                access_tag=mod.tag(), identity={}
-            )
+            if not auth_user.user.get_active_identity(mod.tag()):
+                auth_user.user.create_new_identity(
+                    access_tag=mod.tag(), identity={}
+                )
             continue
         context["unconfigured_identity_template"].append(
             {

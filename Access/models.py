@@ -1090,10 +1090,10 @@ class AccessV2(models.Model):
             return self.access_tag
 
     @staticmethod
-    def get(access_type, access_label):
+    def get(access_tag, access_label):
         try:
             return AccessV2.objects.get(
-                access_tag=access_type, access_label=access_label
+                access_tag=access_tag, access_label=access_label
             )
         except AccessV2.DoesNotExist:
             return None
