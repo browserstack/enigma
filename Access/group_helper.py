@@ -1,4 +1,4 @@
-from Access.models import User, GroupV2, MembershipV2, AccessV2
+from Access.models import GroupAccessMapping, User, GroupV2, MembershipV2, AccessV2
 from Access import helpers, views_helper, notifications, accessrequest_helper
 from django.db import transaction
 import datetime
@@ -24,6 +24,9 @@ INTERNAL_ERROR_MESSAGE = {
     "msg": "Error Occured while loading the page. Please contact admin",
 }
 
+USER_UNAUTHORIZED_MESSAGE = "User unauthorised to perform the action."
+GROUP_ACCESS_MAPPING_NOT_FOUND = "Group Access Mapping not found in the database."
+
 NEW_GROUP_CREATE_ERROR_GROUP_EXISTS = {
     "error_msg": "Invalid Group Name",
     "msg": "A group with name {group_name} already exists. Please choose a new name.",
@@ -42,7 +45,7 @@ REQUEST_PROCESSED_BY = "The Request {requestId} is already Processed By : {user}
 
 LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR = {
     "error_msg": "Invalid Group Name",
-    "msg": "A group with {group_name} doesn't exist.",
+    "msg": "A group with name {group_name} doesn't exist.",
 }
 
 NON_OWNER_PERMISSION_DENIED_ERROR = {
@@ -129,6 +132,7 @@ def create_group(request):
         requester=request.user.user,
         description=reason,
         needsAccessApprove=needs_access_approve,
+        date_time=base_datetime_prefix,
     )
 
     new_group.add_member(
@@ -183,7 +187,9 @@ def get_group_access_list(auth_user, group_name):
         context = {
             "error": {
                 "error_msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["error_msg"],
-                "msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["msg"],
+                "msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["msg"].format(
+                    group_name=group_name
+                ),
             }
         }
         return context
@@ -236,7 +242,9 @@ def update_owners(request, group_name):
         context = {
             "error": {
                 "error_msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["error_msg"],
-                "msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["msg"],
+                "msg": LIST_GROUP_ACCESSES_GROUP_DONT_EXIST_ERROR["msg"].format(
+                    group_name=group_name
+                ),
             }
         }
         return context
@@ -441,8 +449,8 @@ def add_user_to_group(request):
                         reason=data["memberReason"][0],
                         date_time=base_datetime_prefix,
                     )
+                    membership_id = membership.membership_id
                     if not group.needsAccessApprove:
-                        membership_id = membership.membership_id
                         context = {}
                         context["accessStatus"] = {
                             "msg": REQUEST_PROCESSING.format(requestId=membership_id),
@@ -485,10 +493,11 @@ def add_user_to_group(request):
             }
 
         else:
+            membership = MembershipV2.get_membership(membership_id=membership_id)
             notifications.send_mulitple_membership_accepted_notification(
                 users_added,
                 data["groupName"][0],
-                data["memberReason"][0],
+                membership,
             )
             if len(selected_users) - len(users_added) == 0:
                 context = {}
@@ -610,6 +619,7 @@ def get_group_access(form_data, auth_user):
     )
     if validation_error:
         context["status"] = validation_error
+        return context
 
     access_module_list = data["accessList"]
     for module_value in access_module_list:
@@ -657,16 +667,17 @@ def save_group_access_request(form_data, auth_user):
         extra_fields = accessrequest_helper.get_extra_fields(access_request)
         extra_field_labels = accessrequest_helper.get_extra_field_labels(access_module)
 
+        if extra_fields and extra_field_labels:
+            for field in extra_field_labels:
+                access_labels[0][field] = extra_fields[0]
+                extra_fields = extra_fields[1:]
+
         module_access_labels = access_module.validate_request(
             access_labels, auth_user, is_group=False
         )
-        if extra_fields and extra_field_labels:
-            for field in extra_field_labels:
-                module_access_labels[0][field] = extra_fields[0]
-                extra_fields = extra_fields[1:]
 
         request_id = (
-            auth_user.username
+            group.name
             + "-"
             + access_tag
             + "-"
@@ -698,15 +709,15 @@ def save_group_access_request(form_data, auth_user):
                             "msg": "Access already exists" + json.dumps(access_label),
                         }
                     )
-        email_destination = access_module.get_approvers()
-        member_list = group.get_all_approved_members()
-        notifications.send_group_access_add_email(
-            destination=email_destination,
-            group_name=group_name,
-            requester=auth_user.user.email,
-            request_id=request_id,
-            member_list=member_list,
-        )
+        # email_destination = access_module.get_approvers()
+        # member_list = group.get_all_approved_members()
+        # notifications.send_group_access_add_email(
+        #     destination=email_destination,
+        #     group_name=group_name,
+        #     requester=auth_user.user.email,
+        #     request_id=request_id,
+        #     member_list=member_list,
+        # )
     return context
 
 
@@ -732,11 +743,19 @@ def validate_group_access_create_request(group, auth_user):
         logger.exception("This Group is not yet approved")
         return {"title": "Permisison Denied", "msg": "This Group is not yet approved"}
 
-    if not (group.is_owner(auth_user.user) or auth_user.is_superuser):
+    if not auth_user.user.is_allowed_admin_actions_on_group(group):
         logger.exception("Permission denied, you're not owner of this group")
         return {"title": "Permision Denied", "msg": "You're not owner of this group"}
     return None
 
+
+def revoke_user_access(user, access, revoker, decline_message):
+    user_identity = user.get_active_identity(access.access_tag)
+    user_identity.decline_non_approved_access_mapping(access, decline_message)
+    access_mapping = user_identity.get_granted_access_mapping(access).first()
+    if not access_mapping:
+        return False
+    revoke_request(access_mapping, revoker)
 
 def remove_member(request):
     try:
@@ -756,7 +775,7 @@ def remove_member(request):
     ]
 
     other_memberships_groups = (
-        user.get_all_memberships()
+        user.get_all_approved_memberships()
         .exclude(group=membership.group)
         .values_list("group", flat=True)
     )
@@ -768,16 +787,59 @@ def remove_member(request):
 
     accesses = list(set(group_accesses) - set(other_group_accesses))
 
-    for access in accesses:
-        user_identity = user.get_active_identity(access.access_tag)
-        user_identity.decline_non_approved_access_mapping(access)
-        user_identity.offboarding_approved_access_mapping(access)
-        revoke_request(user_access_mapping=access, revoker=request.user.user)
+    with transaction.atomic():
+        for access in accesses:
+            revoke_user_access(user, access, request.user.user, "User removed from the group")
 
     membership.revoke_membership()
 
     return {"message": "Successfully removed user from group"}
 
+def access_exist_in_other_groups_of_user(membership, group, access):
+    other_memberships = (
+        membership.user.get_all_approved_memberships()
+        .exclude(group=membership.group)
+    )
+    for membership in other_memberships:
+        if membership.group.check_access_exist(access):
+            return True
+
+    return False
+
+
+def revoke_access_from_group(request):
+    try:
+        request_id = request.POST.get("request_id")
+        if not request_id:
+            logger.debug("Cannot find request_id in the http request.")
+            return {"error": ERROR_MESSAGE}
+
+        mapping = GroupAccessMapping.get_by_id(request_id)
+        if not mapping:
+            logger.debug("Group Access Mapping not found in the database")
+            return {"error": GROUP_ACCESS_MAPPING_NOT_FOUND}
+    except Exception as e:
+        logger.exception(str(e))
+        return {"error": ERROR_MESSAGE}
+
+    group = mapping.group
+    auth_user = request.user
+    if not (auth_user.user.has_permission("ALLOW_USER_OFFBOARD") or group.member_is_owner(auth_user.user)):
+        return {"error": USER_UNAUTHORIZED_MESSAGE}
+
+    revoke_access_memberships = []
+    for membership in group.get_all_approved_members():
+        if access_exist_in_other_groups_of_user(membership, group, mapping.access):
+            continue
+        revoke_access_memberships.append(membership)
+
+    with transaction.atomic():
+        for membership in revoke_access_memberships:
+            revoke_user_access(membership.user, mapping.access, auth_user.user, "Access revoked for the group")
+
+    mapping.mark_revoked(auth_user.user)
+
+    return {"message": "Successfully initiated the revoke"}
 
 def get_selected_users_by_email(user_emails):
     selected_users = User.get_users_by_emails(emails=user_emails)

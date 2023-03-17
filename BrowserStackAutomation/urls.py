@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import re_path, include
 from Access.views import (
+    revoke_group_access,
     user_offboarding,
     show_access_history,
     pending_requests,
@@ -68,7 +69,7 @@ urlpatterns = [
     re_path(r"^access/requestAccess$", request_access, name="requestAccess"),
     re_path(r"^group/requestAccess$", group_access, name="groupRequestAccess"),
     re_path(
-        r"^group/access/list/(?P<groupName>[\w -]+)$",
+        r"^group/access/list/(?P<group_name>[\w -]+)$",
         group_access_list,
         name="groupAccessList",
     ),
@@ -78,19 +79,19 @@ urlpatterns = [
         name="approveNewGroup",
     ),
     re_path(
-        r"^group/adduser/(?P<groupName>[\w -]+)$",
+        r"^group/adduser/(?P<group_name>[\w -]+)$",
         add_user_to_group,
         name="addUserToGroup",
     ),
     re_path(
-        r"^group/updateOwners/(?P<groupName>[\w -]+)$",
+        r"^group/updateOwners/(?P<group_name>[\w -]+)$",
         update_group_owners,
         name="updateGroupOwners",
     ),
     re_path(r"^access/pendingRequests$", pending_requests, name="pendingRequests"),
     re_path(r"^accept_bulk/(?P<selector>[\w-]+)", accept_bulk, name="accept_bulk"),
     re_path(
-        r"^decline/(?P<accessType>[\w-]+)/(?P<requestId>.*)$",
+        r"^decline/(?P<access_type>[\w-]+)/(?P<request_id>.*)$",
         decline_access,
         name="decline",
     ),
@@ -100,6 +101,7 @@ urlpatterns = [
     re_path(r"^individual_resolve$", individual_resolve, name="individual_resolve"),
     re_path(r"^resolve_bulk", resolve_bulk, name="resolve_bulk"),
     re_path(r"^ignore/(?P<selector>.*)$", ignore_failure, name="ignoreFailure"),
+    re_path(r"^group/revokeAccess", revoke_group_access, name="revoke_group_access"),
 ]
 
 for tag, each_module in get_available_access_modules().items():

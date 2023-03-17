@@ -321,15 +321,6 @@
 
         $(".bulkAcceptAll-checkbox").change(function () {
             let bulkCheckValue = $(this).prop('checked');
-            // for ssh
-            // sshCheckedAllOption = $("#dropdownMenuButton").text()
-
-            // if (sshCheckedAllOption === "Production") {
-            //   checkSSHCardWithTitle("prod", bulkCheckValue)
-            // }
-            // else if (sshCheckedAllOption === "Staging") {
-            //   checkSSHCardWithTitle("staging", bulkCheckValue)
-            // }
 
             let selector = $(this).val()
             $(`.${selector}`).each(function (idx, elem) {
@@ -375,98 +366,6 @@
 
 <div class="wrapper">
     <div class="panel-group" id="pending-accordion">
-        {% if repoRequest|length %}
-        <div class="panel panel-default">
-            <div class="panel-heading page-header">
-                <div class="container-fluid">
-                    <h2 class="h5 no-margin-bottom"><a data-toggle="collapse" href="#collapse11"
-                            data-parent="#pending-accordion">Github Repo Creation Pending : </a>
-                        <span class="h6 badge badge-light">{{ repoRequest|length }}</span>
-
-                    </h2>
-                </div>
-            </div>
-            <div id="collapse11" class="panel-collapse collapse">
-                <div class="panel-body">
-                    {% if repoRequest %}
-                    <div class="page-header bulkHeader mx-4">
-                        <div class="row">
-                            <div class="checkbox col-1">
-                                <label>
-                                    <!-- checkbox classes should also contain this value -->
-                                    <input class="bulkAcceptAll-checkbox" value="github" type="checkbox">
-                                    <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                                </label>
-                            </div>
-                            <div class="col-9">
-                                <h2 class="h4">Bulk Operation</h2>
-                            </div>
-                            <div class="col-2 pl-5">
-                                <!-- checkbox classes should also contain this id -->
-                                <button class="card-link btn btn-primary bulkAccept-button" id="github">Bulk
-                                    Accept</button>
-                            </div>
-                        </div>
-                    </div>
-                    {% endif %}
-
-
-                    {% for request in repoRequest %}
-                    <div class="row">
-                        <div class="card col-xs-12 col-md-12">
-                            <div class="card-body" style="color:white;">
-                                <div class="row">
-                                    <div class="checkbox col-1 pl-1">
-                                        <label id="{{ request.requestId }}-checkbox">
-                                            <input class="github" type="checkbox" value="{{ request.requestId }}">
-                                            <span class="cr"><i class="cr-icon fa fa-check"></i></span>
-                                        </label>
-                                    </div>
-                                    <div class="col-8">
-                                        <div class="row">
-                                            <div class="col-6">
-                                                <h4 class="card-title">{{request.requestId}}</h4>
-                                                <p>Requested By: {{request.requester}}</p>
-                                                <p>Requested On: {{ request.requested_on }} UTC</p>
-                                                <br>
-                                            </div>
-                                            <div class="col-6">
-                                                <p class="text-success">Github Repo Details</p>
-                                                <p>Git user name: {{request.requestInfo.gitusername}}</p>
-                                                <p>Repo Name: {{request.requestInfo.githubRepoName}}</p>
-                                                <p>Repo Description: {{request.requestInfo.githubRepoDesc}}</p>
-                                                <p>Repo type: {{request.requestInfo.githubRepoType}}</p>
-                                                <p>Master Branch Protection:
-                                                    {{request.requestInfo.masterBranchProtection}}</p>
-                                                <p>README enabled: {{request.requestInfo.readmeEnabled}}</p>
-                                                <p>Deny Default Access: {{request.requestInfo.denyDefaultAccess}}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="row float-right" id="{{ request.requestId }}-action">
-                                            <button class="card-link btn btn-primary accept-button" id="github"
-                                                value="{{request.requestId}}">Accept</button>
-                                            <button class="card-link btn btn-danger decline-button"
-                                                id="github/{{request.requestId}}"
-                                                value="{{request.requestId}}">Decline</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                    {% if not repoRequest %}
-                    <div class="page-header mx-3">
-                        <p>None pending</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        {% endif %}
-
         <!-- group stuff start -->
         {% if newGroupPending|length %}
         <div class="panel panel-default">
@@ -718,8 +617,8 @@
                                             <h6 class="text-warning">Approving EKS access also creates aws account for
                                                 the user if it does not exists.</h6>
                                             {% endif %}
-                                            <p><b style="color: yellow;">{{ eachAccessDetails.accessType }} - </b> {{
-                                                eachAccessDetails.accessCategory }}</p>
+                                            <p><b style="color: yellow;">{{ eachAccessDetails.accessType }} - </b>
+                                                {{ eachAccessDetails.accessCategory }}</p>
                                             {% if eachAccessDetails.accessMeta %}
                                             <p>
                                             <table class="table" style="color: white;">
@@ -855,10 +754,10 @@
                                             <div id="{{ accessData.requestId }}-action">
                                                 {% if eachRequest.accessData|length > 1 %}
                                                 <button class="card-link btn btn-primary accept-button"
-                                                    id="{{ eachRequest.access_tag }}"
+                                                    id="moduleAccess"
                                                     value="{{ accessData.requestId }}">Accept</button>
                                                 <button class="card-link btn btn-danger decline-button"
-                                                    id="{{ eachRequest.access_tag }}/{{ accessData.requestId }}"
+                                                    id="moduleAccess/{{ accessData.requestId }}"
                                                     value="{{ accessData.requestId }}">Decline</button>
                                                 {% endif %}
                                             </div>

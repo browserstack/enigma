@@ -234,12 +234,12 @@ ACCESS_MODULES = data["access_modules"]
 AUTOMATED_EXEC_IDENTIFIER = "automated-grant"
 
 LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": '{"meta":{"timestamp":"%(asctime)s.%(msecs)03dZ","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[%(name)s:%(funcName)s:%(lineno)s] --- %(message)s","level":"%(levelname)s"}}',
-            "datefmt": "%Y-%m-%dT%H:%M:%S",
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': "{\"meta\":{\"timestamp\":\"%(asctime)s.%(msecs)03dZ\",\"component\":\"django\",\"application\":\"enigma\",\"team\":\"core\"},\"log\":{\"kind\":\"ENIGMA_APP\",\"dynamic_data\":\"[%(name)s:%(funcName)s:%(lineno)s] --- %(message)s\",\"level\":\"%(levelname)s\"}}",
+            'datefmt': "%Y-%m-%dT%H:%M:%S"
         }
     },
     "handlers": {

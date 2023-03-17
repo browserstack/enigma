@@ -16,6 +16,7 @@ from Access.models import (
     User,
     GroupV2,
     AccessV2,
+    MembershipV2,
     ApprovalType,
 )
 from Access.background_task_manager import background_task, accept_request
@@ -226,7 +227,7 @@ def get_decline_access_request(request, access_type, request_id):
                     UserAccessMapping.get_pending_access_mapping(request_id=value)
                 )
                 request_ids.extend(current_ids)
-            access_type = access_type.rsplit("-", 1)[0]
+            access_type = "moduleAccess"
         elif access_type == "clubGroupAccess":
             for value in [request_id]:  # ready for bulk decline
                 return_ids.append(value)
@@ -240,6 +241,7 @@ def get_decline_access_request(request, access_type, request_id):
             access_type = "groupAccess"
         else:
             request_ids = [request_id]
+
         for current_request_id in request_ids:
             if access_type == "groupAccess":
                 response = decline_group_access(request, current_request_id, reason)
@@ -285,8 +287,11 @@ def get_pending_accesses_from_modules(access_user):
         process_group_requests(pending_accesses["group_requests"], group_requests)
 
         logger.info(
-            "Time to fetch pending requests of access module: %s - %s "
-            % (access_module_tag, str(time.time() - access_module_start_time)),
+            "Time to fetch pending requests of access module: %s - %s " %
+            (
+                access_module_tag,
+                str(time.time() - access_module_start_time)
+            ),
         )
 
     return individual_requests, list(group_requests.values())
@@ -298,7 +303,7 @@ def process_individual_requests(
     if len(individual_pending_requests):
         clubbed_requests = {}
         for accessrequest in individual_pending_requests:
-            club_id = accessrequest["requestId"].rsplit("_", 1)[0]
+            club_id = accessrequest["requestId"].rsplit("_")[0]
             if club_id not in clubbed_requests:
                 clubbed_requests[club_id] = {
                     "club_id": club_id,
@@ -327,7 +332,7 @@ def process_group_requests(group_pending_requests, group_requests):
             club_id = (
                 accessrequest["groupName"]
                 + "-"
-                + accessrequest["requestId"].rsplit("-", 1)[-1].rsplit("_", 1)[0]
+                + accessrequest["requestId"].rsplit("-", 1)[-1].rsplit("_")[0]
             )
             needs_access_approve = GroupV2.objects.get(
                 name=accessrequest["groupName"], status="Approved"
@@ -383,7 +388,7 @@ def create_request(auth_user, access_request_form):
     for index1, access_type in enumerate(access_request["accessRequests"]):
         access_labels = validate_access_labels(
             access_labels_json=access_request["accessLabel"][index1],
-            access_type=access_type,
+            access_tag=access_type,
         )
         access_reason = access_request["accessReason"][index1]
 
@@ -400,16 +405,15 @@ def create_request(auth_user, access_request_form):
         }
 
         access_module = helper.get_available_access_modules()[access_type]
+        extra_field_labels = get_extra_field_labels(access_module)
+        if extra_fields and extra_field_labels:
+            for field in extra_field_labels:
+                access_labels[0][field] = extra_fields[0]
+                extra_fields = extra_fields[1:]
+
         module_access_labels = access_module.validate_request(
             access_labels, auth_user, is_group=False
         )
-
-        extra_field_labels = get_extra_field_labels(access_module)
-
-        if extra_fields and extra_field_labels:
-            for field in extra_field_labels:
-                module_access_labels[0][field] = extra_fields[0]
-                extra_fields = extra_fields[1:]
 
         for index2, access_label in enumerate(module_access_labels):
             request_id = request_id + "_" + str(index2)
@@ -512,7 +516,10 @@ def get_extra_field_labels(access_module):
 def get_extra_fields(access_request):
     if "extraFields" in access_request:
         return access_request["extraFields"]
-    return []
+    elif "extraFields[]" in access_request:
+        return [access_request["extraFields[]"]]
+    else:
+        return []
 
 
 def _validate_access_request(access_request_form, user):
@@ -552,7 +559,6 @@ def validate_access_labels(access_labels_json, access_tag):
 
 def _get_approver_permissions(access_tag, access_label=None):
     json_response = {}
-
     access_module = helper.get_available_access_module_from_tag(access_tag)
     approver_permissions = []
     approver_permissions = access_module.fetch_approver_permissions(access_label)
@@ -584,9 +590,9 @@ def accept_user_access_requests(auth_user, request_id):
         )
         return json_response
 
-    requester = access_mapping.user_identity.user.email
-    if auth_user.username == requester:
-        json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+    requester = access_mapping.user_identity.user
+    if auth_user.user == requester:
+        json_response["error"] = SELF_APPROVAL_ERROR_MSG
         return json_response
 
     access_label = access_mapping.access.access_label
@@ -675,37 +681,50 @@ def run_accept_request_task(
 
 def decline_individual_access(request, access_type, request_id, reason):
     json_response = {}
-    access_mapping = UserAccessMapping.get_access_request(request_id)
+    access_mapping = {}
+    decline_new_group = False
+    if access_type == "declineNewGroup":
+        access_mapping = GroupV2.get_pending_group(request_id)
+        decline_new_group = True
+    else:
+        access_mapping = UserAccessMapping.get_access_request(request_id)
+        access_type = access_mapping.access.access_tag
+
     if not is_request_valid(request_id, access_mapping):
         json_response["error"] = USER_REQUEST_IN_PROCESS_ERR_MSG.format(
             request_id=request_id,
         )
         return json_response
 
-    json_response = validate_approver_permissions(access_mapping, access_type, request)
-    if "error" in json_response:
-        return json_response
+    if not decline_new_group:
+        json_response = validate_approver_permissions(access_mapping, access_type, request)
+        if "error" in json_response:
+            return json_response
 
     with transaction.atomic():
         access_mapping.decline_access(reason)
         if hasattr(access_mapping, "approver_1"):
-            access_mapping.decline_reason = reason
             if access_mapping.approver_1 is not None:
                 access_mapping.approver_2 = request.user.user
             else:
                 access_mapping.approver_1 = request.user.user
         else:
-            access_mapping.reason = reason
-            access_mapping.approver = request.user.username
+            access_mapping.approver = request.user.user
 
         access_mapping.save()
 
-    access_module = helper.get_available_access_module_from_tag(access_type)
-    access_labels = [access_mapping.access.access_label]
-    description = access_module.combine_labels_desc(access_labels)
-    notifications.send_mail_for_request_decline(
-        request, description, request_id, reason, access_type
-    )
+    if not decline_new_group:
+        access_module = helper.get_available_access_module_from_tag(access_type)
+        access_labels = [access_mapping.access.access_label]
+        description = access_module.combine_labels_desc(access_labels)
+        notifications.send_mail_for_request_decline(
+            request, description, request_id, reason, access_type
+        )
+    else:
+        MembershipV2.update_membership(access_mapping, reason)
+        notifications.send_mail_for_request_decline(
+            request, "Group Creation", request_id, reason, access_type
+        )
 
     logger.debug(
         USER_REQUEST_DECLINE_MSG.format(
@@ -822,7 +841,7 @@ def decline_group_access(request, request_id, reason):
     access_type = group_mapping.access.access_tag
 
     json_response = validate_approver_permissions(
-        group_mapping, access_type, request, request_id
+        group_mapping, access_type, request
     )
     if "error" in json_response:
         return json_response

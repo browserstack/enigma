@@ -191,8 +191,8 @@ class User(models.Model):
     def isAdminOrOps(self):
         return self.is_ops or self.user.is_superuser
 
-    def get_all_memberships(self):
-        return self.membership_user.all()
+    def get_all_approved_memberships(self):
+        return self.membership_user.filter(status="Approved")
 
     def is_allowed_admin_actions_on_group(self, group):
         return (
@@ -400,6 +400,10 @@ class MembershipV2(models.Model):
         self.status = "Revoked"
         self.save()
 
+    def update_membership(group, reason):
+        membership = MembershipV2.objects.filter(group=group)
+        membership.update(status="Declined", decline_reason=reason)
+
     @staticmethod
     def get_membership(membership_id):
         try:
@@ -500,6 +504,14 @@ class GroupV2(models.Model):
     def getPendingMemberships():
         return MembershipV2.objects.filter(status="Pending", group__status="Approved")
 
+    def is_already_processed(self):
+        return self.status in ['Declined','Approved','Processing','Revoked']
+
+    def decline_access(self, decline_reason=None):
+        self.status = "Declined"
+        self.decline_reason = decline_reason
+        self.save()
+
     @staticmethod
     def getPendingCreation():
         new_group_pending = GroupV2.objects.filter(status="Pending")
@@ -596,7 +608,9 @@ class GroupV2(models.Model):
 
     def is_owner(self, user):
         return (
-            self.membership_group.filter(is_owner=True).filter(user=user).first()
+            self.membership_group.filter(is_owner=True)
+            .filter(user=user)
+            .first()
             is not None
         )
 
@@ -1008,6 +1022,19 @@ class GroupAccessMapping(models.Model):
 
         return access_request_data
 
+    def get_by_id(request_id):
+        try:
+            return GroupAccessMapping.objects.get(request_id=request_id)
+        except GroupAccessMapping.DoesNotExist:
+            return None
+
+    def mark_revoked(self, revoker):
+        self.status = "Revoked"
+        self.revoker = revoker
+        self.save()
+
+
+
     @staticmethod
     def get_by_request_id(request_id):
         try:
@@ -1056,6 +1083,9 @@ class GroupAccessMapping(models.Model):
 
     def is_self_approval(self, approver):
         return self.requested_by == approver
+
+    def is_already_processed(self):
+        return self.status in ['Declined','Approved','Processing','Revoked']
 
 
 class AccessV2(models.Model):
