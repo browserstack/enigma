@@ -32,7 +32,7 @@ services:
     image: redis:alpine
     command: --port 6379
     ports:
-      - "6379:6379"
+    - 6379:6379
   celery:
     container_name: celery
     build:
@@ -40,17 +40,17 @@ services:
       dockerfile: Dockerfile
       target: web
     volumes:
-      - ./:/app/
+    - ./:/app/
     env_file:
     - ./secrets/ops_app_celery.env
     depends_on:
-      - db
-      - redis
-      - web
+    - db
+    - redis
+    - web
     command: >
       bash -c "
       echo Starting celery;
-      python3 -m celery -A BrowserStackAutomation worker -n worker1 -l DEBUG"
+      python3 -m celery -A EnigmaAutomation worker -n worker1 -l DEBUG"
   test:
     container_name: test
     build:

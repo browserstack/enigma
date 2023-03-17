@@ -23,14 +23,6 @@
       {% csrf_token %}
       {% if genericForm %}
         {% for each_access in accesses %}
-          <!-- Add condition to show note for BQ Restricted Access, as we are receiving alot of invalid Requests for this -->
-          {% if each_access.accessTag and each_access.accessTag == "bigquery_restricted" %}
-            <div style="border-left: 20px solid rgb(255, 255, 255);">
-              <p style="margin-left: 5px;"><strong>Note:</strong> BigQuery Restricted Access provides private data access. As mentioned <a href="https://browserstack.atlassian.net/wiki/spaces/ENG/pages/87884113/Access+management#Dashboard">here</a>,
-                Not everyone can get access to this project or its datasets.
-                If you are looking out for Normal BigQuery data access, Please go back and raise for BigQuery Viewer Access</p>
-            </div>
-          {% endif %}
           {% with each_access.accessRequestPath as includePath %}
             {% include includePath %}
           {% endwith %}

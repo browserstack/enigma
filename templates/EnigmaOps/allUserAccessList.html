@@ -131,7 +131,7 @@ var current_username = "";
     title_html = "<h4 id='header-title'>Access List for User {{username}}</h4>"
     if(access_type.length && access_type != "other"){
       title_html = `<button class="btn btn-danger" data-toggle="modal" data-target="#revokeModal"
-                    onclick='revokeConfirm("module-`+access_type+`", "{{username}}")'' 
+                    onclick='revokeConfirm("module-`+access_type+`", "{{username}}")''
                     style="float: left;" id=module-`+access_type+`>Revoke all `+ access_type+`</button>
                     <h4 id="header-title">`+access_type+` Accesses for User {{username}}</h4>`
     }

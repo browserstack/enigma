@@ -4,7 +4,7 @@ from django.db import transaction
 import datetime
 import logging
 from Access.views_helper import execute_group_access
-from BrowserStackAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
+from EnigmaAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 from . import helpers as helper
 from Access.background_task_manager import revoke_request
 import json
@@ -802,7 +802,7 @@ def access_exist_in_other_groups_of_user(membership, group, access):
     for membership in other_memberships:
         if membership.group.check_access_exist(access):
             return True
-    
+
     return False
 
 
@@ -812,7 +812,7 @@ def revoke_access_from_group(request):
         if not request_id:
             logger.debug("Cannot find request_id in the http request.")
             return {"error": ERROR_MESSAGE}
-        
+
         mapping = GroupAccessMapping.get_by_id(request_id)
         if not mapping:
             logger.debug("Group Access Mapping not found in the database")
@@ -831,11 +831,11 @@ def revoke_access_from_group(request):
         if access_exist_in_other_groups_of_user(membership, group, mapping.access):
             continue
         revoke_access_memberships.append(membership)
-    
+
     with transaction.atomic():
         for membership in revoke_access_memberships:
             revoke_user_access(membership.user, mapping.access, auth_user.user, "Access revoked for the group")
-    
+
     mapping.mark_revoked(auth_user.user)
 
     return {"message": "Successfully initiated the revoke"}

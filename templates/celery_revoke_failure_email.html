@@ -4,7 +4,7 @@ The revoke for the {{ request_id }} triggered by {{ revoker_email }} is failed t
 
 Failure reason: {{ message }}
 
-<BR/><BR/> 
+<BR/><BR/>
 {% if access_tag %}
-  <a target='_blank' href='https://enigma.browserstack.com/resolve/pendingFailure?access_type= {{access_tag}}'>View all failed grants</a>
+  <a target='_blank' href="{% url 'pendingFailure' %}?access_type={{ access_tag }}">View all failed grants</a>
 {% endif %}

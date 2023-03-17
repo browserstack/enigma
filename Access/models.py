@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User as user
 from django.db import models, transaction
-from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
+from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 import datetime
 import enum
 
@@ -1026,19 +1026,19 @@ class GroupAccessMapping(models.Model):
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
-    
+
     def get_by_id(request_id):
         try:
             return GroupAccessMapping.objects.get(request_id=request_id)
         except GroupAccessMapping.DoesNotExist:
             return None
-        
+
     def mark_revoked(self, revoker):
         self.status = "Revoked"
         self.revoker = revoker
         self.save()
-    
-    
+
+
 
     @staticmethod
     def get_by_request_id(request_id):
