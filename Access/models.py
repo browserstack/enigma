@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User as user
 from django.db import models, transaction
-from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
+from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 import datetime
 import enum
 

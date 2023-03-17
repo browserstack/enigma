@@ -3,7 +3,7 @@ import logging
 import traceback
 
 from Access.models import UserAccessMapping, GroupAccessMapping
-from BrowserStackAutomation.settings import ACCESS_APPROVE_EMAIL, PERMISSION_CONSTANTS
+from EnigmaAutomation.settings import ACCESS_APPROVE_EMAIL, PERMISSION_CONSTANTS
 from bootprocess.general import emailSES
 
 logger = logging.getLogger(__name__)

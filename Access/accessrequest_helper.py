@@ -2,7 +2,7 @@ import logging
 import time
 from Access.views_helper import execute_group_access, accept_request
 
-from BrowserStackAutomation.settings import DECLINE_REASONS, MAIL_APPROVER_GROUPS
+from EnigmaAutomation.settings import DECLINE_REASONS, MAIL_APPROVER_GROUPS
 import datetime
 import json
 from django.db import transaction
