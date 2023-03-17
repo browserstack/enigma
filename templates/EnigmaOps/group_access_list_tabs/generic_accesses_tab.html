@@ -28,22 +28,16 @@
 
 $(document).on('click', '.group-revoke-button', function(){
     id = $(this).attr("id");
-    urlBuilder = "/group/markGroupAccessRevoked?requestId="+id
+
+    urlBuilder = "/group/revokeAccess"
     $.ajax({url: urlBuilder,
+        method: "POST",
+        data: {
+          request_id: id,
+          csrfmiddlewaretoken: '{{ csrf_token }}'
+        },
         success: function(result){
           document.getElementById("inactive-"+id+"-revoke-button").innerHTML = "Access Marked Revoked";
-        },
-        error: function(result){
-          alert("Error occured while marking revoke! - "+result["responseJSON"]["error"])
-        }});
-  });
-
-  $(document).on('click', '.inactive-access-button', function(){
-    id = $(this).attr("id");
-    urlBuilder = "/group/markGroupAccessInactive?requestId="+id
-    $.ajax({url: urlBuilder,
-        success: function(result){
-          document.getElementById(id+"-revoke-button").innerHTML = "Access Marked Inactive";
         },
         error: function(result){
           alert("Error occured while marking revoke! - "+result["responseJSON"]["error"])
@@ -72,12 +66,8 @@ $(document).on('click', '.group-revoke-button', function(){
         <td>{{ eachAccess.status }}</td>
         <td>{{ eachAccess.accessMeta }}</td>
         <td id="inactive-{{ eachAccess.requestId }}-revoke-button">
-          {% if user.is_owner %}
-          <button class="btn btn-danger inactive-access-button" id="inactive-{{ eachAccess.requestId }}">Mark Inactive</button><br>(Existing accesses are not revoked)<br><br>
-          {% endif %}
-
           {% if allowRevoke and eachAccess.status == 'Approved' %}
-            <button class="btn btn-danger group-revoke-button" id="{{ eachAccess.requestId }}">Mark Revoked</button><br>(Existing accesses are marked revoked)
+            <button class="btn btn-danger group-revoke-button" id="{{ eachAccess.requestId }}">Mark Revoked</button><br>
           {% endif %}
         </td>
       </tr>

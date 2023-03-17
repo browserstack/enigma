@@ -208,6 +208,7 @@ def request_access(request):
         HTTPResponse: Access request form template or the status of access save request.
     """
     if request.POST:
+        print((request.POST))
         context = create_request(
             auth_user=request.user, access_request_form=request.POST
         )
@@ -639,3 +640,15 @@ def individual_resolve(request):
         logger.exception(str(e))
         json_response['error'] = {'error_msg': "Bad request", 'msg': "Error in request not found OR Invalid request type"}
         return render(request,'EnigmaOps/accessStatus.html',json_response)
+
+def revoke_group_access(request):
+    try:
+        response = group_helper.revoke_access_from_group(request)
+        if("error" in response):
+            return JsonResponse(response, status=400)
+
+        return JsonResponse(response)
+    except Exception as e:
+        logger.exception(str(e))
+        logger.debug("Something went wrong while revoking group access")
+        return JsonResponse({"message": "Failed to revoke group Access"}, status=400)

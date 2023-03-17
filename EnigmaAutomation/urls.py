@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import re_path, include
 from Access.views import (
+    revoke_group_access,
     user_offboarding,
     show_access_history,
     pending_requests,
@@ -90,6 +91,7 @@ urlpatterns = [
     re_path(
         r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"
     ),
+    re_path(r"^group/revokeAccess", revoke_group_access, name="revoke_group_access"),
     re_path(r"^individual_resolve$", individual_resolve, name="individual_resolve")
 ]
 

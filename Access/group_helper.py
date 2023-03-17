@@ -1,4 +1,4 @@
-from Access.models import User, GroupV2, MembershipV2, AccessV2
+from Access.models import GroupAccessMapping, User, GroupV2, MembershipV2, AccessV2
 from Access import helpers, views_helper, notifications, accessrequest_helper
 from django.db import transaction
 import datetime
@@ -23,6 +23,9 @@ INTERNAL_ERROR_MESSAGE = {
     "error_msg": "Internal Error",
     "msg": "Error Occured while loading the page. Please contact admin",
 }
+
+USER_UNAUTHORIZED_MESSAGE = "User unauthorised to perform the action."
+GROUP_ACCESS_MAPPING_NOT_FOUND = "Group Access Mapping not found in the database."
 
 NEW_GROUP_CREATE_ERROR_GROUP_EXISTS = {
     "error_msg": "Invalid Group Name",
@@ -745,6 +748,14 @@ def validate_group_access_create_request(group, auth_user):
     return None
 
 
+def revoke_user_access(user, access, revoker, decline_message):
+    user_identity = user.get_active_identity(access.access_tag)
+    user_identity.decline_non_approved_access_mapping(access, decline_message)
+    access_mapping = user_identity.get_granted_access_mapping(access).first()
+    if not access_mapping:
+        return False
+    revoke_request(access_mapping, revoker)
+
 def remove_member(request):
     try:
         membership_id = request.POST.get("membershipId")
@@ -763,7 +774,7 @@ def remove_member(request):
     ]
 
     other_memberships_groups = (
-        user.get_all_memberships()
+        user.get_all_approved_memberships()
         .exclude(group=membership.group)
         .values_list("group", flat=True)
     )
@@ -775,16 +786,59 @@ def remove_member(request):
 
     accesses = list(set(group_accesses) - set(other_group_accesses))
 
-    for access in accesses:
-        user_identity = user.get_active_identity(access.access_tag)
-        user_identity.decline_non_approved_access_mapping(access)
-        user_identity.offboarding_approved_access_mapping(access)
-        revoke_request(user_access_mapping=access, revoker=request.user.user)
+    with transaction.atomic():
+        for access in accesses:
+            revoke_user_access(user, access, request.user.user, "User removed from the group")
 
     membership.revoke_membership()
 
     return {"message": "Successfully removed user from group"}
 
+def access_exist_in_other_groups_of_user(membership, group, access):
+    other_memberships = (
+        membership.user.get_all_approved_memberships()
+        .exclude(group=membership.group)
+    )
+    for membership in other_memberships:
+        if membership.group.check_access_exist(access):
+            return True
+
+    return False
+
+
+def revoke_access_from_group(request):
+    try:
+        request_id = request.POST.get("request_id")
+        if not request_id:
+            logger.debug("Cannot find request_id in the http request.")
+            return {"error": ERROR_MESSAGE}
+
+        mapping = GroupAccessMapping.get_by_id(request_id)
+        if not mapping:
+            logger.debug("Group Access Mapping not found in the database")
+            return {"error": GROUP_ACCESS_MAPPING_NOT_FOUND}
+    except Exception as e:
+        logger.exception(str(e))
+        return {"error": ERROR_MESSAGE}
+
+    group = mapping.group
+    auth_user = request.user
+    if not (auth_user.user.has_permission("ALLOW_USER_OFFBOARD") or group.member_is_owner(auth_user.user)):
+        return {"error": USER_UNAUTHORIZED_MESSAGE}
+
+    revoke_access_memberships = []
+    for membership in group.get_all_approved_members():
+        if access_exist_in_other_groups_of_user(membership, group, mapping.access):
+            continue
+        revoke_access_memberships.append(membership)
+
+    with transaction.atomic():
+        for membership in revoke_access_memberships:
+            revoke_user_access(membership.user, mapping.access, auth_user.user, "Access revoked for the group")
+
+    mapping.mark_revoked(auth_user.user)
+
+    return {"message": "Successfully initiated the revoke"}
 
 def get_selected_users_by_email(user_emails):
     selected_users = User.get_users_by_emails(emails=user_emails)

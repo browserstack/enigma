@@ -191,8 +191,8 @@ class User(models.Model):
     def isAdminOrOps(self):
         return self.is_ops or self.user.is_superuser
 
-    def get_all_memberships(self):
-        return self.membership_user.all()
+    def get_all_approved_memberships(self):
+        return self.membership_user.filter(status="Approved")
 
     def is_allowed_admin_actions_on_group(self, group):
         return (
@@ -1026,6 +1026,19 @@ class GroupAccessMapping(models.Model):
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
 
         return access_request_data
+
+    def get_by_id(request_id):
+        try:
+            return GroupAccessMapping.objects.get(request_id=request_id)
+        except GroupAccessMapping.DoesNotExist:
+            return None
+
+    def mark_revoked(self, revoker):
+        self.status = "Revoked"
+        self.revoker = revoker
+        self.save()
+
+
 
     @staticmethod
     def get_by_request_id(request_id):
