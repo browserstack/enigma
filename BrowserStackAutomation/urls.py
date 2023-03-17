@@ -73,19 +73,19 @@ urlpatterns = [
         r"^group/new/accept/(?P<requestId>.*)$", approve_new_group, name="approveNewGroup"
     ),
     re_path(
-        r"^group/adduser/(?P<groupName>[\w -]+)$",
+        r"^group/adduser/(?P<group_name>[\w -]+)$",
         add_user_to_group,
         name="addUserToGroup",
     ),
     re_path(
-        r"^group/updateOwners/(?P<groupName>[\w -]+)$",
+        r"^group/updateOwners/(?P<group_name>[\w -]+)$",
         update_group_owners,
         name="updateGroupOwners",
     ),
     re_path(r"^access/pendingRequests$", pending_requests, name="pendingRequests"),
     re_path(r"^accept_bulk/(?P<selector>[\w-]+)", accept_bulk, name="accept_bulk"),
     re_path(
-        r"^decline/(?P<accessType>[\w-]+)/(?P<requestId>.*)$",
+        r"^decline/(?P<access_type>[\w-]+)/(?P<request_id>.*)$",
         decline_access,
         name="decline",
     ),
