@@ -63,6 +63,12 @@ def get_identity_templates(auth_user):
             all_modules.pop(user_identity.access_tag)
 
     for mod in all_modules.values():
+        if not mod.get_identity_template():
+            if not auth_user.user.get_active_identity(mod.tag()):
+                auth_user.user.create_new_identity(
+                    access_tag=mod.tag(), identity={}
+                )
+            continue
         context["unconfigured_identity_template"].append(
             {
                 "accessUserTemplatePath": mod.get_identity_template(),
@@ -94,12 +100,12 @@ def create_identity(user_identity_form, auth_user):
         existing_user_identity = user.get_active_identity(
             access_tag=selected_access_module.tag()
         )
-        if new_module_identity_json == existing_user_identity.identity:
-            raise IdentityNotChangedException()
         existing_user_access_mapping = None
 
         # get useraccess if an identity already exists
         if existing_user_identity:
+            if new_module_identity_json == existing_user_identity.identity:
+                raise IdentityNotChangedException()
             existing_user_access_mapping = (
                 existing_user_identity.get_active_access_mapping()
             )
@@ -142,19 +148,20 @@ def __change_identity_and_transfer_access_mapping(
     )
     # replicate the memberships with new identity
     new_user_access_mapping = []
-    if existing_user_access_mapping:
-        new_user_access_mapping = (
-            new_user_identity.replicate_active_access_membership_for_module(
-                existing_access=existing_user_access_mapping
+    if existing_user_identity:
+        if existing_user_access_mapping:
+            new_user_access_mapping = (
+                new_user_identity.replicate_active_access_membership_for_module(
+                    existing_access=existing_user_access_mapping
+                )
             )
-        )
-    system_user = User.get_system_user()
+        system_user = User.get_system_user()
 
-    for mapping in existing_user_access_mapping:
-        if mapping.is_approved():
-            revoke_request(user_access_mapping=mapping, revoker=system_user)
+        for mapping in existing_user_access_mapping:
+            if mapping.is_approved():
+                revoke_request(user_access_mapping=mapping, revoker=system_user)
 
-    existing_user_identity.decline_all_non_approved_access_mappings("Identity Updated")
+        existing_user_identity.decline_all_non_approved_access_mappings("Identity Updated")
 
     for mapping in new_user_access_mapping:
         if mapping.is_processing() or mapping.is_grantfailed():
