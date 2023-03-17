@@ -40,7 +40,9 @@ from Access.views import (
     decline_access,
     update_group_owners,
     remove_group_member,
-    individual_resolve
+    individual_resolve,
+    ignore_failure,
+    resolve_bulk,
 )
 from Access.helpers import get_available_access_modules
 
@@ -69,7 +71,9 @@ urlpatterns = [
         name="groupAccessList",
     ),
     re_path(
-        r"^group/new/accept/(?P<requestId>.*)$", approve_new_group, name="approveNewGroup"
+        r"^group/new/accept/(?P<requestId>.*)$",
+        approve_new_group,
+        name="approveNewGroup",
     ),
     re_path(
         r"^group/adduser/(?P<group_name>[\w -]+)$",
@@ -91,8 +95,10 @@ urlpatterns = [
     re_path(
         r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"
     ),
+    re_path(r"^individual_resolve$", individual_resolve, name="individual_resolve"),
+    re_path(r"^resolve_bulk", resolve_bulk, name="resolve_bulk"),
+    re_path(r"^ignore/(?P<selector>.*)$", ignore_failure, name="ignoreFailure"),
     re_path(r"^group/revokeAccess", revoke_group_access, name="revoke_group_access"),
-    re_path(r"^individual_resolve$", individual_resolve, name="individual_resolve")
 ]
 
 for tag, each_module in get_available_access_modules().items():

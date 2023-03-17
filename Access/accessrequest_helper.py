@@ -78,6 +78,8 @@ APPROVAL_PROCESS_STARTED_MSG = "Process has been started for the Approval of req
 - {request_id} - Approver: {approver}"
 ERROR_DECLINING_REQUEST_LOG_MSG = "Error in Decline of request {request_id}. \
  Error:{error} .Please contact admin."
+ERROR_MARKING_RESOLVE_FAIL_LOG_MSG = "Error in resolving request {request_id}. \
+ Error:{error} ."
 
 
 def get_request_access(request):
@@ -891,6 +893,22 @@ def decline_group_access(request, request_id, reason):
         )
         return create_error_response(
             error_msg=ERROR_DECLINING_REQUEST_LOG_MSG.format(
+                request_id=request_id, error=str(str(e))
+            )
+        )
+
+
+def run_ignore_failure_task(auth_user, access_mapping, request_id, selector):
+    try:
+        if selector == "decline":
+            access_mapping.decline_access()
+        elif selector == "approve":
+            access_mapping.approve_access()
+        notifications.send_mail_for_request_resolve(auth_user, selector, request_id)
+    except Exception as e:
+        logger.exception(e)
+        return create_error_response(
+            error_msg=ERROR_MARKING_RESOLVE_FAIL_LOG_MSG.format(
                 request_id=request_id, error=str(str(e))
             )
         )

@@ -22,6 +22,7 @@ from Access.accessrequest_helper import (
     get_decline_access_request,
     accept_group_access,
     run_accept_request_task,
+    run_ignore_failure_task,
 )
 from Access.models import User, UserAccessMapping, GroupAccessMapping
 
@@ -611,7 +612,9 @@ def mark_revoked(request):
         for mapping_object in requests:
             logger.info(
                 "Marking access revoke - %s by user %s",
-                mapping_object.request_id, request.user.user)
+                mapping_object.request_id,
+                request.user.user,
+            )
             mapping_object.revoke(revoker=request.user.user)
             success_list.append(mapping_object.request_id)
         json_response["msg"] = "Success"
@@ -621,23 +624,114 @@ def mark_revoked(request):
         json_response["error"] = "Error Revoking User Access"
     return JsonResponse(json_response, status=403)
 
+
 def individual_resolve(request):
-    json_response = {"status_list":[]}
+    json_response = {"status_list": []}
     try:
-        request_ids = request.GET.getlist('requestId')
+        request_ids = request.GET.getlist("requestId")
         if not request_ids:
             raise Exception("Request id not found in the request")
 
         for request_id in request_ids:
-            user_access_mapping = UserAccessMapping.get_by_id(request_id)
+            user_access_mapping = UserAccessMapping.get_access_request(request_id)
             if user_access_mapping.status.lower() in ["grantfailed", "approved"]:
-                response = run_accept_request_task(False, user_access_mapping, request.user, user_access_mapping.request_id, user_access_mapping.access.access_label)
+                response = run_accept_request_task(
+                    False,
+                    user_access_mapping,
+                    request.user,
+                    user_access_mapping.request_id,
+                    user_access_mapping.access.access_label,
+                )
                 json_response["status_list"] += response["status"]
             else:
                 json_response["status_list"].append({'title': 'The Request ('+request_id+') is already resolved.', 'msg': 'The request is already in final state.'})
         return render(request,'EnigmaOps/accessStatus.html',json_response)
     except Exception as e:
         logger.exception(str(e))
+        json_response["error"] = {
+            "error_msg": "Bad request",
+            "msg": "Error in request not found OR Invalid request type",
+        }
+        return render(request, "BSOps/accessStatus.html", json_response)
+
+
+@login_required
+@user_with_permission([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])
+def ignore_failure(request, selector):
+    try:
+        json_response = {"status_list": []}
+        request_ids = request.GET.getlist("requestId")
+        for request_id in request_ids:
+            user_access_mapping = UserAccessMapping.get_access_request(request_id)
+            if user_access_mapping.status.lower() in ["grantfailed", "revokefailed"]:
+                run_ignore_failure_task(
+                    request.user,
+                    user_access_mapping,
+                    user_access_mapping.request_id,
+                    selector,
+                )
+                json_response["status_list"].append(
+                    {
+                        "title": "The Request ("
+                        + request_id
+                        + ") is now being ignored. Mark - "
+                        + selector,
+                        "msg": "A email will be sent after the requested access is ignored",
+                    }
+                )
+            else:
+                logger.debug("Cannot ignore " + request_id)
+                json_response["status_list"].append(
+                    {
+                        "title": "The Request ("
+                        + request_id
+                        + ") is already resolved.",
+                        "msg": "The request is already in final state.",
+                    }
+                )
+        return render(request, "BSOps/accessStatus.html", json_response)
+    except Exception as e:
+        logger.debug("Error in request not found OR Invalid request type")
+        logger.exception(e)
+        json_response = {}
+        json_response["error"] = {
+            "error_msg": str(e),
+            "msg": "Error in request not found OR Invalid request type",
+        }
+        return render(request, "BSOps/accessStatus.html", json_response)
+
+
+@login_required
+@user_with_permission([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])
+def resolve_bulk(request):
+    try:
+        json_response = {"status_list": []}
+        request_ids = request.GET.getlist("requestId")
+        for request_id in request_ids:
+            user_access_mapping = UserAccessMapping.get_access_request(request_id)
+            if user_access_mapping.status.lower() in ["grantfailed"]:
+                response = run_accept_request_task(
+                    False,
+                    user_access_mapping,
+                    request.user,
+                    user_access_mapping.request_id,
+                    user_access_mapping.access.access_label,
+                )
+                json_response["status_list"] += response["status"]
+            else:
+                json_response["status_list"].append(
+                    {
+                        "title": "The Request ("
+                        + request_id
+                        + ") is already resolved.",
+                        "msg": "The request is already in final state.",
+                    }
+                )
+        return render(request, "BSOps/accessStatus.html", json_response)
+    except Exception as e:
+        logger.debug("Error in request not found OR Invalid request type")
+        logger.exception(e)
+        json_response = {}
         json_response['error'] = {'error_msg': "Bad request", 'msg': "Error in request not found OR Invalid request type"}
         return render(request,'EnigmaOps/accessStatus.html',json_response)
 

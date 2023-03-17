@@ -47,11 +47,11 @@ INSTALLED_APPS = [
     "social_django",
     "Access",
     "rest_framework",
-    'cid.apps.CidAppConfig',
+    "cid.apps.CidAppConfig",
 ]
 CID_GENERATE = True
-CID_GENERATOR = lambda: f'{time.time()}-{random.random()}'
-CID_HEADER = 'X_CORRELATION_ID'
+CID_GENERATOR = lambda: f"{time.time()}-{random.random()}"
+CID_HEADER = "X_CORRELATION_ID"
 CID_GENERATE = True
 CID_CONCATENATE_IDS = True
 
@@ -203,26 +203,24 @@ USER_STATUS_CHOICES = [
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 DATABASES = {}
-if data['database']['engine'] == "mysql":
-    DATABASES['default'] = {
-        'ENGINE':   'mysql.connector.django',
-        'CONN_MAX_AGE': 0,
-        'NAME': data['database']['dbname'],
-        'USER': data['database']['username'],
-        'PASSWORD': data['database']['password'],
-        'HOST': data['database']['host'],
-        'PORT': data['database']['port'],
-        'OPTIONS': {
-            'auth_plugin': 'mysql_native_password'
-        }
+if data["database"]["engine"] == "mysql":
+    DATABASES["default"] = {
+        "ENGINE": "mysql.connector.django",
+        "CONN_MAX_AGE": 0,
+        "NAME": data["database"]["dbname"],
+        "USER": data["database"]["username"],
+        "PASSWORD": data["database"]["password"],
+        "HOST": data["database"]["host"],
+        "PORT": data["database"]["port"],
+        "OPTIONS": {"auth_plugin": "mysql_native_password"},
     }
-elif data['database']['engine'] == "sqlite3":
-    DATABASES['default'] = {
+elif data["database"]["engine"] == "sqlite3":
+    DATABASES["default"] = {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": BASE_DIR / "db.sqlite3",
     }
 else:
-    raise Exception("Database engine %s not recognized" % data['database']['engine'])
+    raise Exception("Database engine %s not recognized" % data["database"]["engine"])
 
 PERMISSION_CONSTANTS = {"DEFAULT_APPROVER_PERMISSION": "ACCESS_APPROVE"}
 
@@ -233,7 +231,7 @@ ACCESS_APPROVE_EMAIL = data["emails"]["access-approve"]
 
 ACCESS_MODULES = data["access_modules"]
 
-AUTOMATED_EXEC_IDENTIFIER = 'automated-grant'
+AUTOMATED_EXEC_IDENTIFIER = "automated-grant"
 
 LOGGING = {
     'version': 1,
@@ -251,36 +249,36 @@ LOGGING = {
             'filename': './enigma.log',
             'formatter': 'verbose',
         },
-        'console': {
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+        "console": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
         },
     },
-    'loggers': {
-        'django.request': {
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
-            'propagate': True,
-            'formatter' : 'verbose',
+    "loggers": {
+        "django.request": {
+            "handlers": ["file", "console"],
+            "level": "INFO",
+            "propagate": True,
+            "formatter": "verbose",
         },
-        'inventory': {
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
-            'propagate': True,
-            'formatter' : 'verbose',
+        "inventory": {
+            "handlers": ["file", "console"],
+            "level": "INFO",
+            "propagate": True,
+            "formatter": "verbose",
         },
-        'Access':{
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
-            'propagate': True,
-            'formatter' : 'verbose',
+        "Access": {
+            "handlers": ["file", "console"],
+            "level": "INFO",
+            "propagate": True,
+            "formatter": "verbose",
         },
-        'bootprocess':{
-            'handlers': ['file', 'console'],
-            'level': 'INFO',
-            'propagate': True,
-            'formatter' : 'verbose',
+        "bootprocess": {
+            "handlers": ["file", "console"],
+            "level": "INFO",
+            "propagate": True,
+            "formatter": "verbose",
         },
     },
 }

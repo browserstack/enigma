@@ -169,14 +169,14 @@ class User(models.Model):
 
     def getFailedGrantsCount(self):
         return (
-            UserAccessMapping.objects.filter(status__in=["grantfailed"]).count()
+            UserAccessMapping.objects.filter(status__in=["GrantFailed"]).count()
             if self.isAdminOrOps()
             else 0
         )
 
     def getFailedRevokesCount(self):
         return (
-            UserAccessMapping.objects.filter(status__in=["revokefailed"]).count()
+            UserAccessMapping.objects.filter(status__in=["RevokeFailed"]).count()
             if self.isAdminOrOps()
             else 0
         )
@@ -570,7 +570,6 @@ class GroupV2(models.Model):
         group_members = self.get_all_members().filter(status="Approved")
         return group_members
 
-
     def get_approved_and_pending_member_emails(self):
         group_member_emails = self.membership_group.filter(
             status__in=["Approved", "Pending"]
@@ -877,10 +876,6 @@ class UserAccessMapping(models.Model):
     def approve_access(self):
         self.status = "Approved"
         self.save()
-
-    @staticmethod
-    def get_by_id(request_id):
-        return UserAccessMapping.objects.get(request_id=request_id)
 
     def revoking(self, revoker):
         self.revoker = revoker

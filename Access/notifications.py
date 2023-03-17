@@ -23,6 +23,7 @@ USER_ACCESS_REQUEST_DENIED_SUBJECT = (
 )
 USER_ACCESS_REQUEST_GRANT_FAILURE_SUBJECT = "[Enigma][Access Management] {} - {} - {} \
     Failed to Approve Request"
+USER_REQUEST_RESOLVE_SUBJECT = "[Enigma][Access Management] - Request Resolved - {}"
 
 
 def send_new_group_create_notification(auth_user, date_time, new_group, member_list):
@@ -70,12 +71,13 @@ def send_membership_accepted_notification(user, group, membership):
     destination.append(user.email)
     general.emailSES(destination, subject, body)
 
-def send_mulitple_membership_accepted_notification(user_names, group_name, membership):
-    subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(user_names, group_name)
+
+def send_mulitple_membership_accepted_notification(user_names, group, membership):
+    subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(user_names, group.name)
     body = helpers.generateStringFromTemplate(
         filename="membershipAcceptedEmailBody.html",
-        user_name= ",".join(user_names),
-        group_name=group_name,
+        user_name=",".join(user_names),
+        group_name=group.name,
         approver=membership.approver.name,
     )
     destination = []
@@ -264,3 +266,16 @@ def send_decline_group_access_failed(destination, request_id, error):
     except Exception as e:
         logger.exception(str(e))
         logger.error("Something when wrong while sending Email.")
+
+
+def send_mail_for_request_resolve(auth_user, access_type, request_id):
+    destination = [auth_user.email]
+    subject = USER_REQUEST_RESOLVE_SUBJECT.format(request_id)
+    body = helpers.generateStringFromTemplate(
+        filename="requestResolvedEmail.html",
+        user=auth_user.email,
+        request_id=request_id,
+        access_type=access_type,
+    )
+    general.emailSES(destination, subject, body)
+    logger.debug("Email sent for " + subject + " to " + str(destination))
