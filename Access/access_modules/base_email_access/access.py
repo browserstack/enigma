@@ -174,6 +174,9 @@ class BaseEmailAccess(object):
     def get_extra_fields(self):
         return []
 
+    def can_auto_approve(self):
+        return False
+
     # return valid access label array which will be added in db or raise exception
     def validate_request(self, access_labels_data, request_user, is_group=False):
         valid_access_label_array = []

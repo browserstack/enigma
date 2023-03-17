@@ -70,31 +70,17 @@ def send_membership_accepted_notification(user, group, membership):
     destination.append(user.email)
     general.emailSES(destination, subject, body)
 
-def send_mulitple_membership_accepted_notification(user_names, group, membership):
-    subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(user_names, group.name)
+def send_mulitple_membership_accepted_notification(user_names, group_name, membership):
+    subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(user_names, group_name)
     body = helpers.generateStringFromTemplate(
         filename="membershipAcceptedEmailBody.html",
         user_name= ",".join(user_names),
-        group_name=group.name,
+        group_name=group_name,
         approver=membership.approver.name,
     )
     destination = []
     destination.append(membership.requested_by.email)
-    destination = destination + user_names
-    general.emailSES(destination, subject, body)
-
-
-def send_mulitple_membership_accepted_notification(user_names, group, membership):
-    subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(user_names, group.name)
-    body = helpers.generateStringFromTemplate(
-        filename="membershipAcceptedEmailBody.html",
-        user_name=",".join(user_names),
-        group_name=group.name,
-        approver=membership.approver.name,
-    )
-    destination = []
-    destination.append(membership.requested_by.email)
-    destination = destination + user_names
+    destination.append(user_names)
     general.emailSES(destination, subject, body)
 
 
@@ -176,7 +162,7 @@ def send_mail_for_request_decline(
 
 def send_mail_for_request_granted_failure(user, approver, access_type, request_id):
     destination = [user.email]
-    destination.extend(approver.email)
+    destination.append(approver.email)
     subject = USER_ACCESS_REQUEST_GRANT_FAILURE_SUBJECT.format(
         str(user.email), access_type.upper(), request_id
     )
