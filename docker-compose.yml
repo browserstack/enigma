@@ -41,7 +41,7 @@ services:
       dockerfile: Dockerfile
       target: web
     volumes:
-    - ./:/app/
+    - ./mounts/db/:/srv/code/dev/db/
     env_file:
     - ./secrets/ops_app_celery.env
     depends_on:
