@@ -1,0 +1,1 @@
+function timeSince(e){var t=new Date,a=(t.getTime()-e)/1e3;return a<60?parseInt(a)+"s":a<3600?parseInt(a/60)+"m":a<=86400?parseInt(a/3600)+"h":a>86400?(day=e.getDate(),month=e.toDateString().match(/ [a-zA-Z]*/)[0].replace(" ",""),year=e.getFullYear()==t.getFullYear()?"":" "+e.getFullYear(),day+" "+month+year):void 0}

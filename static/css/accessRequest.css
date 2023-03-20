@@ -1,0 +1,17 @@
+.btn{
+  background-color: #2196F3;
+}
+
+.container{
+  padding: 0px;
+  width: 80%;
+}
+
+.accessForms input[type=text]{
+  box-shadow: rgba(0, 0, 0, 0.075) 0px 1px 1px inset;
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(204, 204, 204);
+  border-radius: 4px;
+  text-indent: 2px;
+}

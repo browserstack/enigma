@@ -855,6 +855,7 @@ class UserAccessMapping(models.Model):
         self.decline_reason = decline_reason
         self.save()
 
+    @staticmethod
     def get_pending_access_mapping(request_id):
         return UserAccessMapping.objects.filter(
             request_id__contains=request_id, status__in=["Pending", "SecondaryPending"]

@@ -11,6 +11,7 @@ services:
     - ./secrets/ops_app_dev.env
     volumes:
     - ./mounts/logs/:/ebs/logs/
+    - ./mounts/db/:/srv/code/dev/db/
     ports:
     - 8000:8000
     depends_on:

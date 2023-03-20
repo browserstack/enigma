@@ -1,0 +1,39 @@
+// Form Mixin
+mixin form
+  .module.form-module
+    .toggle
+      i.fa.fa-times.fa-pencil
+      .tooltip Click Me
+    .form
+      h2 Login to your account
+      form
+        input(type='text' placeholder='Username')
+        input(type='password' placeholder='Password')
+        button Login
+    .form
+      h2 Create an account
+      form
+        input(type='text' placeholder='Username')
+        input(type='password' placeholder='Password')
+        input(type='email' placeholder='Email Address')
+        input(type='tel' placeholder='Phone Number')
+        button Register
+    .cta
+      a(href='http://andytran.me') Forgot your password?
+
+// Input Mixin
+mixin input(type, placeholder)
+  input(type=type
+        placeholder=placeholder)
+
+// Button Mixin
+mixin button(value)
+  button=value
+  
+// Pen Title
+.pen-title
+  h1 Flat Login Form
+  span
+    | Pen <i class='fa fa-paint-brush'></i> + <i class='fa fa-code'></i> by <a href='http://andytran.me'>Andy Tran</a>
+// Form Module
++form
