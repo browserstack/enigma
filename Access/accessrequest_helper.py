@@ -235,7 +235,7 @@ def get_decline_access_request(request, access_type, request_id):
                 current_ids = list(
                     GroupAccessMapping.get_pending_access_mapping(
                         request_id=group_name
-                    ).filter(request_id__contains=date_suffix)
+                    ).filter(request_id__icontains=date_suffix)
                 )
                 request_ids.extend(current_ids)
             access_type = "groupAccess"

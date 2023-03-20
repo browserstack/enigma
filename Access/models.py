@@ -858,7 +858,7 @@ class UserAccessMapping(models.Model):
     @staticmethod
     def get_pending_access_mapping(request_id):
         return UserAccessMapping.objects.filter(
-            request_id__contains=request_id, status__in=["Pending", "SecondaryPending"]
+            request_id__icontains=request_id, status__in=["Pending", "SecondaryPending"]
         ).values_list("request_id", flat=True)
 
     def update_access_status(self, current_status):
@@ -1055,7 +1055,7 @@ class GroupAccessMapping(models.Model):
     @staticmethod
     def get_pending_access_mapping(request_id):
         return GroupAccessMapping.objects.filter(
-            request_id__contains=request_id, status__in=["Pending", "SecondaryPending"]
+            request_id__icontains=request_id, status__in=["Pending", "SecondaryPending"]
         ).values_list("request_id", flat=True)
 
     def is_pending(self):
