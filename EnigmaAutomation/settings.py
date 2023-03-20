@@ -220,7 +220,7 @@ if data["database"]["engine"] == "mysql":
 elif data["database"]["engine"] == "sqlite3":
     DATABASES["default"] = {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db/db.sqlite3",
+        "NAME": BASE_DIR / "mounts/db/db.sqlite3",
     }
 else:
     raise Exception("Database engine %s not recognized" % data["database"]["engine"])
