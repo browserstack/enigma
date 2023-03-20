@@ -724,7 +724,7 @@ def save_group_access_request(form_data, auth_user):
 def _create_group_access_mapping(
     group, user, request_id, access_tag, access_label, access_reason
 ):
-    access = AccessV2.get(access_type=access_tag, access_label=access_label)
+    access = AccessV2.get(access_tag=access_tag, access_label=access_label)
     if not access:
         access = AccessV2.create(access_tag=access_tag, access_label=access_label)
     else:

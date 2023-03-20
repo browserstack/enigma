@@ -5,7 +5,7 @@ all: build test lint
 ## make dev : Build and start docker containers - (web/test/db)
 .PHONY: dev
 dev:
-	@docker-compose build && docker-compose up -d
+	@docker-compose build && docker-compose up -d web celery
 
 ## make build : Build and start docker containers - (web and db)
 .PHONY: build

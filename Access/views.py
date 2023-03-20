@@ -1,6 +1,6 @@
 """Django views."""
 import json
-import logging
+import logging, traceback
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
 from django.contrib.auth.decorators import login_required
@@ -386,7 +386,7 @@ def accept_bulk(request, selector):
         context["returnIds"] = return_ids
         return JsonResponse(context, status=200)
     except Exception as ex:
-        logger.error("Error processing bulk accept, Error: %s", str(ex))
+        logger.error("Error processing bulk accept, Error: %s", traceback.format_exc())
         json_response = {}
         json_response["error"] = INVALID_REQUEST_MESSAGE
         json_response["success"] = False
@@ -412,7 +412,7 @@ def _get_request_ids_for_bulk_processing(posted_request_ids, selector):
             current_ids = list(
                 GroupAccessMapping.get_pending_access_mapping(
                     request_id=group_name
-                ).filter(request_id__contains=date_suffix)
+                ).filter(request_id__icontains=date_suffix)
             )
             access_request_ids.extend(current_ids)
         selector = "groupAccess"
@@ -439,7 +439,7 @@ def decline_access(request, access_type, request_id):
             context = get_decline_access_request(request, access_type, request_id)
             return JsonResponse(context, status=200)
         except Exception as ex:
-            logger.exception("Error declining access, Error: %s", str(ex))
+            logger.exception("Error declining access, Error: %s", traceback.format_exc())
             return JsonResponse(
                 {"error": "Failed to decline the access request"}, status=400
             )
@@ -461,7 +461,7 @@ def remove_group_member(request):
             return JsonResponse(response, status=400)
         return JsonResponse({"message": "Success"})
     except Exception as ex:
-        logger.exception("Error removing memeber from group, Error: %s", str(ex))
+        logger.exception("Error removing memeber from group, Error: %s", traceback.format_exc())
         return JsonResponse({"error": "Failed to remove the user"}, status=400)
 
 
@@ -486,7 +486,7 @@ def all_user_access_list(request, load_ui=True):
             user = djangoUser.objects.get(username=username)
     except Exception as ex:
         # show all
-        logger.exception(ex)
+        logger.exception("Error raised in all_user_access_list: %s" % (traceback.format_exc()))
 
     try:
         last_page = 1
@@ -562,7 +562,7 @@ def all_user_access_list(request, load_ui=True):
         logger.exception(
             """Error fetching all users access list,
                         request not found OR Invalid request type, Error: %s""",
-            str(ex),
+            traceback.format_exc(),
         )
         json_response = {}
         json_response["error"] = {
@@ -621,7 +621,7 @@ def mark_revoked(request):
         json_response["msg"] = "Success"
         json_response["request_ids"] = success_list
     except Exception as ex:
-        logger.exception("Error Revoking User Access, Error: %s", str(ex))
+        logger.exception("Error Revoking User Access, Error: %s", traceback.format_exc())
         json_response["error"] = "Error Revoking User Access"
     return JsonResponse(json_response, status=403)
 
@@ -648,7 +648,7 @@ def individual_resolve(request):
                 json_response["status_list"].append({'title': 'The Request ('+request_id+') is already resolved.', 'msg': 'The request is already in final state.'})
         return render(request,'EnigmaOps/accessStatus.html',json_response)
     except Exception as e:
-        logger.exception(str(e))
+        logger.exception("Error raised during individual_resolve %s" % (traceback.format_exc()))
         json_response["error"] = {
             "error_msg": "Bad request",
             "msg": "Error in request not found OR Invalid request type",
@@ -693,7 +693,7 @@ def ignore_failure(request, selector):
         return render(request, "EnigmaOps/accessStatus.html", json_response)
     except Exception as e:
         logger.debug("Error in request not found OR Invalid request type")
-        logger.exception(e)
+        logger.exception("Error while executing ignore_failure: %s" % (traceback.format_exc()))
         json_response = {}
         json_response["error"] = {
             "error_msg": str(e),
@@ -731,7 +731,7 @@ def resolve_bulk(request):
         return render(request, "EnigmaOps/accessStatus.html", json_response)
     except Exception as e:
         logger.debug("Error in request not found OR Invalid request type")
-        logger.exception(e)
+        logger.exception("Raised error during resolve_bulk: %s" % (traceback.format_exc()))
         json_response = {}
         json_response['error'] = {'error_msg': "Bad request", 'msg': "Error in request not found OR Invalid request type"}
         return render(request,'EnigmaOps/accessStatus.html',json_response)
@@ -744,6 +744,6 @@ def revoke_group_access(request):
 
         return JsonResponse(response)
     except Exception as e:
-        logger.exception(str(e))
+        logger.exception("Error while revoking group access %s" % (traceback.format_exc()))
         logger.debug("Something went wrong while revoking group access")
         return JsonResponse({"message": "Failed to revoke group Access"}, status=400)

@@ -27,7 +27,7 @@ services:
     env_file:
     - ./secrets/ops_mysql_dev.env
     volumes:
-    - ./dbs:/var/lib/mysql --socket=/tmp/mysql.sock
+    - ./mounts/mysql_db/data:/var/lib/mysql
   redis:
     container_name: redis
     image: redis:alpine
