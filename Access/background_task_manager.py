@@ -300,6 +300,7 @@ def run_accept_request(data):
 
 
 def accept_request(user_access_mapping):
+    result = None
     try:
         result = run_access_grant.delay(user_access_mapping.request_id)
     except Exception:

@@ -212,12 +212,15 @@ if data["database"]["engine"] == "mysql":
         "PASSWORD": data["database"]["password"],
         "HOST": data["database"]["host"],
         "PORT": data["database"]["port"],
-        "OPTIONS": {"auth_plugin": "mysql_native_password"},
+        'OPTIONS': {
+            "auth_plugin": "mysql_native_password",
+            'charset': 'utf8mb4',
+        }
     }
 elif data["database"]["engine"] == "sqlite3":
     DATABASES["default"] = {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": BASE_DIR / "db/db.sqlite3",
     }
 else:
     raise Exception("Database engine %s not recognized" % data["database"]["engine"])
@@ -233,6 +236,8 @@ ACCESS_MODULES = data["access_modules"]
 
 AUTOMATED_EXEC_IDENTIFIER = "automated-grant"
 
+current_log_level = 'DEBUG'
+logging_apps = ["django.request", "inventory", "Access", "bootprocess"]
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -244,41 +249,23 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'INFO',
+            'level': current_log_level,
             'class': 'logging.FileHandler',
             'filename': './enigma.log',
             'formatter': 'verbose',
         },
         "console": {
-            "level": "INFO",
+            "level": current_log_level,
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
     },
-    "loggers": {
-        "django.request": {
-            "handlers": ["file", "console"],
-            "level": "INFO",
-            "propagate": True,
-            "formatter": "verbose",
-        },
-        "inventory": {
-            "handlers": ["file", "console"],
-            "level": "INFO",
-            "propagate": True,
-            "formatter": "verbose",
-        },
-        "Access": {
-            "handlers": ["file", "console"],
-            "level": "INFO",
-            "propagate": True,
-            "formatter": "verbose",
-        },
-        "bootprocess": {
-            "handlers": ["file", "console"],
-            "level": "INFO",
-            "propagate": True,
-            "formatter": "verbose",
-        },
-    },
+    "loggers": { },
 }
+for each_app in logging_apps:
+    LOGGING["loggers"][each_app] = {
+        "handlers": ["file", "console"],
+        "level": current_log_level,
+        "propagate": True,
+        "formatter": "verbose",
+    }

@@ -390,7 +390,7 @@ def accept_bulk(request, selector):
         json_response = {}
         json_response["error"] = INVALID_REQUEST_MESSAGE
         json_response["success"] = False
-        return JsonResponse(json_response, status=401)
+        return JsonResponse(json_response, status=400)
 
 
 def _get_request_ids_for_bulk_processing(posted_request_ids, selector):
@@ -418,6 +418,7 @@ def _get_request_ids_for_bulk_processing(posted_request_ids, selector):
         selector = "groupAccess"
     else:
         access_request_ids = input_vals
+    logger.debug("Got the ids %s for bulk processing" % (",".join(access_request_ids)))
     return access_request_ids, return_ids, selector
 
 
