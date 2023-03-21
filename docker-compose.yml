@@ -13,12 +13,12 @@ services:
     - ./mounts/logs/:/ebs/logs/
     - ./mounts/db/:/srv/code/dev/db/
     ports:
-    - 8000:8000
+    - 8001:8001
     depends_on:
     - db
     command: >
       bash -c "echo Starting Django runserver;
-      python manage.py runserver 0.0.0.0:8000"
+      python manage.py runserver 0.0.0.0:8001"
   db:
     container_name: db
     image: mysql/mysql-server:8.0.31
