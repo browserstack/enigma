@@ -11,7 +11,9 @@ services:
     - ./secrets/ops_app_dev.env
     volumes:
     - ./mounts/logs/:/ebs/logs/
-    - ./mounts/db/:/srv/code/dev/db/
+    - ./:/srv/code/dev
+    - access_modules:/srv/code/dev/Access/access_modules
+    - database_store:/srv/code/dev/db
     ports:
     - 8000:8000
     depends_on:
@@ -27,7 +29,7 @@ services:
     env_file:
     - ./secrets/ops_mysql_dev.env
     volumes:
-    - ./mounts/mysql_db/data:/var/lib/mysql
+    - database_store:/var/lib/mysql
   redis:
     container_name: redis
     image: redis:alpine
@@ -41,7 +43,8 @@ services:
       dockerfile: Dockerfile
       target: web
     volumes:
-    - ./mounts/db/:/srv/code/dev/db/
+    - access_modules_celery:/srv/code/dev/Access/access_modules
+    - database_store:/srv/code/dev/db
     env_file:
     - ./secrets/ops_app_celery.env
     depends_on:
@@ -63,3 +66,7 @@ services:
     volumes:
     - .:/srv/code/dev
     - ./mounts/logs/:/ebs/logs/
+volumes:
+  access_modules:
+  access_modules_celery:
+  database_store:

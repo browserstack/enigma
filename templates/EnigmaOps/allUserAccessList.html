@@ -129,7 +129,7 @@ var current_username = "";
     elem.style.background = "#429244";
     title_line  = $("#access-header-row")
     title_html = "<h4 id='header-title'>Access List for User {{username}}</h4>"
-    if(access_type.length && access_type != "other"){
+    if(access_type.length) {
       title_html = `<button class="btn btn-danger" data-toggle="modal" data-target="#revokeModal"
                     onclick='revokeConfirm("module-`+access_type+`", "{{username}}")''
                     style="float: left;" id=module-`+access_type+`>Revoke all `+ access_type+`</button>

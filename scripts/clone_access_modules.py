@@ -9,15 +9,26 @@ try:
     config = json.load(f)
     urls = config["access_modules"]["git_urls"]
 
+    shutil.rmtree('Access/access_modules')
+    os.mkdir('Access/access_modules')
+    open('Access/access_modules/__init__.py', 'w').close()
+
     requirements_file = 'Access/access_modules/requirements.txt'
     if not os.path.exists(requirements_file):
           open(requirements_file, 'w').close()
 
     for url in urls:
+        specified_branch = None
+        if "#" in url:
+            specified_branch = url.split("#")[1]
+            url = url.split("#")[0]
         folder_name = url.split("/").pop()[:-4]
         folder_path = "./Access/access_modules/" + folder_name
         try:
-            Repo.clone_from(url, folder_path)
+            if specified_branch:
+                Repo.clone_from(url, folder_path, branch=specified_branch)
+            else:
+                Repo.clone_from(url, folder_path)
             # move all folders, not files in the cloned repo to the access_modules
             # folder except the .git, .github and secrets folder
             for file in os.listdir(folder_path):
