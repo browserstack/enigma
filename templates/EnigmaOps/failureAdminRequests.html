@@ -1,0 +1,213 @@
+{% extends 'global_layout.html' %}
+{% load static %}
+
+{% block content_body %}
+<link rel="stylesheet" type="text/css" href="{% static "css/custom.css" %}">
+<style>
+    p {
+        overflow-wrap: break-word;
+    }
+
+    h4 {
+        color: white;
+    }
+
+    h2>a {
+        text-decoration: none;
+        color: #1AC98E;
+    }
+
+    span.custom-badge {
+        background-color: #1AC98E;
+        color: white;
+    }
+
+    .checkbox label {
+        font-size: 1.8rem;
+    }
+
+    .checkbox label:after {
+        content: '';
+        display: table;
+        clear: both;
+    }
+
+    .checkbox .cr {
+        position: relative;
+        display: inline-block;
+        border: 1px solid #a9a9a9;
+        border-radius: .25em;
+        width: 1.1em;
+        height: 1.1em;
+    }
+
+
+    .checkbox .cr .cr-icon {
+        position: absolute;
+        font-size: .8em;
+        line-height: 0;
+        top: 50%;
+        left: 20%;
+    }
+
+    .checkbox label input[type="checkbox"] {
+        display: none;
+    }
+
+    .checkbox label input[type="checkbox"]+.cr>.cr-icon {
+        transform: scale(3) rotateZ(-20deg);
+        opacity: 0;
+        transition: all .3s ease-in;
+    }
+
+    .checkbox label input[type="checkbox"]:checked+.cr>.cr-icon {
+        transform: scale(1) rotateZ(0deg);
+        opacity: 1;
+    }
+
+    .checkbox label input[type="checkbox"]:disabled+.cr {
+        opacity: .5;
+    }
+
+    .bulkHeader {
+        height: 5rem;
+        padding: 9px;
+
+    }
+
+    h2.h5>a {
+        text-decoration: none;
+    }
+
+    span.badge-light {
+        background-color: darkslategray;
+    }
+</style>
+<script>
+    jQuery(document).ready(function ($) {
+
+        $(".bulkResolve-button").click(function () {
+            let bulkResolveAnchor = this
+            let selector = $(this).attr("id")
+            let urlBuilder = `/resolve_bulk?`
+            reqParams = []
+
+            $(`.${selector}`).each(function () {
+                if ($(this).is(":checked"))
+                    reqParams.push(`requestId=${$(this).val()}`)
+            });
+
+            if (reqParams.length == 0) {
+                $(bulkResolveAnchor).attr("href", "#")
+                alert("please select check boxes before")
+            }
+            else {
+                urlBuilder = urlBuilder + reqParams.join("&")
+                $(bulkResolveAnchor).attr("href", urlBuilder)
+            }
+        });
+
+        $(".bulkResolveAll-checkbox").change(function () {
+            let bulkCheckValue = $(this).prop('checked');
+
+            let selector = $(this).val()
+            $(`.${selector}`).each(function (idx, elem) {
+                $(elem).prop('checked', bulkCheckValue)
+            })
+
+        });
+
+    });
+</script>
+<div class="wrapper">
+
+    <div class="page-header">
+        <div class="container-fluid">
+            <h2 class="h5 no-margin-bottom">{{ heading }}</h2>
+        </div>
+    </div>
+
+    {% if failures %}
+    <div class="page-header bulkHeader mx-4">
+        <div class="row">
+            <div class="checkbox col-1">
+                <label>
+                    <!-- checkbox classes should also contain this value -->
+                    <input class="bulkResolveAll-checkbox" value="resolveFail" type="checkbox">
+                    <span class="cr"><i class="cr-icon fa fa-check"></i></span>
+                </label>
+            </div>
+            <div class="col-9">
+                <h2 class="h4">Bulk Operation</h2>
+            </div>
+            <div class="col-2 pl-5">
+                <!-- checkbox classes should also contain this id -->
+                <a class="card-link btn btn-primary bulkResolve-button" id="resolveFail" href="#">Bulk Resolve</a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% for request in failures %}
+    <div class="filter row">
+        <div class="card  col-xs-12 col-md-12">
+            <div class="card-body" style="color:white;">
+                <div class="row">
+                    <div class="checkbox col-1 pl-1">
+                        <label>
+                            <input class="resolveFail" type="checkbox" value="{{ request.request_id }}">
+                            <span class="cr"><i class="cr-icon fa fa-check"></i></span>
+                        </label>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="card-title">{{request.request_id}}</h4>
+                        <p>Requested By: {{request.user.user.username}}</p>
+                        <p>Requested Access level: {{request.access.access_tag}}</p>
+                        <br>
+                        <p>Reason for Request: </p>
+                        <p>{{request.request_reason}}</p>
+                        <p>Date of Request: {{request.requested_on}}</p>
+                    </div>
+                    <div class="col-7">
+                        <div class="row">
+                            <div class="col-8">
+                                <p>Access Type: {{ request.access.access_tag }}</p>
+                                <p>Access Category:<br>
+                                    {% for data, val in request.access.access_label.items %}
+                                        &emsp;{{ data }}: {{ val }}<br>
+                                    {% endfor %}
+                                </p>
+                                <p>{{request.}}</p>
+                                <br>
+                            </div>
+                            <div class="col-4">
+                                <div class="row float-right">
+                                <a class="card-link btn btn-primary" style="margin-top: 10px;" href="/resolve_bulk?requestId={{ request.request_id }}">Resolve</a><br>
+                                <a class="card-link btn btn-danger" style="margin-top: 10px;" href="/ignore/decline?requestId={{ request.request_id }}">Mark Declined</a><br>
+                                <a class="card-link btn btn-warning" style="margin-top: 10px;" href="/ignore/approve?requestId={{ request.request_id }}">Mark Approved</a><br>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <span>
+                                    <span class="text-success">Resolve Instruction</span> : check logs or email for issue. Run approval again.
+                                    <br>
+                                    <span class="text-danger">Mark Declined</span> : Click if request is not valid. It will be declined.
+                                    <br>
+                                    <span class="text-warning">Mark Approved</span> : Click if request is resolved manually. It will be marked approved.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% if not failures %}
+    <p>&emsp;None pending</p>
+    {% endif %}
+
+</div>
+{% endblock %}

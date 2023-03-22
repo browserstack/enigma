@@ -9,7 +9,7 @@ from Access.models import (
     GroupV2,
     MembershipV2,
     GroupAccessMapping,
-    UserIdentity
+    UserIdentity,
 )
 
 

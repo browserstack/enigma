@@ -2,7 +2,7 @@ from django.contrib.auth.models import User as user
 from django.db import models, transaction
 import datetime, logging, enum
 
-from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
+from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 
 
 class ApprovalType(enum.Enum):
@@ -168,14 +168,14 @@ class User(models.Model):
 
     def getFailedGrantsCount(self):
         return (
-            UserAccessMapping.objects.filter(status__in=["grantfailed"]).count()
+            UserAccessMapping.objects.filter(status__in=["GrantFailed"]).count()
             if self.isAdminOrOps()
             else 0
         )
 
     def getFailedRevokesCount(self):
         return (
-            UserAccessMapping.objects.filter(status__in=["revokefailed"]).count()
+            UserAccessMapping.objects.filter(status__in=["RevokeFailed"]).count()
             if self.isAdminOrOps()
             else 0
         )
@@ -194,8 +194,8 @@ class User(models.Model):
     def isAdminOrOps(self):
         return self.is_ops or self.user.is_superuser
 
-    def get_all_memberships(self):
-        return self.membership_user.all()
+    def get_all_approved_memberships(self):
+        return self.membership_user.filter(status="Approved")
 
     def is_allowed_admin_actions_on_group(self, group):
         return (
@@ -287,8 +287,8 @@ class User(models.Model):
         self.save()
 
     def offboard(self, revoker):
-        self.state = "offboarding"
-        self.revoker = revoker
+        self.change_state("offboarding")
+        self.update_revoker(revoker)
         self.offbaord_date = datetime.datetime.now()
         self.user.is_active = False
         self.save()
@@ -323,6 +323,15 @@ class User(models.Model):
             )
         except User.DoesNotExist:
             return None
+    
+    @staticmethod
+    def get_system_user():
+        try:
+            return User.objects.get(name="system_user")
+        except User.DoesNotExist:
+            django_user = user.objects.create(username="system_user")
+            system_user = User.objects.create(email="system_user@root.root", user=django_user, name=django_user.username)
+            return system_user
 
     def __str__(self):
         return "%s" % (self.user)
@@ -414,6 +423,10 @@ class MembershipV2(models.Model):
     def revoke_membership(self):
         self.status = "Revoked"
         self.save()
+
+    def update_membership(group, reason):
+        membership = MembershipV2.objects.filter(group=group)
+        membership.update(status="Declined", decline_reason=reason)
 
     @staticmethod
     def get_membership(membership_id):
@@ -515,6 +528,14 @@ class GroupV2(models.Model):
     def getPendingMemberships():
         return MembershipV2.objects.filter(status="Pending", group__status="Approved")
 
+    def is_already_processed(self):
+        return self.status in ['Declined','Approved','Processing','Revoked']
+
+    def decline_access(self, decline_reason=None):
+        self.status = "Declined"
+        self.decline_reason = decline_reason
+        self.save()
+
     @staticmethod
     def getPendingCreation():
         new_group_pending = GroupV2.objects.filter(status="Pending")
@@ -573,7 +594,6 @@ class GroupV2(models.Model):
         group_members = self.get_all_members().filter(status="Approved")
         return group_members
 
-
     def get_approved_and_pending_member_emails(self):
         group_member_emails = self.membership_group.filter(
             status__in=["Approved", "Pending"]
@@ -612,7 +632,9 @@ class GroupV2(models.Model):
 
     def is_owner(self, user):
         return (
-            self.membership_group.filter(is_owner=True).filter(user=user).first()
+            self.membership_group.filter(is_owner=True)
+            .filter(user=user)
+            .first()
             is not None
         )
 
@@ -856,9 +878,10 @@ class UserAccessMapping(models.Model):
         self.decline_reason = decline_reason
         self.save()
 
+    @staticmethod
     def get_pending_access_mapping(request_id):
         return UserAccessMapping.objects.filter(
-            request_id__contains=request_id, status__in=["Pending", "SecondaryPending"]
+            request_id__icontains=request_id, status__in=["Pending", "SecondaryPending"]
         ).values_list("request_id", flat=True)
 
     def update_access_status(self, current_status):
@@ -1033,6 +1056,19 @@ class GroupAccessMapping(models.Model):
 
         return access_request_data
 
+    def get_by_id(request_id):
+        try:
+            return GroupAccessMapping.objects.get(request_id=request_id)
+        except GroupAccessMapping.DoesNotExist:
+            return None
+
+    def mark_revoked(self, revoker):
+        self.status = "Revoked"
+        self.revoker = revoker
+        self.save()
+
+
+
     @staticmethod
     def get_by_request_id(request_id):
         try:
@@ -1043,7 +1079,7 @@ class GroupAccessMapping(models.Model):
     @staticmethod
     def get_pending_access_mapping(request_id):
         return GroupAccessMapping.objects.filter(
-            request_id__contains=request_id, status__in=["Pending", "SecondaryPending"]
+            request_id__icontains=request_id, status__in=["Pending", "SecondaryPending"]
         ).values_list("request_id", flat=True)
 
     def is_pending(self):
@@ -1082,6 +1118,9 @@ class GroupAccessMapping(models.Model):
     def is_self_approval(self, approver):
         return self.requested_by == approver
 
+    def is_already_processed(self):
+        return self.status in ['Declined','Approved','Processing','Revoked']
+
 
 class AccessV2(models.Model):
     access_tag = models.CharField(max_length=255)
@@ -1101,10 +1140,10 @@ class AccessV2(models.Model):
             return self.access_tag
 
     @staticmethod
-    def get(access_type, access_label):
+    def get(access_tag, access_label):
         try:
             return AccessV2.objects.get(
-                access_tag=access_type, access_label=access_label
+                access_tag=access_tag, access_label=access_label
             )
         except AccessV2.DoesNotExist:
             return None

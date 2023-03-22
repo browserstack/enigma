@@ -1,0 +1,87 @@
+{% extends 'global_layout.html' %}
+{% load static %}
+
+{% block content_body %}
+
+<!-- <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script> -->
+
+<script src="{% static "js/multiselect.min.js" %}"></script>
+
+<link rel="stylesheet" type="text/css" href="{% static "lib/google-code-prettify/prettify.css" %}">
+<link rel="stylesheet" type="text/css" href="{% static "css/multiselect.css" %}">
+
+<link rel="stylesheet" type="text/css" href="{% static "css/custom.css" %}">
+
+<script type="text/javascript">
+  jQuery(document).ready(function($) {
+      $('#search-user').multiselect({
+          search: {
+              left: '<input type="text" class="form-control" placeholder="Search..." />',
+              right: '<input type="text" class="form-control" placeholder="Search..." />',
+          },
+          fireSearch: function(value) {
+              return value.length > 1;
+          }
+      });
+  });
+  // $(document).ready(function(){
+  //   $('#git-access').formSelect();
+  // });
+</script>
+        <!-- Horizontal Form -->
+<div class="accessForms">
+  <form class="form-horizontal" action="{% url 'addUserToGroup' groupName %}" method="post" id="usrform" name="usrform">
+    {% csrf_token %}
+    <div class="page-header">
+      <div class="container-fluid">
+        <h2 class="h5 no-margin-bottom">Add a new members to your group {{groupName}}</h2>
+      </div>
+    </div>
+
+      <div class="container-fluid">
+        <h2 class="h6 no-margin-bottom">Adding a user here means you acknowledge that user has completed product onboarding successfully</h2>
+        <h2 class="h6 no-margin-bottom">Note - If the user is not shown in list, please ask the user to login to enigma once.</h2>
+      </div>
+      <div class="row">
+        <div class="col-xs-5 col-md-5">
+          <select id="search-user" class="form-control" size="8" multiple="multiple">
+                    {% for user in users %}
+                        <option value="{{user.email}}">{{user.email}}</option>
+                    {%endfor%}
+                  </select>
+        </div>
+
+        <div class="col-xs-2 col-md-2" style="margin-top:1%;">
+          <button type="button" id="search-user_rightAll" class="btn btn-block btn-primary" disabled><i class="fa fa-angle-double-right" style="font-size:24px"></i></button>
+          <button type="button" id="search-user_rightSelected" class="btn btn-block btn-primary"><i class="fa fa-angle-right" style="font-size:24px"></i></button>
+          <button type="button" id="search-user_leftSelected" class="btn btn-block btn-primary"><i class="fa fa-angle-left" style="font-size:24px"></i></button>
+          <button type="button" id="search-user_leftAll" class="btn btn-block btn-primary" disabled><i class="fa fa-angle-double-left" style="font-size:24px"></i></button>
+        </div>
+
+        <div class="col-xs-5 col-md-5">
+          <select name="selectedUserList" id="search-user_to" class="form-control required" size="8" multiple="multiple">
+                  {% for user in groupMembers %}
+                      <option value="{{user.email}}" disabled>{{user.email}}</option>
+                  {%endfor%}
+                  </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="padding-left:1%;">
+        <label for="reason" style="padding-left:15px; font-weight: bolder; min-height:0px; margin-top:10px; font-size:medium;">Reason for Access:</label>
+        <input type="text" class="form-text1"id="reason" name="memberReason" style="width:60%;" required maxlength="2024">
+      </div>
+
+      <input type="hidden" name="groupName" value="{{groupName}}">
+      <input type="hidden" name="requester" value="{{request.user}}">
+
+      <br>
+      <div class="form-group" style="padding-left:1%;">
+        <button type="submit" class="btn btn-primary" style="margin: auto; margin-left: 15px;">Submit Request</button>
+      </div>
+
+  </form>
+
+</div>
+
+{% endblock %}

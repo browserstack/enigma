@@ -7,11 +7,12 @@ python manage.py collectstatic --noinput  # collect static files
 
 # directory for gunicorn logs and django app logs
 mkdir -p /ebs/logs
-touch /ebs/logs/bstack.log
-tail -n 0 -f /ebs/logs/bstack.log &
+touch /ebs/logs/enigma.log
+tail -n 0 -f /ebs/logs/enigma.log &
 
 # run scripts/clone_access_modules.py to clone access modules
-python scripts/clone_access_modules.py
 
-echo Starting Django runserver.
-python manage.py runserver 0.0.0.0:8000
+python scripts/clone_access_modules.py
+pip install -r Access/access_modules/requirements.txt --no-cache-dir --ignore-installed
+
+eval "$@"
