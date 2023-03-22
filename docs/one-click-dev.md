@@ -9,7 +9,7 @@
     brew install docker docker-compose
     ```
 -  For windows/linux/macOS refer to
-  https://docs.docker.com/get-docker/ 
+  https://docs.docker.com/get-docker/
 
 ### Install Docker Container Runtime
 https://github.com/abiosoft/colima
@@ -105,3 +105,14 @@ make dev
 ```bash
 make logs
 ```
+5. Create superuser (Admin) with:
+```bash
+# Access the container with:
+docker exec  -it  dev  bash
+#In the container:
+python manage.py  createsuperuser
+# Set email to admin email id and password to anything you want
+```
+6. Enigma should be up and running on port 8000!
+- Login at localhost:8000/admin
+- Login here with your superuser credentials
