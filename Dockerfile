@@ -17,7 +17,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
 RUN apt update && apt install -y netcat dnsutils libmariadbclient-dev
 
 ARG APPUID=1001
-RUN useradd -rm -d /home/app -s /bin/bash -g root -G sudo -u $APPUID app
+RUN useradd -rm -d /home/app -s /bin/bash -g root -G sudo -u "$APPUID" app
 WORKDIR /srv/code/dev
 RUN mkdir -p logs
 RUN chown -R app /srv/code/dev
