@@ -15,7 +15,9 @@ RUN DEBIAN_FRONTEND=noninteractive \
 
 # Set env variables used in this Dockerfile (add a unique prefix, such as DEV)
 RUN apt update && apt install -y netcat dnsutils libmariadbclient-dev
-RUN useradd -rm -d /home/app -s /bin/bash -g root -G sudo -u 1001 app
+
+ARG APPUID=1001
+RUN useradd -rm -d /home/app -s /bin/bash -g root -G sudo -u $APPUID app
 WORKDIR /srv/code/dev
 RUN mkdir -p logs
 RUN chown -R app /srv/code/dev
@@ -33,7 +35,7 @@ RUN pip install -r /tmp/requirements.txt --no-cache-dir --ignore-installed
 COPY --chown=app:root . .
 
 FROM base as test
-CMD ["python" "-m", "pytest", "-v", "--cov", "--disable-warnings" ]
+CMD ["python", "-m", "pytest", "-v", "--cov", "--disable-warnings" ]
 
 FROM base as web
 COPY ./docker-entrypoint.sh /tmp/entrypoint.sh

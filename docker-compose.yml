@@ -1,5 +1,4 @@
 version: '3'
-
 services:
   web:
     container_name: dev
@@ -7,6 +6,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: web
+      args:
+        APPUID: "${APPUID}"
     env_file:
     - ./secrets/ops_app_dev.env
     volumes:
@@ -42,6 +43,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: web
+      args:
+        APPUID: "${APPUID}"
     volumes:
     - access_modules_celery:/srv/code/dev/Access/access_modules
     - database_store:/srv/code/dev/db

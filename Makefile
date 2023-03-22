@@ -1,9 +1,12 @@
+APP_UID := $(shell id -u)
+
 ## make all : Run service, test and linter
 .PHONY: all
 all: build test lint
 
 ## make dev : Build and start docker containers - (web/test/db)
 .PHONY: dev
+dev: export APPUID = $(APP_UID)
 dev:
 	@docker-compose build && docker-compose up -d web celery
 
