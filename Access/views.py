@@ -1,11 +1,6 @@
 """Django views."""
 import json
-<<<<<<< HEAD
-import math
-import logging
-=======
-import logging, traceback
->>>>>>> origin/main
+import math, logging, traceback
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
 from django.contrib.auth.decorators import login_required
