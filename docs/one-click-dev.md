@@ -29,8 +29,7 @@ git clone https://github.com/browserstack/enigma-public-central.git
 {
   "googleapi": {
     "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "",
-    "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "",
-    "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS": ""
+    "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": ""
   },
   "database": {
     "engine": "sqlite3"

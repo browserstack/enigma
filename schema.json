@@ -18,10 +18,6 @@
         "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": {
           "description": "Google OAuth2 secret",
           "type": "string"
-        },
-        "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS": {
-          "description": "Google OAuth2 whitelisted domains",
-          "type": "string"
         }
       }
     },

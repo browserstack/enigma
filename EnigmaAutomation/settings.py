@@ -210,9 +210,6 @@ with open("config.json") as data_file:
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = data["googleapi"]["SOCIAL_AUTH_GOOGLE_OAUTH2_KEY"]
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = data["googleapi"]["SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET"]
-SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = data["googleapi"][
-    "SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS"
-]
 
 if data["background_task_manager"]["type"] == "celery":
     background_task_manager_config = data["background_task_manager"]["config"]
