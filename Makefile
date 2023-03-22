@@ -5,6 +5,8 @@ all: build test lint
 ## make dev : Build and start docker containers - (web/test/db)
 .PHONY: dev
 dev:
+	@mkdir -p mounts/db
+	@sudo chown 1001 mounts/db
 	@docker-compose build && docker-compose up -d web celery
 
 ## make build : Build and start docker containers - (web and db)
