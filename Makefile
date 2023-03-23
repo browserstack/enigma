@@ -26,6 +26,7 @@ build:
 	@docker-compose up --build web -d
 
 .PHONY: down
+down: export APPUID = $(APP_UID)
 down:
 	@docker-compose -f docker-compose.yml down
 
