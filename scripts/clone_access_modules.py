@@ -16,7 +16,7 @@ try:
             shutil.rmtree("Access/access_modules/%s" % each_access_module)
         except Exception as e:
             print("Got Error while deleting the path %s" % str(e))
-    open('Access/access_modules/__init__.py', 'w').close()
+    shutil.copyfile('Access/base_email_access/access_modules_init.py', "Access/access_modules/__init__.py")
 
     requirements_file = 'Access/access_modules/requirements.txt'
     if not os.path.exists(requirements_file):
