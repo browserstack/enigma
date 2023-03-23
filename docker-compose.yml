@@ -30,7 +30,7 @@ services:
     env_file:
     - ./secrets/ops_mysql_dev.env
     volumes:
-    - ./mounts/db:/var/lib/mysql
+    - ./mounts/mysql_db:/var/lib/mysql
   redis:
     container_name: redis
     image: redis:alpine
