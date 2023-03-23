@@ -2,10 +2,12 @@ APP_UID := $(shell id -u)
 
 setup_mounts:
 	@mkdir -p mounts/db
+	@mkdir -p mounts/mysql_db
 	@mkdir -p mounts/logs
 	@mkdir -p mounts/modules
 	@mkdir -p Access/access_modules
 	@chown $(APP_UID) mounts/db
+	@chown $(APP_UID) mounts/mysql_db
 	@chown $(APP_UID) mounts/logs
 	@chown $(APP_UID) mounts/modules
 	@chown $(APP_UID) Access/access_modules
