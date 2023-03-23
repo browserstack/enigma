@@ -4,19 +4,25 @@ import shutil
 from git import Repo
 import os
 
+print("Starting cloning setup")
 try:
     f = open("./config.json", "r")
     config = json.load(f)
     urls = config["access_modules"]["git_urls"]
 
-    shutil.rmtree('Access/access_modules')
-    os.mkdir('Access/access_modules')
+    for each_access_module in os.listdir('Access/access_modules'):
+        print("Deleting Access/access_modules/%s" % each_access_module)
+        try:
+            shutil.rmtree("Access/access_modules/%s" % each_access_module)
+        except Exception as e:
+            print("Got Error while deleting the path %s" % str(e))
     open('Access/access_modules/__init__.py', 'w').close()
 
     requirements_file = 'Access/access_modules/requirements.txt'
     if not os.path.exists(requirements_file):
           open(requirements_file, 'w').close()
 
+    print("All urls: %s" % (",".join(urls)))
     for url in urls:
         specified_branch = None
         if "#" in url:

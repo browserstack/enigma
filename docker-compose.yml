@@ -11,10 +11,10 @@ services:
     env_file:
     - ./secrets/ops_app_dev.env
     volumes:
-    - ./mounts/logs/:/ebs/logs/
     - ./:/srv/code/dev
     - access_modules:/srv/code/dev/Access/access_modules
     - database_store:/srv/code/dev/db
+    - logs_volume:/ebs/logs
     ports:
     - 8000:8000
     depends_on:
@@ -48,6 +48,7 @@ services:
     volumes:
     - access_modules_celery:/srv/code/dev/Access/access_modules
     - database_store:/srv/code/dev/db
+    - logs_volume:/ebs/logs
     env_file:
     - ./secrets/ops_app_celery.env
     depends_on:
@@ -68,8 +69,9 @@ services:
     - ./secrets/ops_app_test.env
     volumes:
     - .:/srv/code/dev
-    - ./mounts/logs/:/ebs/logs/
+    - logs_volume:/ebs/logs
 volumes:
   access_modules:
   access_modules_celery:
   database_store:
+  logs_volume:
