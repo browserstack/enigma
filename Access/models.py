@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User as user
 from django.db import models, transaction
+from django.db.models.signals import post_save
 from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 import datetime
 import enum
@@ -320,6 +321,21 @@ class User(models.Model):
 
     def __str__(self):
         return "%s" % (self.user)
+
+def create_user(sender, instance, created, **kwargs):
+    """
+    create a user when a django  user is created
+    """
+    user, created = User.objects.get_or_create(user=instance)
+    user.name = instance.first_name
+    user.email = instance.email
+    try:
+        user.avatar = instance.avatar
+    except Exception as e:
+        pass
+    user.save()
+
+post_save.connect(create_user, sender=user)
 
 
 class MembershipV2(models.Model):
