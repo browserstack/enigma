@@ -4,9 +4,11 @@ setup_mounts:
 	@mkdir -p mounts/db
 	@mkdir -p mounts/logs
 	@mkdir -p mounts/modules
+	@mkdir -p Access/access_modules
 	@chown $(APP_UID) mounts/db
 	@chown $(APP_UID) mounts/logs
 	@chown $(APP_UID) mounts/modules
+	@chown $(APP_UID) Access/access_modules
 
 ## make all : Run service, test and linter
 .PHONY: all
