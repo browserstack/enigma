@@ -11,11 +11,13 @@ try:
     urls = config["access_modules"]["git_urls"]
 
     for each_access_module in os.listdir('Access/access_modules'):
-        print("Deleting Access/access_modules/%s" % each_access_module)
+        path_to_remove = "Access/access_modules/%s" % each_access_module
+        print("Deleting %s" % path_to_remove)
         try:
-            shutil.rmtree("Access/access_modules/%s" % each_access_module)
+            if os.path.isdir(path_to_remove):
+                shutil.rmtree(path_to_remove)
         except Exception as e:
-            print("Got Error while deleting the path %s" % str(e))
+            print("Got Error while deleting the path %s. Error: %s" % (path_to_remove, str(e)))
     shutil.copyfile('Access/base_email_access/access_modules_init.py', "Access/access_modules/__init__.py")
 
     requirements_file = 'Access/access_modules/requirements.txt'
