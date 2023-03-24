@@ -1,5 +1,4 @@
 version: '3'
-
 services:
   web:
     container_name: dev
@@ -7,11 +6,15 @@ services:
       context: .
       dockerfile: Dockerfile
       target: web
+      args:
+        APPUID: "${APPUID}"
     env_file:
     - ./secrets/ops_app_dev.env
     volumes:
-    - ./mounts/logs/:/ebs/logs/
-    - ./mounts/db/:/srv/code/dev/db/
+    - ./:/srv/code/dev
+    - ./mounts/modules:/srv/code/dev/Access/access_modules
+    - ./mounts/db:/srv/code/dev/db
+    - ./mounts/logs:/ebs/logs
     ports:
     - 8000:8000
     depends_on:
@@ -27,7 +30,7 @@ services:
     env_file:
     - ./secrets/ops_mysql_dev.env
     volumes:
-    - ./mounts/mysql_db/data:/var/lib/mysql
+    - ./mounts/mysql_db:/var/lib/mysql
   redis:
     container_name: redis
     image: redis:alpine
@@ -40,8 +43,12 @@ services:
       context: .
       dockerfile: Dockerfile
       target: web
+      args:
+        APPUID: "${APPUID}"
     volumes:
-    - ./mounts/db/:/srv/code/dev/db/
+    - ./mounts/modules:/srv/code/dev/Access/access_modules
+    - ./mounts/db:/srv/code/dev/db
+    - ./mounts/logs:/ebs/logs
     env_file:
     - ./secrets/ops_app_celery.env
     depends_on:
@@ -62,4 +69,4 @@ services:
     - ./secrets/ops_app_test.env
     volumes:
     - .:/srv/code/dev
-    - ./mounts/logs/:/ebs/logs/
+    - ./mounts/logs:/ebs/logs

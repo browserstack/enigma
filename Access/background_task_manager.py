@@ -62,6 +62,7 @@ def run_access_grant(request_id):
     user = user_access_mapping.user_identity.user
     approver = user_access_mapping.approver_1.user
     message = ""
+    access_module = helpers.get_available_access_module_from_tag(access_tag)
     if not user_access_mapping.user_identity.user.is_active():
         user_access_mapping.decline_access(decline_reason="User is not active")
         logger.debug(
@@ -73,7 +74,7 @@ def run_access_grant(request_id):
             }
         )
         return False
-    elif user_access_mapping.user_identity.identity == {}:
+    elif user_access_mapping.user_identity.identity == {} and access_module.get_identity_template() != "":
         user_access_mapping.grant_fail_access(
             fail_reason="Failed since identity is blank for user identity"
         )
@@ -91,7 +92,6 @@ def run_access_grant(request_id):
         )
         return False
 
-    access_module = helpers.get_available_access_module_from_tag(access_tag)
     if not access_module:
         return False
 
