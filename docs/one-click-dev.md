@@ -23,8 +23,7 @@ Clone the repo in local system
 ```bash
 git clone https://github.com/browserstack/enigma-public-central.git
 ```
-1. Create .env file from .env.sample file. Edit the DOCKERIMAGE to the latest image URL.
-2. copy config.json.sample to config.json
+- copy config.json.sample to config.json
 ```bash
 {
   "googleapi": {
@@ -116,3 +115,17 @@ python manage.py  createsuperuser
 6. Enigma should be up and running on port 8000!
 - Login at localhost:8000/admin
 - Login here with your superuser credentials
+
+### How to run tests
+
+1. Tests:
+If Web service is not running, the command will first load up the service and then run the tests.
+```bash
+make test
+```
+
+2. Linter:
+Docker should be running for linter tool:
+```bash
+   docker exec dev make lint
+```
