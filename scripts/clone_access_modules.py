@@ -10,14 +10,18 @@ try:
     config = json.load(f)
     urls = config["access_modules"]["git_urls"]
 
-    for each_access_module in os.listdir('Access/access_modules'):
-        path_to_remove = "Access/access_modules/%s" % each_access_module
-        print("Deleting %s" % path_to_remove)
-        try:
-            if os.path.isdir(path_to_remove):
-                shutil.rmtree(path_to_remove)
-        except Exception as e:
-            print("Got Error while deleting the path %s. Error: %s" % (path_to_remove, str(e)))
+    if not os.path.exists('Access/access_modules'):
+        os.mkdir('Access/access_modules')
+    else:
+        for each_access_module in os.listdir('Access/access_modules'):
+            path_to_remove = "Access/access_modules/%s" % each_access_module
+            print("Deleting %s" % path_to_remove)
+            try:
+                if os.path.isdir(path_to_remove):
+                    shutil.rmtree(path_to_remove)
+            except Exception as e:
+                print("Got Error while deleting the path %s. Error: %s" % (path_to_remove, str(e)))
+
     shutil.copyfile('Access/base_email_access/access_modules_init.py', "Access/access_modules/__init__.py")
 
     requirements_file = 'Access/access_modules/requirements.txt'
@@ -52,7 +56,7 @@ try:
                         )
                     except:
                          print("File is already present.")
-                            
+
                 if(file == "requirements.txt"):
                     current_requirements_file = folder_path + "/" + file
                     #Read the requirements
@@ -64,12 +68,12 @@ try:
 
                     # Merge the requirements
                     merged_requirements = list(set(requirements1 + requirements2))
-                       
+
                     #update the requirements.txt
                     with open(requirements_file, 'w') as out_file:
                         for requirement in sorted(merged_requirements):
                              out_file.write(requirement)
-                       
+
             print("Cloning successful!")
         except Exception as e:
            print("error-->",e)
@@ -84,7 +88,7 @@ try:
         except Exception as e:
             print(e)
             print("failed to remove " + folder_path + " folder.")
-        
+
 except Exception as e:
     print("Access module cloning failed!")
     print(str(e))

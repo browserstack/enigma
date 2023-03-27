@@ -69,7 +69,7 @@
     "access_modules": {
       "description": "List of access modules attached to this tool",
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "git_urls": {
           "description": "List of git URLs of access modules",
