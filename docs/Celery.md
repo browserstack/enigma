@@ -2,11 +2,11 @@
 
 1. To start using celery, Add the config of broker and database in `config.json`
 	For background task managment there are two options:
-	
+
 	i. celery
-	
+
 	ii. threading
-	
+
 	This can be configured in `config.json` file using `["background_task_manager"]["type"]` key.
 
 	```bash
@@ -16,15 +16,13 @@
 		}
 	```
 
-2. If you are using celery and want to have monitoring for the same, enable it by setting `need_monitoring` key inside as **true** and set one of the following applications in `monitoring_apps` key:
+2. If you are using celery and want to have monitoring for the same, enable it by setting `need_monitoring` key inside as **true** and set one of the following applications in `monitoring_apps` key in `config.json`:
 
 	i. django_celery_results
 
 	ii. django_celery_beat
 
 	iii. django_celery_monitor
-
-	Note: Add the same in `requirements.txt` file.
 
 	```bash
 		....
@@ -39,6 +37,7 @@
 		}
 		....
 	```
+	Note: Add the same in `requirements.txt` file.
 
 3. Add the config of broker and database in `config.json`
 	-  For self-hosted celery:
