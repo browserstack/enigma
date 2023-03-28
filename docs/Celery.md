@@ -38,6 +38,9 @@
 		....
 	```
 	Note: Add the same in `requirements.txt` file.
+	```bash
+		django-celery-results==2.4.0
+	```
 
 3. Add the config of broker and database in `config.json`
 	-  For self-hosted celery:
