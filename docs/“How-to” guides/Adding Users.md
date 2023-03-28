@@ -1,12 +1,18 @@
 This document describes how to add users on Enigma.
 
 ## Create users on Enigma:
-- To manually create a user, login as superuser into the admin portal:
+1. Manual Creation:
+
+    To manually create a user, login as superuser into the admin portal:
+
     (i) Add user in "Authentication and Authorization administration".
+
         ``` Set email to user email id and password to anything you want. Save user details. ```
+
     (ii) Add new user in "Access" and save.
-    (iii) The user can now log on to Enigma using the credentials set in (i)
-- Google SSO:
+
+    (iii) The user can now log on to Enigma using the credentials set in Step (i)
+2. Google SSO:
     ### Add the config of googleapi in `config.json`
     ```bash
     "googleapi": {

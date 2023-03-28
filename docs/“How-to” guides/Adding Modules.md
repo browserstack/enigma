@@ -8,4 +8,4 @@ This document describes how to add modules on Enigma.
 - Add module name as return for `access_desc` and `tag` functions.
 
 Once the implementation is in place, the module needs to be integrated with the central code.
-Refer to Integrations doc for further steps.
+Refer to [Integrations doc](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/Integrating%20Modules) for further steps.
