@@ -29,7 +29,6 @@ When a new resource is required, it's corresponding module has to be added in [E
     ```bash
     Note: `access_label` signifies the access related data requested by the user. The json constitutes of the fields defined by the access request form template.
     ```
-- If request has extra fields, implement `get_extra_fields` to add these to access_labels. In `access_request_form.html` template, these fields need to be defined with `name=extraFields[]` or `name=extraFields` depending on data.
 - Add module name as return for `access_desc` and `tag` functions.
     ```bash
     Note: The tag uniquely identifies access
