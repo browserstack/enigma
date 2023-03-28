@@ -664,17 +664,19 @@ def save_group_access_request(form_data, auth_user):
             access_labels_json=access_request["accessLabel"][accessIndex],
             access_tag=access_tag,
         )
+
+        module_access_labels = access_module.validate_request(
+            access_labels, auth_user, is_group=False
+        )
+
         extra_fields = accessrequest_helper.get_extra_fields(access_request)
         extra_field_labels = accessrequest_helper.get_extra_field_labels(access_module)
 
         if extra_fields and extra_field_labels:
             for field in extra_field_labels:
-                access_labels[0][field] = extra_fields[0]
+                module_access_labels[0][field] = extra_fields[0]
                 extra_fields = extra_fields[1:]
 
-        module_access_labels = access_module.validate_request(
-            access_labels, auth_user, is_group=False
-        )
 
         request_id = (
             group.name
