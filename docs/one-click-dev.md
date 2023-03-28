@@ -75,7 +75,7 @@ where `github-token` is a pat token from https://docs.github.com/en/authenticati
     celery-broker-url="redis://localhost:6379/0"
     celery-result-backend-url="db+mysql://root@localhost:3306/<name_of_db>"
       ```
-### Add the config of custom access-module repos `config.json`
+### Add the config of access_modules in `config.json`
 
 ```bash
    "access_modules": {
@@ -90,7 +90,7 @@ where `github-token` is a pat token from https://docs.github.com/en/authenticati
                 }
             ]
         },
-        .....
+        ....
     },
 ```
 Add configuration for all access_module as here added for aws_access.

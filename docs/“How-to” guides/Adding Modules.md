@@ -14,8 +14,8 @@ Enigma provides the following modules as part of its default settings, these can
 
 When a new resource is required, it's corresponding module has to be added in [Engima's modules repository](https://github.com/browserstack/enigma-public-access-modules.git) or it's own (as per the usecase):
 - When adding a new access module, it is required to setup the module's identity (If it does not use user's email ID):
-    Add functions `get_identity_template` and `verify_identity` to <your_module>/access.py and corresponsing access template as `identity_form.html` in <your_module>/templates/
-- Add `validate_request` to verify access_labels in request.
+    Add functions `get_identity_template` and `verify_identity` to <module_name>/access.py and corresponsing access template as `identity_form.html` in <module_name>/templates/
+- Add `validate_request` to verify access_labels in request. The validation is required to address and rule out all vulnerabilities (frontend issues / form issues / value injection / hacks ).
 - Inherit `baseemailaccess` class for helper functions.
 - If request has extra fields, define `get_extra_fields` to add these to access_labels. In `access_request_form.html` template, these fields need to be defined with `name=extraFields[]` or `name=extraFields` depending on data.
 - Add `approve` and `revoke` functionality.
