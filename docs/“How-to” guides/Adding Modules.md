@@ -25,4 +25,4 @@ When a new resource is required, it's corresponding module has to be added in [E
     ```
 
 Once the implementation is in place, the module needs to be integrated with the central code.
-Refer to [Integrations doc](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/Integrating%20Modules) for further steps.
+Refer to [Integrations doc](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/Integrating%20Modules.md) for further steps.
