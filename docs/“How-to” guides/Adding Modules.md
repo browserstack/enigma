@@ -26,13 +26,13 @@ When a new resource is required, it's corresponding module has to be added in [E
 - When adding a new access module, it is required to verify the module's identity (If it does not use user's email ID):
     Add functions `get_identity_template` and `verify_identity` and corresponsing identity template as `<module_name>/templates/<module_name>/identity_form.html`
 - Add `validate_request` function to verify `access_labels` in request. The validation is required to address and rule out all vulnerabilities (frontend issues / form issues / value injection / hacks ).
-    ```bash
+    ```
     Note: `access_label` signifies the access related data requested by the user. The json constitutes of the fields defined by the access request form template.
     ```
 - Add module name as return for `access_desc` and `tag` functions.
-    ```bash
+    ```
     Note: The tag uniquely identifies access
-    This tag is used as configuration key to set properties required by the module (`config.json`).
+    This tag is used as configuration key to set properties required by the module in file `config.json` in the central repository.
     ```
 - Implement `approve` and `revoke` functions to implement respective functionalities.
 

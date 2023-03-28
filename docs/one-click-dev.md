@@ -128,3 +128,5 @@ Docker should be running for linter tool:
 ```bash
    docker exec dev make lint
 ```
+
+For a deeper understanding on how to create and integrate new modules, user creation and permissions. Refer ["How-to" guides](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/)
