@@ -2,8 +2,11 @@
 
 1. To start using celery, Add the config of broker and database in `config.json`
 	For background task managment there are two options:
+	
 	i. celery
+	
 	ii. threading
+	
 	This can be configured in `config.json` file using `["background_task_manager"]["type"]` key.
 
 	```bash
