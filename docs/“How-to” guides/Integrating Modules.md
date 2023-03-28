@@ -1,7 +1,7 @@
 # ACCESS MODULES INTEGRATION
 
 For every new access modules repository, the following settings have to be added:
-### add git_urls in `config.json
+- add git_urls in `config.json
 ```bash
 "access_modules": {
     "git_urls": [
@@ -10,8 +10,10 @@ For every new access modules repository, the following settings have to be added
     ]
 },
 ```
-For private repos:
-    "https://<git-username>:<github-token>@github.com/browserstack/enigma-public-access-modules.git"
+### For private repos:
+```bash
+ "https://<git-username>:<github-token>@github.com/browserstack/enigma-public-access-modules.git"
+```
 where github-token is a pat token from https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 
 
