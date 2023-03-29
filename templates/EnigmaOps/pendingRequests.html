@@ -213,7 +213,7 @@
 
             $(`.${selector}`).each(function () {
                 if ($(this).is(":checked"))
-                    reqParams.push(`requestId=${$(this).val()}`)
+                    reqParams.push(encodeURIComponent(`requestId=${$(this).val()}`))
                 request_ids.push($(this).val())
             });
 
@@ -242,7 +242,7 @@
             let urlBuilder = `/accept_bulk/${selector}?`
             request_id = $(this).val()
             reqParams = []
-            reqParams.push(`requestId=${request_id}`)
+            reqParams.push(encodeURIComponent(`requestId=${request_id}`))
 
             urlBuilder = urlBuilder + reqParams.join("&")
             div_id = request_id + "-action"

@@ -43,6 +43,7 @@ from .decorators import user_admin_or_ops, authentication_classes, user_with_per
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 
 logger = logging.getLogger(__name__)
+logger.info("Server Started")
 
 
 @login_required
