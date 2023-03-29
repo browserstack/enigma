@@ -35,7 +35,7 @@ down:
 ## View docker logs for containers started in `make dev`
 .PHONY: logs
 logs:
-	@docker-compose logs -ft
+	@docker-compose logs -ft |tee >> enigma.log
 
 ## Run tests with coverage
 .PHONY: test

@@ -22,3 +22,6 @@ public/
 
 # make lint sideeffect
 lint_issues
+
+#Log File
+enigma.log
