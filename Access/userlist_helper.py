@@ -97,6 +97,9 @@ def create_identity(user_identity_form, auth_user):
         new_module_identity_json = selected_access_module.verify_identity(
             user_identity_form, user.email
         )
+        if not new_module_identity_json:
+            raise Exception("Failed to verify identity")
+
         existing_user_identity = user.get_active_identity(
             access_tag=selected_access_module.tag()
         )
@@ -152,7 +155,7 @@ def __change_identity_and_transfer_access_mapping(
         if existing_user_access_mapping:
             new_user_access_mapping = (
                 new_user_identity.replicate_active_access_membership_for_module(
-                    existing_access=existing_user_access_mapping
+                    existing_user_access_mapping=existing_user_access_mapping
                 )
             )
         system_user = User.get_system_user()
