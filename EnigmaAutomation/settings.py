@@ -250,7 +250,7 @@ LOGGING = {
         'file': {
             'level': current_log_level,
             'class': 'logging.FileHandler',
-            'filename': '/ebs/logs/enigma.log',
+            'filename': 'enigma.log',
             'formatter': 'verbose',
         },
         "console": {
