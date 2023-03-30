@@ -263,7 +263,7 @@ LOGGING = {
 }
 for each_app in logging_apps:
     LOGGING["loggers"][each_app] = {
-        "handlers": ["console"],
+        "handlers": ["file", "console"],
         "level": current_log_level,
         "propagate": True,
         "formatter": "verbose",
