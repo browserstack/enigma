@@ -94,7 +94,7 @@
 
             $(`.${selector}`).each(function () {
                 if ($(this).is(":checked"))
-                    reqParams.push(`requestId=${$(this).val()}`)
+                    reqParams.push(`requestId=${encodeURIComponent($(this).val())}`)
             });
 
             if (reqParams.length == 0) {
@@ -182,9 +182,9 @@
                             </div>
                             <div class="col-4">
                                 <div class="row float-right">
-                                <a class="card-link btn btn-primary" style="margin-top: 10px;" href="/resolve_bulk?requestId={{ request.request_id }}">Resolve</a><br>
-                                <a class="card-link btn btn-danger" style="margin-top: 10px;" href="/ignore/decline?requestId={{ request.request_id }}">Mark Declined</a><br>
-                                <a class="card-link btn btn-warning" style="margin-top: 10px;" href="/ignore/approve?requestId={{ request.request_id }}">Mark Approved</a><br>
+                                <a class="card-link btn btn-primary" style="margin-top: 10px;" href="/resolve_bulk?requestId={{ request.request_id|urlencode }}">Resolve</a><br>
+                                <a class="card-link btn btn-danger" style="margin-top: 10px;" href="/ignore/decline?requestId={{ request.request_id|urlencode }}">Mark Declined</a><br>
+                                <a class="card-link btn btn-warning" style="margin-top: 10px;" href="/ignore/approve?requestId={{ request.request_id|urlencode }}">Mark Approved</a><br>
                                 </div>
                             </div>
                         </div>

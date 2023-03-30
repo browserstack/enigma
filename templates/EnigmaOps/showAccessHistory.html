@@ -152,7 +152,7 @@ $(function() {
         <td>{{ item.status }}</td>
         <td>{{ item.accessReason }}</td>
         <td>{{ item.decline_reason }}</td>
-        <td><a class="btn btn-primary" target="_blank"  href="/individual_resolve?requestId={{ item.requestId }}">ReGrant</a></td>
+        <td><a class="btn btn-primary" target="_blank"  href="/individual_resolve?requestId={{ item.requestId|urlencode }}">ReGrant</a></td>
       </tr>
       {% endfor %}
   	</tbody>
