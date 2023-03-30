@@ -140,11 +140,14 @@ $(function() {
         <td>{{ item.requestId }}</td>
         <td>{{ item.access_desc }}</td>
         <td>{{ item.accessCategory }} details: {{ item.accessMeta | pprint }}</td>
-        {% if item.approver_1 %}
-        <td>{{ item.approver_1 }}</td>
-        {% elif item.approver_2 %}
-        <td>1: {{ item.approver_1 }}
-          2: {{ item.approver_2 }}</td>
+        {% if item.approver_2 %}
+            <td>
+              1: {{ item.approver_1 }}
+              <br>
+              2: {{ item.approver_2 }}
+            </td>
+        {% else %}
+            <td>{{ item.approver_1 }}</td>
         {% endif %}
         <td>{{ item.status }}</td>
         <td>{{ item.accessReason }}</td>
