@@ -250,7 +250,7 @@ LOGGING = {
         'file': {
             'level': current_log_level,
             'class': 'logging.FileHandler',
-            'filename': '/ebs/logs/enigma.log',
+            'filename': 'enigma.log',
             'formatter': 'verbose',
         },
         "console": {
@@ -263,7 +263,7 @@ LOGGING = {
 }
 for each_app in logging_apps:
     LOGGING["loggers"][each_app] = {
-        "handlers": ["console"],
+        "handlers": ["file", "console"],
         "level": current_log_level,
         "propagate": True,
         "formatter": "verbose",

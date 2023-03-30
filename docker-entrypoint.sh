@@ -4,7 +4,7 @@ LOG_FILE=/ebs/logs/enigma.log
 CONTAINER_HASH=$(echo $RANDOM | md5sum | head -c 20)
 
 function log() {
-  echo "$(date): $CONTAINER_HASH $@" 2>&1 | tee $LOG_FILE
+  echo "$(date): $CONTAINER_HASH $@" 2>&1 | tee -a $LOG_FILE
 }
 
 function prepend() {
