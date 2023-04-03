@@ -84,7 +84,9 @@ ERROR_MARKING_RESOLVE_FAIL_LOG_MSG = "Error in resolving request {request_id}. \
 
 def get_request_access(request):
     context = {}
+    print(request.json(),"   -->> request")
     try:
+        print(helpers.get_available_access_modules().items(), " ----> available access")
         for each_tag, each_module in helpers.get_available_access_modules().items():
             if "access_" + each_tag in request.GET.getlist("accesses"):
                 if "accesses" not in context:

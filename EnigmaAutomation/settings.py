@@ -219,7 +219,7 @@ if data["database"]["engine"] == "mysql":
 elif data["database"]["engine"] == "sqlite3":
     DATABASES["default"] = {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db/db.sqlite3",
+        "NAME": BASE_DIR / "db.sqlite3",
     }
 else:
     raise Exception("Database engine %s not recognized" % data["database"]["engine"])
@@ -250,7 +250,7 @@ LOGGING = {
         'file': {
             'level': current_log_level,
             'class': 'logging.FileHandler',
-            'filename': '/ebs/logs/enigma.log',
+            'filename': 'enigma.log',
             'formatter': 'verbose',
         },
         "console": {
