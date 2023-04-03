@@ -1,4 +1,4 @@
-Feature: Get Request Access
+Feature: Get Request Access Method
    
     Scenario: verify generic form key
         Given empty configured access_modules are There

@@ -1,4 +1,4 @@
-"""Get Request Access feature tests."""
+"""Get Request Access feature bdd-tests."""
 
 from pytest_bdd import (
     given,
