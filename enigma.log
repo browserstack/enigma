@@ -1,0 +1,540 @@
+{"meta":{"timestamp":"2023-03-22T10:51:45.218Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Not Found: /accounts/login/","level":"WARNING"}}
+{"meta":{"timestamp":"2023-03-22T10:51:52.266Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Not Found: /accounts/login/","level":"WARNING"}}
+{"meta":{"timestamp":"2023-03-22T11:27:30.674Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Not Found: /accounts/login/","level":"WARNING"}}
+{"meta":{"timestamp":"2023-03-22T11:27:40.775Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Not Found: /accounts/login/","level":"WARNING"}}
+{"meta":{"timestamp":"2023-03-22T11:27:51.835Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Not Found: /accounts/login/","level":"WARNING"}}
+{"meta":{"timestamp":"2023-03-22T11:28:34.252Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Internal Server Error: /","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapped_view
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/bootprocess/views.py", line 22, in dashboard
+    context = getDashboardData(request)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/bootprocess/views_helper.py", line 17, in getDashboardData
+    user = access_user.objects.get(user__username=request.user)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/db/models/query.py", line 650, in get
+    raise self.model.DoesNotExist(
+Access.models.User.DoesNotExist: User matching query does not exist.
+{"meta":{"timestamp":"2023-03-22T11:28:38.255Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Internal Server Error: /","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapped_view
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/bootprocess/views.py", line 22, in dashboard
+    context = getDashboardData(request)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/bootprocess/views_helper.py", line 17, in getDashboardData
+    user = access_user.objects.get(user__username=request.user)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/db/models/query.py", line 650, in get
+    raise self.model.DoesNotExist(
+Access.models.User.DoesNotExist: User matching query does not exist.
+{"meta":{"timestamp":"2023-03-22T11:28:51.280Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Internal Server Error: /","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapped_view
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/bootprocess/views.py", line 22, in dashboard
+    context = getDashboardData(request)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/bootprocess/views_helper.py", line 17, in getDashboardData
+    user = access_user.objects.get(user__username=request.user)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/db/models/manager.py", line 85, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/db/models/query.py", line 650, in get
+    raise self.model.DoesNotExist(
+Access.models.User.DoesNotExist: User matching query does not exist.
+{"meta":{"timestamp":"2023-03-22T11:34:28.349Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Internal Server Error: /user/updateUserInfo/","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/contrib/auth/decorators.py", line 23, in _wrapped_view
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/views.py", line 116, in update_user_info
+    context = get_identity_templates(request.user)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/userlist_helper.py", line 50, in get_identity_templates
+    all_modules = helper.get_available_access_modules()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 32, in get_available_access_modules
+    access.tag(): access for access in _get_modules_on_disk() if access.available
+                                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 48, in _get_modules_on_disk
+    cached_accesses = [
+                      ^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 49, in <listcomp>
+    globals()[basename(f)].access.get_object()
+    ~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'opsgenie_access'
+{"meta":{"timestamp":"2023-03-22T11:36:22.731Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Internal Server Error: /admin/Access/accessv2/","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/base.py", line 173, in render
+    with context.bind_template(self):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/context.py", line 254, in bind_template
+    updates.update(processor(self.request))
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/context_processors.py", line 17, in add_variables_to_context
+    all_access_modules = get_available_access_modules()
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 32, in get_available_access_modules
+    access.tag(): access for access in _get_modules_on_disk() if access.available
+                                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 48, in _get_modules_on_disk
+    cached_accesses = [
+                      ^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 49, in <listcomp>
+    globals()[basename(f)].access.get_object()
+    ~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'opsgenie_access'
+{"meta":{"timestamp":"2023-03-22T11:36:25.722Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Internal Server Error: /admin/Access/user/","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/base.py", line 173, in render
+    with context.bind_template(self):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/context.py", line 254, in bind_template
+    updates.update(processor(self.request))
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/context_processors.py", line 17, in add_variables_to_context
+    all_access_modules = get_available_access_modules()
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 32, in get_available_access_modules
+    access.tag(): access for access in _get_modules_on_disk() if access.available
+                                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 48, in _get_modules_on_disk
+    cached_accesses = [
+                      ^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 49, in <listcomp>
+    globals()[basename(f)].access.get_object()
+    ~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'opsgenie_access'
+{"meta":{"timestamp":"2023-03-22T11:36:26.634Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Internal Server Error: /admin/Access/useridentity/","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/base.py", line 173, in render
+    with context.bind_template(self):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/context.py", line 254, in bind_template
+    updates.update(processor(self.request))
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/context_processors.py", line 17, in add_variables_to_context
+    all_access_modules = get_available_access_modules()
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 32, in get_available_access_modules
+    access.tag(): access for access in _get_modules_on_disk() if access.available
+                                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 48, in _get_modules_on_disk
+    cached_accesses = [
+                      ^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 49, in <listcomp>
+    globals()[basename(f)].access.get_object()
+    ~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'opsgenie_access'
+{"meta":{"timestamp":"2023-03-22T11:36:27.827Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Internal Server Error: /admin/Access/user/add/","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/base.py", line 173, in render
+    with context.bind_template(self):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/context.py", line 254, in bind_template
+    updates.update(processor(self.request))
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/context_processors.py", line 17, in add_variables_to_context
+    all_access_modules = get_available_access_modules()
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 32, in get_available_access_modules
+    access.tag(): access for access in _get_modules_on_disk() if access.available
+                                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 48, in _get_modules_on_disk
+    cached_accesses = [
+                      ^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 49, in <listcomp>
+    globals()[basename(f)].access.get_object()
+    ~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'opsgenie_access'
+{"meta":{"timestamp":"2023-03-22T11:36:31.018Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Internal Server Error: /admin/auth/user/","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/base.py", line 173, in render
+    with context.bind_template(self):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/context.py", line 254, in bind_template
+    updates.update(processor(self.request))
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/context_processors.py", line 17, in add_variables_to_context
+    all_access_modules = get_available_access_modules()
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 32, in get_available_access_modules
+    access.tag(): access for access in _get_modules_on_disk() if access.available
+                                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 48, in _get_modules_on_disk
+    cached_accesses = [
+                      ^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 49, in <listcomp>
+    globals()[basename(f)].access.get_object()
+    ~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'opsgenie_access'
+{"meta":{"timestamp":"2023-03-22T11:36:32.181Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Internal Server Error: /admin/","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/base.py", line 173, in render
+    with context.bind_template(self):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/context.py", line 254, in bind_template
+    updates.update(processor(self.request))
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/context_processors.py", line 17, in add_variables_to_context
+    all_access_modules = get_available_access_modules()
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 32, in get_available_access_modules
+    access.tag(): access for access in _get_modules_on_disk() if access.available
+                                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 48, in _get_modules_on_disk
+    cached_accesses = [
+                      ^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 49, in <listcomp>
+    globals()[basename(f)].access.get_object()
+    ~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'opsgenie_access'
+{"meta":{"timestamp":"2023-03-22T11:36:34.209Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[django.request:log_response:241] --- Internal Server Error: /admin/","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/exception.py", line 56, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/core/handlers/base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/response.py", line 92, in rendered_content
+    return template.render(context, self._request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/backends/django.py", line 61, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/base.py", line 173, in render
+    with context.bind_template(self):
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/contextlib.py", line 137, in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/.pyenv/versions/3.11.1/lib/python3.11/site-packages/django/template/context.py", line 254, in bind_template
+    updates.update(processor(self.request))
+                   ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/context_processors.py", line 17, in add_variables_to_context
+    all_access_modules = get_available_access_modules()
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 32, in get_available_access_modules
+    access.tag(): access for access in _get_modules_on_disk() if access.available
+                                       ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 48, in _get_modules_on_disk
+    cached_accesses = [
+                      ^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/helpers.py", line 49, in <listcomp>
+    globals()[basename(f)].access.get_object()
+    ~~~~~~~~~^^^^^^^^^^^^^
+KeyError: 'opsgenie_access'
+{"meta":{"timestamp":"2023-03-22T11:42:43.211Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:193] --- Pending Request call initiated","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T11:42:43.213Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:267] --- Start looping all access modules","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T11:42:43.222Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:289] --- Time to fetch pending requests of access module: opsgenie_access - 0.009163856506347656 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T11:42:43.223Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:209] --- Time to fetch all pending requests: 0.010779857635498047 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T11:43:02.896Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.views:_get_request_ids_for_bulk_processing:421] --- Got the ids khushi-opsgenie_access-20230322114145_0 for bulk processing","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T11:47:56.674Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[bootprocess.views:logout_view:15] --- User:  is logging out","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T11:48:37.343Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:193] --- Pending Request call initiated","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T11:48:37.345Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:267] --- Start looping all access modules","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T11:48:37.355Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:289] --- Time to fetch pending requests of access module: opsgenie_access - 0.010210990905761719 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T11:48:37.356Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:209] --- Time to fetch all pending requests: 0.011584043502807617 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T11:48:42.323Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.views:_get_request_ids_for_bulk_processing:421] --- Got the ids khushi-opsgenie_access-20230322114145_0 for bulk processing","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T11:48:42.429Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:113] --- Error while running approval module: Traceback (most recent call last):
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/background_task_manager.py", line 100, in run_access_grant
+    response = access_module.approve(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 89, in approve
+    team, user_type = self.get_team_and_usertype(labels_data)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 61, in get_team_and_usertype
+    return access_labels[0]["team"], access_labels[0]["usertype"]
+           ~~~~~~~~~~~~~^^^
+KeyError: 0
+","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/background_task_manager.py", line 100, in run_access_grant
+    response = access_module.approve(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 89, in approve
+    team, user_type = self.get_team_and_usertype(labels_data)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 61, in get_team_and_usertype
+    return access_labels[0]["team"], access_labels[0]["usertype"]
+           ~~~~~~~~~~~~~^^^
+KeyError: 0
+{"meta":{"timestamp":"2023-03-22T11:48:42.434Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:133] --- {'requestId': 'khushi-opsgenie_access-20230322114145_0', 'status': 'GrantFailed', 'by': <User: neha>, 'response': 'Traceback (most recent call last):\n  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/background_task_manager.py", line 100, in run_access_grant\n    response = access_module.approve(\n               ^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 89, in approve\n    team, user_type = self.get_team_and_usertype(labels_data)\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 61, in get_team_and_usertype\n    return access_labels[0]["team"], access_labels[0]["usertype"]\n           ~~~~~~~~~~~~~^^^\nKeyError: 0\n'}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T11:48:42.436Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:152] --- Grant Failed - Error while sending email - khushi-opsgenie_access-20230322114145_0-Traceback (most recent call last):
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/background_task_manager.py", line 142, in run_access_grant
+    destination = access_module.access_mark_revoke_permission(access_tag)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/base_email_access/access.py", line 28, in access_mark_revoke_permission
+    return ACCESS_REVOKE_PERMISSIONS_MAPPING["security"]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+NameError: name 'ACCESS_REVOKE_PERMISSIONS_MAPPING' is not defined
+","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T11:48:42.437Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:success_func:253] --- task successful","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T11:48:42.438Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:task_success:241] --- you are in task success middleman","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:50:05.354Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.views:_get_request_ids_for_bulk_processing:421] --- Got the ids khushi-opsgenie_access-20230322114145_0_1 for bulk processing","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T16:50:05.454Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:113] --- Error while running approval module: Traceback (most recent call last):
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/background_task_manager.py", line 100, in run_access_grant
+    response = access_module.approve(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 91, in approve
+    team, user_type = self.get_team_and_usertype(labels_data)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 61, in get_team_and_usertype
+    return access_labels[0]["team"], access_labels[0]["usertype"]
+           ~~~~~~~~~~~~~^^^
+KeyError: 0
+","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/background_task_manager.py", line 100, in run_access_grant
+    response = access_module.approve(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 91, in approve
+    team, user_type = self.get_team_and_usertype(labels_data)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 61, in get_team_and_usertype
+    return access_labels[0]["team"], access_labels[0]["usertype"]
+           ~~~~~~~~~~~~~^^^
+KeyError: 0
+{"meta":{"timestamp":"2023-03-22T16:50:05.456Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:133] --- {'requestId': 'khushi-opsgenie_access-20230322114145_0_1', 'status': 'GrantFailed', 'by': <User: neha>, 'response': 'Traceback (most recent call last):\n  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/background_task_manager.py", line 100, in run_access_grant\n    response = access_module.approve(\n               ^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 91, in approve\n    team, user_type = self.get_team_and_usertype(labels_data)\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 61, in get_team_and_usertype\n    return access_labels[0]["team"], access_labels[0]["usertype"]\n           ~~~~~~~~~~~~~^^^\nKeyError: 0\n'}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T16:50:05.456Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:150] --- Sending Grant Failed email - ","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T16:50:05.457Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:success_func:253] --- task successful","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:50:05.457Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:task_success:241] --- you are in task success middleman","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:54:35.859Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[bootprocess.views:logout_view:15] --- User:  is logging out","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T16:55:55.231Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:193] --- Pending Request call initiated","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:55:55.232Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:267] --- Start looping all access modules","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:55:55.235Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:289] --- Time to fetch pending requests of access module: opsgenie_access - 0.0026979446411132812 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:55:55.235Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:209] --- Time to fetch all pending requests: 0.0030608177185058594 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:56:02.983Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[bootprocess.views:logout_view:15] --- User:  is logging out","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T16:56:54.593Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:193] --- Pending Request call initiated","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:56:54.593Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:267] --- Start looping all access modules","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:56:54.596Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:289] --- Time to fetch pending requests of access module: opsgenie_access - 0.0029001235961914062 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:56:54.597Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:209] --- Time to fetch all pending requests: 0.0033349990844726562 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:56:58.837Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.views:_get_request_ids_for_bulk_processing:421] --- Got the ids khushi-opsgenie_access-20230322165549_0 for bulk processing","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T16:57:00.878Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.access_modules.opsgenie_access.helper:add_user_to_opsgenie:38] --- {'username': 'khushi@browserstack.com', 'fullName': 'Khushi', 'role': {'name': 'org_user'}}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T16:57:03.391Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:121] --- {'requestId': 'khushi-opsgenie_access-20230322165549_0', 'status': 'Approved', 'by': <User: neha>, 'response': ''}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T16:57:03.394Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:success_func:253] --- task successful","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:57:03.394Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:task_success:241] --- you are in task success middleman","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:59:18.339Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.views:_get_request_ids_for_bulk_processing:421] --- Got the ids khushi-opsgenie_access-20230322165549_0_1 for bulk processing","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T16:59:19.981Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:121] --- {'requestId': 'khushi-opsgenie_access-20230322165549_0_1', 'status': 'Approved', 'by': <User: neha>, 'response': ''}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T16:59:19.988Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:success_func:253] --- task successful","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T16:59:19.989Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:task_success:241] --- you are in task success middleman","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-22T17:53:25.471Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.access_modules.opsgenie_access.helper:add_user_to_opsgenie:72] --- {'username': 'khushi@broserstack.com', 'fullName': 'Khushi Sardhara', 'role': {'name': 'org_user'}}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T17:57:46.554Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.access_modules.opsgenie_access.helper:add_user_to_opsgenie:72] --- {'username': 'rahul.y@browserstack.com', 'fullName': 'Rahul', 'role': {'name': 'org_user'}}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-22T18:56:23.685Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.access_modules.opsgenie_access.helper:create_team_admin_role:138] --- Error geeting a user","level":"ERROR"}}
+{"meta":{"timestamp":"2023-03-22T18:57:02.655Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.access_modules.opsgenie_access.helper:create_team_admin_role:138] --- Error geeting a user","level":"ERROR"}}
+{"meta":{"timestamp":"2023-03-22T18:58:25.572Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.access_modules.opsgenie_access.helper:create_team_admin_role:138] --- Error geeting a user","level":"ERROR"}}
+{"meta":{"timestamp":"2023-03-22T19:00:51.946Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.access_modules.opsgenie_access.helper:create_team_admin_role:141] --- Error geeting a user","level":"ERROR"}}
+{"meta":{"timestamp":"2023-03-27T17:12:16.936Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:193] --- Pending Request call initiated","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:12:16.936Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:267] --- Start looping all access modules","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:12:16.937Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:289] --- Time to fetch pending requests of access module: opsgenie_access - 0.0010061264038085938 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:12:16.937Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:209] --- Time to fetch all pending requests: 0.001447916030883789 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:12:18.013Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:193] --- Pending Request call initiated","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:12:18.014Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:267] --- Start looping all access modules","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:12:18.015Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:289] --- Time to fetch pending requests of access module: opsgenie_access - 0.001028299331665039 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:12:18.015Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:209] --- Time to fetch all pending requests: 0.0014851093292236328 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:12:19.347Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:193] --- Pending Request call initiated","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:12:19.347Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:267] --- Start looping all access modules","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:12:19.348Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:289] --- Time to fetch pending requests of access module: opsgenie_access - 0.0009660720825195312 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:12:19.348Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:209] --- Time to fetch all pending requests: 0.0013020038604736328 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:13:17.952Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:193] --- Pending Request call initiated","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:13:17.953Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:267] --- Start looping all access modules","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:13:17.957Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:289] --- Time to fetch pending requests of access module: opsgenie_access - 0.0037109851837158203 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:13:17.957Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:209] --- Time to fetch all pending requests: 0.004213094711303711 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:14:12.159Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[bootprocess.views:logout_view:15] --- User:  is logging out","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T17:14:42.197Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:193] --- Pending Request call initiated","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:14:42.198Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:267] --- Start looping all access modules","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:14:42.205Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:289] --- Time to fetch pending requests of access module: opsgenie_access - 0.0068738460540771484 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:14:42.205Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:209] --- Time to fetch all pending requests: 0.007887840270996094 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:14:49.025Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.views:_get_request_ids_for_bulk_processing:421] --- Got the ids neha-opsgenie_access-20230327171336_0 for bulk processing","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T17:14:49.992Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.access_modules.opsgenie_access.helper:add_user_to_opsgenie:70] --- {'username': 'neha@gmail.com', 'fullName': 'neha', 'role': {'name': 'user'}}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T17:14:50.627Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:133] --- {'requestId': 'neha-opsgenie_access-20230327171336_0', 'status': 'GrantFailed', 'by': <User: khushi>, 'response': 'Failed to add user to TeamCould not add neha to opsgenie'}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T17:14:50.627Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:150] --- Sending Grant Failed email - ","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T17:14:50.629Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:success_func:253] --- task successful","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:14:50.631Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:task_success:241] --- you are in task success middleman","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:17:27.104Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:193] --- Pending Request call initiated","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:17:27.107Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:267] --- Start looping all access modules","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:17:27.113Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:289] --- Time to fetch pending requests of access module: opsgenie_access - 0.005964040756225586 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:17:27.113Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:209] --- Time to fetch all pending requests: 0.008025169372558594 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:17:30.480Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.views:_get_request_ids_for_bulk_processing:421] --- Got the ids neha-opsgenie_access-20230327171704_0 for bulk processing","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T17:17:31.459Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:121] --- {'requestId': 'neha-opsgenie_access-20230327171704_0', 'status': 'Approved', 'by': <User: khushi>, 'response': ''}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T17:17:31.462Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:success_func:253] --- task successful","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:17:31.462Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:task_success:241] --- you are in task success middleman","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T17:22:54.914Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.access_modules.opsgenie_access.helper:add_user_to_opsgenie:70] --- {'username': 'fipihab526@cyclesat.com', 'fullName': 'temp user', 'role': {'name': 'user'}}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T17:25:29.284Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.access_modules.opsgenie_access.helper:add_user_to_opsgenie:70] --- {'username': 'fipihab526@cyclesat.com', 'fullName': 'temp user', 'role': {'name': 'user'}}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T17:27:33.897Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.access_modules.opsgenie_access.helper:add_user_to_opsgenie:70] --- {'username': 'rahul.y@browserstack.com', 'fullName': 'Rahul', 'role': {'name': 'user'}}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T18:46:52.602Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[bootprocess.views:logout_view:15] --- User:  is logging out","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T18:47:45.887Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[bootprocess.views:logout_view:15] --- User:  is logging out","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T18:48:16.006Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:193] --- Pending Request call initiated","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T18:48:16.007Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:267] --- Start looping all access modules","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T18:48:16.009Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:289] --- Time to fetch pending requests of access module: opsgenie_access - 0.002337217330932617 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T18:48:16.009Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:209] --- Time to fetch all pending requests: 0.0028040409088134766 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T18:48:20.419Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.views:_get_request_ids_for_bulk_processing:421] --- Got the ids neha-opsgenie_access-20230327184741_0 for bulk processing","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T18:48:21.632Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:113] --- Error while running approval module: Traceback (most recent call last):
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/background_task_manager.py", line 100, in run_access_grant
+    response = access_module.approve(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 128, in approve
+    access_description=self.combine_labels_desc()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: OpsgenieAccess.combine_labels_desc() missing 1 required positional argument: 'labels'
+","level":"ERROR"}}
+Traceback (most recent call last):
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/background_task_manager.py", line 100, in run_access_grant
+    response = access_module.approve(
+               ^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 128, in approve
+    access_description=self.combine_labels_desc()
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: OpsgenieAccess.combine_labels_desc() missing 1 required positional argument: 'labels'
+{"meta":{"timestamp":"2023-03-27T18:48:21.640Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:133] --- {'requestId': 'neha-opsgenie_access-20230327184741_0', 'status': 'GrantFailed', 'by': <User: khushi>, 'response': 'Traceback (most recent call last):\n  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/background_task_manager.py", line 100, in run_access_grant\n    response = access_module.approve(\n               ^^^^^^^^^^^^^^^^^^^^^^\n  File "/Users/khushisardhara/Desktop/temp/enigma-public-central/Access/access_modules/opsgenie_access/access.py", line 128, in approve\n    access_description=self.combine_labels_desc()\n                       ^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: OpsgenieAccess.combine_labels_desc() missing 1 required positional argument: \'labels\'\n'}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T18:48:21.642Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:150] --- Sending Grant Failed email - ","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T18:48:21.646Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:success_func:253] --- task successful","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T18:48:21.647Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:task_success:241] --- you are in task success middleman","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T18:50:38.824Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:193] --- Pending Request call initiated","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T18:50:38.826Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:267] --- Start looping all access modules","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T18:50:38.833Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_accesses_from_modules:289] --- Time to fetch pending requests of access module: opsgenie_access - 0.0065958499908447266 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T18:50:38.833Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.accessrequest_helper:get_pending_requests:209] --- Time to fetch all pending requests: 0.008309125900268555 ","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T18:50:41.459Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.views:_get_request_ids_for_bulk_processing:421] --- Got the ids neha-opsgenie_access-20230327184741_0 for bulk processing","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T18:50:42.511Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:run_access_grant:121] --- {'requestId': 'neha-opsgenie_access-20230327184741_0', 'status': 'Approved', 'by': <User: khushi>, 'response': ''}","level":"DEBUG"}}
+{"meta":{"timestamp":"2023-03-27T18:50:42.513Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:success_func:253] --- task successful","level":"INFO"}}
+{"meta":{"timestamp":"2023-03-27T18:50:42.514Z","component":"django","application":"enigma","team":"core"},"log":{"kind":"ENIGMA_APP","dynamic_data":"[Access.background_task_manager:task_success:241] --- you are in task success middleman","level":"INFO"}}

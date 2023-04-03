@@ -1,0 +1,41 @@
+<div class="page-header">
+  <div class="container-fluid">
+    <h2 class="h5 no-margin-bottom 111">{{ each_access.formDesc }}</h2>
+  </div>
+</div>
+
+<script type="text/javascript">
+  function slackWorkspaceChange(elem) {
+    labelComponents = JSON.parse($('#slack_accessLabel').val());
+    if (!labelComponents.length) {
+      labelComponents = [{}]
+    }
+    labelComponents[0]["slackAccessWorkspace"] = elem.value
+    $('#slack_accessLabel').val(JSON.stringify(labelComponents));
+  }
+</script>
+
+<div class="form-group" style="padding-left:1%;">
+
+  <div class="form-group">
+    <label class="col-sm-3" for="workspace"
+      style="padding-left:15px; font-weight: bolder; min-height:0px; margin-top:10px; font-size:medium; float: left">Workspace:</label>
+    <select class="form-control col-sm-3" id="workspace" name="slackAccessWorkspace"
+      onchange="slackWorkspaceChange(this)">
+      <option hidden disabled selected value> -- select -- </option>
+      {% for workspace in each_access.accessRequestData.slackWorkspaceList %}
+      <option value="{{workspace}}">{{workspace.workspacename}}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+</div>
+
+<div>
+  <label class="col-sm-3" for="reason"
+    style="padding-left:15px; font-weight: bolder; min-height:0px; margin-top:10px; font-size:medium;">Reason for
+    Access:</label>
+  <input type="text" class="form-text1" id="reason" name="accessReason" style="width:60%;" maxlength="2024" required>
+</div>
+<input type="hidden" id="slack_accessLabel" value="[]" name="accessLabel">
+</div>

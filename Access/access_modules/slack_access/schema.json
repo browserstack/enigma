@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "properties": {
+    "slack_access": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "properties": {
+          "AUTH_TOKEN": {
+            "type": "string"
+          },
+          "DEFAULT_CHANNELS": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "AUTH_TOKEN",
+          "DEFAULT_CHANNELS"
+        ]
+      }
+    }
+  },
+  "required": [
+    "slack_access"
+  ]
+}
+

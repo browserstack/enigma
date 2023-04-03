@@ -9,7 +9,16 @@
   "access_modules": {
     "git_urls": [
       "https://github.com/browserstack/enigma-public-access-modules.git"
-    ]
+    ],
+    "zoom_access":{
+      "ZOOM_BASE_URL": "https://api.zoom.us/v2/",
+      "ZOOM_CLIENT_SECRET": "test-secret",
+      "ZOOM_API_KEY": "test-api"
+    },
+    "opsgenie_access":{
+      "OPSGENIE_TOKEN":"test-token",
+      "IGNORE_TEAMS":["team_1","team_2"]
+    },
   },
   "enigmaGroup": {
     "MAIL_APPROVER_GROUPS": [

@@ -1,0 +1,19 @@
+<div class="form-group">
+  <label for="user_email">Opsgenie Identity</label>
+  <input type="hidden" name="modname" value="opsgenie_access">
+  {% if module.identity.user_name %}
+  <input placeholder="Opsgenie name" type="text" class="form-control" id="name" name="user_name" required
+      style="background-color:white;color:black" value="{{ module.identity.user_name }}">
+  {% else %}
+  <input placeholder="Opsgenie Name " type="text" class="form-control" id="name" name="user_name" required
+      style="background-color:white;color:black">
+  {% endif %}
+</div>
+  {% if module.identity.user_email %}
+  <input placeholder="Opsgenie Email" type="email" class="form-control" id="name" name="user_email" required
+      style="background-color:white;color:black" value="{{ module.identity.user_email }}">
+  {% else %}
+  <input placeholder="Opsgenie Email " type="email" class="form-control" id="name" name="user_email" required
+      style="background-color:white;color:black">
+  {% endif %}
+</div>

@@ -82,6 +82,10 @@ ERROR_MARKING_RESOLVE_FAIL_LOG_MSG = "Error in resolving request {request_id}. \
  Error:{error} ."
 
 
+# <WSGIRequest: GET '/access/requestAccess?accesses=access_opsgenie_access'>    -->> request
+# dict_items([('opsgenie_access', <Access.access_modules.opsgenie_access.access.OpsgenieAccess object at 0x10810f1d0>),
+# ('slack_access', <Access.access_modules.slack_access.access.Slack object at 0x10810f590>)])  ----> available access
+
 def get_request_access(request):
     context = {}
     try:

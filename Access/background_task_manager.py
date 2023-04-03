@@ -55,6 +55,7 @@ def background_task(func, *args):
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
 def run_access_grant(request_id):
+
     user_access_mapping = UserAccessMapping.get_access_request(request_id=request_id)
     access_tag = user_access_mapping.access.access_tag
     user = user_access_mapping.user_identity.user
@@ -156,7 +157,6 @@ def run_access_grant(request_id):
     # For generic modules, approve method will send an email on "Access granted",
     # additional email of "Access approved" is not needed
     return True
-
 
 @shared_task(
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
