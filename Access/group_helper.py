@@ -194,9 +194,7 @@ def get_group_access_list(auth_user, group_name):
         }
         return context
 
-    group_members = group.get_all_members().filter(status="Approved")
     auth_user = auth_user
-
     if not auth_user.user.is_allowed_admin_actions_on_group(group):
         logger.debug("Permission denied, requester is non owner")
         context = {
@@ -207,6 +205,7 @@ def get_group_access_list(auth_user, group_name):
         }
         return context
 
+    group_members = group.get_all_members().filter(status="Approved")
     group_members = [
         {
             "name": member.user.name,
@@ -759,12 +758,16 @@ def revoke_user_access(user, access, revoker, decline_message):
         return False
     revoke_request(access_mapping, revoker)
 
-def remove_member(request):
+def remove_member(request, auth_user):
     try:
         membership_id = request.POST.get("membershipId")
         if not membership_id:
             raise ("Membership Id is not loaded.")
         membership = MembershipV2.get_membership(membership_id)
+
+        if not auth_user.user.is_allowed_admin_actions_on_group(membership.group):
+            logger.exception("Permission denied, you're not owner of this group")
+            raise ("Permision Denied. You're not owner of this group")
     except Exception as e:
         logger.error("Membership id not found in request")
         logger.exception(str(e))

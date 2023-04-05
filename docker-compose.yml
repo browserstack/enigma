@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
       target: web
       args:
-        APPUID: "${APPUID}"
+        APPUID: ${APPUID}
     env_file:
     - ./secrets/ops_app_dev.env
     volumes:
@@ -31,12 +31,17 @@ services:
     - ./secrets/ops_mysql_dev.env
     volumes:
     - ./mounts/mysql_db:/var/lib/mysql
+    security_opt:
+    - no-new-privileges:true
   redis:
     container_name: redis
     image: redis:alpine
     command: --port 6379
     ports:
     - 6379:6379
+    read_only: true
+    security_opt:
+    - no-new-privileges:true
   celery:
     container_name: celery
     build:
@@ -44,7 +49,7 @@ services:
       dockerfile: Dockerfile
       target: web
       args:
-        APPUID: "${APPUID}"
+        APPUID: ${APPUID}
     volumes:
     - ./mounts/modules:/srv/code/dev/Access/access_modules
     - ./mounts/db:/srv/code/dev/db
@@ -58,7 +63,7 @@ services:
     command: >
       /bin/bash -c "
         while ! nc -z redis 6379;
-        do 
+        do
           echo sleeping;
           sleep 1;
         done;
