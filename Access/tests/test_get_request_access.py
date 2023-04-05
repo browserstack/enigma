@@ -8,6 +8,7 @@ from pytest_bdd import (
 )
 import pytest
 from .. import accessrequest_helper
+from Access import helpers
 
 
 @pytest.fixture
@@ -229,6 +230,7 @@ def step_impl(context):
         assert "extraFields" in access
         assert "notice" in access
         assert "accessRequestPath" in access
+    assert helpers.get_available_access_modules.call_count==1
 
 
 @then("Return value should be empty access list")
@@ -260,6 +262,7 @@ def step_impl(context):
         assert "extraFields" in access
         assert "notice" in access
         assert "accessRequestPath" in access
+    assert helpers.get_available_access_modules.call_count==1
 
 
 @then("Return value should return all four access with extra fields")
@@ -270,6 +273,7 @@ def step_impl(context):
 
     for access in context.response["accesses"]:
         assert "extraFields" in access
+    assert helpers.get_available_access_modules.call_count==1
 
 
 @then("Return value should return all four access with notice/alert")
@@ -280,3 +284,4 @@ def step_impl(context):
 
     for access in context.response["accesses"]:
         assert "notice" in access
+    assert helpers.get_available_access_modules.call_count==1
