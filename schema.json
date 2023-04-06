@@ -69,11 +69,16 @@
     "access_modules": {
       "description": "List of access modules attached to this tool",
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "git_urls": {
           "description": "List of git URLs of access modules",
           "type": "array"
+        },
+        "RETRY_LIMIT": {
+          "description": "Number of retries before raising cloning failure exception",
+          "type": "integer",
+          "minimum": 1
         }
       }
     },
