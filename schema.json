@@ -6,6 +6,17 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "django_setup": {
+      "description": "Config keys related to Django setup",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SECRET_KEY": {
+          "description": "Django Secret Key to be used in production",
+          "type": "string"
+        }
+      }
+    },
     "googleapi": {
       "description": "Config keys related to Google SSO",
       "type": "object",
