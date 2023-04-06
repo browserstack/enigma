@@ -20,7 +20,7 @@ colima start
 
 ## Setup
 
-## Clone Repository
+### Clone Repository
 Clone the repo in local system
 ```bash
 git clone https://github.com/browserstack/enigma-public-central.git
@@ -132,44 +132,3 @@ Docker should be running for linter tool:
 ```
 
 For a deeper understanding on how to create and integrate new modules, user creation and permissions. Refer ["How-to" guides](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/)
-
-## Nginx Setup (Optional)
-
-Following are the steps to Setup Nginx in enigma
-
-1. **Pre-requisistes** 
-    - Should have a host(domain) with ssl certificats that can be attached to nginx.
-    - Make sure the host points the public IP of the machine in which enigma is running on. (i.e., create an dns A record with host pointing to public IP of machine)
-2. Copy the following code block under the services of docker-compose.yml
-    ```
-      nginx:
-        container_name: enigma_nginx
-        image: nginx:latest
-        ports:
-          - "80:80"
-          - "443:443"
-        volumes:
-          - ./nginx.conf:/etc/nginx/nginx.conf:ro
-          - ./certs:/certs
-        environment:
-          - SSL_KEY_FILE_NAME=<ssl_key_file_name>
-          - SSL_CRT_FILE_NAME=<ssl_crt_file_name>
-          - HOSTNAME=<hostname>
-        depends_on:
-          - web
-    ```
-    This will create `enigma_nginx` container.
-3. Update `make dev` command to create nginx when executed.
-    ```diff
-    .PHONY: dev
-    dev: export APPUID = $(APP_UID)
-    dev: setup_mounts
-    -  @docker-compose build && docker-compose up -d web celery
-    +  @docker-compose build && docker-compose up -d web celery nginx
-    ```
-4. Create `nginx.conf` file in the root folder of enigma-public-central repo.
-    **TODO**
-5. Create a folder in the root folder of enigma-public-central named `certs` which contains ssl certificate and key.
-6. Update the key file and certificate file name respectively in `docker-compose.yml` accordingly.
-
-:tada: Congrats you are done. You can now run `make dev` and you should be able to access enigma from your host.
