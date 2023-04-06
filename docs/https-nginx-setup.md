@@ -9,33 +9,36 @@ Following are the steps to Setup Nginx in enigma
 3. Copy `nginx.conf.sample` file to `nginx.conf`
 3. Configure `nginx.conf` file.
     - update the hostname in the `nginx.conf` file
-    ```diff
-    server {
-      listen 80;
-    -   server_name www.yourdomain.com;
-    +   server_name enigma.com;
-      return 301 https://$host$request_uri;
-    }
-    ```
+      ```diff
+      server {
+        listen 80;
+      -   server_name www.yourdomain.com;
+      +   server_name enigma.com;
+        return 301 https://$host$request_uri;
+      }
+      ```
 
-    ```diff
-    server {
-      listen 443 ssl;
-    -   server_name www.yourdomain.com;
-    +   server_name enigma.com;
-    ```
+      ```diff
+      server {
+        listen 443 ssl;
+      -   server_name www.yourdomain.com;
+      +   server_name enigma.com;
+      ```
+      The above mentioned changes are just examples to show what needs to be changed, please add your own domain names in mentioned places.
     - update ssl certificate paths in `nginx.conf` file
-    ```diff
-    server {
-      listen 443 ssl;
-      server_name www.yourdomain.com;
-      server_tokens off;
+      ```diff
+      server {
+        listen 443 ssl;
+        server_name www.yourdomain.com;
+        server_tokens off;
 
-    -  ssl_certificate       /certs/<ssl_crt_file_name>;
-    +  ssl_certificate       /certs/enigma.crt;
-    -  ssl_certificate_key   /certs/<ssl_key_file_name>;
-    +  ssl_certificate_key   /certs/enigma.key;
-    ```
+      -  ssl_certificate       /certs/<ssl_crt_file_name>;
+      +  ssl_certificate       /certs/enigma.crt;
+      -  ssl_certificate_key   /certs/<ssl_key_file_name>;
+      +  ssl_certificate_key   /certs/enigma.key;
+      ```
+      The above mentioned changes are just examples to show what needs to be changed, Please add your own certificate and key file names.
+
 4. Run the following command with your terminal in enigma-public-central root folder.
     ```
     docker run --name enigma-nginx -v <absolute_path to nginx.conf file>:/etc/nginx/nginx.conf:ro \
