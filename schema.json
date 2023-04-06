@@ -12,8 +12,16 @@
       "additionalProperties": false,
       "properties": {
         "SECRET_KEY": {
-          "description": "Django Secret Key to be used in production",
+          "description": "Django Secret Key to be used. Keep this value secret",
           "type": "string"
+        },
+        "DEBUG": {
+          "description": "Turns on/off debug mode.",
+          "type": "boolean"
+        },
+        "ALLOWED_HOSTS": {
+          "description": "A list of strings representing the host/domain names that can be served.",
+          "type": "array"
         }
       }
     },

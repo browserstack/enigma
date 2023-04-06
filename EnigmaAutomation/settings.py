@@ -34,9 +34,9 @@ with open("config.json") as data_file:
 SECRET_KEY = data["django_setup"]["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug set to True on production!
-DEBUG = False
+DEBUG = data["django_setup"]["DEBUG"]
 # SECURITY WARNING: You must set settings.ALLOWED_HOSTS if DEBUG is False.
-ALLOWED_HOSTS = ['localhost']
+ALLOWED_HOSTS = data["django_setup"]["ALLOWED_HOSTS"]
 
 # SECURITY WARNING: Set this to True to avoid transmitting the CSRF cookie over HTTP.
 CSRF_COOKIE_SECURE = True
