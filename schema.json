@@ -101,6 +101,34 @@
         "access-approve": {
           "description": "Access approve email",
           "type": "string"
+        },
+        "EMAIL_HOST": {
+          "description": "The host to use for sending email.",
+          "type": "string"
+        },
+        "EMAIL_PORT": {
+          "description": "Port to use for the SMTP server.",
+          "type": "string"
+        },
+        "EMAIL_HOST_USER": {
+          "description": "Username to use for the SMTP server.",
+          "type": "string"
+        },
+        "EMAIL_HOST_PASSWORD": {
+          "description": "Password to use for the SMTP server.",
+          "type": "string"
+        },
+        "EMAIL_USE_TLS": {
+          "description": "Whether to use a TLS (secure) connection when talking to the SMTP server: port 587",
+          "type": "boolean"
+        },
+        "EMAIL_USE_SSL": {
+          "description": "Whether to use an implicit TLS (secure) connection when talking to the SMTP server: port 465",
+          "type": "boolean"
+        },
+        "DEFAULT_FROM_EMAIL": {
+          "description": "Default email address to use for correspondence from the site manager(s)",
+          "type": "string"
         }
       }
     },
