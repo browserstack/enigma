@@ -748,3 +748,11 @@ def revoke_group_access(request):
         logger.exception("Error while revoking group access %s" % (traceback.format_exc()))
         logger.debug("Something went wrong while revoking group access")
         return JsonResponse({"message": "Failed to revoke group Access"}, status=400)
+
+def error_404(request, exception, template_name='404.html'):
+        data = {}
+        return render(request,template_name,data)
+
+def error_500(request, template_name='500.html'):
+        data = {}
+        return render(request,template_name,data)

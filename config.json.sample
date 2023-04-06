@@ -1,4 +1,7 @@
 {
+  "django_setup": {
+    "SECRET_KEY": ""
+  },
   "googleapi": {
     "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "",
     "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": ""

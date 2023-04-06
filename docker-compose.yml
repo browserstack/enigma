@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
       target: web
       args:
-        APPUID: "${APPUID}"
+        APPUID: ${APPUID}
     env_file:
     - ./secrets/ops_app_dev.env
     volumes:
@@ -21,7 +21,7 @@ services:
     - db
     command: >
       bash -c "echo Starting Django runserver;
-      python manage.py runserver 0.0.0.0:8000"
+      python manage.py runserver --insecure 0.0.0.0:8000"
   db:
     container_name: db
     image: mysql/mysql-server:8.0.31
@@ -44,7 +44,7 @@ services:
       dockerfile: Dockerfile
       target: web
       args:
-        APPUID: "${APPUID}"
+        APPUID: ${APPUID}
     volumes:
     - ./mounts/modules:/srv/code/dev/Access/access_modules
     - ./mounts/db:/srv/code/dev/db
@@ -58,7 +58,7 @@ services:
     command: >
       /bin/bash -c "
         while ! nc -z redis 6379;
-        do 
+        do
           echo sleeping;
           sleep 1;
         done;

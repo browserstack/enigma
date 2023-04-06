@@ -17,22 +17,36 @@ from pathlib import Path
 import os
 import time
 import random
+import django
+from django.utils.translation import gettext
+django.utils.translation.ugettext = gettext
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+with open("config.json") as data_file:
+    data = json.load(data_file)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "abc"
+# SECURITY WARNING: The secret key must be a large random value and it must be kept secret.
+SECRET_KEY = data["django_setup"]["SECRET_KEY"]
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# SECURITY WARNING: don't run with debug set to True on production!
+DEBUG = False
+# SECURITY WARNING: You must set settings.ALLOWED_HOSTS if DEBUG is False.
+ALLOWED_HOSTS = ['localhost']
 
-ALLOWED_HOSTS = []
+# SECURITY WARNING: Set this to True to avoid transmitting the CSRF cookie over HTTP.
+CSRF_COOKIE_SECURE = True
 
+# SECURITY WARNING: Set this to True to avoid transmitting the session cookie over HTTP.
+SESSION_COOKIE_SECURE = True
+
+# SECURITY WARNING: Use the HttpOnly attribute to prevent access to cookie values via JavaScript.
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
 
 # Application definition
 
@@ -128,12 +142,13 @@ WSGI_APPLICATION = "EnigmaAutomation.wsgi.application"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": (
-            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-        ),
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        'OPTIONS': {
+            'min_length': 9,
+        }
     },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
@@ -141,8 +156,28 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
+    {
+        "NAME": "Access.validators.NumberValidator",
+    },
+    {
+        "NAME": "Access.validators.UppercaseValidator",
+    },
+    {
+        "NAME": "Access.validators.SymbolValidator",
+    },
+    {
+        "NAME": "Access.validators.RepeatedValidator"
+    },
 ]
 
+PASSWORD_HASHERS = (
+    'django.contrib.auth.hashers.PBKDF2PasswordHasher',
+    'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
+    'django.contrib.auth.hashers.BCryptPasswordHasher',
+    'django.contrib.auth.hashers.SHA1PasswordHasher',
+    'django.contrib.auth.hashers.MD5PasswordHasher',
+    'django.contrib.auth.hashers.CryptPasswordHasher'
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -173,11 +208,6 @@ STATICFILES_DIRS = [
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-
-with open("config.json") as data_file:
-    data = json.load(data_file)
-
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = data["googleapi"]["SOCIAL_AUTH_GOOGLE_OAUTH2_KEY"]
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = data["googleapi"]["SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET"]
