@@ -3,7 +3,7 @@ Enigma uses Google SSO as default. To integrate another SSO application, refer t
 
 1. Add chosen SSO backend to `AUTHENTICATION_BACKENDS` in settings.py
     - Github
-        ```json
+        ```bash
         AUTHENTICATION_BACKENDS = (
             ....
             'social_core.backends.github.GithubOAuth2',
@@ -11,7 +11,7 @@ Enigma uses Google SSO as default. To integrate another SSO application, refer t
         )
         ```
     - Microsoft Azure Active Directory
-        ```json
+        ```bash
         AUTHENTICATION_BACKENDS = (
             ....
             'social_core.backends.azuread_tenant.AzureADOAuth2',
@@ -21,7 +21,7 @@ Enigma uses Google SSO as default. To integrate another SSO application, refer t
 2. Edit `config.json` to accept the required keys for authentication.
     Example:
     - Github
-        ```json
+        ```bash
         "sso": {
             "githubapi": {
                 "SOCIAL_AUTH_GITHUB_KEY" = "",
@@ -33,7 +33,7 @@ Enigma uses Google SSO as default. To integrate another SSO application, refer t
         ....
         ```
     - Microsoft Azure Active Directory
-        ```json
+        ```bash
          "sso": {
             "azureapi": {
                 "SOCIAL_AUTH_AZUREAD_OAUTH2_KEY" = "",
@@ -46,7 +46,7 @@ Enigma uses Google SSO as default. To integrate another SSO application, refer t
 3. Edit [Login.html](/templates/registration/login.html):
     Get the name from file `backend-name`.py
 
-    Refer: [social-core backends](https://github.com/python-social-auth/social-core/blob/master/social_core/backend/)
+    Refer: [social-core backends](https://github.com/python-social-auth/social-core/blob/master/social_core/backends/)
 
     Example:
     ```bash
