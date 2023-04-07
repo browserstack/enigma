@@ -250,7 +250,7 @@ LOGGING = {
         'file': {
             'level': current_log_level,
             'class': 'logging.FileHandler',
-            'filename': './enigma.log',
+            'filename': 'enigma.log',
             'formatter': 'verbose',
         },
         "console": {
@@ -259,7 +259,7 @@ LOGGING = {
             "formatter": "verbose",
         },
     },
-    "loggers": { },
+    "loggers": {},
 }
 for each_app in logging_apps:
     LOGGING["loggers"][each_app] = {
@@ -268,3 +268,13 @@ for each_app in logging_apps:
         "propagate": True,
         "formatter": "verbose",
     }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = data["emails"]["EMAIL_HOST"]
+EMAIL_PORT = data["emails"]["EMAIL_PORT"]
+EMAIL_HOST_USER = data["emails"]["EMAIL_HOST_USER"]
+EMAIL_HOST_PASSWORD = data["emails"]["EMAIL_HOST_PASSWORD"]
+EMAIL_USE_TLS = data["emails"]["EMAIL_USE_TLS"]
+EMAIL_USE_SSL = data["emails"]["EMAIL_USE_SSL"]
+DEFAULT_FROM_EMAIL = data["emails"]["DEFAULT_FROM_EMAIL"]

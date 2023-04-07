@@ -827,18 +827,16 @@ class UserAccessMapping(models.Model):
 
         return access_request_data
 
-    def updateMetaData(self, key, data):
+    def update_meta_data(self, key, data):
         with transaction.atomic():
-            mapping = UserAccessMapping.objects.select_for_update().get(
-                request_id=self.request_id
-            )
-            mapping.meta_data[key] = data
-            mapping.save()
+            self.meta_data[key] = data
+            self.save()
         return True
 
-    def revoke(self, revoker):
+    def revoke(self, revoker=None):
         self.status = "Revoked"
-        self.revoker = revoker
+        if revoker:
+            self.revoker = revoker
         self.save()
 
     @staticmethod
@@ -941,6 +939,9 @@ class UserAccessMapping(models.Model):
         )
         mapping.save()
         return mapping
+
+    def get_user_name(self):
+        return self.user_identity.user.name
 
 
 class GroupAccessMapping(models.Model):

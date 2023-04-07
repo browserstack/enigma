@@ -9,7 +9,8 @@
   "access_modules": {
     "git_urls": [
       "https://github.com/browserstack/enigma-public-access-modules.git"
-    ]
+    ],
+    "RETRY_LIMIT": 5
   },
   "enigmaGroup": {
     "MAIL_APPROVER_GROUPS": [
@@ -17,7 +18,14 @@
     ]
   },
   "emails": {
-    "access-approve": "<access-approve-email>"
+    "access-approve": "<access-approve-email>",
+    "EMAIL_HOST": "<email-smtp-host>",
+    "EMAIL_PORT": "<smtp-server-port>",
+    "EMAIL_HOST_USER": "<smtp-server-username>",
+    "EMAIL_HOST_PASSWORD": "<smtp-server-password>",
+    "EMAIL_USE_TLS": true,
+    "EMAIL_USE_SSL": false,
+    "DEFAULT_FROM_EMAIL": "<smtp-default-mail>"
   },
   "background_task_manager": {
     "type": "celery",

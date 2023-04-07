@@ -20,4 +20,5 @@ def logout_view(request):
 def dashboard(request):
     """Loaded dashboard"""
     context = getDashboardData(request)
+    logger.info("Dashboard load for user %s", request.user.username)
     return render(request, "EnigmaOps/dashboard.html", context)
