@@ -24,39 +24,7 @@ Clone the repo in local system
 git clone https://github.com/browserstack/enigma-public-central.git
 ```
 - copy config.json.sample to config.json
-```bash
-{
-  "googleapi": {
-    "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "",
-    "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "",
-  },
-  "database": {
-    "engine": "sqlite3"
-  },
-  "access_modules": {
-    "git_urls": [
-      "https://github.com/browserstack/enigma-public-access-modules.git"
-    ]
-  },
-  "enigmaGroup": {
-    "MAIL_APPROVER_GROUPS": [
-      "devnull@browserstack.com"
-    ]
-  },
-  "emails": {
-    "access-approve": "<access-approve-email>"
-  },
-  "background_task_manager": {
-    "type": "celery",
-    "config": {
-      "broker": "<celery-broker-url>",
-      "backend": "<celery-result-backend-url>",
-      "need_monitoring": true,
-      "monitoring_apps": "django_celery_results"
-    }
-  }
-}
-```
+
 ### for private repo in git_urls in `config.json`
 ```bash
  "https://<git-username>:<github-token>@github.com/browserstack/enigma-public-access-modules.git"

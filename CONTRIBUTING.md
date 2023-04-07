@@ -3,7 +3,7 @@ Read our [Code of Conduct](CODE_OF_CONDUCT.md) to keep our community approachabl
 This guide will give you an overview of the contribution workflow from opening an issue, creating a PR, reviewing, and merging the PR.
 
 # Local Setup
-- Follow https://github.com/browserstack/enigma-public-central#setup for setting up the project locally.
+- Follow [Setup Guide](/docs/one-click-dev.md) for setting up the project locally.
 
 # Issues
 

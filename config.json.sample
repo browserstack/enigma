@@ -1,7 +1,9 @@
 {
-  "googleapi": {
-    "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "",
-    "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": ""
+  "sso": {
+    "googleapi": {
+      "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "",
+      "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": ""
+    }
   },
   "database": {
     "engine": "sqlite3"

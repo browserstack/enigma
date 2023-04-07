@@ -178,9 +178,9 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 with open("config.json") as data_file:
     data = json.load(data_file)
 
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = data["googleapi"]["SOCIAL_AUTH_GOOGLE_OAUTH2_KEY"]
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = data["googleapi"]["SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET"]
+google_auth_config = data["sso"]["googleapi"]
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = google_auth_config["SOCIAL_AUTH_GOOGLE_OAUTH2_KEY"]
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = google_auth_config["SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET"]
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'login/'
 

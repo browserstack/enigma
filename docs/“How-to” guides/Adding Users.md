@@ -15,9 +15,11 @@ This document describes how to add users on Enigma.
 2. Google SSO:
     ### Add the config of googleapi in `config.json`
     ```bash
-    "googleapi": {
-        "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "<your_google_auth_key>",
-        "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "<your_google_auth_secret>"
+    "sso": {
+        "googleapi": {
+            "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "<your_google_auth_key>",
+            "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": "<your_google_auth_secret>"
+        }
     }
     ```
 Sign in to enigma using your Google Mail to create a user on Enigma.
