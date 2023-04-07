@@ -6,7 +6,12 @@
     }
   },
   "database": {
-    "engine": "sqlite3"
+    "engine": "sqlite3",
+    "dbname": "",
+    "username": "",
+    "password": "",
+    "host": "",
+    "port":
   },
   "access_modules": {
     "git_urls": [
@@ -15,19 +20,17 @@
     "RETRY_LIMIT": 5
   },
   "enigmaGroup": {
-    "MAIL_APPROVER_GROUPS": [
-      "devnull@browserstack.com"
-    ]
+    "MAIL_APPROVER_GROUPS": []
   },
   "emails": {
-    "access-approve": "<access-approve-email>",
-    "EMAIL_HOST": "<email-smtp-host>",
-    "EMAIL_PORT": "<smtp-server-port>",
-    "EMAIL_HOST_USER": "<smtp-server-username>",
-    "EMAIL_HOST_PASSWORD": "<smtp-server-password>",
+    "access-approve": "",
+    "EMAIL_HOST": "",
+    "EMAIL_PORT": "",
+    "EMAIL_HOST_USER": "",
+    "EMAIL_HOST_PASSWORD": "",
     "EMAIL_USE_TLS": true,
     "EMAIL_USE_SSL": false,
-    "DEFAULT_FROM_EMAIL": "<smtp-default-mail>"
+    "DEFAULT_FROM_EMAIL": ""
   },
   "background_task_manager": {
     "type": "celery",
