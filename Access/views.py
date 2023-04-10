@@ -43,6 +43,7 @@ from .decorators import user_admin_or_ops, authentication_classes, user_with_per
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 
 logger = logging.getLogger(__name__)
+logger.info("Server Started")
 
 
 @login_required
@@ -456,7 +457,7 @@ def remove_group_member(request):
         JsonResponse: Status of the User remove.
     """
     try:
-        response = group_helper.remove_member(request)
+        response = group_helper.remove_member(request, request.user)
         if "error" in response:
             return JsonResponse(response, status=400)
         return JsonResponse({"message": "Success"})

@@ -197,10 +197,7 @@ class User(models.Model):
 
     def is_allowed_admin_actions_on_group(self, group):
         return (
-            group.member_is_owner(self)
-            or self.user.is_superuser
-            or self.is_ops
-            or self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"])
+            group.member_is_owner(self) or self.isAdminOrOps()
         )
 
     def is_allowed_to_offboard_user_from_group(self, group):
@@ -309,7 +306,7 @@ class User(models.Model):
             )
         except User.DoesNotExist:
             return None
-    
+
     @staticmethod
     def get_system_user():
         try:
@@ -827,18 +824,16 @@ class UserAccessMapping(models.Model):
 
         return access_request_data
 
-    def updateMetaData(self, key, data):
+    def update_meta_data(self, key, data):
         with transaction.atomic():
-            mapping = UserAccessMapping.objects.select_for_update().get(
-                request_id=self.request_id
-            )
-            mapping.meta_data[key] = data
-            mapping.save()
+            self.meta_data[key] = data
+            self.save()
         return True
 
-    def revoke(self, revoker):
+    def revoke(self, revoker=None):
         self.status = "Revoked"
-        self.revoker = revoker
+        if revoker:
+            self.revoker = revoker
         self.save()
 
     @staticmethod
@@ -941,6 +936,9 @@ class UserAccessMapping(models.Model):
         )
         mapping.save()
         return mapping
+
+    def get_user_name(self):
+        return self.user_identity.user.name
 
 
 class GroupAccessMapping(models.Model):

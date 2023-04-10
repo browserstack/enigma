@@ -56,7 +56,7 @@ function startOffboarding(offboard_email) {
       if(data.status == 'success') {
         custom_alert.addClass('alert-success');
         $('.loading-spinner').css('visibility', 'hidden')
-        window.location.href = "/access/userAccesses?username=" + data.username;
+        window.location.href = "/access/userAccesses?username=" + encodeURIComponent(data.username);
       } else {
         custom_alert.addClass('alert-danger');
         setTimeout(() => {
@@ -214,7 +214,7 @@ function offboardConfirm(email){
         <td>{{ item.is_active }}</td>
         <td>{{ item.state }}</td>
         <td>
-          <a target="_blank" class="nav-link" href="{% url 'allUserAccessList' %}?username={{ item.username }}" rel="noopener noreferrer nofollow">Link</a>
+          <a target="_blank" class="nav-link" href="{% url 'allUserAccessList' %}?username={{ item.username|urlencode }}" rel="noopener noreferrer nofollow">Link</a>
         </td>
         <td>{{ item.offbaord_date }}</td>
         {% if viewDetails.allowOffboarding %}

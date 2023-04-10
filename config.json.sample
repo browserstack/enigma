@@ -1,23 +1,36 @@
 {
-  "googleapi": {
-    "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "",
-    "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": ""
+  "sso": {
+    "googleapi": {
+      "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "",
+      "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": ""
+    }
   },
   "database": {
-    "engine": "sqlite3"
+    "engine": "sqlite3",
+    "dbname": "",
+    "username": "",
+    "password": "",
+    "host": "",
+    "port":
   },
   "access_modules": {
     "git_urls": [
       "https://github.com/browserstack/enigma-public-access-modules.git"
-    ]
+    ],
+    "RETRY_LIMIT": 5
   },
   "enigmaGroup": {
-    "MAIL_APPROVER_GROUPS": [
-      "devnull@browserstack.com"
-    ]
+    "MAIL_APPROVER_GROUPS": []
   },
   "emails": {
-    "access-approve": "<access-approve-email>"
+    "access-approve": "",
+    "EMAIL_HOST": "",
+    "EMAIL_PORT": "",
+    "EMAIL_HOST_USER": "",
+    "EMAIL_HOST_PASSWORD": "",
+    "EMAIL_USE_TLS": true,
+    "EMAIL_USE_SSL": false,
+    "DEFAULT_FROM_EMAIL": ""
   },
   "background_task_manager": {
     "type": "celery",

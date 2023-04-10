@@ -1,13 +1,15 @@
 import json
 import sys
 import shutil
-from git import Repo
+from git import Repo, GitCommandError
+import time
 import os
 
 print("Starting cloning setup")
 try:
     f = open("./config.json", "r")
     config = json.load(f)
+    RETRY_LIMIT = config["access_modules"]["RETRY_LIMIT"]
     urls = config["access_modules"]["git_urls"]
 
     if not os.path.exists('Access/access_modules'):
@@ -37,10 +39,26 @@ try:
         folder_name = url.split("/").pop()[:-4]
         folder_path = "./Access/access_modules/" + folder_name
         try:
-            if specified_branch:
-                Repo.clone_from(url, folder_path, branch=specified_branch)
-            else:
-                Repo.clone_from(url, folder_path)
+            retry_exception = None
+            for i in range(1, RETRY_LIMIT + 1):
+                try:
+                    if specified_branch:
+                        Repo.clone_from(url, folder_path, branch=specified_branch)
+                    else:
+                        Repo.clone_from(url, folder_path)
+                except (GitCommandError, Exception) as ex:
+                    print("error occurred: ", ex)
+                    print("retry:{1}/{2}".format(ex, i, RETRY_LIMIT))
+                    retry_exception = ex
+                    time.sleep(10 * i)
+                    print("retrying")
+                else:
+                    retry_exception = None
+                    break
+            if (retry_exception != None):
+                print("max retry count reached")
+                raise retry_exception
+
             # move all folders, not files in the cloned repo to the access_modules
             # folder except the .git, .github and secrets folder
             for file in os.listdir(folder_path):

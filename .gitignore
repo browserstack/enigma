@@ -12,8 +12,14 @@ db.sqlite3
 # Coverage files from pytest-cov plugin for pytest
 .coverage
 
+# Logger files
+enigma.log
+
 # Dependency directories
 node_modules/
+
+#Access Modules
+Access/access_modules
 
 # Folders created by Docker Compose
 mounts/
