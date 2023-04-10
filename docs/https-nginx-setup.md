@@ -42,7 +42,7 @@ Following are the steps to Setup Nginx in enigma
 4. Run the following command with your terminal in enigma-public-central root folder.
     ```
     docker run --name enigma-nginx -v <absolute_path to nginx.conf file>:/etc/nginx/nginx.conf:ro \
-    -v <absolute_path to certs folder>:/certs -p 80:80 -p 443:443 -d nginx:latest
+    -v <absolute_path to certs folder>:/certs -p 80:80 -p 443:443 -d --add-host host.docker.internal:host-gateway nginx:latest
     ```
     Make sure to update the absolute paths to the files/folders mentioned.
 
