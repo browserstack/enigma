@@ -118,11 +118,11 @@ function userRemoveConfirm(membership_id){
             {% if request.user.email == user.email %}
             <input type="checkbox" name="owners" value="{{ user.is_owner }}" checked disabled="true"></input>
             {% else %}
-            {% if user.is_owner %}
-            <input type="checkbox" name="owners" value="{{ user.email }}" checked></input>
-            {% else %}
-            <input type="checkbox" name="owners" value="{{ user.email }}" > </input>
-            {% endif %}
+              {% if user.is_owner %}
+              <input type="checkbox" name="owners" value="{{ user.email }}" checked ></input>
+              {% else %}
+              <input type="checkbox" name="owners" value="{{ user.email }}" > </input>
+              {% endif %}
             {% endif %}
           </td>
           <td>{{user.name}}</td>
@@ -184,11 +184,11 @@ function userRemoveConfirm(membership_id){
     </div>
   </form>
   {% if notification %}
-  <div class="alert alert-success alert-dismissible fade show">
-    {{ notification }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
+    <div class="alert alert-success alert-dismissible fade show">
+      {{ notification }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
   {% endif %}
 </div>
