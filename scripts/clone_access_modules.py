@@ -12,14 +12,18 @@ try:
     RETRY_LIMIT = config["access_modules"]["RETRY_LIMIT"]
     urls = config["access_modules"]["git_urls"]
 
-    for each_access_module in os.listdir('Access/access_modules'):
-        path_to_remove = "Access/access_modules/%s" % each_access_module
-        print("Deleting %s" % path_to_remove)
-        try:
-            if os.path.isdir(path_to_remove):
-                shutil.rmtree(path_to_remove)
-        except Exception as e:
-            print("Got Error while deleting the path %s. Error: %s" % (path_to_remove, str(e)))
+    if not os.path.exists('Access/access_modules'):
+        os.mkdir('Access/access_modules')
+    else:
+        for each_access_module in os.listdir('Access/access_modules'):
+            path_to_remove = "Access/access_modules/%s" % each_access_module
+            print("Deleting %s" % path_to_remove)
+            try:
+                if os.path.isdir(path_to_remove):
+                    shutil.rmtree(path_to_remove)
+            except Exception as e:
+                print("Got Error while deleting the path %s. Error: %s" % (path_to_remove, str(e)))
+
     shutil.copyfile('Access/base_email_access/access_modules_init.py', "Access/access_modules/__init__.py")
 
     requirements_file = 'Access/access_modules/requirements.txt'
