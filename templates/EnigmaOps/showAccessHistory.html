@@ -152,7 +152,11 @@ $(function() {
         <td>{{ item.status }}</td>
         <td>{{ item.accessReason }}</td>
         <td>{{ item.decline_reason }}</td>
-        <td><a class="btn btn-primary" target="_blank"  href="/individual_resolve?requestId={{ item.requestId|urlencode }}">ReGrant</a></td>
+        <td>
+          {% if request.user.is_superuser or is_ops %}
+            <a class="btn btn-primary" target="_blank"  href="/individual_resolve?requestId={{ item.requestId|urlencode }}">ReGrant</a>
+          {% endif %}
+        </td>
       </tr>
       {% endfor %}
   	</tbody>
