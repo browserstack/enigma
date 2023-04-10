@@ -19,6 +19,9 @@ enigma.log
 # Dependency directories
 node_modules/
 
+#Access Modules
+Access/access_modules
+
 # Folders created by Docker Compose
 mounts/
 public/

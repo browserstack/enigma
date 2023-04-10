@@ -937,6 +937,9 @@ class UserAccessMapping(models.Model):
         mapping.save()
         return mapping
 
+    def get_user_name(self):
+        return self.user_identity.user.name
+
 
 class GroupAccessMapping(models.Model):
     """
