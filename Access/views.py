@@ -457,7 +457,7 @@ def remove_group_member(request):
         JsonResponse: Status of the User remove.
     """
     try:
-        response = group_helper.remove_member(request)
+        response = group_helper.remove_member(request, request.user)
         if "error" in response:
             return JsonResponse(response, status=400)
         return JsonResponse({"message": "Success"})
