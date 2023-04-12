@@ -50,3 +50,7 @@ The added URLs will be integrated by the cloning script `scripts/clone_access_mo
     return {"1": PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"], "2": "SECONDARY_ACCESS_APPROVE"}
   ```
 - Once the function is overridden admin can now create a permission with the label and then assign user that permission (learn more about adding permission is Adding Permissions Section). And the user will be asked for the secondary approver for a request.
+
+#### Disabling Access module
+- For one click setup it clone all the access modules from the `enigma-public-access-modules` repo. So in the UI you can see all the access modules.
+- Which can be disabled by removing the non required access moduled folder from `Access/access_modules` path.

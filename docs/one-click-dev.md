@@ -18,14 +18,16 @@ brew install colima
 colima start
 ```
 
-### Setup
+## Setup
+
+### Clone Repository
 Clone the repo in local system
 ```bash
 git clone https://github.com/browserstack/enigma-public-central.git
 ```
 - copy config.json.sample to config.json
 
-### for private repo in git_urls in `config.json`
+#### For private repo in git_urls in `config.json`
 ```bash
  "https://<git-username>:<github-token>@github.com/browserstack/enigma-public-access-modules.git"
 ```
@@ -83,18 +85,18 @@ python manage.py  createsuperuser
 - Login at localhost:8000/admin
 - Login here with your superuser credentials
 
-### How to run tests
+## How to run tests
 
 1. Tests:
 If Web service is not running, the command will first load up the service and then run the tests.
-```bash
-make test
-```
+    ```bash
+    make test
+    ```
 
 2. Linter:
 Docker should be running for linter tool:
-```bash
-   docker exec dev make lint
-```
+    ```bash
+    docker exec dev make lint
+    ```
 
 For a deeper understanding on how to create and integrate new modules, user creation and permissions. Refer ["How-to" guides](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/)
