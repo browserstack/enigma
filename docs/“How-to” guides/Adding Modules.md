@@ -13,12 +13,12 @@ Enigma provides the following modules as part of its default settings, these can
 7. Zoom
 
 When a new resource is required, it's corresponding module has to be added in [Engima's modules repository](https://github.com/browserstack/enigma-public-access-modules.git) or it's own (as per the usecase):
-- Add __init__.py:
+- Add `__init__.py`:
 
     ```bash
         from . import access  # noqa
     ```
-- Add access.py (Following implementations to be added in this file)
+- Add `access.py` (Following implementations to be added in this file)
 - Implement functions which are specified in BaseEmailAccess Module (overridde based on use case):
 
     `from Access.base_email_access.access import BaseEmailAccess` class for helper functions.
