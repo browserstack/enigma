@@ -67,6 +67,7 @@ try:
                         and file != ".git"
                         and file != ".github"
                         and file != "secrets"
+                        and file != "docs"
                     ) :
                     try :
                         os.rename(
