@@ -21,7 +21,7 @@ services:
     - db
     command: >
       bash -c "echo Starting Django runserver;
-      python manage.py runserver 0.0.0.0:8000"
+      python manage.py runserver --insecure 0.0.0.0:8000"
   db:
     container_name: db
     image: mysql/mysql-server:8.0.31
