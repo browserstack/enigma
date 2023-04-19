@@ -39,6 +39,7 @@ logs:
 
 ## Run tests with coverage
 .PHONY: test
+test: export APPUID = $(APP_UID)
 test: setup_mounts
 	@if [ $$(docker ps -a -f name=dev | wc -l) -eq 2 ]; then \
 		docker exec dev python -m pytest --version; \

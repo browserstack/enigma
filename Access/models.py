@@ -215,10 +215,7 @@ class User(models.Model):
 
     def is_allowed_admin_actions_on_group(self, group):
         return (
-            group.member_is_owner(self)
-            or self.user.is_superuser
-            or self.is_ops
-            or self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"])
+            group.member_is_owner(self) or self.isAdminOrOps()
         )
 
     def is_allowed_to_offboard_user_from_group(self, group):
@@ -957,6 +954,9 @@ class UserAccessMapping(models.Model):
         )
         mapping.save()
         return mapping
+
+    def get_user_name(self):
+        return self.user_identity.user.name
 
 
 class GroupAccessMapping(models.Model):

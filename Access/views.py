@@ -38,7 +38,7 @@ from Access.userlist_helper import (
 from Access.views_helper import render_error_message
 from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
-from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
+from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 
@@ -328,7 +328,7 @@ def add_user_to_group(request, group_name):
 
 @api_view(["GET"])
 @login_required
-@user_with_permission([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])
+@user_any_approver
 def pending_requests(request):
     """pending access requests"""
     context = get_pending_requests(request)
@@ -457,7 +457,7 @@ def remove_group_member(request):
         JsonResponse: Status of the User remove.
     """
     try:
-        response = group_helper.remove_member(request)
+        response = group_helper.remove_member(request, request.user)
         if "error" in response:
             return JsonResponse(response, status=400)
         return JsonResponse({"message": "Success"})
