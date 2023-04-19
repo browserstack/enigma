@@ -39,6 +39,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
+    "corsheaders",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
@@ -54,11 +55,31 @@ CID_GENERATOR = lambda: f"{time.time()}-{random.random()}"
 CID_HEADER = "X_CORRELATION_ID"
 CID_GENERATE = True
 CID_CONCATENATE_IDS = True
+CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_WHITELIST = [
+    "http://localhost:8000"
+]
+# CSP_DEFAULT_SRC = ("'self'")
+# CSP_STYLE_SRC = ("'self'")
+# CSP_SCRIPT_SRC = ("'self'")
+# CSP_IMG_SRC = ("'self'")
+# CSP_FONT_SRC = ("'self'" )
+# CSP_CONNECT_SRC = ("'self'")
+# CSP_OBJECT_SRC = ("'self'" )
+# CSP_BASE_URI = ("'self'" )
+# CSP_FRAME_ANCESTORS = ("'self'" )
+# CSP_FORM_ACTION = ("'self'" )
+# CSP_INCLUDE_NONCE_IN = ('script-src' )
+# CSP_MANIFEST_SRC = ("'self'" )
+# CSP_WORKER_SRC = ("'self'" )
+# CSP_MEDIA_SRC = ("'self'" )
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    # 'csp.middleware.CSPMiddleware',
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
