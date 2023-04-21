@@ -37,6 +37,7 @@ SECRET_KEY = data["django_setup"]["SECRET_KEY"]
 DEBUG = data["django_setup"]["DEBUG"]
 # SECURITY WARNING: You must set settings.ALLOWED_HOSTS if DEBUG is False.
 ALLOWED_HOSTS = data["django_setup"]["ALLOWED_HOSTS"]
+CSRF_TRUSTED_ORIGINS = data["django_setup"]["CSRF_TRUSTED_ORIGINS"]
 
 # SECURITY WARNING: Set this to True to avoid transmitting the CSRF cookie over HTTP.
 CSRF_COOKIE_SECURE = True
@@ -53,7 +54,6 @@ SESSION_COOKIE_HTTPONLY = True
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
-    "corsheaders",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
@@ -63,16 +63,22 @@ INSTALLED_APPS = [
     "Access",
     "rest_framework",
     "cid.apps.CidAppConfig",
+    "axes",
 ]
 CID_GENERATE = True
 CID_GENERATOR = lambda: f"{time.time()}-{random.random()}"
 CID_HEADER = "X_CORRELATION_ID"
 CID_GENERATE = True
 CID_CONCATENATE_IDS = True
-CORS_ORIGIN_ALLOW_ALL = False
-CORS_ORIGIN_WHITELIST = [
-    "http://localhost:8000"
-]
+CORS_ORIGIN_ALLOW_ALL = True
+SESSION_EXPIRE_SECONDS = 7*24*60
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
+AXES_ONLY_USER_FAILURES=True
+AXES_FAILURE_LIMIT=5
+AXES_COOLOFF_TIME=2.0
+# CORS_ORIGIN_WHITELIST = [
+#     "http://localhost:8000"
+# ]
 # CSP_DEFAULT_SRC = ("'self'")
 # CSP_STYLE_SRC = ("'self'")
 # CSP_SCRIPT_SRC = ("'self'")
@@ -93,6 +99,8 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django_session_timeout.middleware.SessionTimeoutMiddleware',
     # 'csp.middleware.CSPMiddleware',
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -100,9 +108,11 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "social_django.middleware.SocialAuthExceptionMiddleware",
     "cid.middleware.CidMiddleware",
+    'axes.middleware.AxesMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = (
+    'axes.backends.AxesStandaloneBackend',
     "social_core.backends.google.GoogleOAuth2",
     "django.contrib.auth.backends.ModelBackend",
 )

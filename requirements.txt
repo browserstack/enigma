@@ -120,4 +120,5 @@ mypy-extensions==1.0.0
 vulture==2.7
 django-cid==2.3
 flake8==6.0.0
-django-cors-headers==3.14.0
+django-session-timeout==0.1.0
+django-axes==5.41.1
