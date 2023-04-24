@@ -341,7 +341,6 @@ def group_dashboard(request):
 
     try:
         access_user = request.user.user
-        # access_user = User.objects.get(email=request.user.email)
     except Exception as e:
         return render_error_message(
             request,
