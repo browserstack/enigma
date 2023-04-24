@@ -27,6 +27,11 @@ http {
     ssl_certificate       /certs/<ssl_crt_file_name>;
     ssl_certificate_key   /certs/<ssl_key_file_name>;
 
+    add_header X-XSS-Protection "1; mode=block";
+    add_header Strict-Transport-Security "max-age=31536000";
+    add_header Access-Control-Allow-Credentials "true";
+    add_header Access-Control-Allow-Origin $http_origin;
+
     location / {
       proxy_set_header    Host $host;
       proxy_set_header    X-Real-IP $remote_addr;

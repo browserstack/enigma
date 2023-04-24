@@ -22,6 +22,10 @@
         "ALLOWED_HOSTS": {
           "description": "A list of strings representing the host/domain names that can be served.",
           "type": "array"
+        },
+        "CSRF_TRUSTED_ORIGINS": {
+          "description": "A list of string represnting the urls that are CSRT trusted origins",
+          "type": "array"
         }
       }
     },
