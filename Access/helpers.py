@@ -7,7 +7,7 @@ import datetime
 import random
 
 from Access.access_modules import *  # NOQA
-from BrowserStackAutomation.settings import PERMISSION_CONSTANTS
+from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 from Access.models import User
 
 logger = logging.getLogger(__name__)
@@ -26,11 +26,12 @@ def get_available_access_module_from_tag(tag):
 def get_available_access_modules():
     global available_accesses
     if len(available_accesses) > 0:
-        return available_accesses
+        return available_accesses.copy()
+
     available_accesses = {
         access.tag(): access for access in _get_modules_on_disk() if access.available
     }
-    return available_accesses
+    return available_accesses.copy()
 
 
 def _get_modules_on_disk():
