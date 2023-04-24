@@ -16,7 +16,7 @@ Including another URLconf
 from bootprocess.views import dashboard, logout_view
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.urls import re_path, include
+from django.urls import re_path, include, path
 from Access.views import (
     revoke_group_access,
     user_offboarding,
@@ -62,7 +62,8 @@ urlpatterns = [
     re_path(r"^user/updateUserInfo/", update_user_info, name="updateUserInfo"),
     re_path(r"^user/saveIdentity/", save_identity, name="saveIdentity"),
     re_path(r"^group/create$", create_new_group, name="createNewGroup"),
-    re_path(r"^group/dashboard/$", group_dashboard, name="groupDashboard"),
+    # re_path(r"^group/dashboard/$", group_dashboard, name="groupDashboard"),
+    path("group/dashboard/", group_dashboard, name="groupDashboard"),
     re_path(r"^access/userAccesses$", all_user_access_list, name="allUserAccessList"),
     re_path(r"^access/usersList$", all_users_list, name="allUsersList"),
     re_path(r"^user/offboardUser$", user_offboarding, name="offboarding_user"),

@@ -8,7 +8,6 @@ from EnigmaAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 from . import helpers as helper
 from Access.background_task_manager import revoke_request
 import json
-import math
 
 logger = logging.getLogger(__name__)
 
@@ -167,25 +166,21 @@ def create_group(request):
     return context
 
 
-def get_generic_access(group_mappings):
-    group_history = []
-    for group_mapping in group_mappings:
-        access_module = helpers.get_available_access_module_from_tag(
-            group_mapping.access.access_tag
-        )
-        if not access_module:
-            break
+def get_generic_access(group_mapping):
+    access_details = {}
+    access_module = helpers.get_available_access_module_from_tag(
+        group_mapping.access.access_tag
+    )
+    if not access_module:
+        return {}
 
-        access_details = group_mapping.getAccessRequestDetails(access_module)
-        if len(access_details) > 1:
-            group_history.append(access_details)
-
-    return group_history
+    access_details = group_mapping.getAccessRequestDetails(access_module)
+    logger.debug("Generic access generated: " + str(access_details))
+    return access_details
 
 
-def get_group_access_list(request, group_name):
+def get_group_access_list(auth_user, group_name):
     context = {}
-    auth_user = request.user
 
     group = GroupV2.get_active_group_by_name(group_name)
     if not group:
@@ -231,10 +226,11 @@ def get_group_access_list(request, group_name):
     context["allowRevoke"] = allow_revoke
 
     group_mappings = group.get_active_accesses()
-    context["genericAccesses"] = get_generic_access(group_mappings)
-    context["accessTypeFilter"] = get_access_types(group_mappings)
-    context["statusFilter"] = get_group_status_list()
-    context["userStateFilter"] = get_user_current_state()
+    context["genericAccesses"] = [
+        get_generic_access(group_mapping) for group_mapping in group_mappings
+    ]
+    if context["genericAccesses"] == [{}]:
+        context["genericAccesses"] = []
 
     return context
 

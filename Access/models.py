@@ -245,20 +245,14 @@ class User(models.Model):
         except User.DoesNotExist:
             return None
 
-    def get_group_access_mapping_related_manager(self):
-        all_user_memberships = self.get_all_memberships()
-        group_mapping_related_manager = []
-        for each_membership in all_user_memberships:
-            group_mapping_related_manager.append(each_membership.group)
-
-        return group_mapping_related_manager
-
+    def get_all_memberships(self):
+        return self.membership_user.all()
 
     def get_groups_history(self, start_index, count):
-        group_request_mapping_related_manager = self.get_group_access_mapping_related_manager()
+        all_user_membership = self.get_all_memberships()
         group_history = []
-        for request_mapping_related_manager in group_request_mapping_related_manager:
-            group_access = request_mapping_related_manager.get_user_group_details(self)
+        for each_membership in all_user_membership:
+            group_access = each_membership.get_membership_details()
             if len(group_access) > 1:
                 group_history.append(group_access)
 
@@ -277,7 +271,7 @@ class User(models.Model):
         return group_history[0:count]
 
     def get_group_access_count(self):
-        return MembershipV2.objects.filter(user=self).count()
+        return self.membership_user.filter(group__status="Approved").count()
 
     def get_user_access_mapping_related_manager(self):
         all_user_identities = self.module_identity.order_by('id').reverse()
@@ -493,6 +487,16 @@ class MembershipV2(models.Model):
         membership = MembershipV2.objects.filter(group=group)
         membership.update(status="Declined", decline_reason=reason)
 
+    def get_membership_details(self):
+        access_request_data = {}
+        if self.group.status == "Approved":
+            access_request_data["group_id"] = self.group.group_id
+            access_request_data["name"] = self.group.name
+            access_request_data["status"] = self.status
+            access_request_data["role"] = "Owner" if self.is_owner else "Member"
+
+        return access_request_data
+
     @staticmethod
     def get_membership(membership_id):
         try:
@@ -671,23 +675,6 @@ class GroupV2(models.Model):
         except MembershipV2.DoesNotExist:
             return False
         return membership.is_owner
-
-    def member_status(self, user):
-        try:
-            membership = self.membership_group.get(user=user)
-        except MembershipV2.DoesNotExist:
-            return False
-        return membership.status
-
-    def get_user_group_details(self, user):
-        access_request_data = {}
-        if self.get_approved_group_by_name(self.name):
-            access_request_data["group_id"] = self.group_id
-            access_request_data["name"] = self.name
-            access_request_data["status"] = self.member_status(user)
-            access_request_data["role"] = "Owner" if self.member_is_owner(user) else "Member"
-
-        return access_request_data
 
     def get_active_accesses(self):
         return self.group_access_mapping.filter(

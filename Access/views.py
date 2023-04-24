@@ -340,7 +340,7 @@ def group_dashboard(request):
         )
 
     try:
-        access_user = User.objects.get(email=request.user.email)
+        access_user = request.user.user
     except Exception as e:
         return render_error_message(
             request,
@@ -358,7 +358,7 @@ def group_dashboard(request):
 
     return render(
         request,
-        "BSOps/showGroupHistory.html",
+        "EnigmaOps/showGroupHistory.html",
         {
             "dataList": access_user.get_groups_history(
                 start_index,
