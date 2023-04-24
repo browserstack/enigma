@@ -1,10 +1,25 @@
+APP_UID := $(shell id -u)
+
+setup_mounts:
+	@mkdir -p mounts/db
+	@mkdir -p mounts/mysql_db
+	@mkdir -p mounts/logs
+	@mkdir -p mounts/modules
+	@mkdir -p Access/access_modules
+	@chown $(APP_UID) mounts/db
+	@chown $(APP_UID) mounts/mysql_db
+	@chown $(APP_UID) mounts/logs
+	@chown $(APP_UID) mounts/modules
+	@chown $(APP_UID) Access/access_modules
+
 ## make all : Run service, test and linter
 .PHONY: all
 all: build test lint
 
 ## make dev : Build and start docker containers - (web/test/db)
 .PHONY: dev
-dev:
+dev: export APPUID = $(APP_UID)
+dev: setup_mounts
 	@docker-compose build && docker-compose up -d web celery
 
 ## make build : Build and start docker containers - (web and db)
@@ -13,6 +28,7 @@ build:
 	@docker-compose up --build web -d
 
 .PHONY: down
+down: export APPUID = $(APP_UID)
 down:
 	@docker-compose -f docker-compose.yml down
 
@@ -23,7 +39,8 @@ logs:
 
 ## Run tests with coverage
 .PHONY: test
-test:
+test: export APPUID = $(APP_UID)
+test: setup_mounts
 	@if [ $$(docker ps -a -f name=dev | wc -l) -eq 2 ]; then \
 		docker exec dev python -m pytest --version; \
 	else \

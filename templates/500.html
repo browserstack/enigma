@@ -1,0 +1,12 @@
+{% load static %}
+{% block content_body %}
+  <link rel="stylesheet" type="text/css" href="{% static "css/error.css" %}">
+
+  <div class="center">
+    <h1>500</h1>
+    <p>Oops! Internal Server Error. That is, something went wrong. Try Again?</p>
+    <div class="action-link-wrap">
+      <a onclick="history.back(-1)" class="link-button link-back-button">Go Back</a>
+    </div>
+  </div>
+{% endblock %}

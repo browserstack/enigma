@@ -118,7 +118,7 @@ eradicate==2.1.0
 mypy==1.0.0
 mypy-extensions==1.0.0
 vulture==2.7
-google-api-python-client==2.78.0
-google-auth-httplib2==0.1.0
 django-cid==2.3
 flake8==6.0.0
+django-session-timeout==0.1.0
+django-axes==5.41.1

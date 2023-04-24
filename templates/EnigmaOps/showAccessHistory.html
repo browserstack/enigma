@@ -109,6 +109,7 @@
     </div>
   </div>
 </div>
+<<<<<<< HEAD
 <nav class="flex items-center justify-between border-t border-gray-200 sm:px-0 pt-6 px-4 sm:px-6 lg:px-8 pb-6 w-full">
   <div class="-mt-px flex w-0 flex-1">
     {% if currentPagination > 1 %}
@@ -120,6 +121,66 @@
     </a>
     {% endif %}
   </div>
+=======
+<div class="wrapper">
+  <div id="demo">
+    <table class="table table-bordered table-striped"><!-- add materialize classes, as desired -->
+    <thead class="thead-dark">
+  		<tr>
+        <th data-placeholder="Search">ID</th>
+        <th class="filter-select filter-exact" data-placeholder="ALL">Access Type</th>
+        <th data-placeholder="Search">Access</th>
+        <th data-placeholder="Search">Approver</th>
+        <th class="filter-select filter-exact" data-placeholder="ALL">Status</th>
+        <th data-placeholder="Search">Access Reason</th>
+        <th data-placeholder="Search">Decline Reason</th>
+        <th data-placeholder="Search">Action</th>
+      </tr>
+  	</thead>
+  	<tfoot>
+  		<!-- include "tablesorter-ignoreRow" class for pager rows in thead -->
+      <tr class="tablesorter-ignoreRow">
+  			<th colspan="8" class="ts-pager form-horizontal" style="padding:1%">
+  				<button type="button" class="btn btn-primary first" style="padding: 0px 30px;"><i class="small material-icons">first_page</i></button>
+  				<button type="button" class="btn btn-primary prev" style="padding: 0px 30px;"><i class="small material-icons">navigate_before</i></button>
+  				<span class="pagedisplay"></span>
+  				<!-- this can be any element, including an input -->
+  				<button type="button" class="btn btn-primary next" style="padding: 0px 30px;"><i class="small material-icons">navigate_next</i></button>
+  				<button type="button" class="btn btn-primary last" style="padding: 0px 30px;"><i class="small material-icons">last_page</i></button>
+  				<select class="pagesize browser-default form-control col-sm-1" title="Select page size" style="display:  inherit;">
+  					<option selected="selected" value="40">40</option>
+  					<option value="50">50</option>
+  					<option value="60">60</option>
+  					<option value="70">70</option>
+  				</select>
+  				<select class="pagenum browser-default form-control col-sm-1" title="Select page number" style="display:  inherit;"></select>
+  			</th>
+  		</tr>
+  	</tfoot>
+  	<tbody>
+      {% for item in dataList %}
+      <tr >
+        <td>{{ item.requestId }}</td>
+        <td>{{ item.access_desc }}</td>
+        <td>{{ item.accessCategory }} details: {{ item.accessMeta | pprint }}</td>
+        {% if item.approver_2 %}
+            <td>
+              1: {{ item.approver_1 }}
+              <br>
+              2: {{ item.approver_2 }}
+            </td>
+        {% else %}
+            <td>{{ item.approver_1 }}</td>
+        {% endif %}
+        <td>{{ item.status }}</td>
+        <td>{{ item.accessReason }}</td>
+        <td>{{ item.decline_reason }}</td>
+        <td><a class="btn btn-primary" target="_blank"  href="/individual_resolve?requestId={{ item.requestId|urlencode }}">ReGrant</a></td>
+      </tr>
+      {% endfor %}
+  	</tbody>
+  </table></div>
+>>>>>>> main
 
   <div class="hidden md:-mt-px md:flex">
     {% for navIter in allPages %}

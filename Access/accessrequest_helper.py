@@ -20,6 +20,7 @@ from Access.models import (
     ApprovalType,
 )
 from Access.background_task_manager import background_task, accept_request
+from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
 
 logger = logging.getLogger(__name__)
@@ -195,11 +196,14 @@ def get_pending_requests(request):
     try:
         context = {"declineReasons": DECLINE_REASONS, "otherAccessRecepients": []}
         start_time = time.time()
-
-        context["membershipPending"] = GroupV2.getPendingMemberships()
-        context["newGroupPending"] = GroupV2.getPendingCreation()
-
         user = request.user.user
+        if user.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]):
+            context["membershipPending"] = GroupV2.getPendingMemberships()
+            context["newGroupPending"] = GroupV2.getPendingCreation()
+        else:
+            context["membershipPending"] = 0
+            context["newGroupPending"] = 0
+
         (
             context["genericRequests"],
             context["groupGenericRequests"],
@@ -405,15 +409,17 @@ def create_request(auth_user, access_request_form):
         }
 
         access_module = helper.get_available_access_modules()[access_tag]
-        extra_field_labels = get_extra_field_labels(access_module)
-        if extra_fields and extra_field_labels:
-            for field in extra_field_labels:
-                access_labels[0][field] = extra_fields[0]
-                extra_fields = extra_fields[1:]
-
         module_access_labels = access_module.validate_request(
             access_labels, auth_user, is_group=False
         )
+
+        extra_field_labels = get_extra_field_labels(access_module)
+
+        if extra_fields and extra_field_labels:
+            for field in extra_field_labels:
+                module_access_labels[0][field] = extra_fields[0]
+                extra_fields = extra_fields[1:]
+
 
         for index2, access_label in enumerate(module_access_labels):
             request_id = request_id + "_" + str(index2)
@@ -516,10 +522,7 @@ def get_extra_field_labels(access_module):
 def get_extra_fields(access_request):
     if "extraFields" in access_request:
         return access_request["extraFields"]
-    elif "extraFields[]" in access_request:
-        return [access_request["extraFields[]"]]
-    else:
-        return []
+    return []
 
 
 def _validate_access_request(access_request_form, user):

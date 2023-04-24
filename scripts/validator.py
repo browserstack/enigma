@@ -25,6 +25,6 @@ try:
     validate(instance=config, schema=schema)
     logger.info("Schema validation passed!")
 except Exception as e:
-    logger.error("Schema validation failed! Error is: " + e)
+    logger.error("Schema validation failed! Error is: %s", e)
     traceback.format_exc()
     sys.exit(1)
