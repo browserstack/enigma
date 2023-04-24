@@ -112,7 +112,7 @@ def new_access_request(request):
 
     return render(
         request,
-        "BSOps/newAccessRequest.html",
+        "EnigmaOps/newAccessRequest.html",
         {
             "modulesList": helper.get_available_access_modules(),
         },
