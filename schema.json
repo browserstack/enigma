@@ -6,6 +6,29 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
+    "django_setup": {
+      "description": "Config keys related to Django setup",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "SECRET_KEY": {
+          "description": "Django Secret Key to be used. Keep this value secret",
+          "type": "string"
+        },
+        "DEBUG": {
+          "description": "Turns on/off debug mode.",
+          "type": "boolean"
+        },
+        "ALLOWED_HOSTS": {
+          "description": "A list of strings representing the host/domain names that can be served.",
+          "type": "array"
+        },
+        "CSRF_TRUSTED_ORIGINS": {
+          "description": "A list of string represnting the urls that are CSRT trusted origins",
+          "type": "array"
+        }
+      }
+    },
     "sso": {
       "description": "Config keys related to SSO",
       "type": "object",

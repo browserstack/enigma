@@ -1,10 +1,28 @@
 from django.contrib.auth.models import User as user
 from django.db import models, transaction
 from django.db.models.signals import post_save
+from django.conf import settings
 from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 import datetime
 import enum
 
+
+class StoredPassword(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        editable=False
+    )
+    password = models.CharField(
+        'Password hash',
+        max_length=255,
+        editable=False
+    )
+    date = models.DateTimeField(
+        'Date',
+        auto_now_add=True,
+        editable=False
+    )
 
 class ApprovalType(enum.Enum):
     Primary = "Primary"

@@ -1,4 +1,14 @@
 {
+  "django_setup": {
+    "SECRET_KEY": "",
+    "DEBUG": false,
+    "ALLOWED_HOSTS": [
+      "localhost"
+    ],
+    "CSRF_TRUSTED_ORIGINS": [
+      ""
+    ]
+  },
   "sso": {
     "googleapi": {
       "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": "",
