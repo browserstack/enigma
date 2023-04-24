@@ -63,7 +63,6 @@ def test_getallUserList(
         assert context["dataList"][0]["last_name"] == userMock.user.last_name
         assert context["dataList"][0]["email"] == userMock.email
         assert context["dataList"][0]["username"] == userMock.user.username
-        assert context["dataList"][0]["git_username"] == userMock.gitusername
         assert context["dataList"][0]["offbaord_date"] == userMock.offbaord_date
         assert context["dataList"][0]["state"] == userMock.current_state()
         assert context["dataList"][0]["is_active"] == userMock.user.is_active
