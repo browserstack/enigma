@@ -7,12 +7,11 @@ from celery import shared_task
 from celery.signals import task_success, task_failure
 
 from Access import helpers
-from bootprocess import general
-from BrowserStackAutomation.settings import AUTOMATED_EXEC_IDENTIFIER
-from Access.models import UserAccessMapping, User
+from Access.models import UserAccessMapping
 from Access import notifications
 
 logger = logging.getLogger(__name__)
+
 
 with open("config.json") as data_file:
     background_task_manager_type = json.load(data_file)["background_task_manager"][
@@ -30,7 +29,8 @@ def background_task(func, *args):
         elif func == "run_accept_request":
             run_accept_request.delay(*args)
         elif func == "run_access_revoke":
-            run_access_revoke.delay(*args)
+            request_id = args[0]
+            run_access_revoke.delay(request_id)
     else:
         if func == "run_access_grant":
             request_id = args[0]
@@ -56,25 +56,30 @@ def background_task(func, *args):
 )
 def run_access_grant(request_id):
     user_access_mapping = UserAccessMapping.get_access_request(request_id=request_id)
-    access_type = user_access_mapping.access.access_tag
+    access_tag = user_access_mapping.access.access_tag
     user = user_access_mapping.user_identity.user
-    approver = user_access_mapping.approver_1.user.username
+    approver = user_access_mapping.approver_1.user
     message = ""
+    access_module = helpers.get_available_access_module_from_tag(access_tag)
     if not user_access_mapping.user_identity.user.is_active():
         user_access_mapping.decline_access(decline_reason="User is not active")
         logger.debug(
             {
                 "requestId": request_id,
                 "status": "Declined",
-                "by": approver,
+                "by": approver.username,
                 "response": message,
             }
         )
         return False
-    elif user_access_mapping.user_identity.identity == {}:
+    elif user_access_mapping.user_identity.identity == {} and access_module.get_identity_template() != "":
         user_access_mapping.grant_fail_access(
             fail_reason="Failed since identity is blank for user identity"
         )
+        notifications.send_mail_for_request_granted_failure(
+            user, approver, access_tag, request_id
+        )
+
         logger.debug(
             {
                 "requestId": request_id,
@@ -85,7 +90,6 @@ def run_access_grant(request_id):
         )
         return False
 
-    access_module = helpers.get_available_access_module_from_tag(access_type)
     if not access_module:
         return False
 
@@ -132,10 +136,10 @@ def run_access_grant(request_id):
             }
         )
         try:
-            destination = access_module.access_mark_revoke_permission(access_type)
+            destination = access_module.access_mark_revoke_permission(access_tag)
             notifications.send_mail_for_access_grant_failed(
                 destination,
-                access_type.upper(),
+                access_tag.upper(),
                 user.email,
                 request_id=request_id,
                 message=message,
@@ -157,77 +161,82 @@ def run_access_grant(request_id):
 @shared_task(
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
-def run_access_revoke(data):
-    data = json.loads(data)
-    access_mapping = UserAccessMapping.get_access_request(data["request_id"])
+def run_access_revoke(request_id):
+    access_mapping = UserAccessMapping.get_access_request(request_id=request_id)
     if not access_mapping:
-        # TODO: Have to add the email targets for failure
-        targets = []
-        message = "Request not found"
-        notifications.send_revoke_failure_mail(
-            targets, data["request_id"], data["revoker_email"], 0, message
-        )
-        return {"status": False}
+        logger.debug(f"Cannot find access mapping with id: {request_id}")
+        return False
     elif access_mapping.status == "Revoked":
-        return {"status": True}
+        logger.debug(f"The request with id {request_id} is already revoked.")
+        return True
     access = access_mapping.access
     user_identity = access_mapping.user_identity
 
-    revoker = User.get_user_by_email(data["revoker_email"])
-    if not revoker:
-        # TODO: Have to add the email targets for failure
-        targets = []
-        message = "Revoker not found"
-        notifications.send_revoke_failure_mail(
-            targets,
-            data["request_id"],
-            data["revoker_email"],
-            0,
-            message,
-            access.access_tag,
-        )
-        user_identity.mark_revoke_failed_for_approved_access_mapping(access)
-        return {"status": False}
-
+    revoker = access_mapping.revoker
     access_modules = helpers.get_available_access_modules()
-
     access_module = access_modules[access.access_tag]
+    if not revoker:
+        logger.debug(f"The revoker is not set for the request with id {request_id}")
+        access_mapping.revoke_failed("Revoker was not set.")
+        return False
 
-    response = access_module.revoke(
-        user_identity.user, user_identity, access.access_label, access_mapping
-    )
-    logger.debug("Response from the revoke function: " + str(response))
-    if type(response) is bool:
-        revoke_success = response
-        message = None
-    else:
-        revoke_success = response[0]
-        message = str(response[1])
+    try:
+        response = access_module.revoke(
+            user_identity.user, user_identity, access.access_label, access_mapping
+        )
+        if type(response) is bool:
+            revoke_success = response
+            message = None
+        else:
+            revoke_success = response[0]
+            message = str(response[1])
+    except Exception as e:
+        logger.exception(
+            "Error while running revoke function: " + str(traceback.format_exc())
+        )
+        revoke_success = False
+        message = str(traceback.format_exc())
+    
 
     if revoke_success:
-        if AUTOMATED_EXEC_IDENTIFIER in access_module.revoke_owner():
-            user_identity.revoke_approved_access_mapping(access)
-    else:
+        access_mapping.revoke()
         logger.debug(
-            "Failed to revoke the request: {} due to exception: {}".format(
-                access_mapping.request_id, message
-            )
+            {
+                "requestId": request_id,
+                "status": "revoked",
+                "by": revoker,
+                "response": message,
+            }
         )
-        logger.debug("Retry count: {}".format(run_access_revoke.request.retries))
+    else:
+        access_mapping.revoke_failed(
+            fail_reason="Error while running revoke in module"
+        )
+        logger.debug(
+            {
+                "requestId": request_id,
+                "status": "RevokeFailed",
+                "by": revoker,
+                "response": message,
+                "retry_count": run_access_revoke.request.retries
+            }
+        )
         if run_access_revoke.request.retries == 3:
             logger.info("Sending the notification for failure")
-            notifications.send_revoke_failure_mail(
-                access_module.access_mark_revoke_permission(access_mapping.access_type),
-                access_mapping.request_id,
-                revoker.email,
-                run_access_revoke.request.retries,
-                message,
-                access.access_tag,
-            )
-            user_identity.mark_revoke_failed_for_approved_access_mapping(access)
+            try:
+                notifications.send_revoke_failure_mail(
+                    access_module.access_mark_revoke_permission(access_mapping.access_type),
+                    access_mapping.request_id,
+                    revoker.email,
+                    run_access_revoke.request.retries,
+                    message,
+                    access.access_tag,
+                )
+            except Exception as e:
+                logger.debug(f"Failed to send Revoke failed mail due to exception: {str(e)}")
         raise Exception("Failed to revoke the access due to: " + str(message))
 
-    return {"status": True}
+    return True
 
 
 @task_success.connect(sender=run_access_grant)
@@ -278,6 +287,7 @@ def run_accept_request(data):
     result = background_task("run_access_grant", request_id)
     if result:
         return {"status": True}
+
     notifications.send_mail_for_request_granted_failure(
         user, approver, access_type, request_id
     )
@@ -291,3 +301,29 @@ def run_accept_request(data):
     )
 
     return {"status": False}
+
+
+def accept_request(user_access_mapping):
+    result = None
+    try:
+        result = run_access_grant.delay(user_access_mapping.request_id)
+    except Exception:
+        user_access_mapping.grant_fail_access(fail_reason="Task could not be queued")
+
+    if result:
+        return True
+    return False
+
+
+def revoke_request(user_access_mapping, revoker=None):
+    result = None
+    # change the status to revoke processing
+    user_access_mapping.revoking(revoker)
+    try:
+        result = run_access_revoke.delay(user_access_mapping.request_id)
+    except Exception:
+        user_access_mapping.RevokeFailed(fail_reason="Task could not be queued")
+
+    if result:
+        return True
+    return False

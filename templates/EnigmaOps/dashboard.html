@@ -1,0 +1,69 @@
+{% extends 'global_layout.html' %}
+{% load static %}
+
+{% block head_body %}
+<link rel="stylesheet" href={% static "css/dashboard.css" %}>
+{% endblock %}
+
+{% block content_body %}
+<div class="w-full flex flex-col content-center flex-wrap">
+  <div class="rounded-lg bg-white shadow my-6 flex flex-col w-11/12">
+    <h2 class="sr-only" id="profile-overview-title">Profile Overview</h2>
+    <div class="bg-white p-6 flex w-11/12">
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <div class="sm:flex sm:space-x-5">
+          <div class="mt-4 text-center sm:mt-0 sm:pt-1 sm:text-left">
+            <p class="text-sm font-medium text-gray-600">Welcome back,</p>
+            <p class="text-xl font-bold text-gray-900 sm:text-2xl">Let's get started</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 divide-y divide-gray-200 border-t border-gray-200 bg-gray-50 sm:grid-cols-4 sm:divide-y-0 sm:divide-x">
+      <div class="px-6 py-5 text-center text-sm font-medium">
+        <span class="text-gray-900">{{ totalAccessCount }}</span>
+        <span class="text-gray-600">Module Access</span>
+      </div>
+
+      <div class="px-6 py-5 text-center text-sm font-medium">
+        <span class="text-gray-900">TODO</span>
+        <span class="text-gray-600">Pending Module Access</span>
+      </div>
+
+      <div class="px-6 py-5 text-center text-sm font-medium">
+        <span class="text-gray-900">{{ groupsMemberFor }}</span>
+        <span class="text-gray-600">Groups</span>
+      </div>
+
+      <div class="px-6 py-5 text-center text-sm font-medium">
+        <span class="text-gray-900">TODO</span>
+        <span class="text-gray-600">Pending group access</span>
+      </div>
+    </div>
+  </div>
+  <div class="dashboard-content flex flex-col w-11/12 place-content-center items-center">
+    <div class="border-b border-gray-200 bg-white px-4 py-5 my-4 rounded-md border flex-none w-1/2">
+      <div class="-ml-4 -mt-4 flex flex-wrap items-center justify-between">
+        <div class="ml-4 mt-4">
+          <h3 class="text-lg font-medium leading-6 text-gray-900">Create a group</h3>
+          <p class="mt-1 text-sm text-gray-500">Create a group to request accesses.</p>
+        </div>
+        <div class="ml-4 mt-4 flex-shrink-0">
+          <button type="button" class="relative inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Proceed</button>
+        </div>
+      </div>
+    </div>
+    <div class="border-b border-gray-200 bg-white px-4 py-5 my-4 rounded-md border flex-none w-1/2">
+      <div class="-ml-4 -mt-4 flex flex-wrap items-center justify-between">
+        <div class="ml-4 mt-4">
+          <h3 class="text-lg font-medium leading-6 text-gray-900">Request module access</h3>
+          <p class="mt-1 text-sm text-gray-500">Request for access for yourself or a group.</p>
+        </div>
+        <div class="ml-4 mt-4 flex-shrink-0">
+          <button type="button" class="relative inline-flex items-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Proceed</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

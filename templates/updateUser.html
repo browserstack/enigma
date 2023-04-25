@@ -72,7 +72,7 @@
       $('#' + formId).find('#success-msg').text("")
       error_message = "There was an error in updating User Identity for module " + modName + ". Please contact Admin"
       $.ajax({
-          url : "{% url 'saveIdentity' %}/", // the endpoint
+          url : "{% url 'saveIdentity' %}", // the endpoint
           type : "POST", // http method
           data : $('#' + formId).serialize(),
 
