@@ -1,0 +1,245 @@
+{% extends 'global_layout.html' %}
+{% load static %}
+{% load myaccess_css_helpers %}
+
+{% block head_body %}
+<script src={% static "js/createNewGroup.js" %}></script>
+{% endblock %}
+
+{% block nav_breadcrumb %}
+<nav class="flex px-8 py-6 flex-shrink-0" aria-label="Breadcrumb">
+  <ol role="list" class="flex items-center space-x-4">
+    <li>
+      <div>
+        <a href="{% url 'dashboard' %}" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-5 w-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+            aria-hidden="true">
+            <path fill-rule="evenodd"
+              d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z"
+              clip-rule="evenodd" />
+          </svg>
+          <span class="sr-only">Home</span>
+        </a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+          fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd"
+            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+            clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'groupDashboard' %}"
+          class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Groups</a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+          fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd"
+            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+            clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'createNewGroup' %}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Create a
+          group</a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content_body %}
+{% csrf_token %}
+<div class="px-4 sm:px-6 lg:px-8 w-full">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-2xl font-bold text-gray-900">Create a group</h1>
+    </div>
+  </div>
+
+  <div class="relative flex items-center">
+    <div class="w-full flex flex-col">
+      <label class="flex-none leading-5 mt-8 text-sm font-medium text-gray-700">Name for group</label>
+      <input type="text" pattern="[A-Za-z0-9][A-Za-z0-9-]{2,}"
+        class="w-9/12 px-4 py-2 mt-1 bg-white border border-gray-300 box-border rounded-md shadow-sm focus:outline-none focus:border-blue-500
+               items-center text-base leading-6 font-normal text-gray-500"
+        id="newGroupName" name="newGroupName"
+        placeholder="Minimum 3 chars with no spaces and special chars, hyphens allowed"
+        required>
+      <p id="invalidGroupName" class="text-sm text-red-600 hidden mt-1"> Invalid Group name</p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 max-h-min">
+    <div>
+      <div class="flex flex-row mt-6 items-center">
+        <div class="sm:flex-auto">
+          <form class="w-11/12 float:left relative">
+            <label class="text-sm font-medium text-gray-700">Add members</label>
+            <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white">
+              <input id="global-search" type="search"
+              class="flex-none rounded-md border-none text-gray-500 text-base leading-6 font-normal px-4 py-2 min-w-full"
+              placeholder="Search by name or email ID" required>
+              <div class="pointer-events-none absolute right-0 flex items-center pr-2 bottom-2.5">
+                <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor"
+                  viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path fill-rule="evenodd"
+                    d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                    clip-rule="evenodd"></path>
+                </svg>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="ml-auto flex items-center mt-8">
+          <input type="checkbox" onclick="selectAllToggleSelection(this);"
+            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800
+                   focus:ring-2 dark:border-gray-600 -ml-3 mb-2.5"
+            id="selectAllUsers" name="selectAllUsers">
+          <label for="selectAllUsers" class="ml-1 mr-3 mb-2.5 text-base leading-6 font-normal text-gray-900">Select all</label>
+        </div>
+      </div>
+
+      <div class="h-80 overflow-y-scroll bg-white mt-6">
+        <div class="px-4 sm:px-6 lg:px-8">
+          <div class="mt-8 flex flex-col">
+            <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+              <div class="inline-block min-w-full align-middle">
+                <div class="relative overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                  <table class="min-w-full table-fixed divide-gray-300">
+                    <tbody class="divide-gray-200 bg-white">
+                      {% for user in users %}
+                      {% if request.user.email != user.email %}
+                      {% if user.state == '1' %}
+                      <tr id="{{ user.user.username }}-tablerow" class="hover:bg-blue-50 hover:text-blue-700">
+                        <td class="relative w-12 px-6 sm:w-16 sm:px-8">
+                          <div class="absolute inset-y-0 left-0 w-0.5 hidden" id="{{ user.user.username }}-marker">
+                          </div>
+
+                          <input type="checkbox" value="{{user.email}}" username="{{user.user.username}}"
+                            firstName="{{user.user.first_name}}" lastName="{{user.user.last_name}}"
+                            name="selectedUserList"
+                            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 sm:left-6"
+                            onclick="handleMemberSelection({elem: this, username: '{{ user.user.username  }}', firstName: '{{ user.user.first_name}}', lastName: '{{ user.user.last_name}}', email: '{{user.email}}'});"
+                            id="{{ user.user.username  }}-checkbox"></input>
+                        </td>
+                        <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium text-gray-900"
+                          value="{{ user.user.username }}" id="{{ user.user.username }}-tabledesc">
+                          {{user.user.first_name}} {{user.user.last_name}} {{user.email }}</td>
+                      </tr>
+                      {% endif %}
+                      {% endif %}
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="flex flex-col mt-16 ml-4">
+        <div class="flex flex-row items-center">
+          <h1 class="text-lg font-medium text-gray-900 mb-0.5">Selected members</h1>
+          <span
+            class="inline-flex items-center rounded-full bg-green-100 ml-4 px-2.5 py-0.5 text-xs font-medium text-green-800 hidden"
+            id="member-selected-count">0 selected</span>
+        </div>
+        <div class="px-6 bg-white h-80 lg:px-8 mt-5 flex justify-center" id="member-selection-empty">
+          <div class="mx-auto max-w-2xl">
+            <div class="flex gap-4 content-center  min-w-full min-h-full">
+              <div class="block m-auto content-center">
+                <div class="py-1"><svg class="fill-current h-10 w-10 text-gray-400 m-auto"
+                    xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path
+                      d="M2.93 17.07A10 10 0 1 1 17.07 2.93 10 10 0 0 1 2.93 17.07zm12.73-1.41A8 8 0 1 0 4.34 4.34a8 8 0 0 0 11.32 11.32zM9 11V9h2v6H9v-4zm0-6h2v2H9V5z" />
+                    </svg></div>
+                <h1 class="text-sm font-medium text-gray-900 text-center mt-2.5">You have not selected any member yet</h1>
+                <h1 class="mt-1.5 text-sm text-center text-gray-700">Please select members from the left panel.</h1>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="min-y-full w-full bg-white mt-5 flex flex-1 md:flex-col md:flex hidden" style="display: none;"
+          id="member-selection-list">
+          <div class="flex-1 relative overflow-auto max-h-[12rem] space-y-1 inline-block min-w-full align-middle">
+            <table class="min-w-full table-fixed divide-gray-300">
+              <tbody class="divide-gray-200 bg-white" id="member-selection-table">
+              </tbody>
+            </table>
+          </div>
+          <nav
+            class="flex flex-shrink-0 px-4 items-center justify-between align-bottom border-t border-gray-200 bg-white pt-4 pb-4 sticky hidden">
+            <button type="button"
+              class="inline-flex items-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-base font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sticky"
+              onclick="removeAllMembers();">
+              Remove all
+            </button>
+          </nav>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div>
+    <div>
+
+      <div class="mt-2 flex flex-col">
+        <label class="leading-loose text-sm font-medium">Reason for group</label>
+        <input type="text" id="newGroupReason" name="newGroupReason"
+          class="w-30 h-42 px-4 py-2 border-2 rounded-lg border-gray-200 focus:outline-none focus:border-yellow-500"
+          placeholder="Please mention the reason for creating this group" required>
+        <p id="invalidGroupReason" class="text-sm text-red-600 hidden mt-1"> This field can't be empty</p>
+      </div>
+
+    </div>
+
+    <div>
+      <div class="mt-8 flex items-center ml-4 mt-6">
+        <input checked type="checkbox" value="true" id="requiresAccessApprove" name="requiresAccessApprove"
+          class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:border-gray-600">
+        <label for="checked-checkbox" class="ml-2 text-sm font-semibold text-gray-900 dark:text-black-300">Needs premission
+          from access_approve to add new users to group</label>
+      </div>
+
+    </div>
+
+    <div>
+      <button type="submit" id="submitNewGroup"
+        class="items-center rounded-md border border-transparent w-40 bg-blue-500 mt-8 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+        Submit request
+      </button>
+
+    </div>
+  </div>
+
+</div>
+<table class="hidden">
+  <tr id="member-selection-row-template" class="hidden max-h-4 px-6 hover:bg-blue-50 hover:text-blue-700">
+    <td class="relative w-full px-4" id="member-selection-row-tabledesc">Member Desc</td>
+    <td class="whitespace-nowrap px-4 py-4 text-sm font-medium justify-right content-right max-w-2"
+      id="member-selection-row-cancel">
+      <button type="button"
+        class="ml-0.5 mr-0.5 inline-flex max-w-2 flex-shrink-0 items-center justify-center rounded-full focus:bg-blue-500 focus:text-white focus:outline-none"
+        onclick="removeMemberSelectionUI(this);">
+        <span class="sr-only">Remove large option</span>
+        <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
+          <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
+        </svg>
+      </button>
+    </td>
+  </tr>
+</table>
+
+{% include 'EnigmaOps/shared/components/notification-modal/notificationModalTemplate.html' %}
+
+{% endblock %}

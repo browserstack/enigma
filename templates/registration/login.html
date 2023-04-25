@@ -23,9 +23,9 @@
   <!-- theme stylesheet-->
   <link rel="stylesheet" href={% static "files/css/style.green.css" %} id="theme-stylesheet">
   <!-- Custom stylesheet - for your changes-->
-  <link rel="stylesheet" href={% static "files/css/custom.css" %}>
+  <link rel="stylesheet" href={% static "css/custom.css" %}>
   <!-- Tweaks for older IEs-->
-  <script src="{% static 'bower_components/jquery/dist/jquery.min.js' %}"></script>
+  <script src="{% static 'js/jquery.min.js' %}"></script>
 </head>
 
 <style>
@@ -58,11 +58,8 @@
     </div>
   </div>
   <!-- JavaScript files-->
-  <!-- <script src="vendor/jquery/jquery.min.js"></script> -->
-  <!-- <script src="vendor/popper.js/umd/popper.min.js"> </script> -->
-  <script src="{% static " files/vendor/bootstrap/js/bootstrap.min.js" %}"></script>
-  <!-- <script src="{% static "files/vendor/jquery-validation/jquery.validate.min.js" %}"></script> -->
-  <script src="{% static " files/js/front.js" %}"></script>
+  <script src="{% static "files/vendor/bootstrap/js/bootstrap.min.js" %}"></script>
+  <script src="{% static "files/js/front.js" %}"></script>
 </body>
 
 </html>

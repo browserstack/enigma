@@ -2,7 +2,6 @@ config.json
 __pycache__/
 *.py[cod]
 db.sqlite3
-.env
 
 # Mac OS X files
 .DS_Store
@@ -13,12 +12,21 @@ db.sqlite3
 # Coverage files from pytest-cov plugin for pytest
 .coverage
 
+# Logger files
+enigma.log
+
 # Dependency directories
 node_modules/
+
+#Access Modules
+Access/access_modules
 
 # Folders created by Docker Compose
 mounts/
 public/
+
+#Access Modules
+Access/access_modules
 
 # make lint sideeffect
 lint_issues

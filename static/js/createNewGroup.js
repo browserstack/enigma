@@ -54,7 +54,7 @@ const addMemberSelection = (username, firstName, lastName, email) => {
   newSpan.appendTo(selectionList);
   newSpan.show();
   const tableData = newSpan.children('td');
-  tableData[0].textContent = firstName+" "+lastName;
+  tableData[0].textContent = firstName+" "+lastName+" "+email;
   newSpan.attr('id', `member-selection-${username}`);
   newSpan.attr('email', email)
   id = `member-selection-${username}`
