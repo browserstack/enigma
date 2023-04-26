@@ -85,7 +85,11 @@
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Approval SLA Breached</td>
-											<td class="text-gray-700 py-4">{{ group.sla_breached }}</td>
+                                            {% if group.sla_breached %}
+											<td class="text-red-500 py-4">{{ group.sla_breached }}</td>
+                                            {% else %}
+											<td class="text-gray-900 py-4">{{ group.sla_breached }}</td>
+                                            {% endif %}
 										</tr>
 									</table>
 									{% if not group.needsAccessApprove %}
@@ -109,7 +113,7 @@
 											</table>
 											<div class="text-sm pt-5">
 												<button class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
-												<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium" onclick="showDeclineModal()">Decline</button>
+												<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium" value="{{ eachAccessDetails.requestId }}" onclick="showDeclineModal($(this).val())">Decline</button>
 											</div>
 										</div>
 									{% endfor %}
@@ -312,43 +316,45 @@
 </div>
 
 <div id="decline_modal" class="decline_modal relative z-10 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 
-  <div class="fixed inset-0 z-10 overflow-y-auto">
-    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-      <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-				<!-- HEADER -->
-				<div class="border-b px-4 py-3 bg-gray-100 flex">
-					<div class="declineHeading">
-					</div>
-					<div class="close_decline_modal ml-auto inline-block text-sm cursor-pointer">
-						<svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
-					</div>
-				</div>
-				<!-- HEADER END -->
-				<div class="flex-row text-sm px-4 pt-4 pb-8">
-					<label for="declineReason">Reason</label>
-					<select id="declineReason" class="w-full text-sm rounded-md border-gray-200 mt-1 mb-5" name="reason" placeholder="--select--"
-						class="ui fluid search dropdown generic-access-select-dropdown" required>
-						<option selected disabled>Select</option>
-						{% for key,value in declineReasons.items %}
-						<option value="{{value}}">{{value}}</option>
-						{% endfor %}
-						<option value="customInput">Other</option>
-					</select>
-					<div id="otherType" style="display:none;">
-						<label for="">Details</label>
-						<input class="text-sm rounded-md border-gray-200 w-full mt-1" type="text" name="" id="" placeholder="Please mention the reason for request decline">
-					</div>
-				</div>
-				<!-- FOOTER -->
-				<div class="border-t w-full p-3 justify-end bg-gray-100 flex">
-					<button onclick="clickDeclineFinalButton()" class="declineFinalButton rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Decline</button>
-				</div>
-				<!-- FOOTER END -->
-			</div>
+    <div class="fixed inset-0 z-10 overflow-y-auto">
+        <div class="flex min-h-full  items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+
+                <div class="border-b px-4 py-3 bg-gray-100 flex">
+                    <div class="declineHeading">
+                    </div>
+                    <div class="close_decline_modal ml-auto inline-block text-sm cursor-pointer">
+                        <svg onclick="closeDeclineModal()" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                    </div>
+                </div>
+
+                <form onsubmit="clickDeclineFinalButton();return false">
+                    <div class="flex-row text-sm px-4 pt-4 pb-8">
+                        <label for="declineReason">Reason</label>
+                        <select onchange="onChangeDeclineReason()" id="declineReason" class="w-full text-sm rounded-md border-gray-200 mt-1 mb-5" name="reason" required>
+                            <option selected disabled value="">Select</option>
+                            {% for key,value in declineReasons.items %}
+                            <option value="{{value}}">{{value}}</option>
+                            {% endfor %}
+                            <option value="customInput">Other</option>
+                        </select>
+                        <input type="hidden" id="declineReasonText">
+                        <div id="otherType" style="display:none;">
+                            <label for="">Details</label>
+                            <input oninput="setDeclineReason($(this).val())" class="text-sm rounded-md border-gray-200 w-full mt-1" type="text" name="reason_box" id="reason_box" placeholder="Please mention the reason for request decline">
+                        </div>
+                    </div>
+
+                    <div class="border-t w-full p-3 justify-end bg-gray-100 flex">
+                        <button type="submit" class="declineFinalButton rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Decline</button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
 
