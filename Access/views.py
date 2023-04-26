@@ -251,7 +251,6 @@ def request_access(request):
         HTTPResponse: Access request form template or the status of access save request.
     """
     if request.POST:
-        print((request.POST))
         context = create_request(
             auth_user=request.user, access_request_form=request.POST
         )
