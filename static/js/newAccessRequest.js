@@ -82,7 +82,7 @@ const raiseAccessRequest = () => {
   const accessTags = [];
 
   for(iter = 0; iter < modules.length; iter++) {
-    accessTags.push(`accesses=${modules[iter].id.replace('module-selection-', '')}`);
+    accessTags.push(`accesses=${modules[iter].id.replace('module-selection-', 'access_')}`);
   }
 
   const finalUrl = `/access/requestAccess?${accessTags.join("&")}`;
