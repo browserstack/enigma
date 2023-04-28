@@ -85,7 +85,7 @@ six==1.15.0
 social-auth-app-django==5.0.0
 social-auth-core==4.3.0
 soupsieve==2.0.1
-sqlparse==0.4.3
+sqlparse==0.4.4
 traitlets==5.0.5
 uritemplate==3.0.1
 urllib3==1.26.12
