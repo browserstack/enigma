@@ -105,7 +105,7 @@ mysqlclient==2.1.1
 mysql-connector-python==8.0.26
 django-celery-results==2.4.0
 sqlalchemy==1.4.45
-redis==4.4.0
+redis==4.4.4
 celery==5.2.7
 django-stubs==1.14.0
 pycodestyle==2.10.0
