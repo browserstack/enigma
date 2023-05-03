@@ -113,8 +113,7 @@
                   <table class="min-w-full table-fixed divide-gray-300">
                     <tbody class="divide-gray-200 bg-white">
                       {% for user in users %}
-                      {% if request.user.email != user.email%}
-                      {% if user.email != 'system_user@root.root'%}
+                      {% if request.user.email != user.email %}
                       {% if user.state == '1' %}
                       <tr id="{{ user.user.username }}-tablerow" class="hover:bg-blue-50 hover:text-blue-700">
                         <td class="relative w-12 px-6 sm:w-16 sm:px-8">
@@ -132,7 +131,6 @@
                           value="{{ user.user.username }}" id="{{ user.user.username }}-tabledesc">
                           {{user.user.first_name}} {{user.user.last_name}} {{user.email }}</td>
                       </tr>
-                      {% endif %}
                       {% endif %}
                       {% endif %}
                       {% endfor %}
@@ -218,7 +216,7 @@
 
     </div>
 
-    <div class = "mb-5">
+    <div>
       <button type="submit" id="submitNewGroup"
         class="items-center rounded-md border border-transparent w-40 bg-blue-500 mt-8 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
         Submit request
