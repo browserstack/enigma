@@ -113,7 +113,8 @@
                   <table class="min-w-full table-fixed divide-gray-300">
                     <tbody class="divide-gray-200 bg-white">
                       {% for user in users %}
-                      {% if request.user.email != user.email %}
+                      {% if request.user.email != user.email%}
+                      {% if user.email != 'system_user@root.root'%}
                       {% if user.state == '1' %}
                       <tr id="{{ user.user.username }}-tablerow" class="hover:bg-blue-50 hover:text-blue-700">
                         <td class="relative w-12 px-6 sm:w-16 sm:px-8">
@@ -131,6 +132,7 @@
                           value="{{ user.user.username }}" id="{{ user.user.username }}-tabledesc">
                           {{user.user.first_name}} {{user.user.last_name}} {{user.email }}</td>
                       </tr>
+                      {% endif %}
                       {% endif %}
                       {% endif %}
                       {% endfor %}
