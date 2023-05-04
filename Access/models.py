@@ -272,7 +272,7 @@ class User(models.Model):
         return group_history[0:count]
 
     def get_group_access_count(self):
-        return self.membership_user.count()
+        return self.membership_user.filter(group__status="Approved").count()
 
     def get_user_access_mapping_related_manager(self):
         all_user_identities = self.module_identity.order_by('id').reverse()
@@ -490,10 +490,11 @@ class MembershipV2(models.Model):
     
     def get_membership_details(self):
         access_request_data = {}
-        access_request_data["group_id"] = self.group.group_id
-        access_request_data["name"] = self.group.name
-        access_request_data["status"] = self.status
-        access_request_data["role"] = "Owner" if self.is_owner else "Member"
+        if self.group.status == "Approved":
+            access_request_data["group_id"] = self.group.group_id
+            access_request_data["name"] = self.group.name
+            access_request_data["status"] = self.status
+            access_request_data["role"] = "Owner" if self.is_owner else "Member"
 
         return access_request_data
 
