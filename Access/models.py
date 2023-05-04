@@ -486,6 +486,16 @@ class MembershipV2(models.Model):
     def update_membership(group, reason):
         membership = MembershipV2.objects.filter(group=group)
         membership.update(status="Declined", decline_reason=reason)
+    
+    def get_membership_details(self):
+        access_request_data = {}
+        if self.group.status == "Approved":
+            access_request_data["group_id"] = self.group.group_id
+            access_request_data["name"] = self.group.name
+            access_request_data["status"] = self.status
+            access_request_data["role"] = "Owner" if self.is_owner else "Member"
+
+        return access_request_data
 
     def get_membership_details(self):
         access_request_data = {}
