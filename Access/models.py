@@ -245,6 +245,35 @@ class User(models.Model):
         except User.DoesNotExist:
             return None
     
+    def get_all_memberships(self):
+        return self.membership_user.all()
+
+
+    def get_groups_history(self, start_index, count):
+        all_user_membership = self.get_all_memberships()
+        group_history = []
+        for each_membership in all_user_membership:
+            group_access = each_membership.get_membership_details()
+            if len(group_access) > 1:
+                group_history.append(group_access)
+
+            # skip till start_index
+            if start_index <= len(group_history):
+                group_history = group_history[start_index:]
+                start_index = 0
+            else:
+                start_index = start_index - len(group_history)
+                group_history = []
+
+            # end loop if count to return is reached
+            if start_index == 0 and len(group_history) >= count:
+                break
+
+        return group_history[0:count]
+
+    def get_group_access_count(self):
+        return self.membership_user.filter(group__status="Approved").count()
+
     def get_user_access_mapping_related_manager(self):
         all_user_identities = self.module_identity.order_by('id').reverse()
         access_request_mapping_related_manager = []
@@ -279,7 +308,7 @@ class User(models.Model):
 
     def get_total_access_count(self):
         return UserAccessMapping.objects.filter(user_identity__user=self).count()
-    
+
     @staticmethod
     def get_user_from_username(username):
         try:
@@ -458,6 +487,16 @@ class MembershipV2(models.Model):
     def update_membership(group, reason):
         membership = MembershipV2.objects.filter(group=group)
         membership.update(status="Declined", decline_reason=reason)
+    
+    def get_membership_details(self):
+        access_request_data = {}
+        if self.group.status == "Approved":
+            access_request_data["group_id"] = self.group.group_id
+            access_request_data["name"] = self.group.name
+            access_request_data["status"] = self.status
+            access_request_data["role"] = "Owner" if self.is_owner else "Member"
+
+        return access_request_data
 
     @staticmethod
     def get_membership(membership_id):
