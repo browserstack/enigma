@@ -51,15 +51,17 @@
 
 {% block content_body %}
 <div class="px-4 sm:px-6 lg:px-8 h-4/5 w-full">
+  
+
+  {% if genericForm %}
+
+  {% if accesses|length > 1 %}
+
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
       <h1 class="text-xl font-semibold text-gray-900">Module details</h1>
     </div>
   </div>
-
-  {% if genericForm %}
-
-  {% if accesses|length > 1 %}
   <div class="mt-10 overflow-hidden bg-white shadow sm:rounded-md">
     <ul role="list" class="divide-y divide-gray-200">
       {% for each_access in accesses %}
@@ -88,7 +90,11 @@
   </div>
   {% else %}
   {% for each_access in accesses %}
-  <p class="truncate text-lg leading-7 font-medium text-gray-900">{{ each_access.formDesc }}</p>
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-xl font-semibold text-gray-900">{{ each_access.formDesc }} Module Details</h1>
+    </div>
+  </div>
   {% with each_access.accessRequestPath as includePath %}
     {% include includePath %}
   {% endwith %}
@@ -97,28 +103,3 @@
   {% endif %}
 
 {% endblock %}
-<!-- Horizontal Form -->
-<!-- <div class="accessForms">
-  <form class="form-horizontal" action="{% url 'requestAccess' %}" method="post" id="usrform" name="usrform">
-    {% csrf_token %} -->
-      <!-- Generic Form -->
-      <!-- {% if genericForm %}
-        {% for each_access in accesses %}
-          {% with each_access.accessRequestPath as includePath %} -->
-            <!-- {% include includePath %} -->
-          <!-- {% endwith %}
-          <input type="hidden" name="requestUser" value="{{ request.user }}">
-          <input type="hidden" name="accessType" value="{{ each_access.accessTag }}"><br>
-          <input type="hidden" name="accessRequests" value="{{ each_access.accessTag }}">
-          <br>
-        {% endfor %}
-      {% endif %} -->
-
-      <!-- <div class="form-group" style="padding-left:1%;">
-        <button type="submit" class="btn btn-primary" style="margin: auto; margin-left: 15px;">Request Access</button>
-      </div> -->
-
-  <!-- </form>
-
-</div>
- -->
