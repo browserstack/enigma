@@ -65,7 +65,7 @@
     <ul class="flex flex-wrap text-sm font-medium
                        text-center text-gray-500 dark:text-gray-400 gap-8">
       <li class="mr-2" onclick="focusActiveTab(this)">
-        <a href="#genericAcceses" class="inline-flex py-4 border-b-2 rounded-t-lg group
+        <a show="genericAcceses" hide="users" class="inline-flex py-4 border-b-2 rounded-t-lg group
                                                      active text-blue-600 border-blue-600
                                                      dark:text-blue-500 dark:border-blue-500"
           aria-current="page">
@@ -78,7 +78,7 @@
         </a>
       </li>
       <li class="mr-2" onclick="focusActiveTab(this)">
-        <a href="#users" aria-current="page"
+        <a hide="genericAcceses" show="users" aria-current="page"
           class="inline-flex py-4 border-b-2 rounded-t-lg group
                                                                 border-transparent hover:text-gray-600
                                                                 hover:border-gray-300 dark:hover:text-gray-300">
@@ -101,7 +101,7 @@
     </div>
 
     <div id="users"
-      class="-mx-8 pb-6 border-t border-gray-200 border-solid fade bg-white">
+      class="-mx-8 pb-6 border-t border-gray-200 border-solid h-screen fade bg-white hidden">
       {% include "EnigmaOps/group_access_list_tabs/users_list_tab.html" %}
     </div>
 
