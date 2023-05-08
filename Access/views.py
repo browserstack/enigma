@@ -24,6 +24,8 @@ from Access.accessrequest_helper import (
     accept_group_access,
     run_accept_request_task,
     run_ignore_failure_task,
+    ImplementationPendingException,
+    REQUEST_FAILED_MSG
 )
 from Access.models import User, UserAccessMapping, GroupAccessMapping
 
@@ -42,6 +44,10 @@ from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver, paginated_search
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
+IMPLEMENTATION_PENDING_ERROR_MESSAGE = {
+    "error_msg": "Failed to process the request",
+    "msg": "Implementation of the {feature_name} feature is pending."
+}
 
 logger = logging.getLogger(__name__)
 logger.info("Server Started")
@@ -252,10 +258,30 @@ def request_access(request):
         HTTPResponse: Access request form template or the status of access save request.
     """
     if request.POST:
-        context = create_request(
-            auth_user=request.user, access_request_form=request.POST
-        )
-        return render(request, "EnigmaOps/accessStatus.html", context)
+        status = 200
+        try:
+            context = create_request(
+                auth_user=request.user, access_request_form=request.POST
+            )
+            if "error" in context:
+                status = 400
+            return JsonResponse(context, status=200)
+        except ImplementationPendingException:
+            status = 400
+            context  = {
+                "error": {
+                    "error_msg": IMPLEMENTATION_PENDING_ERROR_MESSAGE["error_msg"],
+                    "msg": IMPLEMENTATION_PENDING_ERROR_MESSAGE["msg"].format(
+                        feature_name="can_auto_approve"
+                    )
+                }
+            }
+        except Exception:
+            status = 500
+            context = {
+                "error": REQUEST_FAILED_MSG
+            }
+        return JsonResponse(context, status=status)
 
     context = get_request_access(request)
     return render(request, "EnigmaOps/accessRequestForm.html", context)
