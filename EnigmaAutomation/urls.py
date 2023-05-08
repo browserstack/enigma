@@ -66,7 +66,7 @@ urlpatterns = [
     re_path(r"^access/userAccesses$", all_user_access_list, name="allUserAccessList"),
     re_path(r"^access/usersList$", all_users_list, name="allUsersList"),
     re_path(r"^user/offboardUser$", user_offboarding, name="offboarding_user"),
-    re_path(r"^access/requestAccess$", request_access, name="requestAccess"),
+    path("access/requestAccess", request_access, name="requestAccess"),
     re_path(r"^group/requestAccess$", group_access, name="groupRequestAccess"),
     re_path(
         r"^group/access/list/(?P<group_name>[\w -]+)$",
