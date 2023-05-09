@@ -80,7 +80,7 @@
               <span class="bg-gray-100 ml-auto text-center inline-block rounded-full h-6 pt-1 px-2.5 py-0.5 text-xs font-medium text-gray-800" id="{{each_access.accessTag}}_status">Details pending</span>
             </div>
             <div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
-              <form action="{% url 'requestAccess' %}" onsubmit="submitRequest(event, this, true, '{{ each_access.accessTag }}')" method="post">
+              <form action="{% url 'requestAccess' %}" onsubmit="submitRequest(event, this, true, '{{ each_access.accessTag }}', '{{ accesses|length }}')" method="post">
                 {% csrf_token %}
                 {% with each_access.accessRequestPath as includePath %}
                   {% include includePath %}
@@ -121,5 +121,9 @@
       {% endfor %}
     {% endif %}
   {% endif %}
+</div>
+<div id="redirect_to_dashboard" class="hidden">
+  {% include "EnigmaOps/shared/redirect_to_dashboard.html" %}
+</div>
 
 {% endblock %}

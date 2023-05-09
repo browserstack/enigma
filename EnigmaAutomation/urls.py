@@ -49,7 +49,7 @@ from Access.helpers import get_available_access_modules
 
 urlpatterns = [
     re_path(r"^admin/", admin.site.urls),
-    re_path(r"^$", dashboard, name="dashboard"),
+    path("", dashboard, name="dashboard"),
     re_path(r"^login/$", auth_views.LoginView.as_view(), name="login"),
     re_path(r"^logout/$", logout_view, name="logout"),
     re_path(r"^access/markRevoked", mark_revoked, name="markRevoked"),
