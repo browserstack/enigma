@@ -155,6 +155,7 @@ function closeNotification() {
 }
 
 $(document).on('click', '#submitNewGroup', function () {
+  console.log('creating new group......')
   const members = $('#member-selection-table').children('tr');
   const emails = [];
   var isValid = true;
@@ -189,6 +190,16 @@ $(document).on('click', '#submitNewGroup', function () {
     isValid = false;
   }
 
+  console.log('createNewGroupData--->', {
+    data: {
+      newGroupName: newGroupName,
+      newGroupReason: newGroupReason,
+      requiresAccessApprove: requiresAccessApprove,
+      selectedUserList: selectedUserList,
+      csrfmiddlewaretoken: csrf_token
+    }
+  })
+
   if (!isValid)
     return;
   else {
@@ -202,14 +213,11 @@ $(document).on('click', '#submitNewGroup', function () {
         selectedUserList: selectedUserList,
         csrfmiddlewaretoken: csrf_token
       },
-      success: function (result) {
-        var msg = result.status.msg;
-        showRequestSuccessMessage(msg)
+      success: function (result, status) {
+        showRequestSuccessMessage(status)
       },
-      error: function (response) {
-        var error_title = response.responseJSON.error.error_msg;
-        var error_message = response.responseJSON.error.msg;
-        showNotificiation("failed", error_message, error_title)
+      error: function (XMLHttpRequest, textStatus, errorThrown) {
+        showNotificiation("failed", XMLHttpRequest.responseText)
       }
     });
   }
