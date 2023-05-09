@@ -22,6 +22,11 @@ def access_status_content(status):
             "text_class": "text-amber-700",
             "span_path": span_paths["exclaim"],
         },
+        "SecondaryPending": {
+            "icon_class": "text-amber-500",
+            "text_class": "text-amber-700",
+            "span_path": span_paths["exclaim"],
+        },
         "Declined": {
             "icon_class": "text-red-400",
             "text_class": "text-red-600",
