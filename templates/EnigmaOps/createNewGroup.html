@@ -127,7 +127,7 @@
                             onclick="handleMemberSelection({elem: this, username: '{{ user.user.username  }}', firstName: '{{ user.user.first_name}}', lastName: '{{ user.user.last_name}}', email: '{{user.email}}'});"
                             id="{{ user.user.username  }}-checkbox"></input>
                         </td>
-                        <td class="whitespace-nowrap py-4 pr-3 text-sm font-normal text-gray-900"
+                        <td class="whitespace-nowrap py-2 pr-3 text-sm font-normal text-gray-900"
                           value="{{ user.user.username }}" id="{{ user.user.username }}-tabledesc">
                           {{user.user.first_name}} {{user.user.last_name}} {{user.email }}</td>
                       </tr>

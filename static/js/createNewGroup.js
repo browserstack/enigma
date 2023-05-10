@@ -181,6 +181,7 @@ $(document).on('click', '#submitNewGroup', function () {
     error.classList.remove("hidden");
     isValid = false;
   }
+  console.log()
 
   if (!newGroupReasonPattern.test(newGroupReason)) {
     var error = document.getElementById("invalidGroupReason");
