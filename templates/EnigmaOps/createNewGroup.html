@@ -104,12 +104,12 @@
         </div>
       </div>
 
-      <div class="h-80 overflow-y-scroll bg-white mt-6">
+      <div class="h-80 overflow-y-scroll bg-white mt-6 shadow-md rounded-lg">
         <div class="px-4 sm:px-6 lg:px-8">
           <div class="mt-2 flex flex-col">
             <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
               <div class="inline-block min-w-full align-middle">
-                <div class="relative overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+                <div class="relative overflow-hidden ring-black ring-opacity-5 md:rounded-lg">
                   <table class="min-w-full table-fixed divide-gray-300">
                     <tbody class="divide-gray-200 bg-white">
                       {% for user in users %}
@@ -153,7 +153,7 @@
             id="member-selected-count">0 selected</span>
         </div>
         
-        <div class="px-6 bg-white h-80 lg:px-8 mt-5 flex justify-center" id="member-selection-empty">
+        <div class="px-6 bg-white h-80 lg:px-8 mt-5 flex justify-center shadow-md rounded-lg" id="member-selection-empty">
           <div class="mx-auto max-w-2xl">
             <div class="flex gap-4 content-center  min-w-full min-h-full">
               <div class="block m-auto content-center">
@@ -169,9 +169,9 @@
           </div>
         </div>
 
-        <div class="mt-5 bg-white h-80 flex flex-col justify-between" style="display: none;"
+        <div class="mt-5 bg-white h-80 flex flex-col justify-between shadow-md rounded-lg" style="display: none;"
           id="member-selection-list">
-          <div class="flex-1 relative overflow-auto space-y-1 inline-block min-w-full align-middle">
+          <div class="flex-1 relative overflow-auto space-y-1 inline-block min-w-full align-middle rounded-lg">
             <table class="min-w-full table-fixed divide-gray-300">
               <tbody class="divide-gray-200 bg-white" id="member-selection-table">
               </tbody>
@@ -179,7 +179,7 @@
           </div>
 
           <nav
-            class="flex flex-shrink-0 px-4 items-center justify-between align-bottom border-t border-gray-200 bg-white pt-4 pb-4 sticky hidden">
+            class="flex flex-shrink-0 px-4 items-center rounded-lg justify-between align-bottom border-t border-gray-200 bg-white pt-4 pb-4 sticky hidden">
             <button type="button"
               class="inline-flex items-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-base font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sticky"
               onclick="removeAllMembers();">

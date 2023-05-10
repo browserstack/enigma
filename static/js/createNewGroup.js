@@ -190,16 +190,6 @@ $(document).on('click', '#submitNewGroup', function () {
     isValid = false;
   }
 
-  console.log('createNewGroupData--->', {
-    data: {
-      newGroupName: newGroupName,
-      newGroupReason: newGroupReason,
-      requiresAccessApprove: requiresAccessApprove,
-      selectedUserList: selectedUserList,
-      csrfmiddlewaretoken: csrf_token
-    }
-  })
-
   if (!isValid)
     return;
   else {
@@ -213,11 +203,12 @@ $(document).on('click', '#submitNewGroup', function () {
         selectedUserList: selectedUserList,
         csrfmiddlewaretoken: csrf_token
       },
-      success: function (result, status) {
-        showRequestSuccessMessage(status)
+      success: function (result) {
+        showRequestSuccessMessage(result.status.msg)
       },
       error: function (XMLHttpRequest, textStatus, errorThrown) {
-        showNotificiation("failed", XMLHttpRequest.responseText)
+        const msg = JSON.parse(XMLHttpRequest.responseText).error.msg
+        showNotificiation("failed", msg)
       }
     });
   }
