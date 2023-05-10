@@ -262,6 +262,34 @@ def request_access(request):
 
 
 @login_required
+def new_group_access_request(request):
+    if request.method == "POST":
+        return render_error_message(
+            request,
+            "POST for this endpoint is not supported",
+            "Invalid Request",
+            "Error request not found OR Invalid request type",
+        )
+
+    try:
+        access_user = User.objects.get(email=request.user.email)
+    except Exception as e:
+        return render_error_message(
+            request,
+            "Access user with email %s not found. Error: %s"
+            % (request.user.email, str(e)),
+            "Invalid Request",
+            "Please login again",
+        )
+
+    context = {
+        "modulesList": helper.get_available_access_modules(),
+        "groupName": dict(request.GET.lists())["groupName"][0]
+    }
+    return render(request, "EnigmaOps/newAccessGroupRequest.html", context)
+
+
+@login_required
 def group_access(request):
     """Request access to a group.
 

@@ -44,6 +44,7 @@ from Access.views import (
     individual_resolve,
     ignore_failure,
     resolve_bulk,
+    new_group_access_request,
 )
 from Access.helpers import get_available_access_modules
 
@@ -63,6 +64,7 @@ urlpatterns = [
     re_path(r"^user/saveIdentity/", save_identity, name="saveIdentity"),
     re_path(r"^group/create$", create_new_group, name="createNewGroup"),
     path("group/dashboard/", group_dashboard, name="groupDashboard"),
+    path("group/newGroupRequest", new_group_access_request, name="newAccessGroupRequest"),
     re_path(r"^access/userAccesses$", all_user_access_list, name="allUserAccessList"),
     re_path(r"^access/usersList$", all_users_list, name="allUsersList"),
     re_path(r"^user/offboardUser$", user_offboarding, name="offboarding_user"),
