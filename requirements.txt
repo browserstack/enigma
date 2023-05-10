@@ -6,8 +6,8 @@ asn1crypto==1.4.0
 backports.shutil-get-terminal-size==1.0.0
 bcrypt==3.2.0
 beautifulsoup4==4.9.3
-boto3==1.25.0
-botocore==1.28.0
+boto3==1.26.129
+botocore==1.29.129
 bs4==0.0.1
 cachetools==4.1.1
 certifi==2022.12.7
@@ -18,7 +18,7 @@ cryptography==39.0.1
 decorator==4.4.2
 defusedxml==0.7.1
 Deprecated==1.2.10
-Django==4.1.7
+Django==4.1.9
 django-ajax-datatable==4.4.4
 django-filter==22.1
 django-mysql==4.7.1

@@ -6,7 +6,7 @@
       "localhost"
     ],
     "CSRF_TRUSTED_ORIGINS": [
-      ""
+      "http://localhost"
     ]
   },
   "sso": {
@@ -21,7 +21,7 @@
     "username": "",
     "password": "",
     "host": "",
-    "port":
+    "port": 3306
   },
   "access_modules": {
     "git_urls": [
