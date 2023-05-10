@@ -16,7 +16,7 @@ Including another URLconf
 from bootprocess.views import dashboard, logout_view
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
-from django.urls import re_path, include
+from django.urls import re_path, include, path
 from Access.views import (
     revoke_group_access,
     user_offboarding,
@@ -55,14 +55,14 @@ urlpatterns = [
     re_path(r"^access/markRevoked", mark_revoked, name="markRevoked"),
     re_path(r"^oauth/", include("social_django.urls", namespace="social")),
     re_path(r"^access/showAccessHistory$", show_access_history, name="showAccessHistory"),
-    re_path(r"^access/pendingRequests$", pending_requests, name="pendingRequests"),
-    re_path(r"^access/newRequest$", new_access_request, name="newAccessRequest"),
+    path("access/pendingRequests", pending_requests, name="pendingRequests"),
+    path("access/newRequest", new_access_request, name="newAccessRequest"),
     re_path(r"^resolve/pendingFailure", pending_failure, name="pendingFailure"),
     re_path(r"^resolve/pendingRevoke", pending_revoke, name="pendingRevoke"),
     re_path(r"^user/updateUserInfo/", update_user_info, name="updateUserInfo"),
     re_path(r"^user/saveIdentity/", save_identity, name="saveIdentity"),
     re_path(r"^group/create$", create_new_group, name="createNewGroup"),
-    re_path(r"^group/dashboard/$", group_dashboard, name="groupDashboard"),
+    path("group/dashboard/", group_dashboard, name="groupDashboard"),
     re_path(r"^access/userAccesses$", all_user_access_list, name="allUserAccessList"),
     re_path(r"^access/usersList$", all_users_list, name="allUsersList"),
     re_path(r"^user/offboardUser$", user_offboarding, name="offboarding_user"),
