@@ -85,12 +85,14 @@
                 {% with each_access.accessRequestPath as includePath %}
                   {% include includePath %}
                 {% endwith %}
-                <label for="reason" class="block text-sm font-medium leading-5 text-gray-700">Reason for Access</label>
-                <div class="mt-2">
-                  <input type="text" name="access_reason" id="reason" class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Please mention the reason for requesting this access in detail." required>
+                <div class="mx-1 pt-4">
+                  <label for="reason" class="block text-sm font-medium leading-5 text-gray-700">Reason for Access</label>
+                  <div class="mt-2">
+                    <input type="text" name="access_reason" id="reason" class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Please mention the reason for requesting this access in detail." required>
+                  </div>
+                  <input type="text" class="hidden" name="access_tag" value="{{ each_access.accessTag }}">
                 </div>
-                <input type="text" class="hidden" name="access_tag" value="{{ each_access.accessTag }}">
-                <button type="submit" class=" mx-1 my-4 rounded-md border border-transparent bg-blue-500 px-4 py-2 text-sm font-medium text-blue-200 shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Submit request</button>
+                  <button type="submit" class=" mx-1 my-5 rounded-md border border-transparent bg-blue-500 px-4 py-2 text-sm font-medium text-blue-200 shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Submit request</button>
               </form>
             </div>
           </div>
@@ -111,12 +113,14 @@
             {% include includePath %}
           {% endwith %}
 
-          <label for="reason" class="block text-sm font-medium leading-5 text-gray-700">Reason for Access</label>
-          <div class="mt-2">
-            <input type="text" name="access_reason" id="reason" class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Please mention the reason for requesting this access in detail." required>
+          <div class="mx-1 pt-4">
+            <label for="reason" class="block text-sm font-medium leading-5 text-gray-700">Reason for Access</label>
+            <div class="mt-2">
+              <input type="text" name="access_reason" id="reason" class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Please mention the reason for requesting this access in detail." required>
+            </div>
+            <input type="text" class="hidden" name="access_tag" value="{{ each_access.accessTag }}">
           </div>
-          <input type="text" class="hidden" name="access_tag" value="{{ each_access.accessTag }}">
-          <button type="submit" class=" mx-1 my-4 rounded-md border border-transparent bg-blue-500 px-4 py-2 text-sm font-medium text-blue-200 shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Submit request</button>
+          <button type="submit" class=" mx-1 my-5 rounded-md border border-transparent bg-blue-500 px-4 py-2 text-sm font-medium text-blue-200 shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Submit request</button>
         </form>
       {% endfor %}
     {% endif %}
