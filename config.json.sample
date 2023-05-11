@@ -1,6 +1,6 @@
 {
   "django_setup": {
-    "SECRET_KEY": "",
+    "SECRET_KEY": "random_secret_that_you_should_change_on_production",
     "DEBUG": false,
     "ALLOWED_HOSTS": [
       "localhost"
