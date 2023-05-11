@@ -3,6 +3,17 @@
 LOG_FILE=/ebs/logs/enigma.log
 CONTAINER_HASH=$(echo $RANDOM | md5sum | head -c 20)
 
+trap ctrl_c INT
+
+pid_to_kill=1
+should_continue=0
+
+function ctrl_c() {
+  echo "===== Stopping Service with pid $pid_to_kill ====="
+  kill $pid_to_kill
+  should_continue=1
+}
+
 function log() {
   echo "$(date): $CONTAINER_HASH $@" 2>&1 | tee -a $LOG_FILE
 }
@@ -34,4 +45,18 @@ log "===== Ensure Logs ====="
 touch /ebs/logs/enigma.log
 
 log "===== Running Service ====="
-eval "$@" 2>&1 | prepend
+if [ "$#" -ne 0 ]; then
+  eval "$@" 2>&1 | prepend
+else
+  echo "===== Starting Webserver ====="
+  python manage.py runserver --insecure 0.0.0.0:8000 2>&1 &
+  pid_to_kill=$!
+  echo "Server PID $pid_to_kill"
+
+  while true; do
+    if [ "$should_continue" -ne 0 ]; then
+      break
+    fi
+    sleep 5
+  done
+fi
