@@ -25,7 +25,7 @@
   },
   "access_modules": {
     "git_urls": [
-      "https://github.com/browserstack/enigma-public-access-modules.git"
+      "https://github.com/browserstack/enigma-public-access-modules.git#fix_empty_config"
     ],
     "RETRY_LIMIT": 5
   },
