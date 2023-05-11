@@ -30,7 +30,6 @@ try:
     if not os.path.exists(requirements_file):
           open(requirements_file, 'w').close()
 
-    print("All urls: %s" % (",".join(urls)))
     for url in urls:
         specified_branch = None
         if "#" in url:

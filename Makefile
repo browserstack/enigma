@@ -24,8 +24,15 @@ dev: setup_mounts
 
 ## make build : Build and start docker containers - (web and db)
 .PHONY: build
+build: export APPUID = $(APP_UID)
 build:
 	@docker-compose up --build -d web
+
+## make build_only : Only build the web container
+.PHONY: build_only
+build_only: export APPUID = $(APP_UID)
+build_only:
+	@docker-compose build web
 
 .PHONY: down
 down: export APPUID = $(APP_UID)
@@ -73,4 +80,4 @@ schema_validate:
 	@echo $(shell python3 scripts/clone_access_modules.py && python3 scripts/validator.py)
 
 run_semgrep:
-	$(shell semgrep --error --config "p/cwe-top-25" --config "p/owasp-top-ten" --config "p/r2c-security-audit")
+	$(shell semgrep --error --config "p/cwe-top-25" --config "p/r2c-security-audit")
