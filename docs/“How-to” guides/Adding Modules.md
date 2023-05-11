@@ -1,4 +1,4 @@
-This document describes how to add modules on Enigma.
+# How to add modules on Enigma.
 
 Enigma’s access management is built on modules, which refer to the resources/applications the user requires.
 Each module needs to be added and integrated with Enigma's central code in order to provide access for the user.
@@ -12,7 +12,10 @@ Enigma provides the following modules as part of its default settings, these can
 6. Slack
 7. Zoom
 
-When a new resource is required, it's corresponding module has to be added in [Engima's modules repository](https://github.com/browserstack/enigma-public-access-modules.git) or it's own (as per the usecase):
+## Creating custom access modules
+
+When a new resource is required, it's corresponding module has to be added in [Engima's modules repository](https://github.com/browserstack/enigma-public-access-modules.git) or a new dedicated repo (as per the usecase):
+
 - Add `__init__.py`:
 
     ```bash
