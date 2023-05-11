@@ -32,13 +32,15 @@ For detailed instructions on configuration, follow [this doc](/docs/Configuratio
 2. Run the enigma docker container by mounting the downloaded config to the container
 
 ```bash
-docker run --rm --name enigma -p 8000:8000 -v "$(pwd)/config.json":/srv/code/dev/config.json docker.io/browserstack/enigma:v1
+docker run --rm --name enigma -p 8000:8000 -v "$(pwd)/config.json":/srv/code/dev/config.json browserstack/enigma:v1
 ```
 
-Ensure that you 8080 port is free to use, and ensure that path to config.json is correct.
+Ensure that you 8000 port is free to use, and ensure that path to config.json is correct.
 
-That's it! Enigma should be running locally on port 8080
+That's it! Enigma should be running locally on port 8000
 
+
+For first time user sign-in, follow [this doc](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/User%20Guides/First%20User%20Setup.md)
 
 
 ## Contributing code
