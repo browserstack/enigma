@@ -1,51 +1,134 @@
 {% extends 'global_layout.html' %}
 {% load static %}
 
+{% block head_body %}
+<script src={% static "js/groupAccessRequestForm.js" %}></script>
+{% endblock %}
+
+{% block nav_breadcrumb %}
+<nav class="flex px-8 py-6 flex-shrink-0" aria-label="Breadcrumb">
+  <ol role="list" class="flex items-center space-x-4">
+    <li>
+      <div>
+        <a href="{% url 'dashboard' %}" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-5 w-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+          </svg>
+          <span class="sr-only">Home</span>
+        </a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'groupDashboard' %}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Groups</a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'newAccessGroupRequest' %}?groupName={{groupName}}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Group access request</a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'newAccessGroupRequest' %}?groupName={{groupName}}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Module details</a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block content_body %}
-<!-- Content Wrapper. Contains page content -->
 
-<!-- <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script> -->
+<div class="px-4 sm:px-6 lg:px-8 h-4/5 w-full">
+  
 
-<script src="{% static "js/multiselect.min.js" %}"></script>
-<script src="{% static "js/jquery-ui.min.js" %}"></script>
+  {% if genericForm %}
 
-<link rel="stylesheet" type="text/css" href="{% static "lib/google-code-prettify/prettify.css" %}">
-<link rel="stylesheet" type="text/css" href="{% static "css/multiselect.css" %}">
-<link rel="stylesheet" type="text/css" href="{% static "css/jquery-ui.min.css" %}">
-<link rel="stylesheet" type="text/css" href="{% static "css/custom.css" %}">
+    {% if accesses|length > 1 %}
 
-
-
-<div class="wrapper">
-  <!-- Horizontal Form -->
-  <div class="accessForms">
-    <form class="form-horizontal" action="{% url 'groupRequestAccess' %}" method="POST" id="usrform" name="usrform">
-      {% csrf_token %}
-      {% if genericForm %}
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="text-xl font-semibold text-gray-900">Module details</h1>
+      </div>
+    </div>
+    <div class="mt-10 overflow-hidden bg-white shadow sm:rounded-md">
+      <ul role="list" class="divide-y divide-gray-200">
         {% for each_access in accesses %}
+        <li>
+          <div class="relative px-4 py-4 sm:px-6">
+            <input type="checkbox" onclick="rotateArrowOnCheck('{{ each_access.accessTag }}')" id="{{ each_access.accessTag }}_dropdown" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
+            <div class="flex">
+              <div id="{{ each_access.accessTag }}_arrow" class="-rotate-90 peer-checked:opacity-0">
+                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+              </div>
+
+              <div class="px-2 peer-checked:opacity-0">
+                <p class="truncate text-lg leading-7 font-medium text-gray-900">{{ each_access.formDesc }}</p>
+              </div>
+              <span class="bg-gray-100 ml-auto text-center inline-block rounded-full h-6 pt-1 px-2.5 py-0.5 text-xs font-medium text-gray-800" id="{{each_access.accessTag}}_status">Details pending</span>
+            </div>
+            <div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
+              <form action="{% url 'groupRequestAccess' %}" onsubmit="submitRequest(event, this, true, '{{ each_access.accessTag }}', '{{ accesses|length }}')" method="post">
+                {% csrf_token %}
+                {% with each_access.accessRequestPath as includePath %}
+                  {% include includePath %}
+                {% endwith %}
+                <div class="mx-1 pt-4">
+                  <label for="reason" class="block text-sm font-medium leading-5 text-gray-700">Reason for Access</label>
+                  <div class="mt-2">
+                    <input type="text" name="accessReason" id="reason" class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Please mention the reason for requesting this access in detail." required>
+                  </div>
+                  <input type="text" class="hidden" name="access_tag" value="{{ each_access.accessTag }}">
+                  <input type="text" class="hidden" name="groupName" value="{{ groupName }}">
+                </div>
+                  <button type="submit" class=" mx-1 my-5 rounded-md border border-transparent bg-blue-500 px-4 py-2 text-sm font-medium text-blue-200 shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Submit request</button>
+              </form>
+            </div>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% else %}
+      {% for each_access in accesses %}
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="text-xl font-semibold text-gray-900">{{ each_access.formDesc }} Module Details</h1>
+          </div>
+        </div>
+        <form  action="{% url 'groupRequestAccess' %}" onsubmit="submitRequest(event, this, false, '{{ each_access.accessTag }}')" method="post">
+          {% csrf_token %}
           {% with each_access.accessRequestPath as includePath %}
             {% include includePath %}
           {% endwith %}
-          <input type="hidden" name="requestUser" value="{{ request.user }}">
-          <input type="hidden" name="accessType" value="{{ each_access.accessTag }}"><br>
-          <input type="hidden" name="accessRequests" value="{{ each_access.accessTag }}">
-          <br>
-        {% endfor %}
-      {% endif %}
-
-      <input type="hidden" name="groupName" value="{{groupName}}">
-      <input type="hidden" name="requester" value="{{request.user.email}}">
-      <br>
-      <div id="suggestions" style="margin: auto; margin-left: 15px;"></div>
-      <div class="form-group" style="padding-left:1%;">
-        <button type="submit" class="btn btn-primary" style="margin: auto; margin-left: 15px;">Request Access</button>
-      </div>
-
-    </form>
-
-  </div>
-  <!-- /.box -->
+          <div class="mx-1 pt-4">
+            <label for="reason" class="block text-sm font-medium leading-5 text-gray-700">Reason for Access</label>
+            <div class="mt-2">
+              <input type="text" name="accessReason" id="reason" class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Please mention the reason for requesting this access in detail." required>
+            </div>
+            <input type="text" class="hidden" name="access_tag" value="{{ each_access.accessTag }}">
+            <input type="text" class="hidden" name="groupName" value="{{ groupName }}">
+          </div>
+          <button type="submit" class=" mx-1 my-5 rounded-md border border-transparent bg-blue-500 px-4 py-2 text-sm font-medium text-blue-200 shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Submit request</button>
+        </form>
+      {% endfor %}
+    {% endif %}
+  {% endif %}
+</div>
+<div id="redirect_to_dashboard" class="hidden">
+  {% include "EnigmaOps/shared/redirect_to_dashboard.html" %}
 </div>
 
-<!-- /.content-wrapper -->
 {% endblock %}

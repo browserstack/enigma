@@ -83,7 +83,7 @@ const raiseAccessRequest = () => {
   const accessTags = [];
 
   for(iter = 0; iter < modules.length; iter++) {
-    accessTags.push(`accessList=${modules[iter].id.replace('module-selection-', 'access_')}`);
+    accessTags.push(`accessList=${modules[iter].id.replace('module-selection-', '')}`);
   }
   accessTags.push(`groupName=${groupName}`);
 

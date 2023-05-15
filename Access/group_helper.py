@@ -648,6 +648,7 @@ def get_group_access(form_data, auth_user):
 def save_group_access_request(form_data, auth_user):
     access_request = dict(form_data.lists())
     group_name = access_request["groupName"][0]
+    access_tag = form_data.get("access_tag")
     group = GroupV2.get_active_group_by_name(group_name=group_name)
 
     context = {"status_list": []}
@@ -656,60 +657,53 @@ def save_group_access_request(form_data, auth_user):
     )
     if validation_error:
         context["status"] = validation_error
+    
+    access_module = helper.get_available_access_modules()[access_tag]
 
-    for accessIndex, access_tag in enumerate(access_request["accessType"]):
-        access_module = helper.get_available_access_modules()[access_tag]
-        access_labels = accessrequest_helper.validate_access_labels(
-            access_labels_json=access_request["accessLabel"][accessIndex],
-            access_tag=access_tag,
-        )
+    module_access_labels = access_module.validate_request(form_data, auth_user.user)
 
-        module_access_labels = access_module.validate_request(
-            access_labels, auth_user, is_group=False
-        )
+    extra_fields = accessrequest_helper.get_extra_fields(access_request)
+    extra_field_labels = accessrequest_helper.get_extra_field_labels(access_module)
 
-        extra_fields = accessrequest_helper.get_extra_fields(access_request)
-        extra_field_labels = accessrequest_helper.get_extra_field_labels(access_module)
-
-        if extra_fields and extra_field_labels:
-            for field in extra_field_labels:
-                module_access_labels[0][field] = extra_fields[0]
-                extra_fields = extra_fields[1:]
+    if extra_fields and extra_field_labels:
+        for field in extra_field_labels:
+            module_access_labels[0][field] = extra_fields[0]
+            extra_fields = extra_fields[1:]
 
 
-        request_id = (
-            group.name
-            + "-"
-            + access_tag
-            + "-"
-            + datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        )
-        with transaction.atomic():
-            for labelIndex, access_label in enumerate(module_access_labels):
-                request_id = request_id + "_" + str(labelIndex)
-                try:
-                    _create_group_access_mapping(
-                        group=group,
-                        user=auth_user.user,
-                        request_id=request_id,
-                        access_tag=access_tag,
-                        access_label=access_label,
-                        access_reason=access_request["accessReason"],
-                    )
-                    context["status_list"].append(
-                        {
-                            "title": request_id + " Request Submitted",
-                            "msg": "Once approved you will receive the update "
-                            + json.dumps(access_label),
-                        }
-                    )
-                except GroupAccessExistsException:
-                    context["status_list"].append(
-                        {
-                            "title": "Access Exists",
-                            "msg": "Access already exists" + json.dumps(access_label),
-                        }
-                    )
+    request_id = (
+        group.name
+        + "-"
+        + access_tag
+        + "-"
+        + datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    )
+    with transaction.atomic():
+        for labelIndex, access_label in enumerate(module_access_labels):
+            request_id = request_id + "_" + str(labelIndex)
+            try:
+                _create_group_access_mapping(
+                    group=group,
+                    user=auth_user.user,
+                    request_id=request_id,
+                    access_tag=access_tag,
+                    access_label=access_label,
+                    access_reason=access_request["accessReason"],
+                )
+                context["status_list"].append(
+                    {
+                        "title": request_id + " Request Submitted",
+                        "msg": "Once approved you will receive the update "
+                        + json.dumps(access_label),
+                    }
+                )
+            except GroupAccessExistsException:
+                context["status_list"].append(
+                    {
+                        "title": "Access Exists",
+                        "msg": "Access already exists" + json.dumps(access_label),
+                    }
+                )
         # email_destination = access_module.get_approvers()
         # member_list = group.get_all_approved_members()
         # notifications.send_group_access_add_email(
