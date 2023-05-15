@@ -73,9 +73,10 @@ def paginated_search(function):
         for value in context[key]:
             in_final_values = True
             if search:
+                in_any_search_row = False
                 for row in search_rows:
-                    if search not in value[row]:
-                        in_final_values = (in_final_values and False)
+                    in_any_search_row = in_any_search_row or (search in value[row])
+                in_final_values = in_any_search_row
             
             if filters:
                 for row, val in filters.items():
