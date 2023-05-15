@@ -863,9 +863,20 @@ def get_selected_users_by_email(user_emails):
         )
     return selected_users
 
-def get_group_status_list():
+def get_group_status_list(selected_list):
     status_list = []
     for status in MembershipV2.STATUS:
-        status_list.append(status[0])
+        if status[0] not in selected_list:
+            status_list.append(status[0])
 
     return status_list
+
+
+def get_group_member_role_list(selected_list):
+    roles = ["Member", "Owner"]
+    role_list = []
+    for role in roles:
+        if role not in selected_list:
+            role_list.append(role)
+    
+    return role_list
