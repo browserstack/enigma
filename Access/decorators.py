@@ -1,5 +1,6 @@
 from django.core.exceptions import PermissionDenied
 from Access.helpers import getPossibleApproverPermissions
+from Access.models import User
 
 
 def user_admin_or_ops(function):
@@ -46,6 +47,16 @@ def user_any_approver(function):
             return function(request, *args, **kwargs)
         else:
             raise PermissionDenied
+    wrap.__doc__ = function.__doc__
+    wrap.__name__ = function.__name__
+    return wrap
+
+def populate_all_users(function):
+    def wrap(request, *args, **kwargs):
+        template, context = function(request, *args, **kwargs)
+        context["users"] = User.objects.filter().exclude( user__username='system_user').only("user")
+        template.context_data = context
+        return template.render()
     wrap.__doc__ = function.__doc__
     wrap.__name__ = function.__name__
     return wrap

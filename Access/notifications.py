@@ -72,12 +72,12 @@ def send_membership_accepted_notification(user, group, membership):
     general.emailSES(destination, subject, body)
 
 
-def send_mulitple_membership_accepted_notification(user_names, group, membership):
-    subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(user_names, group.name)
+def send_mulitple_membership_accepted_notification(user_names, groupName, membership):
+    subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(user_names, groupName)
     body = helpers.generateStringFromTemplate(
         filename="membershipAcceptedEmailBody.html",
         user_name=",".join(user_names),
-        group_name=group.name,
+        group_name=groupName,
         approver=membership.approver.name,
     )
     destination = []

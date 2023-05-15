@@ -9,6 +9,7 @@ from django.core.paginator import Paginator
 from django.contrib.auth.models import User as djangoUser
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.template.response import TemplateResponse
 
 from Access import views_helper
 from Access import group_helper
@@ -38,7 +39,7 @@ from Access.userlist_helper import (
 from Access.views_helper import render_error_message
 from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
-from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver
+from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver, populate_all_users
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 
@@ -251,7 +252,6 @@ def request_access(request):
         HTTPResponse: Access request form template or the status of access save request.
     """
     if request.POST:
-        print((request.POST))
         context = create_request(
             auth_user=request.user, access_request_form=request.POST
         )
@@ -429,6 +429,11 @@ def add_user_to_group(request, group_name):
         return render(request, "EnigmaOps/accessStatus.html", context)
 
     context = group_helper.get_user_group(request, group_name)
+    all_users = User.objects.filter().exclude( user__username='system_user').only("user")
+    context["users"] = []
+    for user in all_users :
+        if user not in context["groupMembers"] :
+            context["users"].append(user)
     return render(request, "EnigmaOps/addUserToGroupForm.html", context)
 
 
