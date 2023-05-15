@@ -64,16 +64,11 @@ def paginated_search(function):
         filters = {}
         for filter_row in filter_rows:
             params = request.GET.getlist(filter_row)
-            print(params)
             if not params and len(params) == 0:
                 continue
             filters[filter_row] = params
 
-        print(filters)
-
         final_values = []
-        print(search)
-        print(search_rows)
 
         for value in context[key]:
             in_final_values = True
@@ -88,7 +83,6 @@ def paginated_search(function):
                         in_final_values = (in_final_values and False)
             
             if in_final_values:
-                print(value)
                 final_values.append(value)
 
         if len(final_values) != 0:
@@ -107,7 +101,6 @@ def paginated_search(function):
         context["maxPagination"] = paginator.num_pages 
         context["allPages"] = range(1, paginator.num_pages + 1)
         context["currentPagination"] = page
-        print(context)
         template.context_data = context
 
         return template.render()
