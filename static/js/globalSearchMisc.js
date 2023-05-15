@@ -17,6 +17,9 @@ function current_query_params() {
     return {};
   }
   let hashes = window.location.href.slice(window.location.href.indexOf('?')+1).split('&');
+  if(hashes[0]===""){
+    return {}
+  }
   let query_params = {};
   for (hash of hashes) {
     hash = hash.split('=');
@@ -69,7 +72,7 @@ function create_url_from_query_params(query_param) {
   }
 
   const query_string = query_array.join('&');
-  const link = "/group/dashboard/?";
+  const link = `${window.location.pathname}?`;
   return link+query_string;
 }
 
