@@ -9,6 +9,7 @@ from django.core.paginator import Paginator
 from django.contrib.auth.models import User as djangoUser
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.template.response import TemplateResponse
 
 from Access import views_helper
 from Access import group_helper
@@ -38,7 +39,7 @@ from Access.userlist_helper import (
 from Access.views_helper import render_error_message
 from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
-from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver
+from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver, paginated_search
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 
@@ -330,6 +331,7 @@ def update_group_owners(request, group_name):
 
 
 @login_required
+@paginated_search
 def group_dashboard(request):
     if request.method == "POST":
         return render_error_message(
@@ -349,27 +351,31 @@ def group_dashboard(request):
             "Invalid Request",
             "Please login again",
         )
+    
+    selected_role = request.GET.getlist("role")
+    selected_status = request.GET.getlist("status")
 
-    page = int(request.GET.get('page') or 1) - 1
-    limit = 20
+    print(selected_role, selected_status)
+    print("here",group_helper.get_group_member_role_list(selected_role))
 
-    start_index = page * limit
-    max_pagination = math.ceil(access_user.get_group_access_count() / limit)
-
-    return render(
-        request,
-        "EnigmaOps/showGroupHistory.html",
-        {
-            "dataList": access_user.get_groups_history(
-                start_index,
-                limit
-            ),
-            "maxPagination": max_pagination,
-            "allPages": range(1, max_pagination + 1),
-            "currentPagination": page + 1,
-            "statusFilter": group_helper.get_group_status_list(),
+    context = {
+        "key": "dataList",
+        "search_rows": ["name"],
+        "dataList": access_user.get_groups_history(),
+        "statusFilter": {
+            "selected": selected_status,
+            "notSelected": group_helper.get_group_status_list(selected_status),
         },
-    )
+        "roleFilter": {
+            "selected": selected_role,
+            "notSelected": group_helper.get_group_member_role_list(selected_role)
+        },
+        "search_value": request.GET.get("search"),
+        "filter_rows": ["role", "status"]
+    }
+    return TemplateResponse(
+        request,
+        "EnigmaOps/showGroupHistory.html"), context
 
 
 def approve_new_group(request, group_id):

@@ -1,5 +1,6 @@
 from django.core.exceptions import PermissionDenied
 from Access.helpers import getPossibleApproverPermissions
+from django.core.paginator import Paginator
 
 
 def user_admin_or_ops(function):
@@ -46,6 +47,70 @@ def user_any_approver(function):
             return function(request, *args, **kwargs)
         else:
             raise PermissionDenied
+    wrap.__doc__ = function.__doc__
+    wrap.__name__ = function.__name__
+    return wrap
+
+
+def paginated_search(function):
+    def wrap(request, *args, **kwargs):
+        template, context = function(request, *args, **kwargs)
+        page = request.GET.get("page")
+        max_page_size = 25
+        key = context["key"]
+        search_rows = context["search_rows"]
+        filter_rows = context["filter_rows"]
+        search = request.GET.get("search")
+        filters = {}
+        for filter_row in filter_rows:
+            params = request.GET.getlist(filter_row)
+            print(params)
+            if not params and len(params) == 0:
+                continue
+            filters[filter_row] = params
+
+        print(filters)
+
+        final_values = []
+        print(search)
+        print(search_rows)
+
+        for value in context[key]:
+            in_final_values = True
+            if search:
+                for row in search_rows:
+                    if search not in value[row]:
+                        in_final_values = (in_final_values and False)
+            
+            if filters:
+                for row, val in filters.items():
+                    if value[row] not in val:
+                        in_final_values = (in_final_values and False)
+            
+            if in_final_values:
+                print(value)
+                final_values.append(value)
+
+        if len(final_values) != 0:
+            context[key] = final_values
+        else:
+            context["search_error"] = "Please try adjusting your search criteria or browse by filters to find what you're looking for."
+
+
+        paginator = Paginator(context[key], max_page_size)
+        if not page:
+            page = 1
+            context[key] = paginator.get_page(1)
+        else:
+            context[key] = paginator.get_page(page)
+
+        context["maxPagination"] = paginator.num_pages 
+        context["allPages"] = range(1, paginator.num_pages + 1)
+        context["currentPagination"] = page
+        print(context)
+        template.context_data = context
+
+        return template.render()
     wrap.__doc__ = function.__doc__
     wrap.__name__ = function.__name__
     return wrap
