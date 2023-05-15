@@ -9,7 +9,7 @@ ENV DJANGO_SETTINGS_MODULE=EnigmaAutomation.settings
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update -y \
   && apt-get install --no-install-recommends -y \
-  openssh-client curl procps git vim gcc linux-libc-dev libc6-dev build-essential \
+  openssh-client curl procps git vim gcc linux-libc-dev libc6-dev build-essential sqlite3 \
   && apt-get clean \
   && apt-get autoremove -y
 
