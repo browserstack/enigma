@@ -256,18 +256,6 @@ class User(models.Model):
             if len(group_access) > 1:
                 group_history.append(group_access)
 
-            # skip till start_index
-            # if start_index <= len(group_history):
-            #     group_history = group_history[start_index:]
-            #     start_index = 0
-            # else:
-            #     start_index = start_index - len(group_history)
-            #     group_history = []
-
-            # # end loop if count to return is reached
-            # if start_index == 0 and len(group_history) >= count:
-            #     break
-
         return group_history
 
     def get_group_access_count(self):

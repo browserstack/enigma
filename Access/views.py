@@ -252,7 +252,6 @@ def request_access(request):
         HTTPResponse: Access request form template or the status of access save request.
     """
     if request.POST:
-        print((request.POST))
         context = create_request(
             auth_user=request.user, access_request_form=request.POST
         )
@@ -354,9 +353,6 @@ def group_dashboard(request):
     
     selected_role = request.GET.getlist("role")
     selected_status = request.GET.getlist("status")
-
-    print(selected_role, selected_status)
-    print("here",group_helper.get_group_member_role_list(selected_role))
 
     context = {
         "key": "dataList",
