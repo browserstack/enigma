@@ -1,6 +1,6 @@
 # Running Unit Tests
 
-To run all tests in the code-base, run the following on the root directory for `enigma-public-central`
+To run all tests in the code-base, run the following on the root directory for `enigma`
 
 ```bash
 make test
