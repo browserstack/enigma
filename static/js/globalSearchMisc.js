@@ -26,7 +26,7 @@ function current_query_params() {
     if(!query_params[hash[0]]) {
       query_params[hash[0]] = [];
     }
-    query_params[hash[0]].push(hash[1]);
+    query_params[hash[0]].push(decodeURIComponent(hash[1]));
   }
 
   return query_params;
@@ -66,7 +66,7 @@ function create_url_from_query_params(query_param) {
   for(const k in query_param) {
     if(query_param[k]){
       for(const val of query_param[k]) {
-        query_array.push(`${k}=${val}`);
+        query_array.push(`${k}=${encodeURIComponent(val)}`);
       }
     }
   }
