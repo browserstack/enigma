@@ -283,9 +283,10 @@ def group_access(request):
 
 
 @login_required
-def group_access_list(request, group_name):
+def group_access_list(request):
     """lists the accesses for a group."""
     try:
+        group_name = request.GET['group_name']
         context = group_helper.get_group_access_list(request.user, group_name)
         if "error" in context:
             return render(request, "EnigmaOps/accessStatus.html", context)
