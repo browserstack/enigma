@@ -1,0 +1,36 @@
+body {
+background-color: #22252a;
+font-family: Roboto;
+font-weight: 300;
+color: #1AC98E;
+}
+h1{
+font-size: 60px;
+}
+.center {
+display: block;
+justify-content: center;
+align-items: center;
+margin: auto;
+height: 200px;
+}
+h1, p, .center .action-link-wrap {
+position: relative;
+text-align:center;
+vertical-align: middle;
+}
+.center .action-link-wrap a {
+background: #429244;
+padding: 8px 25px;
+border-radius: 4px;
+color: #fff;
+font-weight: bold;
+font-size: 14px;
+transition: all 0.3s linear;
+cursor: pointer;
+text-decoration: none;
+}
+.center .action-link-wrap a:hover {
+background: #5A5C6C;
+color: #fff;;
+}

@@ -248,7 +248,7 @@ class User(models.Model):
     def get_all_memberships(self):
         return self.membership_user.all()
 
-    def get_groups_history(self, start_index, count):
+    def get_groups_history(self):
         all_user_membership = self.get_all_memberships()
         group_history = []
         for each_membership in all_user_membership:
@@ -256,19 +256,7 @@ class User(models.Model):
             if len(group_access) > 1:
                 group_history.append(group_access)
 
-            # skip till start_index
-            if start_index <= len(group_history):
-                group_history = group_history[start_index:]
-                start_index = 0
-            else:
-                start_index = start_index - len(group_history)
-                group_history = []
-
-            # end loop if count to return is reached
-            if start_index == 0 and len(group_history) >= count:
-                break
-
-        return group_history[0:count]
+        return group_history
 
     def get_group_access_count(self):
         return self.membership_user.filter(group__status="Approved").count()
@@ -373,9 +361,8 @@ class User(models.Model):
         try:
             return User.objects.get(name="system_user")
         except User.DoesNotExist:
-            django_user = user.objects.create(username="system_user")
-            system_user = User.objects.create(email="system_user@root.root", user=django_user, name=django_user.username)
-            return system_user
+            django_user = user.objects.create(username="system_user",email="system_user@root.root")
+            return django_user.user
 
     def __str__(self):
         return "%s" % (self.user)
