@@ -58,7 +58,7 @@ def paginated_search(view_function):
         template, context = view_function(request, *args, **kwargs)
         page = request.GET.get("page")
         max_page_size = 25
-        key = context["key"]
+        key = context["search_data_key"]
         search_rows = context["search_rows"]
         filter_rows = context["filter_rows"]
         search = request.GET.get("search")

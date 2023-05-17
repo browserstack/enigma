@@ -355,7 +355,7 @@ def group_dashboard(request):
     selected_status = request.GET.getlist("status")
 
     context = {
-        "key": "dataList",
+        "search_data_key": "dataList",
         "search_rows": ["name"],
         "dataList": access_user.get_groups_history(),
         "statusFilter": {
