@@ -4,6 +4,7 @@
 
 {% block head_body %}
 <script src={% static "js/showAccessHistory.js" %}></script>
+<script src={% static "js/globalSearchMisc.js" %}></script>
 {% endblock %}
 
 {% block nav_breadcrumb %}
@@ -40,7 +41,6 @@
 {% endblock %}
 
 {% block content_body %}
-
 <div class="px-4 sm:px-6 lg:px-8 w-full">
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
@@ -49,8 +49,9 @@
     <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
       <a href="{% url 'createNewGroup' %}" class="text-blue-600 hover:text-blue-900">
         <button type="button"
-          class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
+          class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 m-1
+                 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
           Create a group
         </button>
       </a>
@@ -65,13 +66,13 @@
 
     <div class="flex flex-row gap-4 items-center">
       <div class="sm:flex-auto">
-        <form class="w-4/6 float:left relative">
+        <div class="w-4/6 float:left relative">
           <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white">
-            <input id="global-search" type="search"
+            <input onkeydown="search(event, this)" id="global-search" type="search"
               class="flex-none rounded-md border-none text-gray-500 text-sm font-normal px-4 py-2 min-w-full"
-              placeholder="Search by group name, role type or status" required>
+              placeholder="Search by group name, role type or status" {% if search_value %} value="{{search_value}}" {% endif %}>
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <svg aria-hidden="true" class="w-5 h5 text-gray-400" fill="currentColor"
+              <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor"
                 viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd"
                   d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
@@ -79,7 +80,7 @@
               </svg>
             </div>
           </div>
-        </form>
+        </div>
       </div>
 
       <div class="w-1/6 float-right relative" onclick="focusFilterStatus(this);">
@@ -102,22 +103,22 @@
           class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabindex="-1" role="listbox" aria-labelledby="listbox-label"
           aria-activedescendant="listbox-option-3">
+          {% for filter in roleFilter.selected %}
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option" onclick="selectLI(this);">
-            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type="checkbox" id="group_owner" name="group_owner" value="group_owner">
-            </span>
-            <span class="font-normal block truncate ml-8">Owner</span>
+            id="listbox-option-0" role="option">
+            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="role" onclick="select_filter(this)" checked>
+            <label for="group_{{filter}}">{{filter}}</label>
           </li>
+          {% endfor %}
+          {% for filter in roleFilter.notSelected %}
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option" onclick="selectLI(this);">
-            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type="checkbox" id="group_member" name="group_member" value="group_member">
-            </span>
-            <span class="font-normal block truncate ml-8">Member</span>
+            id="listbox-option-0" role="option">
+            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="role" onclick="select_filter(this)">
+            <label for="group_{{filter}}">{{filter}}</label>
           </li>
+          {% endfor %}
         </ul>
       </div>
 
@@ -141,22 +142,45 @@
           class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabindex="-1" role="listbox" aria-labelledby="listbox-label"
           aria-activedescendant="listbox-option-3">
-          {% for filter in statusFilter %}
+          {% for filter in statusFilter.selected %}
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option" onclick="selectLI(this);">
-            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type="checkbox" id="group_approved" name="group_approved"
-                value="group_approved">
-            </span>
-
-            <span class="font-normal block truncate ml-8">{{filter}}</span>
+            id="listbox-option-0" role="option">
+            <input type="checkbox" onclick="select_filter(this)" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" checked>
+            <label for="group_{{filter}}">{{filter}}</label>
+          </li>
+          {% endfor %}
+          {% for filter in statusFilter.notSelected %}
+          <li
+            class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+            id="listbox-option-0" role="option">
+            <input type="checkbox" onclick="select_filter(this)" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}">
+            <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}
         </ul>
       </div>
     </div>
   </div>
+
+  {% if search_error %}
+  <div class="mt-5 rounded-md bg-yellow-50 p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-yellow-800">No exact match found</h3>
+        <div class="mt-2 text-sm text-yellow-700">
+          <p>{{search_error}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  
 
   <div class="mt-8 flex flex-col">
     <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -260,7 +284,7 @@
   class="mt-8 flex items-center justify-between border-t border-gray-200 sm:px-0 pt-6 px-4 sm:px-6 lg:px-8 pb-6 w-full">
   <div class="-mt-px flex w-0 flex-1">
     {% if currentPagination > 1 %}
-    <a href="?page={{ currentPagination|add:" -1" }}"
+    <a onclick="change_page('{{ currentPagination }}', -1)" 
       class="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
       <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
         fill="currentColor" aria-hidden="true">
@@ -275,7 +299,7 @@
 
   <div class="hidden md:-mt-px md:flex">
     {% for navIter in allPages %}
-    <a href="?page={{ navIter }}"
+    <a onclick="change_page('{{ navIter }}')"
       class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium {% get_navigation_class navIter currentPagination %}">
       {{ navIter }}</a>
     {% endfor %}
@@ -284,7 +308,7 @@
     {% endcomment %}
   </div>
   <div class="-mt-px flex w-0 flex-1 justify-end">
-    {% if currentPagination < maxPagination %} <a href="?page={{ currentPagination|add:" 1" }}"
+    {% if currentPagination < maxPagination %} <a onclick="change_page('{{ currentPagination }}', 1)"
       class="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
       Next
       <svg class="ml-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
@@ -298,4 +322,5 @@
   </div>
 </nav>
 {% endif %}
+
 {% endblock %}

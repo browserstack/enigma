@@ -1,12 +1,12 @@
 {
   "django_setup": {
-    "SECRET_KEY": "",
+    "SECRET_KEY": "random_secret_that_you_should_change_on_production",
     "DEBUG": false,
     "ALLOWED_HOSTS": [
       "localhost"
     ],
     "CSRF_TRUSTED_ORIGINS": [
-      ""
+      "http://localhost"
     ]
   },
   "sso": {
@@ -21,7 +21,7 @@
     "username": "",
     "password": "",
     "host": "",
-    "port":
+    "port": 3306
   },
   "access_modules": {
     "git_urls": [
