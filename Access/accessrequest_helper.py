@@ -95,7 +95,7 @@ def get_request_access(request):
     context = {}
     try:
         for each_tag, each_module in helpers.get_available_access_modules().items():
-            if "access_" + each_tag in request.GET.getlist("accesses"):
+            if each_tag in request.GET.getlist("accesses"):
                 if "accesses" not in context:
                     context["accesses"] = []
                 context["genericForm"] = True
