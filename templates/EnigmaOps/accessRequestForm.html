@@ -1,4 +1,5 @@
 {% extends 'global_layout.html' %}
+{% load reusable_components %}
 {% load static %}
 
 {% block head_body %}
@@ -52,78 +53,75 @@
 {% block content_body %}
 
 <div class="px-4 sm:px-6 lg:px-8 h-4/5 w-full">
-  
+  {% if accesses|length > 1 %}
 
-  {% if genericForm %}
-
-    {% if accesses|length > 1 %}
-
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">Module details</h1>
-      </div>
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-xl font-semibold text-gray-900">Module details</h1>
     </div>
-    <div class="mt-10 overflow-hidden bg-white shadow sm:rounded-md">
-      <ul role="list" class="divide-y divide-gray-200">
-        {% for each_access in accesses %}
-        <li>
-          <div class="relative px-4 py-4 sm:px-6">
-            <input type="checkbox" onclick="rotateArrowOnCheck('{{ each_access.accessTag }}')" id="{{ each_access.accessTag }}_dropdown" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
-            <div class="flex">
-              <div id="{{ each_access.accessTag }}_arrow" class="-rotate-90 peer-checked:opacity-0">
-                <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
-              </div>
-
-              <div class="px-2 peer-checked:opacity-0">
-                <p class="truncate text-lg leading-7 font-medium text-gray-900">{{ each_access.formDesc }}</p>
-              </div>
-              <span class="bg-gray-100 ml-auto text-center inline-block rounded-full h-6 pt-1 px-2.5 py-0.5 text-xs font-medium text-gray-800" id="{{each_access.accessTag}}_status">Details pending</span>
-            </div>
-            <div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
-              <form action="{% url 'requestAccess' %}" onsubmit="submitRequest(event, this, true, '{{ each_access.accessTag }}', '{{ accesses|length }}')" method="post">
-                {% csrf_token %}
-                {% with each_access.accessRequestPath as includePath %}
-                  {% include includePath %}
-                {% endwith %}
-                <div class="mx-1 pt-4">
-                  <label for="reason" class="block text-sm font-medium leading-5 text-gray-700">Reason for Access</label>
-                  <div class="mt-2">
-                    <input type="text" name="access_reason" id="reason" class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Please mention the reason for requesting this access in detail." required>
-                  </div>
-                  <input type="text" class="hidden" name="access_tag" value="{{ each_access.accessTag }}">
-                </div>
-                  <button type="submit" class=" mx-1 my-5 rounded-md border border-transparent bg-blue-500 px-4 py-2 text-sm font-medium text-blue-200 shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Submit request</button>
-              </form>
-            </div>
-          </div>
-        </li>
-        {% endfor %}
-      </ul>
-    </div>
-    {% else %}
+  </div>
+  <div class="mt-10 overflow-hidden bg-white shadow sm:rounded-md">
+    <ul role="list" class="divide-y divide-gray-200">
       {% for each_access in accesses %}
-        <div class="sm:flex sm:items-center">
-          <div class="sm:flex-auto">
-            <h1 class="text-xl font-semibold text-gray-900">{{ each_access.formDesc }} Module Details</h1>
+      <li>
+        <div class="relative px-4 py-4 sm:px-6">
+          <input type="checkbox" onclick="rotateArrowOnCheck('{{ each_access.accessTag }}')" id="{{ each_access.accessTag }}_dropdown" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
+          <div class="flex">
+            <div id="{{ each_access.accessTag }}_arrow" class="-rotate-90 peer-checked:opacity-0">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+            </div>
+
+            <div class="px-2 peer-checked:opacity-0">
+              <p class="truncate text-lg leading-7 font-medium text-gray-900">{{ each_access.formDesc }}</p>
+            </div>
+            <span class="bg-gray-100 ml-auto text-center inline-block rounded-full h-6 pt-1 px-2.5 py-0.5 text-xs font-medium text-gray-800" id="{{each_access.accessTag}}_status">Details pending</span>
+          </div>
+          <div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
+            <form action="{% url 'requestAccess' %}" onsubmit="submitRequest(event, this, true, '{{ each_access.accessTag }}', '{{ accesses|length }}')" method="post">
+              {% csrf_token %}
+              {% with each_access.accessRequestPath as includePath %}
+                {% include includePath %}
+              {% endwith %}
+              <div class="mx-1 pt-4">
+                <label for="reason" class="block text-sm font-medium leading-5 text-gray-700">Reason for Access</label>
+                <div class="mt-2">
+                  <input type="text" name="access_reason" id="reason" class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Please mention the reason for requesting this access in detail." required>
+                </div>
+                <input type="text" class="hidden" name="access_tag" value="{{ each_access.accessTag }}">
+              </div>
+                <button type="submit" class=" mx-1 my-5 rounded-md border border-transparent bg-blue-500 px-4 py-2 text-sm font-medium text-blue-200 shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Submit request</button>
+            </form>
           </div>
         </div>
-        <form  action="{% url 'requestAccess' %}" onsubmit="submitRequest(event, this, false, '{{ each_access.accessTag }}')" method="post">
-          {% csrf_token %}
-          {% with each_access.accessRequestPath as includePath %}
-            {% include includePath %}
-          {% endwith %}
-
-          <div class="mx-1 pt-4">
-            <label for="reason" class="block text-sm font-medium leading-5 text-gray-700">Reason for Access</label>
-            <div class="mt-2">
-              <input type="text" name="access_reason" id="reason" class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Please mention the reason for requesting this access in detail." required>
-            </div>
-            <input type="text" class="hidden" name="access_tag" value="{{ each_access.accessTag }}">
-          </div>
-          <button type="submit" class=" mx-1 my-5 rounded-md border border-transparent bg-blue-500 px-4 py-2 text-sm font-medium text-blue-200 shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Submit request</button>
-        </form>
+      </li>
       {% endfor %}
-    {% endif %}
+    </ul>
+  </div>
+  {% elif accesses|length == 0 %}
+  {% get_error_panel_with_message "No modules matched" "Please select proper modules to raise access" %}
+  {% else %}
+    {% for each_access in accesses %}
+      <div class="sm:flex sm:items-center">
+        <div class="sm:flex-auto">
+          <h1 class="text-xl font-semibold text-gray-900">{{ each_access.formDesc }} Module Details</h1>
+        </div>
+      </div>
+      <form  action="{% url 'requestAccess' %}" onsubmit="submitRequest(event, this, false, '{{ each_access.accessTag }}')" method="post">
+        {% csrf_token %}
+        {% with each_access.accessRequestPath as includePath %}
+          {% include includePath %}
+        {% endwith %}
+
+        <div class="mx-1 pt-4">
+          <label for="reason" class="block text-sm font-medium leading-5 text-gray-700">Reason for Access</label>
+          <div class="mt-2">
+            <input type="text" name="access_reason" id="reason" class="block w-1/2 rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Please mention the reason for requesting this access in detail." required>
+          </div>
+          <input type="text" class="hidden" name="access_tag" value="{{ each_access.accessTag }}">
+        </div>
+        <button type="submit" class=" mx-1 my-5 rounded-md border border-transparent bg-blue-500 px-4 py-2 text-sm font-medium text-blue-200 shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2">Submit request</button>
+      </form>
+    {% endfor %}
   {% endif %}
 </div>
 <div id="redirect_to_dashboard" class="hidden">

@@ -145,6 +145,7 @@ TEMPLATES = [
             "libraries": {
                 "navbar_css_helpers": "templates.libraries.navbar_css_helper",
                 "myaccess_css_helpers": "templates.libraries.myaccess_css_helper",
+                "reusable_components": "templates.libraries.reusable_components",
             },
         },
     },
