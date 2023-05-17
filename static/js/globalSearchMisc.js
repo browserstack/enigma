@@ -32,21 +32,21 @@ function current_query_params() {
   return query_params;
 }
 
-function search(event) {
-  event.preventDefault();
-
-  const query_param = current_query_params();
-  query_param["page"] = [];
-  query_param["search"] ? query_param["search"].pop(): (query_param["search"] = []);
-  query_param["search"].push(get_search_value());
-  const url = create_url_from_query_params(query_param);
-  window.location.href = url;
+function search(event, elem) {
+  if(event.key === "Enter") {
+    const query_param = current_query_params();
+    query_param["page"] = [];
+    query_param["search"] ? query_param["search"].pop(): (query_param["search"] = []);
+    query_param["search"].push($(elem).val());
+    const url = create_url_from_query_params(query_param);
+    window.location.href = url;
+  }
 }
 
 function select_filter(elem) {
   const query_param = current_query_params();
   query_param["page"] = [];
-  key = $(elem).attr("key");
+  const key = $(elem).attr("param");
 
   if(elem.checked) {
     query_param[key] ? query_param[key].push($(elem).val()) : query_param[key] = [$(elem).val()];
@@ -74,8 +74,4 @@ function create_url_from_query_params(query_param) {
   const query_string = query_array.join('&');
   const link = `${window.location.pathname}?`;
   return link+query_string;
-}
-
-function get_search_value() {
-  return $("#global-search").val();
 }

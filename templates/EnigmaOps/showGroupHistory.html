@@ -66,17 +66,11 @@
 
     <div class="flex flex-row gap-4 items-center">
       <div class="sm:flex-auto">
-        <form onsubmit="search(event)" class="w-4/6 float:left relative">
+        <div class="w-4/6 float:left relative">
           <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white">
-            {% if search_value %}
-            <input id="global-search" type="search"
+            <input onkeydown="search(event, this)" id="global-search" type="search"
               class="flex-none rounded-md border-none text-gray-500 text-sm font-normal px-4 py-2 min-w-full"
-              placeholder="Search by group name, role type or status" value="{{search_value}}">
-            {% else %}
-            <input id="global-search" type="search"
-              class="flex-none rounded-md border-none text-gray-500 text-sm font-normal px-4 py-2 min-w-full"
-              placeholder="Search by group name, role type or status">
-            {% endif %}
+              placeholder="Search by group name, role type or status" {% if search_value %} value="{{search_value}}" {% endif %}>
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
               <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor"
                 viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -86,7 +80,7 @@
               </svg>
             </div>
           </div>
-        </form>
+        </div>
       </div>
 
       <div class="w-1/6 float-right relative" onclick="focusFilterStatus(this);">
@@ -113,7 +107,7 @@
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
             id="listbox-option-0" role="option">
-            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" key="role" onclick="select_filter(this)" checked>
+            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="role" onclick="select_filter(this)" checked>
             <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}
@@ -121,7 +115,7 @@
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
             id="listbox-option-0" role="option">
-            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" key="role" onclick="select_filter(this)">
+            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="role" onclick="select_filter(this)">
             <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}
@@ -152,7 +146,7 @@
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
             id="listbox-option-0" role="option">
-            <input type="checkbox" onclick="select_filter(this)" key="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" checked>
+            <input type="checkbox" onclick="select_filter(this)" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" checked>
             <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}
@@ -160,7 +154,7 @@
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
             id="listbox-option-0" role="option">
-            <input type="checkbox" onclick="select_filter(this)" key="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}">
+            <input type="checkbox" onclick="select_filter(this)" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}">
             <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}
@@ -289,7 +283,7 @@
 <nav
   class="mt-8 flex items-center justify-between border-t border-gray-200 sm:px-0 pt-6 px-4 sm:px-6 lg:px-8 pb-6 w-full">
   <div class="-mt-px flex w-0 flex-1">
-    {% if currentPagination|add:"0" > 1 %}
+    {% if currentPagination > 1 %}
     <a onclick="change_page('{{ currentPagination }}', -1)" 
       class="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
       <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
@@ -314,7 +308,7 @@
     {% endcomment %}
   </div>
   <div class="-mt-px flex w-0 flex-1 justify-end">
-    {% if currentPagination|add:"0" < maxPagination|add:"0" %} <a onclick="change_page('{{ currentPagination }}', 1)"
+    {% if currentPagination < maxPagination %} <a onclick="change_page('{{ currentPagination }}', 1)"
       class="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
       Next
       <svg class="ml-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
