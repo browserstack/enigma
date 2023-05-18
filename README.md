@@ -26,15 +26,14 @@ Enigma access management tool was developed internally at BrowserStack to solve 
 * No single portal for an individual to view his/her access across tools
 * No single portal to manage access for employees across vendors
 * No central audit trail across tools for access granted and revoked for employees
-* Repetitive Ops for DevOps teams for access grant and revoke requests
-* We had to discover SOC2-compliant and GDPR-compliant ways for managing individual and admin access for each external tool separately
-  * Once a compliant way of managing access is figured out, it should be sharable across organizations
-* Quick and reliable manner of offboarding exit-ing employees. One button click should allow revoking access across multiple tools for an employee
-* Auditing and tracking access for employees independent of the org team hierarchy
-  * individuals migrate teams, sometimes access are needed for temporary projects which are not required for the whole team
-* Individuals should be able to manage their own identity per tool
+* Repetitive Ops for DevOps teams and tool owners for access grant and revoke requests
+* No standardized SOC2-compliant and GDPR-compliant method for managing individual and admin access for external tools
+* No simple consolidated pipeline to trigger offboarding an exit-ing employee to revoke all employee access across tools
+* No way for an individual to maintain separate identiy per tool
   * Individuals might have multiple accounts for a single tool, there can be multiple org-wide domains for certain tools
-* Quickly granting a set of access that would be required for an individual to work on a project
+* No way to request, audit and track employee access outside of org-team hierarchy. Adhoc teams / groups support is needed.
+  * employees might migrate across teams, sometimes access are needed for temporary projects which are not required for the whole team
+* No way of listing a bunch of access to grant to employees working on a project
   * In case an individual is added to a project, access request for all relavant tools should be raised with a single click (based on knowledge-base build on other individuals working on the project)
 
 ## Usage
