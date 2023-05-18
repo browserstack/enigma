@@ -26,8 +26,12 @@ from . import helpers as helper
 logger = logging.getLogger(__name__)
 
 REQUEST_SUCCESS_MSG = {
-    "title": "{request_id}  Request Submitted",
-    "msg": "Once approved you will receive the update. {access_label}",
+    "title": "Request Submitted {access_tag}",
+    "msg": "Once approved you will receive the update",
+}
+REQUEST_FAILED_MSG = {
+    "error_msg": "Failed to create request",
+    "msg": "Something when wrong while create the access request"
 }
 REQUEST_DUPLICATE_ERR_MSG = {
     "title": "{access_tag}: Duplicate Request not submitted",
@@ -52,7 +56,7 @@ REQUEST_DB_ERR_MSG = {
     "msg": "Please Contact Admin",
 }
 REQUEST_IDENTITY_NOT_SETUP_ERR_MSG = {
-    "error_msg": "Identity not setup",
+    "error_msg": "Identity not set.",
     "msg": "User Identity for module {access_tag} not setup by the user",
 }
 USER_REQUEST_IN_PROCESS_ERR_MSG = "The Request ({request_id}) has already been processed. \
@@ -82,12 +86,16 @@ ERROR_DECLINING_REQUEST_LOG_MSG = "Error in Decline of request {request_id}. \
 ERROR_MARKING_RESOLVE_FAIL_LOG_MSG = "Error in resolving request {request_id}. \
  Error:{error} ."
 
+class ImplementationPendingException(Exception):
+    def __init__(self):
+        self.message = "Implementation Pending"
+        super().__init__(self.message)
 
 def get_request_access(request):
     context = {}
     try:
         for each_tag, each_module in helpers.get_available_access_modules().items():
-            if "access_" + each_tag in request.GET.getlist("accesses"):
+            if each_tag in request.GET.getlist("accesses"):
                 if "accesses" not in context:
                     context["accesses"] = []
                 context["genericForm"] = True
@@ -377,85 +385,50 @@ def process_error_response(e):
 
 
 def create_request(auth_user, access_request_form):
-    json_response, access_request = _validate_access_request(
-        access_request_form=access_request_form, user=auth_user
-    )
+    json_response = _validate_access_request(access_request_form, auth_user)
+    if json_response:
+        return json_response
+    
+    access_tag = access_request_form.get("access_tag")
 
-    current_date_time = (
-        datetime.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S") + "  UTC"
-    )
-    json_response = {}
-    json_response["status"] = []
-    json_response["status_list"] = []
-    extra_fields = get_extra_fields(access_request=access_request)
+    if not auth_user.user.get_active_identity(access_tag=access_tag):
+        json_response["error"] = {
+            "error_msg": REQUEST_IDENTITY_NOT_SETUP_ERR_MSG["error_msg"],
+            "msg": REQUEST_IDENTITY_NOT_SETUP_ERR_MSG["msg"].format(
+                access_tag=access_tag
+            ),
+        }
+        return json_response
+    
+    access_reason = access_request_form.get("access_reason")
+    access_module = helpers.get_available_access_module_from_tag(access_tag)
+    module_access_labels = access_module.validate_request(access_request_form, auth_user.user)
 
-    for index1, access_tag in enumerate(access_request["accessRequests"]):
-        access_labels = validate_access_labels(
-            access_labels_json=access_request["accessLabel"][index1],
-            access_tag=access_tag,
-        )
-        access_reason = access_request["accessReason"][index1]
-
+    for index, access_label in enumerate(module_access_labels):
         request_id = (
             auth_user.username
             + "-"
             + access_tag
             + "-"
             + datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        )
-        json_response[access_tag] = {
-            "requestId": request_id,
-            "dateTime": current_date_time,
-        }
-
-        access_module = helper.get_available_access_modules()[access_tag]
-        module_access_labels = access_module.validate_request(
-            access_labels, auth_user, is_group=False
+            + "-"
+            + str(index)
         )
 
-        extra_field_labels = get_extra_field_labels(access_module)
+        access_create_error = _create_access(auth_user, access_label, access_tag, request_id, access_reason)
+        if access_create_error:
+            logger.info(f"Duplicate request found: {access_create_error}")
+            continue
 
-        if extra_fields and extra_field_labels:
-            for field in extra_field_labels:
-                module_access_labels[0][field] = extra_fields[0]
-                extra_fields = extra_fields[1:]
+        if access_module.can_auto_approve():
+            raise ImplementationPendingException()
 
-
-        for index2, access_label in enumerate(module_access_labels):
-            request_id = request_id + "_" + str(index2)
-            access_create_error = _create_access(
-                auth_user=auth_user,
-                access_label=access_label,
-                access_tag=access_tag,
-                request_id=request_id,
-                access_reason=access_reason,
-            )
-            if access_create_error:
-                json_response["status_list"].append(access_create_error)
-                continue
-
-            if access_module.can_auto_approve():
-                # start approval in celery
-                json_response["status_list"].append(
-                    {
-                        "title": REQUEST_ACCESS_AUTO_APPROVED_MSG["title"].format(
-                            request_id
-                        ),
-                        "msg": REQUEST_ACCESS_AUTO_APPROVED_MSG["msg"],
-                    }
-                )
-                raise Exception("Implementation pending")
-                continue
-
-            json_response["status_list"].append(
-                {
-                    "title": REQUEST_SUCCESS_MSG["title"].format(request_id=request_id),
-                    "msg": REQUEST_SUCCESS_MSG["msg"].format(
-                        access_label=json.dumps(access_label)
-                    ),
-                }
-            )
-
+    json_response["status"] = {
+        "title": REQUEST_SUCCESS_MSG["title"].format(
+            access_tag=access_tag
+        ),
+        "msg": REQUEST_SUCCESS_MSG["msg"]
+    }
     return json_response
 
 
@@ -536,15 +509,13 @@ def _validate_access_request(access_request_form, user):
         logger.debug("Tried a direct Access to accessRequest by-" + user.username)
         return json_response
 
-    access_request = dict(access_request_form.lists())
-
-    if "accessRequests" not in access_request:
+    if not access_request_form.get("access_tag") or not access_request_form.get("access_reason"):
         json_response["error"] = {
             "error_msg": REQUEST_EMPTY_FORM_ERR_MSG["error_msg"],
-            "msg": REQUEST_EMPTY_FORM_ERR_MSG["msg"],
+            "msg": REQUEST_EMPTY_FORM_ERR_MSG["msg"]
         }
-        return json_response
-    return {}, access_request
+    
+    return json_response
 
 
 def validate_access_labels(access_labels_json, access_tag):
