@@ -5,7 +5,7 @@ For every new access modules repository, the following settings have to be added
 ```bash
 "access_modules": {
     "git_urls": [
-      "https://github.com/browserstack/enigma-public-access-modules.git",
+      "https://github.com/browserstack/enigma-access-modules.git",
       "https://github-new-access-module.git"
     ],
     ....
@@ -13,7 +13,7 @@ For every new access modules repository, the following settings have to be added
 ```
 ### For private repos:
 ```bash
- "https://<git-username>:<github-token>@github.com/browserstack/enigma-public-access-modules.git"
+ "https://<git-username>:<github-token>@github.com/browserstack/enigma-access-modules.git"
 ```
 where github-token is a [PAT Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
 
@@ -52,5 +52,5 @@ The added URLs will be integrated by the cloning script `scripts/clone_access_mo
 - Once the function is overridden admin can now create a permission with the label and then assign user that permission (learn more about adding permission is Adding Permissions Section). And the user will be asked for the secondary approver for a request.
 
 #### Disabling Access module
-- For one click setup it clone all the access modules from the `enigma-public-access-modules` repo. So in the UI you can see all the access modules.
+- For one click setup it clone all the access modules from the `enigma-access-modules` repo. So in the UI you can see all the access modules.
 - Which can be disabled by removing the non required access moduled folder from `Access/access_modules` path.
