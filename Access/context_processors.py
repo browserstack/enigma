@@ -1,5 +1,3 @@
-from django.core import serializers
-
 from Access.models import User
 from Access.helpers import get_available_access_modules, getPossibleApproverPermissions
 
@@ -23,7 +21,4 @@ def add_variables_to_context(request):
     context["groupsMemberFor"] = len(currentUser.get_active_groups())
     context["users"] = User.objects.filter().exclude(
         user__username='system_user').only("user")
-    context["json_users"] = serializers.serialize(
-        'json', context["users"])
-
     return context
