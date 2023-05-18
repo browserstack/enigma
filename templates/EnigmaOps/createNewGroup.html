@@ -65,8 +65,7 @@
     <div class="w-full flex flex-col">
       <label class="flex-none leading-5 mt-8 text-sm font-medium text-gray-700">Name for group</label>
       <input type="text" pattern="[A-Za-z0-9][A-Za-z0-9-]{2,}"
-        class="w-9/12 px-4 py-2 mt-1 bg-white border border-gray-300 box-border rounded-md shadow-sm focus:outline-none focus:border-blue-500
-               items-center text-base leading-6 font-normal text-gray-500"
+        class="block w-1/2 rounded-md border-gray-300 pr-12 shadow-sm focus:border-blue-600 focus:ring-blue-600 sm:text-sm"
         id="newGroupName" name="newGroupName"
         placeholder="Minimum 3 chars with no spaces and special chars, hyphens allowed"
         required>
@@ -77,14 +76,14 @@
   <div class="grid grid-cols-2 max-h-min">
     <div>
       <div class="flex flex-row mt-6 items-center">
-        <div class="sm:flex-auto">
-          <form class="w-11/12 float:left relative">
-            <label class="text-sm font-medium text-gray-700">Add members</label>
-            <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white">
+        <div class="sm:flex-auto w-full">
+          <div class="w-full"><label class="text-sm font-medium text-gray-700">Add members</label></div>
+          <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white">
+            <div class="w-full relative flex items-center">
               <input id="global-search" type="search"
-              class="flex-none rounded-md border-none text-gray-500 text-base leading-6 font-normal px-4 py-2 min-w-full"
-              placeholder="Search by name or email ID" required>
-              <div class="pointer-events-none absolute right-0 flex items-center pr-2 bottom-2.5">
+                class="flex-auto rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 sm:text-sm"
+                placeholder="Search by name or email ID" required></input>
+              <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
                 <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor"
                   viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path fill-rule="evenodd"
@@ -93,12 +92,12 @@
                 </svg>
               </div>
             </div>
-          </form>
+          </div>
         </div>
-        <div class="ml-auto flex items-center mt-8">
+        <div class="ml-2 w-2/12 flex content-center">
           <input type="checkbox" onclick="selectAllToggleSelection(this);"
             class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800
-                   focus:ring-2 dark:border-gray-600 -ml-3 mb-2.5"
+                   focus:ring-2 dark:border-gray-600"
             id="selectAllUsers" name="selectAllUsers">
           <label for="selectAllUsers" class="ml-1 mr-3 mb-2.5 text-base leading-6 font-normal text-gray-900">Select all</label>
         </div>
