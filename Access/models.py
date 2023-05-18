@@ -248,8 +248,7 @@ class User(models.Model):
     def get_all_memberships(self):
         return self.membership_user.all()
 
-
-    def get_groups_history(self, start_index, count):
+    def get_groups_history(self):
         all_user_membership = self.get_all_memberships()
         group_history = []
         for each_membership in all_user_membership:
@@ -257,19 +256,7 @@ class User(models.Model):
             if len(group_access) > 1:
                 group_history.append(group_access)
 
-            # skip till start_index
-            if start_index <= len(group_history):
-                group_history = group_history[start_index:]
-                start_index = 0
-            else:
-                start_index = start_index - len(group_history)
-                group_history = []
-
-            # end loop if count to return is reached
-            if start_index == 0 and len(group_history) >= count:
-                break
-
-        return group_history[0:count]
+        return group_history
 
     def get_group_access_count(self):
         return self.membership_user.filter(group__status="Approved").count()
