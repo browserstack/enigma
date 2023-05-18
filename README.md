@@ -23,7 +23,7 @@ Refer to [this doc](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/Adding%20Modules.md)
 
 Enigma access management tool was developed internally at BrowserStack to solve some of the problems we observed around access management for employees
 
-* No single portal for an individual to view his/her access across tools
+* No single portal for an individual to view their access across tools
 * No single portal to manage access for employees across vendors
 * No central audit trail across tools for access granted and revoked for employees
 * Repetitive Ops for DevOps teams and tool owners for access grant and revoke requests
