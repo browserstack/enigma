@@ -14,7 +14,7 @@ Enigma provides the following modules as part of its default settings, these can
 
 ## Creating custom access modules
 
-When a new resource is required, it's corresponding module has to be added in [Engima's modules repository](https://github.com/browserstack/enigma-public-access-modules.git) or a new dedicated repo (as per the usecase):
+When a new resource is required, it's corresponding module has to be added in [Engima's modules repository](https://github.com/browserstack/enigma-access-modules.git) or a new dedicated repo (as per the usecase):
 
 - Add `__init__.py`:
 
@@ -39,7 +39,7 @@ When a new resource is required, it's corresponding module has to be added in [E
     ```
 - Implement `approve` and `revoke` functions to implement respective functionalities.
 
-Refer to [Engima Access Modules](https://github.com/browserstack/enigma-public-access-modules.git) for further understanding of the default implementations and file structure.
+Refer to [Engima Access Modules](https://github.com/browserstack/enigma-access-modules.git) for further understanding of the default implementations and file structure.
 
 Once the implementation is in place, the module needs to be integrated with the central code.
 Refer to [Integrations doc](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/Integrating%20Modules.md) for further steps.

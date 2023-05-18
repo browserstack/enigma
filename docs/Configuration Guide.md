@@ -17,7 +17,7 @@ database.username | "" (Empty string) | `String` The username to use when connec
 database.password | "" (Empty string) | `String` The password to use when connecting to the database. *Not used with SQLite.*
 database.host | "" (Empty string) | `String` The host to use when connecting to the database. *Not used with SQLite.*
 database.port | | `Integer` The port to use when connecting to the database. *Not used with SQLite.*
-access_modules.git_urls | ["https://github.com/browserstack/enigma-public-access-modules.git"] (Enigma's Access Module Repository)| `Array` List of Git URLs of access modules, these URLs are fed to the cloning script to pull the modules into the running container.
+access_modules.git_urls | ["https://github.com/browserstack/enigma-access-modules.git"] (Enigma's Access Module Repository)| `Array` List of Git URLs of access modules, these URLs are fed to the cloning script to pull the modules into the running container.
 access_modules.RETRY_LIMIT | 5 | `Integer` Maximum number of tries to clone the access modules repository
 enigmaGroup.MAIL_APPROVER_GROUPS | [] (Empty list) | `Array` List of approvers Email for managing groups.
 email.access-approve | "" (Empty string) | `String` Admin access approver's email address
