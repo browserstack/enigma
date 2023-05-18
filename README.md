@@ -5,7 +5,7 @@
 This tool consists of 2 different components: a central webserver and pluggable access modules.
 
 This repo is the code-base for the central webserver.
-Refer to [this](https://github.com/browserstack/enigma-public-access-modules) for published access modules with this tool.
+Refer to [this](https://github.com/browserstack/enigma-access-modules) for published access modules with this tool.
 
 Refer to [this doc](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/Adding%20Modules.md) on how to create custom access modules
 
@@ -24,7 +24,7 @@ If you don't have docker setup, follow the guidelines [here](https://docs.docker
 
 1. Ensure you have a valid `config.json` present locally.
 
-The default [config.json.sample](https://github.com/browserstack/enigma-public-central/blob/main/config.json.sample) should be sufficient to start.
+The default [config.json.sample](https://github.com/browserstack/enigma/blob/main/config.json.sample) should be sufficient to start.
 
 You can then add module-specific configuration for the modules you want integrated with Enigma.
 For detailed instructions on configuration, follow [this doc](/docs/Configuration%20Guide.md)

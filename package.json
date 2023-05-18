@@ -1,5 +1,5 @@
 {
-  "name": "enigma-public-central",
+  "name": "enigma",
   "version": "1.0.0",
   "description": "Central Codebase for access management tool",
   "main": "commitlint.config.js",
@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/browserstack/enigma-public-central.git"
+    "url": "git+https://github.com/browserstack/enigma.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/browserstack/enigma-public-central/issues"
+    "url": "https://github.com/browserstack/enigma/issues"
   },
-  "homepage": "https://github.com/browserstack/enigma-public-central#readme",
+  "homepage": "https://github.com/browserstack/enigma#readme",
   "devDependencies": {
     "@commitlint/cli": "^17.4.0",
     "@commitlint/config-conventional": "^17.4.0",
