@@ -26,8 +26,7 @@
   "access_modules": {
     "git_urls": [
       "https://github.com/browserstack/enigma-access-modules.git"
-    ],
-    "RETRY_LIMIT": 5
+    ]
   },
   "enigmaGroup": {
     "MAIL_APPROVER_GROUPS": []
