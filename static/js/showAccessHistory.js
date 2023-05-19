@@ -10,9 +10,3 @@ function focusFilterStatus (elem) {
     ulElem.hide();
   }
 };
-
-$(document).ready(function(){
-  if(  $('#users-tab tbody tr').length >= 1  ) {
-       $('#myTable').addClass('add-scroll');
-   }
- });
