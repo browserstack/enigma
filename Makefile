@@ -65,16 +65,18 @@ test: setup_mounts ensure_web_container_for_test
 		docker exec dev python -m pytest -v --cov --disable-warnings -k '$(TESTS)'; \
 	fi
 
-## Create lint issues file
-.PHONY: lint_issues
-lint_issues:
-	@touch $@
-
 ## Lint code using pylama skipping files in env (if pyenv created)
 .PHONY: lint
-lint: lint_issues
-	@python3 -m pylama --version
-	@pylama -r lint_issues || echo "Linter run returned errors. Check lint_issues file for details." && false
+lint: export APPUID = $(APP_UID)
+lint: setup_mounts ensure_web_container_for_test
+	@docker exec dev python -m pylama --version
+	@docker exec dev python -m pylama Access/accessrequest_helper.py
+	@if [ "$$?" -ne 0 ]; then \
+		echo "Linter checks failed"; \
+		exit 1; \
+	else \
+	  echo "Linter checks passed"; \
+	fi
 
 .PHONY: schema_validate
 schema_validate: export APPUID = $(APP_UID)
