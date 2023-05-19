@@ -1,17 +1,21 @@
 {% load myaccess_css_helpers %}
 {% load static %}
 
+{% block head_body %}
+<script src={% static "js/globalSearchMisc.js" %}></script>
+{% endblock %}
+
 {% block content_body %}
 <div id="genericAcceses" class="mt-8 px-4 sm:px-6 lg:px-8 w-full">
-  {% if genericAccesses %}
+  {% if dataList %}
   <div class="flex flex-col gap-4">
     <div class="flex flex-row gap-4 items-center">
       <div>
-        <form class="w-96 relative">
+        <div class="w-96 relative">
           <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid">
-            <input id="global-search" type="search"
-              class="flex-none rounded-md border-none text-gray-500 text-sm font-normal px-4 py-2 min-w-full"
-              placeholder="Search by module name, access type or status" required>
+            <input onkeydown="search(event, this, {'show_tab': 'accessList'})" id="global-search" type="search"
+                class="flex-none rounded-md border-none text-gray-500 text-sm font-normal px-4 py-2 min-w-full"
+                placeholder="Search by module name, access type or status" {% if search_value %} value="{{search_value}}" {% endif %}>
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
               <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor"
                 viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -21,8 +25,9 @@
               </svg>
             </div>
           </div>
-        </form>
+        </div>
       </div>
+
 
       <div class="w-1/6 relative" onclick="focusFilterStatus(this)">
         <button type="button"
@@ -41,28 +46,34 @@
         </button>
 
         <ul
-          class="hidden absolute right-0 origin-top-right z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1
+          class="min-w-full hidden absolute right-0 origin-top-right z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1
                   ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabindex="-1" role="listbox" aria-labelledby="listbox-label"
           aria-activedescendant="listbox-option-3">
-          {% for filter in accessTypeFilter %}
-          <li
-            class="btn-filter block text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option" onclick="return selectLI(this,1);">
-            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type='checkbox' name="filter" class='rounded' value="{{ filter }}">
-            </span>
-            <span class="font-normal block truncate ml-6">{{ filter }}</span>
-          </li>
+          {% for filter in accessTypeFilter.selected %}
+            <li
+              class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+              id="listbox-option-0" role="option">
+              <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="access_type" onclick="select_filter(this, {'show_tab': 'accessList'})" checked>
+              <label for="group_{{filter}}">{{filter}}</label>
+            </li>
+            {% endfor %}
+            {% for filter in accessTypeFilter.notSelected %}
+            <li
+              class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+              id="listbox-option-0" role="option">
+              <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="access_type" onclick="select_filter(this, {'show_tab': 'accessList'})">
+              <label for="group_{{filter}}">{{filter}}</label>
+            </li>
           {% endfor %}
         </ul>
       </div>
 
-      <div class="w-1/6 relative" onclick="focusFilterStatus(this)">
+      <div class="w-1/6 float-right relative" onclick="focusFilterStatus(this);">
         <button type="button"
           class="min-w-full cursor-default rounded-md border
-                                            border-gray-300 bg-white px-4 py-2 text-left shadow-sm focus:border-blue-500
-                                            focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+                                      border-gray-300 bg-white px-4 py-2 text-left shadow-sm focus:border-blue-500
+                                      focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
           aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
           <span class="block truncate text-gray-500">Status</span>
           <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -75,18 +86,23 @@
         </button>
 
         <ul
-          class="hidden absolute right-0 origin-top-right z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1
-                  ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+          class="min-w-full hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabindex="-1" role="listbox" aria-labelledby="listbox-label"
           aria-activedescendant="listbox-option-3">
-          {% for filter in statusFilter %}
+          {% for filter in statusFilter.selected %}
           <li
-            class="btn-filter block text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option" onclick="return selectLI(this,2);">
-            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type='checkbox' name="filter" class='rounded' value="{{ filter }}">
-            </span>
-            <span class="font-normal block truncate ml-6">{{ filter }}</span>
+            class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+            id="listbox-option-0" role="option">
+            <input type="checkbox" onclick="select_filter(this, {'show_tab': 'accessList'})" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" checked>
+            <label for="group_{{filter}}">{{filter}}</label>
+          </li>
+          {% endfor %}
+          {% for filter in statusFilter.notSelected %}
+          <li
+            class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+            id="listbox-option-0" role="option">
+            <input type="checkbox" onclick="select_filter(this, {'show_tab': 'accessList'})" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}">
+            <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}
         </ul>
@@ -103,7 +119,25 @@
     </div>
   </div>
 
-  <div id="paginated">
+  {% if search_error %}
+  <div class="mt-5 rounded-md bg-yellow-50 p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-yellow-800">No exact match found</h3>
+        <div class="mt-2 text-sm text-yellow-700">
+          <p>{{search_error}}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+
+  <div id="">
     <div class="mt-4 flex flex-col">
       <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
@@ -129,8 +163,9 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200 bg-white">
-                {% for eachAccess in genericAccesses %}
-                <tr data-status-1="{{ eachAccess.accessType }}" data-status-2="{{ eachAccess.status }}">
+                {% for eachAccess in dataList %}
+                <tr data-status-1="{{ eachAccess.accessType }}" data-status-2="{{ eachAccess.status }}"
+                {% if forloop.counter|divisibleby:2 %}class="bg-gray-50" {% endif %}>
                   <td class="whitespace-nowrap px-3 py-4 text-sm">
                     <div class="text-gray-900 font-medium">{{ eachAccess.module }}</div>
                     <div class="text-gray-400 font-normal">{{ eachAccess.requestId }}</div>
@@ -146,11 +181,6 @@
                   </td>
                   <td id="inactive-{{ eachAccess.requestId }}-revoke-button"
                     class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
-                    {% if user.is_owner %}
-                    <button class="btn btn-danger inactive-access-button"
-                      id="inactive-{{ eachAccess.requestId }}">Mark Inactive</button><br>(Existing
-                    accesses are not revoked)<br><br>
-                    {% endif %}
 
                     {% if allowRevoke and eachAccess.status == 'Approved' %}
                     <button type="button"
@@ -198,6 +228,49 @@
       </div>
     </div>
   </div>
+  {% endif %}
+  {% if dataList %}
+  <nav
+    class="mt-8 flex items-center justify-between border-t border-gray-200 sm:px-0 pt-6 px-4 sm:px-6 lg:px-8 pb-6 w-full">
+    <div class="-mt-px flex w-0 flex-1">
+      {% if currentPagination > 1 %}
+      <a onclick="change_page('{{ currentPagination }}', -1, {'show_tab': 'accessList'})"
+        class="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+        <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+          fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd"
+            d="M18 10a.75.75 0 01-.75.75H4.66l2.1 1.95a.75.75 0 11-1.02 1.1l-3.5-3.25a.75.75 0 010-1.1l3.5-3.25a.75.75 0 111.02 1.1l-2.1 1.95h12.59A.75.75 0 0118 10z"
+            clip-rule="evenodd" />
+        </svg>
+        Previous
+      </a>
+      {% endif %}
+    </div>
+
+    <div class="hidden md:-mt-px md:flex">
+      {% for navIter in allPages %}
+      <a onclick="change_page('{{ navIter }}', null, {'show_tab': 'accessList'})"
+        class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium {% get_navigation_class navIter currentPagination %}">
+        {{ navIter }}</a>
+      {% endfor %}
+      {% comment %} <span
+        class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium border-transparent text-gray-500">...</span>
+      {% endcomment %}
+    </div>
+    <div class="-mt-px flex w-0 flex-1 justify-end">
+      {% if currentPagination < maxPagination %} <a onclick="change_page('{{ currentPagination }}', 1, {'show_tab': 'accessList'})"
+        class="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+        Next
+        <svg class="ml-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+          fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd"
+            d="M2 10a.75.75 0 01.75-.75h12.59l-2.1-1.95a.75.75 0 111.02-1.1l3.5 3.25a.75.75 0 010 1.1l-3.5 3.25a.75.75 0 11-1.02-1.1l2.1-1.95H2.75A.75.75 0 012 10z"
+            clip-rule="evenodd" />
+        </svg>
+        </a>
+        {% endif %}
+    </div>
+  </nav>
   {% endif %}
 </div>
 {% endblock %}

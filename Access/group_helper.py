@@ -9,6 +9,8 @@ from . import helpers as helper
 from Access.background_task_manager import revoke_request
 import json
 
+from .helpers import get_available_access_type
+
 logger = logging.getLogger(__name__)
 
 NEW_GROUP_CREATE_SUCCESS_MESSAGE = {
@@ -233,6 +235,15 @@ def get_group_access_list(auth_user, group_name):
         context["genericAccesses"] = []
 
     return context
+
+
+def get_role_based_on_membership(group_detail):
+    for user in group_detail["userList"]:
+        if user["is_owner"]:
+            user["role"] = "Owner"
+        else:
+            user["role"] = "Member"
+    return group_detail
 
 
 def update_owners(request, group_name):
@@ -871,6 +882,25 @@ def get_group_status_list(selected_list):
             status_list.append(status[0])
 
     return status_list
+
+def get_group_member_access_type(selected_list):
+    access_type = []
+    all_types = get_available_access_type()
+    for type in all_types:
+        if type not in selected_list:
+            access_type.append(type)
+
+    return access_type
+
+
+def get_user_states(selected_list):
+    user_state = []
+    for state in User.USER_STATUS_CHOICES:
+        current_state = state[1].capitalize()
+        if current_state not in selected_list:
+            user_state.append(current_state)
+
+    return user_state
 
 def get_user_current_state():
     current_state = []

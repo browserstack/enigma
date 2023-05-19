@@ -64,11 +64,18 @@
   <div id="tabs" class="mt-2 border-b border-gray-200 dark:border-gray-700">
     <ul class="flex flex-wrap text-sm font-medium
                        text-center text-gray-500 dark:text-gray-500 gap-8">
-      <li class="mr-2" onclick="focusActiveTab(this)">
-        <a show="genericAcceses" hide="users" class="inline-flex py-4 border-b-2 rounded-t-lg group
-                                                     active text-blue-600 border-blue-600
-                                                     dark:text-blue-500 dark:border-blue-500"
-          aria-current="page">
+      <li class="mr-2">
+        <a href="{% url 'groupAccessList' %}?group_name={{ groupName }}&show_tab=accessList"
+           {% if not isMembersList %}
+           class="inline-flex py-4 border-b-2 rounded-t-lg group
+                  active text-blue-600 border-blue-600
+                  dark:text-blue-500 dark:border-blue-500"
+          {% else %}
+          class="inline-flex py-4 border-b-2 rounded-t-lg group
+                 border-transparent hover:text-gray-600
+                 hover:border-gray-400 dark:hover:text-gray-400"
+          {% endif %}
+           aria-current="page">
           <svg aria-hidden="true" class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5
@@ -77,11 +84,17 @@
           </svg>Access
         </a>
       </li>
-      <li class="mr-2" onclick="focusActiveTab(this)">
-        <a hide="genericAcceses" show="users" aria-current="page"
+      <li class="mr-2">
+        <a href="{% url 'groupAccessList' %}?group_name={{ groupName }}&show_tab=membersList" aria-current="page"
+          {% if isMembersList %}
+           class="inline-flex py-4 border-b-2 rounded-t-lg group
+                  active text-blue-600 border-blue-600
+                  dark:text-blue-500 dark:border-blue-500"
+          {% else %}
           class="inline-flex py-4 border-b-2 rounded-t-lg group
-                                                                border-transparent hover:text-gray-600
-                                                                hover:border-gray-400 dark:hover:text-gray-400">
+                 border-transparent hover:text-gray-600
+                 hover:border-gray-400 dark:hover:text-gray-400"
+          {% endif %}>
           <svg aria-hidden="true" class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"
             xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd"
@@ -95,15 +108,17 @@
       </li>
     </ul>
 
+    {% if not isMembersList %}
     <div id="genericAcceses"
       class="-mx-8 pb-6 border-t border-gray-200 border-solid h-screen fade bg-white">
       {% include "EnigmaOps/group_access_list_tabs/generic_accesses_tab.html" %}
     </div>
-
+    {% else %}
     <div id="users"
-      class="-mx-8 pb-6 border-t border-gray-200 border-solid h-screen fade bg-white hidden">
+      class="-mx-8 pb-6 border-t border-gray-200 border-solid h-screen fade bg-white">
       {% include "EnigmaOps/group_access_list_tabs/users_list_tab.html" %}
     </div>
+    {% endif %}
 
   </div>
 </div>
