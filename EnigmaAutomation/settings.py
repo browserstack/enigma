@@ -71,7 +71,7 @@ CID_GENERATOR = lambda: f"{time.time()}-{random.random()}"
 CID_HEADER = "X_CORRELATION_ID"
 CID_GENERATE = True
 CID_CONCATENATE_IDS = True
-SESSION_EXPIRE_SECONDS = 7*24*60
+SESSION_EXPIRE_SECONDS = 7*24*60*60
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
 AXES_ONLY_USER_FAILURES=True
 AXES_FAILURE_LIMIT=5
@@ -145,6 +145,7 @@ TEMPLATES = [
             "libraries": {
                 "navbar_css_helpers": "templates.libraries.navbar_css_helper",
                 "myaccess_css_helpers": "templates.libraries.myaccess_css_helper",
+                "reusable_components": "templates.libraries.reusable_components",
             },
         },
     },

@@ -2,6 +2,7 @@ version: '3'
 services:
   web:
     container_name: dev
+    image: browserstack/enigma:v1
     build:
       context: .
       dockerfile: Dockerfile
@@ -19,9 +20,6 @@ services:
     - 8000:8000
     depends_on:
     - db
-    command: >
-      bash -c "echo Starting Django runserver;
-      python manage.py runserver --insecure 0.0.0.0:8000"
   db:
     container_name: db
     image: mysql/mysql-server:8.0.31

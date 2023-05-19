@@ -65,8 +65,7 @@
     <div class="w-full flex flex-col">
       <label class="flex-none leading-5 mt-8 text-sm font-medium text-gray-700">Name for group</label>
       <input type="text" pattern="[A-Za-z0-9][A-Za-z0-9-]{2,}"
-        class="w-9/12 px-4 py-2 mt-1 bg-white border border-gray-300 box-border rounded-md shadow-sm focus:outline-none focus:border-blue-500
-               items-center text-base leading-6 font-normal text-gray-500"
+        class="block w-1/2 rounded-md border-gray-300 pr-12 shadow-sm focus:border-blue-600 focus:ring-blue-600 sm:text-sm"
         id="newGroupName" name="newGroupName"
         placeholder="Minimum 3 chars with no spaces and special chars, hyphens allowed"
         required>
@@ -76,16 +75,16 @@
 
   <div class="grid grid-cols-2 max-h-min">
     <div>
-      <div class="flex flex-row mt-6 items-center">
-        <div class="sm:flex-auto">
-          <form class="w-11/12 float:left relative">
-            <label class="text-sm font-medium text-gray-700">Add members</label>
-            <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white">
+      <div class="flex flex-col mt-6 items-center">
+        <div class="w-full"><label class="text-sm font-medium text-gray-700">Add members</label></div>
+        <div class="flex flex-row w-full gap-2">
+          <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white w-full">
+            <div class="relative flex items-center">
               <input id="global-search" type="search"
-              class="flex-none rounded-md border-none text-gray-500 text-base leading-6 font-normal px-4 py-2 min-w-full"
-              placeholder="Search by name or email ID" required>
-              <div class="pointer-events-none absolute right-0 flex items-center pr-2 bottom-2.5">
-                <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor"
+                class="flex-auto rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600"
+                placeholder="Search by name or email ID" required></input>
+              <div class="absolute inset-y-0 right-0 py-1.5 pr-1.5">
+                <svg aria-hidden="true" class="text-gray-500 h-full" height="18px" width="18px" fill="currentColor"
                   viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path fill-rule="evenodd"
                     d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
@@ -93,14 +92,14 @@
                 </svg>
               </div>
             </div>
-          </form>
-        </div>
-        <div class="ml-auto flex items-center mt-8">
-          <input type="checkbox" onclick="selectAllToggleSelection(this);"
-            class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800
-                   focus:ring-2 dark:border-gray-600 -ml-3 mb-2.5"
-            id="selectAllUsers" name="selectAllUsers">
-          <label for="selectAllUsers" class="ml-1 mr-3 mb-2.5 text-base leading-6 font-normal text-gray-900">Select all</label>
+          </div>
+          <div class="ml-2 w-2/12 self-center">
+            <input type="checkbox" onclick="selectAllToggleSelection(this);"
+              class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800
+                    focus:ring-2 dark:border-gray-600"
+              id="selectAllUsers" name="selectAllUsers">
+            <label for="selectAllUsers" class="ml-1 mr-3 mb-2.5 text-base leading-6 font-normal text-gray-900">Select all</label>
+          </div>
         </div>
       </div>
 
@@ -147,7 +146,7 @@
     <div>
       <div class="flex flex-col mt-16 ml-4">
         <div class="flex flex-row items-center">
-          <h1 class="text-lg font-medium text-gray-900 mb-0.5">Selected members</h1>
+          <h1 class="text-xl text-gray-900">Selected members</h1>
           <span
             class="inline-flex items-center rounded-full bg-green-100 ml-4 px-2.5 py-0.5 text-xs font-medium text-green-800 hidden"
             id="member-selected-count">0 selected</span>
