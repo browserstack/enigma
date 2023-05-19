@@ -301,12 +301,20 @@ def group_access(request):
         status of whether the group access save request.
     """
     if request.POST:
-        context = group_helper.save_group_access_request(request.POST, request.user)
-        return render(request, "EnigmaOps/accessStatus.html", context)
+        status = 200
+        try:
+            context = group_helper.save_group_access_request(request.POST, request.user)
+            if "error" in context :
+                status = 400
+        except Exception as exception:
+            print(exception)
+            status = 500
+            context = {
+                "error" : group_helper.GROUP_REQUEST_ERR_MSG
+            }
+        return JsonResponse(context, status=status)
 
     context = group_helper.get_group_access(request.GET, request.user)
-    if "status" in context:
-        return render(request, 'EnigmaOps/accessStatus.html',context)
     return render(request, "EnigmaOps/groupAccessRequestForm.html", context)
 
 
