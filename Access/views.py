@@ -117,11 +117,12 @@ def new_access_request(request):
             "Please login again",
         )
 
+    modules_list = [(access_tag, module.access_desc()) for access_tag, module in helper.get_available_access_modules().items()]
     return render(
         request,
         "EnigmaOps/newAccessRequest.html",
         {
-            "modulesList": helper.get_available_access_modules(),
+            "modulesList": modules_list
         },
     )
 
@@ -862,3 +863,13 @@ def error_404(request, exception, template_name='404.html'):
 def error_500(request, template_name='500.html'):
         data = {}
         return render(request,template_name,data)
+
+
+def get_access_modules(request):
+    search = request.GET.get("search")
+    modules_list = [(access_tag, module.access_desc()) for access_tag, module in helper.get_available_access_modules().items() if (search in access_tag or search in module.access_desc())]
+    if modules_list == []:
+        search_error = "Please try adjusting your search to find what you're looking for."
+        return JsonResponse({"search_error": search_error}, status=200)
+
+    return JsonResponse({"modulesList": modules_list}, status=200)

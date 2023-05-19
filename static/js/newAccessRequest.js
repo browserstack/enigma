@@ -1,3 +1,5 @@
+const selectedList = {};
+
 const handleSelectionView = () => {
   const finalCount = $('#module-selection-table').children('tr').length;
 
@@ -17,12 +19,10 @@ const handleSelectionView = () => {
 
 const selectCheckbox = (moduleTag, checked) => {
   if(checked) {
-    $(`#${moduleTag}-marker`).show();
     $(`#${moduleTag}-checkbox`).prop('checked', true);
     $(`#${moduleTag}-tablerow`).removeClass('hover:bg-blue-50 hover:text-blue-700').addClass('bg-gray-50');
     $(`#${moduleTag}-tabledesc`).removeClass('text-gray-900').addClass('text-blue-600');
   } else {
-    $(`#${moduleTag}-marker`).hide();
     $(`#${moduleTag}-checkbox`).prop('checked', false);
     $(`#${moduleTag}-tablerow`).removeClass('bg-gray-50').addClass('hover:bg-blue-50 hover:text-blue-700');
     $(`#${moduleTag}-tabledesc`).removeClass('text-blue-600').addClass('text-gray-900');
@@ -32,6 +32,7 @@ const selectCheckbox = (moduleTag, checked) => {
 const addModuleSelection = (moduleTag, moduleDesc) => {
   const selectionList = $('#module-selection-table');
   const newSpan = $("#module-selection-row-template").clone(true, true);
+  selectedList[moduleTag] = true;
 
   selectCheckbox(moduleTag, true);
 
@@ -47,6 +48,7 @@ const addModuleSelection = (moduleTag, moduleDesc) => {
 const removeSelectionSpanElem = (elem) => {
   const spanId = elem.id || elem.attr('id');
   const moduleTag = spanId.replace('module-selection-', '');
+  selectedList[moduleTag] = false;
 
   elem.remove();
   selectCheckbox(moduleTag, false);
@@ -88,3 +90,40 @@ const raiseAccessRequest = () => {
   const finalUrl = `/access/requestAccess?${accessTags.join("&")}`;
   window.location = finalUrl;
 };
+
+
+function search(event, elem) {
+  if(event.key === "Enter") {
+    $(elem).val()
+
+    $.ajax({
+      url: "/api/v1/getAccessModules",
+      data: {"search": $(elem).val()}
+    }).done(function(data, statusText, xhr) {
+      if(data["modulesList"]) {
+        $("#module-list-table tr").remove()
+
+        const rows = data["modulesList"].map((moduleList) => {
+          if(!selectedList[moduleList[0]]) {
+            return `<tr id="${moduleList[0]}-tablerow" class="hover:bg-blue-50 hover:text-blue-700">
+              <td class="relative w-12 px-6 sm:w-16 sm:px-8">
+                <input type="checkbox" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6" onclick="handleModuleSelection(this, '${moduleList[0]}', '${moduleList[1]}');" id="${moduleList[0]}-checkbox"></input>
+              </td>
+              <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium text-gray-900" id="${moduleList[0]}-tabledesc">${moduleList[1]}</td>
+            </tr>`
+          } else {
+            return `<tr id="${moduleList[0]}-tablerow" class="bg-gray-50">
+              <td class="relative w-12 px-6 sm:w-16 sm:px-8">
+                <input type="checkbox" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6" checked onclick="handleModuleSelection(this, '${moduleList[0]}', '${moduleList[1]}');" id="${moduleList[0]}-checkbox"></input>
+              </td>
+              <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium text-blue-600" id="${moduleList[0]}-tabledesc">${moduleList[1]}</td>
+            </tr>`
+          }
+        })
+        $("#module-list-table").append(rows.join(""))
+      } else if(data["search_error"]) {
+        showNotification()
+      }
+    })
+  }
+}
