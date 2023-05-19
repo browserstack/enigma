@@ -1,21 +1,60 @@
 {% extends 'global_layout.html' %}
 
+{% block nav_breadcrumb %}
+<nav class="flex px-8 py-6 flex-shrink-0" aria-label="Breadcrumb">
+  <ol role="list" class="flex items-center space-x-4">
+    <li>
+      <div>
+        <a href="{% url 'dashboard' %}" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-5 w-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+          </svg>
+          <span class="sr-only">Home</span>
+        </a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'updateUserInfo' %}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">My profile</a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block content_body %}
   <!-- Content Wrapper. Contains page content -->
-  <div class="page-header">
-    <div class="container-fluid">
-      <h2 class="h5 no-margin-bottom">Update User Info: {{request.user}}</h2>
+<div class="px-4 sm:px-6 lg:px-8 w-full">
+  <div class="sm:flex sm:items-center sm:h-10">
+    <div class="sm:flex-auto">
+      <h1 class="text-2xl leading-7 font-bold text-gray-900">Profile details</h1>
+    </div>
+    <div class="mt-4 sm:mt-0 sm:ml-4 sm:flex-none">
+      <a href="{% url 'logout' %}">
+        <button type="button" class="sm:h-10 sm:w-28 inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2">Logout 
+          <span class="px-1"> <svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 96 960 960" width="16"><path d="M180 936q-24 0-42-18t-18-42V276q0-24 18-42t42-18h291v60H180v600h291v60H180Zm486-185-43-43 102-102H375v-60h348L621 444l43-43 176 176-174 174Z"/></svg> </span>
+        </button>
+      </a>
+    </div>
+  </div>
+  <div class="mt-5">
+    <label for="emailId" class="block text-sm font-medium leading-5 text-gray-700">Email ID</label>
+    <div class="mt-2">
+      <input type="text" name="emailId" id="emailId" class="block w-3/4 rounded-md border-0 py-1.5 text-gray-500 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 text-base leading-6 font-normal" value="{{ request.user.email }}" disabled>
     </div>
   </div>
 
   <div class="container">
-    {% for module in configured_identity_template %}
+    {% for module in identity_template %}
     <section class="content">
       <!-- Horizontal Form -->
       <div class="box box-danger">
         <form class="form-horizontal" action="create_post" method="post" id="config_usrform{{ forloop.counter }}" name="usrform">
             {% csrf_token %}
-          <div class="page-header mx-3">
               <div style="color: red;" id="error-msg">
               </div>
               <div style="color: green;" id="success-msg">
@@ -24,45 +63,19 @@
                 {% include includePath %}
               {% endwith %}
             <div class="form-group">
-                <button id="update_identity" onclick = "form_post('config_usrform{{ forloop.counter }}', 'update')" type="submit" value="update" name="state" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Update</button>
+                <button id="update_identity{{ forloop.counter }}" onclick = "form_post('config_usrform{{ forloop.counter }}', 'update')" type="submit" value="update" name="state" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Update</button>
               </div>
-          </div>
         </form>
       </div>
     </section>
     {% endfor %}
   </div>
-  <div class="container">
-    <b>Unconfigured Identity</b>
-    {% for module in unconfigured_identity_template %}
-    <section class="content">
-      <!-- Horizontal Form -->
-      <div class="box box-danger">
-        <form class="form-horizontal" action="create_post" method="post" id="unconfig_usrform{{ forloop.counter }}" name="usrform">
-            {% csrf_token %}
-          <div class="page-header mx-3">
-              <div style="color: red;" id="error-msg">
-              </div>
-              <div style="color: green;" id="success-msg">
-              </div>
-              {% with module.accessUserTemplatePath as includePath %}
-                {% include includePath %}
-              {% endwith %}
-            <div class="form-group">
-                <button id="update_identity" onclick = "form_post('unconfig_usrform{{ forloop.counter }}', 'update')" type="submit" value="update" name="state" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Update</button>
-              </div>
-          </div>
-        </form>
-      </div>
-    </section>
-    {% endfor %}
-  </div>
-
+</div>
   <script id="js">
     function form_post(formId, action) {
-      if (action == 'update'){
-        create_post(formId)
-      }
+      // if (action == 'update'){
+      //   create_post(formId)
+      // }
       event.preventDefault();
     }
 
