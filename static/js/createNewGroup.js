@@ -1,3 +1,5 @@
+const selectedList = {}
+
 const handleSelectionView = () => {
   const finalCount = $('#member-selection-table').children('tr').length;
 
@@ -15,84 +17,79 @@ const handleSelectionView = () => {
   }
 };
 
-const selectAllToggleSelection = (source) => {
-  checkboxes = $('[name="selectedUserList"]');
-
-  for (var i = 0, n = checkboxes.length; i < n; i++) {
-    if (source.checked && checkboxes[i].checked == false) {
-      checkboxes[i].checked = source.checked;
-      handleMemberSelection({ elem: checkboxes[i], username: checkboxes[i].getAttribute("username"), firstName: checkboxes[i].getAttribute("firstName"), lastName: checkboxes[i].getAttribute("lastName"), email: checkboxes[i].getAttribute("value") })
-    } else if (source.checked == false) {
-      checkboxes[i].checked = source.checked;
-      handleMemberSelection({ elem: checkboxes[i], username: checkboxes[i].getAttribute("username"), firstName: checkboxes[i].getAttribute("firstName"), lastName: checkboxes[i].getAttribute("lastName"), email: checkboxes[i].getAttribute("value") })
+const selectAllToggleSelection = (elem) => {
+  if(elem.checked) {
+    const members = $("#users-list-table").children('tr');
+  
+    for (iter = 0; iter < members.length; iter++) {
+      addMemberSelection(members[iter])
     }
-  }
-};
-
-const selectMemberSelectionCheckbox = (username, checked) => {
-  if (checked) {
-    $(`#${username}-marker`).show();
-    $(`#${username}-checkbox`).prop('checked', true);
-    $(`#${username}-tabledesc`).removeClass('text-gray-900').addClass('text-black-600');
-    $(`#${username}-tabledesc`).addClass('font-semibold');
   } else {
-    $('#selectAllUsers').prop('checked', false)
-    $(`#${username}-marker`).hide();
-    $(`#${username}-checkbox`).prop('checked', false);
-    $(`#${username}-tablerow`).removeClass('bg-gray-50').addClass('hover:bg-blue-50');
-    $(`#${username}-tabledesc`).removeClass('text-black-600');
-    $(`#${username}-tabledesc`).removeClass('font-semibold');
+    removeAllMembers()
+  }
+
+};
+
+const selectMemberSelectionCheckbox = (elem, checked) => {
+  if (checked) {
+    $(elem).find('input').prop('checked', true);
+    $(elem).removeClass('hover:bg-blue-50 hover:text-blue-700').addClass('bg-gray-50');
+    $(elem).children('td#description-td').removeClass('text-gray-900').addClass('text-blue-600');
+  } else {
+    $(elem).find('input').prop('checked', false);
+    $(elem).children('td#description-td').addClass('text-gray-900').removeClass('text-blue-600');
+    $(elem).addClass('hover:bg-blue-50 hover:text-blue-700').removeClass('bg-gray-50');
   }
 };
 
-const addMemberSelection = (username, firstName, lastName, email) => {
+const addMemberSelection = (elem) => {
   const selectionList = $('#member-selection-table');
   const newSpan = $("#member-selection-row-template").clone(true, true);
-  selectMemberSelectionCheckbox(username, true);
+  selectMemberSelectionCheckbox(elem, true);
+  const user_name = $(elem).attr("user_name");
+  const email = $(elem).attr("email");
 
   newSpan.appendTo(selectionList);
   newSpan.show();
   const tableData = newSpan.children('td');
-  tableData[0].textContent = firstName + " " + lastName + " ";
-  newSpan.attr('id', `member-selection-${username}`);
-  newSpan.attr('email', email)
-  newSpan.addClass('font-semibold text-sm');
-  id = `member-selection-${username}`
+  tableData[0].textContent = user_name;
+  newSpan.attr("email", email)
 
+  selectedList[email] = true;
   handleSelectionView();
 };
 
 
-const removeSelectionSpanElem = (elem) => {
-  const spanId = elem.id || elem.attr('id');
-  const username = spanId.replace('member-selection-', '');
+const removeSelectionSpanElem = (rightElem, leftElem) => {
 
-  elem.remove();
-  selectMemberSelectionCheckbox(username, false);
+  rightElem.remove();
+  selectMemberSelectionCheckbox(leftElem, false);
 
+  selectedList[$(leftElem).attr("email") || $(rightElem).attr("email")] = false;
   handleSelectionView();
 };
 
-const removeMemberSelection = (username) => {
-  removeSelectionSpanElem($(`#member-selection-${username}`));
+const removeMemberSelection = (elem) => {
+  removeSelectionSpanElem($("#member-selection-table").find(`tr[email="${$(elem).attr('email')}"]`), elem);
 };
 
 const removeMemberSelectionUI = (elem) => {
-  removeSelectionSpanElem(elem.parentElement.parentElement);
+  rightElem = elem.parentElement.parentElement;
+  removeSelectionSpanElem(rightElem, $("#users-list-table").find(`tr[email="${$(rightElem).attr('email')}"]`));
 };
 
 const removeAllMembers = () => {
   const members = $('#member-selection-table').children('tr');
   for (iter = 0; iter < members.length; iter++) {
-    removeSelectionSpanElem(members[iter]);
+    removeSelectionSpanElem(members[iter], $("#users-list-table").find(`tr[email="${$(members[iter]).attr('email')}"]`));
   }
 };
 
-const handleMemberSelection = ({ elem, username, firstName, lastName, email }) => {
-  if (elem.checked) {
-    addMemberSelection(username, firstName, lastName, email);
+const handleMemberSelection = (elem) => {
+  if (!$(elem).find('input').prop('checked')) {
+    addMemberSelection(elem);
   } else {
-    removeMemberSelection(username);
+    removeMemberSelection(elem);
   }
 };
 
@@ -130,7 +127,6 @@ function showNotificiation(type, message, title) {
   if (type === "success") {
     $(".notification_success").removeClass("hidden")
     $(".notification_fail").addClass("hidden")
-    console.log("success")
   }
   else if (type === "failed") {
     $(".notification_success").addClass("hidden")
@@ -154,8 +150,7 @@ function closeNotification() {
   $("#notification_bar").addClass("hidden")
 }
 
-$(document).on('click', '#submitNewGroup', function () {
-  console.log('creating new group......')
+function submitRequest() {
   const members = $('#member-selection-table').children('tr');
   const emails = [];
   var isValid = true;
@@ -166,13 +161,13 @@ $(document).on('click', '#submitNewGroup', function () {
 
 
   for (iter = 0; iter < members.length; iter++) {
-    emails.push($(members[iter])[0].getAttribute("email"));
+    emails.push($(members[iter]).attr("email"));
   }
 
   const selectedUserList = emails
-  const newGroupName = document.getElementById('newGroupName').value;
-  const newGroupReason = document.getElementById('newGroupReason').value;
-  const requiresAccessApprove = document.getElementById('requiresAccessApprove').checked;
+  const newGroupName = $("#newGroupName").val();
+  const newGroupReason = $("#newGroupReason").val();
+  const requiresAccessApprove = $("#requiresAccessApprove").prop("checked");
 
   if (!newGroupNamePattern.test(newGroupName)) {
     var error = document.getElementById("invalidGroupName");
@@ -181,7 +176,6 @@ $(document).on('click', '#submitNewGroup', function () {
     error.classList.remove("hidden");
     isValid = false;
   }
-  console.log()
 
   if (!newGroupReasonPattern.test(newGroupReason)) {
     var error = document.getElementById("invalidGroupReason");
@@ -213,4 +207,59 @@ $(document).on('click', '#submitNewGroup', function () {
       }
     });
   }
-});
+}
+
+function update_users(search, page) {
+  $.ajax({
+    url: "/api/v1/getActiveUsers",
+    data: {"search": search, "page":page}
+  }).done(function(data, statusText, xhr) {
+    if(data["users"]) {
+      const users = JSON.parse(data["users"]);
+      $("#users-list-table tr").remove();
+
+      const rows = users.map((user) => {
+        return `<tr onclick="handleMemberSelection(this)" email="${user["email"]}" user_name="${user["first_name"]} ${user["last_name"]}" class="${selectedList[user["email"]]? "bg-gray-50": "hover:bg-blue-50 hover:text-blue-700"}">
+        <td id="checkbox-td" class="relative w-12 px-6 sm:w-16 sm:px-8">
+          <input type="checkbox" value="${user["email"]}"
+            name="selectedUserList"
+            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 focus:ring-blue-500 sm:left-6" ${ selectedList[user["email"]]? "checked": "" } onclick="handleMemberSelection(this.parentElement.parentElement)"></input>
+        </td>
+        <td id="description-td" class="whitespace-nowrap py-2 pr-3 text-sm font-normal ${ selectedList[user["email"]]? "text-blue-600" : "text-gray-900"}">
+          ${user["first_name"]} ${user["last_name"]} ${user["email"]}</td>
+      </tr>`;
+      })
+
+      $("#users-list-table").append(rows.join(""));
+      
+      if(data["next_page"]) {
+        $("#next_page").attr("onclick", `change_page('${data["next_page"]}')`);
+      } else {
+        $("#next_page").attr("onclick", `change_page('None')`);
+      }
+
+      if(data["previous_page"]) {
+        $("#prev_page").attr("onclick", `change_page('${data["previous_page"]}')`);
+      } else {
+        $("#prev_page").attr("onclick", `change_page('None')`);
+      }
+    }
+  })
+}
+
+
+function search(event, elem) {
+  if(event.key === "Enter") {
+    update_users($(elem).val(), undefined);
+  }
+}
+
+function get_search_val() {
+  return $("#global-search").val();
+}
+
+function change_page(page) {
+  if(page !== 'None'){
+    update_users(get_search_val(), Number(page));
+  }
+}
