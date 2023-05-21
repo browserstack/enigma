@@ -8,16 +8,15 @@ import time
 
 from git import Repo, GitCommandError
 
-from scripts.helpers import (
-    ensure_file_exists,
-    ensure_folder_exists,
-    read_content_from_file,
-    read_json_from_file,
-    remove_directory_with_contents,
-    write_content_to_file,
-)
+from . import helpers
 
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
 
 
 def ensure_access_modules_config(config):
@@ -42,7 +41,7 @@ def remove_stale_cloned_modules():
     This is to ensure that we are on the correct commit
     """
     for each_access_module in os.listdir('Access/access_modules'):
-        remove_directory_with_contents(
+        helpers.remove_directory_with_contents(
             f"Access/access_modules/{each_access_module}")
 
 
@@ -144,34 +143,34 @@ def ensure_access_modules_requirements(
         if each_path == "requirements.txt":
             current_requirements_file = cloned_path + "/" + each_path
 
-            all_requirements = read_content_from_file(
+            all_requirements = helpers.read_content_from_file(
                 current_requirements_file)
             all_requirements.extend(
-                read_content_from_file(core_requirements_file_path))
+                helpers.read_content_from_file(core_requirements_file_path))
 
             # Ensure requirements are unique
             merged_requirements = list(set(all_requirements))
 
             # Update the requirements.txt
-            write_content_to_file(
+            helpers.write_content_to_file(
                 core_requirements_file_path, sorted(merged_requirements))
 
 
 def clone_access_modules():
     """ Core function to clone access modules repo """
-    config = read_json_from_file("./config.json")
+    config = helpers.read_json_from_file("./config.json")
     ensure_access_modules_config(config)
 
     retry_limit = config["access_modules"].get("RETRY_LIMIT", 5)
     git_urls = config["access_modules"]["git_urls"]
     requirements_file_path = 'Access/access_modules/requirements.txt'
 
-    ensure_folder_exists('Access/access_modules')
+    helpers.ensure_folder_exists('Access/access_modules')
 
     remove_stale_cloned_modules()
     initialize_init_file()
 
-    ensure_file_exists(requirements_file_path)
+    helpers.ensure_file_exists(requirements_file_path)
 
     for formatted_git_arg in git_urls:
         cloned_path = clone_repo(formatted_git_arg, retry_limit)
@@ -180,7 +179,7 @@ def clone_access_modules():
         move_modules_from_cloned_repo(cloned_path)
 
         logger.info("Cloning successful!")
-        remove_directory_with_contents(cloned_path)
+        helpers.remove_directory_with_contents(cloned_path)
 
 
 def __main__():
@@ -191,3 +190,6 @@ def __main__():
         logger.exception("Access module cloning failed!")
         logger.exception(exception)
         sys.exit(1)
+
+
+__main__()

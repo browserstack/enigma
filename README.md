@@ -2,6 +2,13 @@
 
 ![BrowserStack Logo](https://d98b8t1nnulk5.cloudfront.net/production/images/layout/logo-header.png?1469004780)
 
+
+
+[![Unit Tests and Lint](https://github.com/browserstack/enigma/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/browserstack/enigma/actions/workflows/unit-tests.yml)
+[![Security Scan](https://github.com/browserstack/enigma/actions/workflows/semgrep.yml/badge.svg)](https://github.com/browserstack/enigma/actions/workflows/semgrep.yml)
+
+
+
 This tool consists of 2 different components: a central webserver and pluggable access modules.
 
 This repo is the code-base for the central webserver.

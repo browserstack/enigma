@@ -26,7 +26,7 @@ def write_content_to_file(file_path, content_lines):
     """ Wrapper helper to write lines to file """
     with open(file_path, mode='w', encoding='utf-8') as out_file:
         for each_line in content_lines:
-            out_file.write(each_line)
+            out_file.write(each_line + "\n")
 
 
 def ensure_folder_exists(folder_path):
