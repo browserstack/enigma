@@ -251,8 +251,8 @@ def group_access_list(request, group_name):
 
         return render(request, "EnigmaOps/groupAccessList.html", context)
     except Exception as ex:
-        logger.debug(
-            "Error in request not found OR Invalid request type, Error: %s", str(ex)
+        logger.exception(
+            "Error in Group Access List, Error: %s", str(ex)
         )
         json_response = {}
         json_response["error"] = {
