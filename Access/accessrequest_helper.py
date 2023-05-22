@@ -511,6 +511,10 @@ def _create_access(
                     access_label=json.dumps(access.access_label)
                 ),
             }
+    else:
+        access = AccessV2.objects.create(
+            access_tag=access_tag, access_label=access_label
+        )
 
     try:
         _create_access_mapping(
@@ -531,11 +535,7 @@ def _create_access(
 def _create_access_mapping(
     user_identity, access, request_id, access_reason
 ):
-    """ Create AccessV2 and UserAccessMapping in db """
-    if not access:
-        access = AccessV2.objects.create(
-            access_tag=access.access_tag, access_label=access.access_label
-        )
+    """ Create UserAccessMapping in db """
 
     user_identity.user_access_mapping.create(
         request_id=request_id, request_reason=access_reason, access=access
