@@ -13,7 +13,7 @@ services:
     - ./secrets/ops_app_dev.env
     volumes:
     - ./:/srv/code/dev
-    - ./mounts/modules:/srv/code/dev/Access/access_modules
+    - ./mounts/modules_web:/srv/code/dev/Access/access_modules
     - ./mounts/db:/srv/code/dev/db
     - ./mounts/logs:/ebs/logs
     ports:
@@ -49,7 +49,7 @@ services:
       args:
         APPUID: ${APPUID}
     volumes:
-    - ./mounts/modules:/srv/code/dev/Access/access_modules
+    - ./mounts/modules_celery:/srv/code/dev/Access/access_modules
     - ./mounts/db:/srv/code/dev/db
     - ./mounts/logs:/ebs/logs
     env_file:

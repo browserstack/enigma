@@ -460,7 +460,7 @@ def create_request(auth_user, access_request_form):
                 request_id=request_id,
                 access_reason=access_reason,
             )
-            if access_create_error:
+            if "title" not in access_create_error or access_create_error["title"] != "success":
                 json_response["status_list"].append(access_create_error)
                 continue
 
@@ -521,7 +521,7 @@ def _create_access(
         )
     except Exception:
         return {
-            "error_msg": REQUEST_DB_ERR_MSG["error_msg"],
+            "title": REQUEST_DB_ERR_MSG["error_msg"],
             "msg": REQUEST_DB_ERR_MSG["msg"],
         }
     return {"title": "success", "msg": "success"}
