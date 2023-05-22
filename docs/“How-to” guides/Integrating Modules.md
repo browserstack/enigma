@@ -13,7 +13,7 @@ For every new access modules repository, the following settings have to be added
 ```
 To specify a branch add `#` in the suffix followed by branch name.
 ```bash
-"https://github.com/browserstack/enigma-public-access-modules.git#<branch-name>"
+"https://github.com/browserstack/enigma-access-modules.git#<branch-name>"
 ```
 ### For private repos:
 ```bash
