@@ -501,41 +501,48 @@ def _create_access(
         }
 
     access = AccessV2.get(access_tag=access_tag, access_label=access_label)
-    if access:
-        if user_identity.access_mapping_exists(access):
+    if not access:
+        try:
+            _create_access_mapping(
+                access_tag=access_tag,
+                access_label=access_label,
+                user_identity=user_identity,
+                request_id=request_id,
+                access_reason=access_reason,
+            )
+        except Exception:
             return {
-                "title": REQUEST_DUPLICATE_ERR_MSG["title"].format(
-                    access_tag=access.access_tag
-                ),
-                "msg": REQUEST_DUPLICATE_ERR_MSG["msg"].format(
-                    access_label=json.dumps(access.access_label)
-                ),
+                "title": REQUEST_DB_ERR_MSG["error_msg"],
+                "msg": REQUEST_DB_ERR_MSG["msg"],
             }
-    else:
-        access = AccessV2.objects.create(
-            access_tag=access_tag, access_label=access_label
-        )
+        return {"title": "success", "msg": "success"}
 
-    try:
-        _create_access_mapping(
-            access=access,
-            user_identity=user_identity,
-            request_id=request_id,
-            access_reason=access_reason,
-        )
-    except Exception:
+    if user_identity.access_mapping_exists(access):
         return {
-            "title": REQUEST_DB_ERR_MSG["error_msg"],
-            "msg": REQUEST_DB_ERR_MSG["msg"],
+            "title": REQUEST_DUPLICATE_ERR_MSG["title"].format(
+                access_tag=access.access_tag
+            ),
+            "msg": REQUEST_DUPLICATE_ERR_MSG["msg"].format(
+                access_label=json.dumps(access.access_label)
+            ),
         }
+
+    user_identity.user_access_mapping.create(
+        request_id=request_id,
+        request_reason=access_reason,
+        access=access,
+    )
     return {"title": "success", "msg": "success"}
 
 
 @transaction.atomic
 def _create_access_mapping(
-    user_identity, access, request_id, access_reason
+    user_identity, access_tag, access_label, request_id, access_reason
 ):
-    """ Create UserAccessMapping in db """
+    """ Create AccessV2 and UserAccessMapping in db """
+    access = AccessV2.objects.create(
+        access_tag=access_tag, access_label=access_label
+    )
 
     user_identity.user_access_mapping.create(
         request_id=request_id, request_reason=access_reason, access=access
