@@ -737,6 +737,9 @@ def decline_individual_access(request, access_type, request_id, reason):
     if access_type == "declineNewGroup":
         access_mapping = GroupV2.get_pending_group(request_id)
         decline_new_group = True
+    elif access_type == "declineMember":
+        access_mapping = MembershipV2.get_membership(request_id)
+        decline_membership = True
     else:
         access_mapping = UserAccessMapping.get_access_request(request_id)
         access_type = access_mapping.access.access_tag
@@ -747,7 +750,7 @@ def decline_individual_access(request, access_type, request_id, reason):
         )
         return json_response
 
-    if not decline_new_group:
+    if not decline_new_group and not decline_membership:
         json_response = validate_approver_permissions(
             access_mapping, access_type, request)
         if "error" in json_response:
@@ -765,13 +768,17 @@ def decline_individual_access(request, access_type, request_id, reason):
 
         access_mapping.save()
 
-    if not decline_new_group:
+    if not decline_new_group and not decline_membership:
         access_module = helpers.get_available_access_module_from_tag(
             access_type)
         access_labels = [access_mapping.access.access_label]
         description = access_module.combine_labels_desc(access_labels)
         notifications.send_mail_for_request_decline(
             request, description, request_id, reason, access_type
+        )
+    elif decline_membership:
+        notifications.send_mail_for_request_decline(
+            request, "Membership Creation", request_id, reason, access_type
         )
     else:
         MembershipV2.update_membership(access_mapping, reason)
