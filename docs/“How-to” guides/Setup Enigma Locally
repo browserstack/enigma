@@ -39,9 +39,8 @@ python3 manage.py migrate
 python3 manage.py runserver
 ```
 
-Ensure that the 8000 port is free to use, and ensure that path to config.json is correct.
+Ensure that the 8000 port is free to use.
 
-That's it! Enigma should be running locally on port 8000
-
+That's it! Enigma should be running locally on port 8000 http://localhost:8000
 
 For first time user sign-in, follow [this doc](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/User%20Guides/First%20User%20Setup.md)
