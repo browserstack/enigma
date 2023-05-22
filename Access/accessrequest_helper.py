@@ -517,6 +517,8 @@ def _create_access(
             access=access,
             user_identity=user_identity,
             request_id=request_id,
+            access_label=access_label,	
+            access_tag=access_tag,
             access_reason=access_reason,
         )
     except Exception:
@@ -529,12 +531,12 @@ def _create_access(
 
 @transaction.atomic
 def _create_access_mapping(
-    user_identity, access, request_id, access_reason
+    user_identity, access, request_id, access_tag, access_label, access_reason
 ):
     """ Create AccessV2 and UserAccessMapping in db """
     if not access:
         access = AccessV2.objects.create(
-            access_tag=access.access_tag, access_label=access.access_label
+            access_tag=access_tag, access_label=access_label
         )
 
     user_identity.user_access_mapping.create(
