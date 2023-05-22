@@ -1,0 +1,47 @@
+# Setup Enigma Locally
+
+## Pre-requisites
+You should have python3 installed on your system and checked out the enigma repository locally.
+
+
+## Steps
+1. Ensure you have a valid `config.json` present locally.
+
+The default [config.json.sample](https://github.com/browserstack/enigma-public-central/blob/main/config.json.sample) should be sufficient to start.
+
+You can then add module-specific configuration for the modules you want integrated with Enigma.
+For detailed instructions on configuration, follow [this doc](/docs/Configuration%20Guide.md)
+
+2. Add folder `db` in root folder of the repository.
+3. Add a package `access_modules` inside `Access`.
+
+Put this inside `__init__.py` of `access_modules`
+```
+from os.path import dirname, basename, isfile, join
+import glob
+modules = glob.glob(join(dirname(__file__), "*"))
+__all__ = [basename(f) for f in modules if not isfile(f)]
+```
+
+4. Add access modules inside `access_modules` to integrate them with Enigma. (Optional and not needed to get started)
+
+
+5. Install all the requirements through requirements.txt
+```
+pip3 install -r requirements.txt
+```
+6. Run Migrate to create all the database tables.
+```
+python3 manage.py migrate
+```
+7. Run the server
+```
+python3 manage.py runserver
+```
+
+Ensure that the 8000 port is free to use, and ensure that path to config.json is correct.
+
+That's it! Enigma should be running locally on port 8000
+
+
+For first time user sign-in, follow [this doc](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/User%20Guides/First%20User%20Setup.md)
