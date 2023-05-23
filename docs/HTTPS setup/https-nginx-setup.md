@@ -6,7 +6,7 @@ Following are the steps to Setup Nginx in enigma
     - Should have a host(domain) with ssl certificats that can be attached to nginx.
     - Make sure the host points the public IP of the machine in which enigma is running on. (i.e., create an dns A record with host pointing to public IP of machine)
 2. Create a folder in the root folder of enigma named `certs` which contains ssl certificate and key.
-3. Copy `nginx.conf.sample` file in docs folder to `nginx.conf`
+3. Copy `nginx.conf.sample` file in this folder to `nginx.conf`
 3. Configure `nginx.conf` file.
     - update the hostname in the `nginx.conf` file
       ```diff
