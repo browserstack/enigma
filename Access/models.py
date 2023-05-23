@@ -1209,7 +1209,10 @@ class UserIdentity(models.Model):
 
     def get_active_access_mapping(self):
         return self.user_access_mapping.filter(
-            status__in=["Approved", "Pending"], access__access_tag=self.access_tag
+            status__in=["Approved", "Pending",
+                        "SecondaryPending",
+                        "GrantFailed"],
+            access__access_tag=self.access_tag
         )
 
     def get_all_granted_access_mappings(self):
@@ -1220,7 +1223,7 @@ class UserIdentity(models.Model):
 
     def get_all_non_approved_access_mappings(self):
         return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"]
+            status__in=["Pending", "SecondaryPending", "GrantFailed"]
         )
 
     def decline_all_non_approved_access_mappings(self, decline_reason):
@@ -1234,7 +1237,7 @@ class UserIdentity(models.Model):
 
     def get_non_approved_access_mapping(self, access):
         return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"],
+            status__in=["Pending", "SecondaryPending", "GrantFailed"],
             access=access,
         )
 
