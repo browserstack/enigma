@@ -1,10 +1,6 @@
 name: Semgrep
 on:
-  pull_request: 
-    branches:
-    - main
-    paths:
-    - .github/workflows/semgrep.yml
+  pull_request: {}
   push:
     branches:
     - main
