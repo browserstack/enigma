@@ -24,8 +24,7 @@ class BaseEmailAccess(object):
 
     # Override in module for specific person who should mark access as revoked
     def access_mark_revoke_permission(self, access_type):
-        # TODO: define ACCESS_REVOKE_PERMISSIONS_MAPPING
-        return ACCESS_REVOKE_PERMISSIONS_MAPPING["security"]
+        return ACCESS_APPROVE_EMAIL
 
     # module's tag() method should return a tag present in
     # hash returned by access_types() "type" key

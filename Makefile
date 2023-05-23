@@ -4,12 +4,14 @@ setup_mounts:
 	@mkdir -p mounts/db
 	@mkdir -p mounts/mysql_db
 	@mkdir -p mounts/logs
-	@mkdir -p mounts/modules
+	@mkdir -p mounts/modules_web
+	@mkdir -p mounts/modules_celery
 	@mkdir -p Access/access_modules
 	@chown $(APP_UID) mounts/db
 	@chown $(APP_UID) mounts/mysql_db
 	@chown $(APP_UID) mounts/logs
-	@chown $(APP_UID) mounts/modules
+	@chown $(APP_UID) mounts/modules_web
+	@chown $(APP_UID) mounts/modules_celery
 	@chown $(APP_UID) Access/access_modules
 
 ## make all : Run service, test and linter
@@ -65,16 +67,18 @@ test: setup_mounts ensure_web_container_for_test
 		docker exec dev python -m pytest -v --cov --disable-warnings -k '$(TESTS)'; \
 	fi
 
-## Create lint issues file
-.PHONY: lint_issues
-lint_issues:
-	@touch $@
-
 ## Lint code using pylama skipping files in env (if pyenv created)
 .PHONY: lint
-lint: lint_issues
-	@python3 -m pylama --version
-	@pylama -r lint_issues || echo "Linter run returned errors. Check lint_issues file for details." && false
+lint: export APPUID = $(APP_UID)
+lint: setup_mounts ensure_web_container_for_test
+	@docker exec dev python -m pylama --version
+	@docker exec dev python -m pylama Access/accessrequest_helper.py scripts
+	@if [ "$$?" -ne 0 ]; then \
+		echo "Linter checks failed"; \
+		exit 1; \
+	else \
+	  echo "Linter checks passed"; \
+	fi
 
 .PHONY: schema_validate
 schema_validate: export APPUID = $(APP_UID)

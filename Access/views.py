@@ -251,8 +251,8 @@ def group_access_list(request, group_name):
 
         return render(request, "EnigmaOps/groupAccessList.html", context)
     except Exception as ex:
-        logger.debug(
-            "Error in request not found OR Invalid request type, Error: %s", str(ex)
+        logger.exception(
+            "Error in Group Access List, Error: %s", str(ex)
         )
         json_response = {}
         json_response["error"] = {
@@ -424,6 +424,7 @@ def _get_request_ids_for_bulk_processing(posted_request_ids, selector):
 
 
 @login_required
+@user_any_approver
 def decline_access(request, access_type, request_id):
     """Decline an access request.
 
