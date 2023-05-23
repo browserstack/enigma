@@ -729,6 +729,41 @@ def run_accept_request_task(
     return json_response
 
 
+def decline_group_membership(request, access_type, request_id, reason):
+    """ Decline group membership """
+    json_response = {}
+    membership = MembershipV2.get_membership(request_id)
+
+    if not membership:
+        json_response["error"] = INVALID_REQUEST_ERROR_MSG
+        return json_response
+
+    if not is_request_valid(request_id, membership):
+        json_response["error"] = USER_REQUEST_IN_PROCESS_ERR_MSG.format(
+            request_id=request_id,
+        )
+        return json_response
+
+    membership.decline(reason, request.user.user)
+
+    notifications.send_mail_for_request_decline(
+        request, "Membership Creation", request_id, reason, access_type
+    )
+
+    logger.debug(
+        USER_REQUEST_DECLINE_MSG.format(
+            request_id=request_id,
+            decline_reason=reason,
+        )
+    )
+    json_response = {}
+    json_response["msg"] = USER_REQUEST_DECLINE_MSG.format(
+        request_id=request_id,
+        decline_reason=reason,
+    )
+    return json_response
+
+
 def decline_individual_access(request, access_type, request_id, reason):
     """ Decline individual access """
     json_response = {}
@@ -737,6 +772,8 @@ def decline_individual_access(request, access_type, request_id, reason):
     if access_type == "declineNewGroup":
         access_mapping = GroupV2.get_pending_group(request_id)
         decline_new_group = True
+    elif access_type == "declineMember":
+        return decline_group_membership(request, access_type, request_id, reason)
     else:
         access_mapping = UserAccessMapping.get_access_request(request_id)
         access_type = access_mapping.access.access_tag

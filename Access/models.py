@@ -435,6 +435,15 @@ class MembershipV2(models.Model):
         membership = MembershipV2.objects.get(membership_id=membership_id)
         membership.approve(approver=approver)
 
+    def decline(self, reason, decliner):
+        self.status = "Declined"
+        self.decline_reason = reason
+        self.approver = decliner
+        self.save()
+
+    def is_already_processed(self):
+        return self.status in ["Declined", "Approved", "Processing", "Revoked"]
+
     def revoke_membership(self):
         self.status = "Revoked"
         self.save()

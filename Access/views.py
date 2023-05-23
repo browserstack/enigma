@@ -424,6 +424,7 @@ def _get_request_ids_for_bulk_processing(posted_request_ids, selector):
 
 
 @login_required
+@user_any_approver
 def decline_access(request, access_type, request_id):
     """Decline an access request.
 
