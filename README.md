@@ -7,10 +7,10 @@ Manage access to tools through a single portal.
 ## What is Enigma?
 
 Enigma is a web-based internal Access Management Tool that:
-* helps employees get access to various in-house and third-party systems and components like git repositories, cloud machines (via ssh), and dashboards
-* facilitates book-keeping
-* helps with compliance
-* manages the inventory of all the tools in one place
+* helps employees get access to various in-house and third-party systems and components like git repositories, cloud machines (via ssh), and dashboards.
+* facilitates book-keeping.
+* helps with compliance.
+* manages the inventory of all the tools in one place.
 
 
 This tool consists of 2 different components: a central web server and pluggable access modules.
@@ -31,7 +31,7 @@ Enigma access management tool was developed internally at BrowserStack to solve 
 * Repetitive Ops for DevOps teams and tool owners for access grant and revoke requests
 * No standardized SOC2-compliant and GDPR-compliant method for managing individual and admin access for external tools
 * No simple consolidated pipeline to trigger offboarding an exit-ing employee to revoke all employee access across tools
-* No way for an individual to maintain separate identiy per tool
+* No way for an individual to maintain separate identity per tool
   * Individuals might have multiple accounts for a single tool, there can be multiple org-wide domains for certain tools
 * No way to request, audit and track employee access outside of org-team hierarchy. Adhoc teams / groups support is needed.
   * employees might migrate across teams, sometimes access are needed for temporary projects which are not required for the whole team
