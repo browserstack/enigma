@@ -744,8 +744,7 @@ def decline_group_membership(request, access_type, request_id, reason):
         )
         return json_response
 
-    with transaction.atomic():
-        membership.decline(reason, request.user.user)
+    membership.decline(reason, request.user.user)
 
     notifications.send_mail_for_request_decline(
         request, "Membership Creation", request_id, reason, access_type
