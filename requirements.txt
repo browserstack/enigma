@@ -122,3 +122,5 @@ django-cid==2.3
 flake8==6.0.0
 django-session-timeout==0.1.0
 django-axes==5.41.1
+jsonschema==4.17.3
+types-jsonschema==4.17.0

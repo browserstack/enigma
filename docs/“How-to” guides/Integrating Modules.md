@@ -41,10 +41,10 @@ The added URLs will be integrated by the cloning script `scripts/clone_access_mo
 
 #### Configuring secondary approver for access modules
 
-- Any access requested by the user has to go though the approver which will then be granted accordingly. Engima allows to configure approvers for access modules to be at most 2 approvers for a request. 
-- By default access modules are configured to have single approver for request to proceed. The user with the permission `ACCESS_APPROVE` is allowed to approve or decline the request in that case. 
+- Any access requested by the user has to go though the approver which will then be granted accordingly. Engima allows to configure approvers for access modules to be at most 2 approvers for a request.
+- By default access modules are configured to have single approver for request to proceed. The user with the permission `ACCESS_APPROVE` is allowed to approve or decline the request in that case.
 - You can configure an access module to have a secondary approver if necessary. This can be done by overriding a function in module class which inherits from BaseEmailAccess class in `access.py` of the access module.
-- Overide `fetch_approver_permissions` function which return 
+- Overide `fetch_approver_permissions` function which return
   ```
   {"1": PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]}
   ```
