@@ -4,7 +4,7 @@ To setup admin user on enigma, follow these steps:
 
 1. Setup django superuser
 
-- Exec into the Enigma container
+- Exec into the Enigma container if you are using docker
 
 ```bash
 docker exec -it enigma bash
