@@ -24,6 +24,7 @@ class StoredPassword(models.Model):
         editable=False
     )
 
+
 class ApprovalType(enum.Enum):
     Primary = "Primary"
     Secondary = "Secondary"
@@ -34,7 +35,8 @@ class Permission(models.Model):
     Permission to perform actions on enigma
     """
 
-    label = models.CharField(max_length=255, null=False, blank=False, unique=True)
+    label = models.CharField(max_length=255, null=False,
+                             blank=False, unique=True)
 
     def __str__(self):
         return "%s" % (self.label)
@@ -46,7 +48,8 @@ class Role(models.Model):
     Role is a group of permissions which can be associated with a group of users
     """
 
-    label = models.CharField(max_length=255, null=False, blank=False, unique=True)
+    label = models.CharField(max_length=255, null=False,
+                             blank=False, unique=True)
     permission = models.ManyToManyField(Permission)
 
     def __str__(self):
@@ -95,7 +98,8 @@ class User(models.Model):
         max_length=100, null=False, blank=False, choices=BOT_TYPES, default="None"
     )
 
-    alerts_enabled = models.BooleanField(null=False, blank=False, default=False)
+    alerts_enabled = models.BooleanField(
+        null=False, blank=False, default=False)
 
     is_manager = models.BooleanField(null=False, blank=False, default=False)
     is_ops = models.BooleanField(null=False, blank=False, default=False)
@@ -134,7 +138,8 @@ class User(models.Model):
         return user_permissions
 
     def has_permission(self, permission_label):
-        all_permission_labels = [permission.label for permission in self.permissions]
+        all_permission_labels = [
+            permission.label for permission in self.permissions]
         return permission_label in all_permission_labels
 
     def current_state(self):
@@ -150,16 +155,19 @@ class User(models.Model):
         self.save()
 
     def isAnApprover(self, allApproverPermissions):
-        permission_labels = [permission.label for permission in self.permissions]
+        permission_labels = [
+            permission.label for permission in self.permissions]
         approver_permissions = allApproverPermissions
         return len(list(set(permission_labels) & set(approver_permissions))) > 0
 
     def isPrimaryApproverForModule(self, accessModule, accessLabel=None):
-        module_permissions = accessModule.fetch_approver_permissions(accessLabel)
+        module_permissions = accessModule.fetch_approver_permissions(
+            accessLabel)
         return self.has_permission(module_permissions["1"])
 
     def isSecondaryApproverForModule(self, accessModule, accessLabel=None):
-        module_permissions = accessModule.fetch_approver_permissions(accessLabel)
+        module_permissions = accessModule.fetch_approver_permissions(
+            accessLabel)
         return "2" in module_permissions and self.has_permission(
             module_permissions["2"]
         )
@@ -187,14 +195,16 @@ class User(models.Model):
 
     def getFailedGrantsCount(self):
         return (
-            UserAccessMapping.objects.filter(status__in=["GrantFailed"]).count()
+            UserAccessMapping.objects.filter(
+                status__in=["GrantFailed"]).count()
             if self.isAdminOrOps()
             else 0
         )
 
     def getFailedRevokesCount(self):
         return (
-            UserAccessMapping.objects.filter(status__in=["RevokeFailed"]).count()
+            UserAccessMapping.objects.filter(
+                status__in=["RevokeFailed"]).count()
             if self.isAdminOrOps()
             else 0
         )
@@ -203,7 +213,8 @@ class User(models.Model):
         if self.isAdminOrOps():
             return GroupV2.objects.all().filter(status="Approved")
 
-        groupOwnerMembership = MembershipV2.objects.filter(is_owner=True, user=self)
+        groupOwnerMembership = MembershipV2.objects.filter(
+            is_owner=True, user=self)
         return [membership_obj.group for membership_obj in groupOwnerMembership]
 
     def get_active_groups(self):
@@ -244,7 +255,7 @@ class User(models.Model):
             return User.objects.get(email=email)
         except User.DoesNotExist:
             return None
-    
+
     def get_all_memberships(self):
         return self.membership_user.all()
 
@@ -265,7 +276,8 @@ class User(models.Model):
         all_user_identities = self.module_identity.order_by('id').reverse()
         access_request_mapping_related_manager = []
         for each_identity in all_user_identities:
-            access_request_mapping_related_manager.append(each_identity.user_access_mapping)
+            access_request_mapping_related_manager.append(
+                each_identity.user_access_mapping)
         return access_request_mapping_related_manager
 
     def get_access_history(self, all_access_modules, start_index, count):
@@ -273,11 +285,13 @@ class User(models.Model):
         access_history = []
 
         for request_mapping_related_manager in access_request_mapping_related_manager:
-            all_user_access_mappings = request_mapping_related_manager.order_by('id').reverse()
+            all_user_access_mappings = request_mapping_related_manager.order_by(
+                'id').reverse()
 
             for each_user_access_mapping in all_user_access_mappings:
                 access_module = all_access_modules[each_user_access_mapping.access.access_tag]
-                access_history.append(each_user_access_mapping.getAccessRequestDetails(access_module))
+                access_history.append(
+                    each_user_access_mapping.getAccessRequestDetails(access_module))
 
             # skip till start_index
             if start_index <= len(access_history):
@@ -305,7 +319,8 @@ class User(models.Model):
 
     def get_accesses_by_access_tag_and_status(self, access_tag, status):
         try:
-            user_identities = self.module_identity.filter(access_tag=access_tag)
+            user_identities = self.module_identity.filter(
+                access_tag=access_tag)
         except UserIdentity.DoesNotExist:
             return None
         return UserAccessMapping.objects.filter(
@@ -361,11 +376,13 @@ class User(models.Model):
         try:
             return User.objects.get(name="system_user")
         except User.DoesNotExist:
-            django_user = user.objects.create(username="system_user",email="system_user@root.root")
+            django_user = user.objects.create(
+                username="system_user", email="system_user@root.root")
             return django_user.user
 
     def __str__(self):
         return "%s" % (self.user)
+
 
 def create_user(sender, instance, created, **kwargs):
     """
@@ -379,6 +396,7 @@ def create_user(sender, instance, created, **kwargs):
     except Exception as e:
         pass
     user.save()
+
 
 post_save.connect(create_user, sender=user)
 
@@ -473,7 +491,7 @@ class MembershipV2(models.Model):
     def update_membership(group, reason):
         membership = MembershipV2.objects.filter(group=group)
         membership.update(status="Declined", decline_reason=reason)
-    
+
     def get_membership_details(self):
         access_request_data = {}
         if self.group.status == "Approved":
@@ -500,11 +518,13 @@ class GroupV2(models.Model):
     Model for Enigma Groups redefined.
     """
 
-    group_id = models.CharField(max_length=255, null=False, blank=False, unique=True)
+    group_id = models.CharField(
+        max_length=255, null=False, blank=False, unique=True)
     requested_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
 
-    name = models.CharField(max_length=128, null=False, blank=False, unique=True)
+    name = models.CharField(max_length=128, null=False,
+                            blank=False, unique=True)
     description = models.TextField(null=False, blank=False)
 
     requester = models.ForeignKey(
@@ -533,7 +553,8 @@ class GroupV2(models.Model):
         on_delete=models.PROTECT,
     )
     decline_reason = models.TextField(null=True, blank=True)
-    needsAccessApprove = models.BooleanField(null=False, blank=False, default=True)
+    needsAccessApprove = models.BooleanField(
+        null=False, blank=False, default=True)
 
     @staticmethod
     def group_exists(group_name):
@@ -561,7 +582,8 @@ class GroupV2(models.Model):
         self, user=None, is_owner=False, requested_by=None, reason="", date_time=""
     ):
         membership_id = (
-            str(user.user.username) + "-" + self.name + "-membership-" + date_time
+            str(user.user.username) + "-" +
+            self.name + "-membership-" + date_time
         )
         return self.membership_group.create(
             membership_id=membership_id,
@@ -585,7 +607,7 @@ class GroupV2(models.Model):
         return MembershipV2.objects.filter(status="Pending", group__status="Approved")
 
     def is_already_processed(self):
-        return self.status in ['Declined','Approved','Processing','Revoked']
+        return self.status in ['Declined', 'Approved', 'Processing', 'Revoked']
 
     def decline_access(self, decline_reason=None):
         self.status = "Declined"
@@ -733,7 +755,8 @@ class UserAccessMapping(models.Model):
     into mappings which are sent for approval.
     """
 
-    request_id = models.CharField(max_length=255, null=False, blank=False, unique=True)
+    request_id = models.CharField(
+        max_length=255, null=False, blank=False, unique=True)
 
     requested_on = models.DateTimeField(auto_now_add=True)
     approved_on = models.DateTimeField(null=True, blank=True)
@@ -829,6 +852,7 @@ class UserAccessMapping(models.Model):
             return None
 
     def getAccessRequestDetails(self, access_module):
+
         access_request_data = {}
         access_tags = [self.access.access_tag]
         access_labels = [self.access.access_label]
@@ -877,9 +901,13 @@ class UserAccessMapping(models.Model):
             if self.user_identity.user.offbaord_date
             else ""
         )
-        access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
-        access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
+        access_request_data["revokeOwner"] = ",".join(
+            access_module.revoke_owner())
+        access_request_data["grantOwner"] = ",".join(
+            access_module.grant_owner())
         access_request_data["accessRequestType"] = self.access_type
+        access_request_data["failedReason"] = self.fail_reason
+        access_request_data["declinedReason"] = self.decline_reason
 
         return access_request_data
 
@@ -935,7 +963,8 @@ class UserAccessMapping(models.Model):
     @staticmethod
     def get_pending_access_mapping(request_id):
         return UserAccessMapping.objects.filter(
-            request_id__icontains=request_id, status__in=["Pending", "SecondaryPending"]
+            request_id__icontains=request_id, status__in=[
+                "Pending", "SecondaryPending"]
         ).values_list("request_id", flat=True)
 
     def update_access_status(self, current_status):
@@ -1013,7 +1042,8 @@ class GroupAccessMapping(models.Model):
     into mappings which are sent for approval.
     """
 
-    request_id = models.CharField(max_length=255, null=False, blank=False, unique=True)
+    request_id = models.CharField(
+        max_length=255, null=False, blank=False, unique=True)
 
     requested_on = models.DateTimeField(auto_now_add=True)
     updated_on = models.DateTimeField(auto_now=True)
@@ -1107,8 +1137,10 @@ class GroupAccessMapping(models.Model):
             access_labels
         )
         access_request_data["status"] = self.status
-        access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
-        access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
+        access_request_data["revokeOwner"] = ",".join(
+            access_module.revoke_owner())
+        access_request_data["grantOwner"] = ",".join(
+            access_module.grant_owner())
         access_request_data["accessRequestType"] = "Group Request"
 
         return access_request_data
@@ -1124,8 +1156,6 @@ class GroupAccessMapping(models.Model):
         self.revoker = revoker
         self.save()
 
-
-
     @staticmethod
     def get_by_request_id(request_id):
         try:
@@ -1136,7 +1166,8 @@ class GroupAccessMapping(models.Model):
     @staticmethod
     def get_pending_access_mapping(request_id):
         return GroupAccessMapping.objects.filter(
-            request_id__icontains=request_id, status__in=["Pending", "SecondaryPending"]
+            request_id__icontains=request_id, status__in=[
+                "Pending", "SecondaryPending"]
         ).values_list("request_id", flat=True)
 
     def is_pending(self):
@@ -1176,7 +1207,7 @@ class GroupAccessMapping(models.Model):
         return self.requested_by == approver
 
     def is_already_processed(self):
-        return self.status in ['Declined','Approved','Processing','Revoked']
+        return self.status in ['Declined', 'Approved', 'Processing', 'Revoked']
 
 
 class AccessV2(models.Model):
@@ -1261,7 +1292,8 @@ class UserIdentity(models.Model):
 
     def get_all_non_approved_access_mappings(self):
         return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"]
+            status__in=["approvefailed", "pending",
+                        "secondarypending", "grantfailed"]
         )
 
     def decline_all_non_approved_access_mappings(self, decline_reason):
@@ -1275,7 +1307,8 @@ class UserIdentity(models.Model):
 
     def get_non_approved_access_mapping(self, access):
         return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"],
+            status__in=["approvefailed", "pending",
+                        "secondarypending", "grantfailed"],
             access=access,
         )
 
