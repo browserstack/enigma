@@ -4,12 +4,14 @@ setup_mounts:
 	@mkdir -p mounts/db
 	@mkdir -p mounts/mysql_db
 	@mkdir -p mounts/logs
-	@mkdir -p mounts/modules
+	@mkdir -p mounts/modules_web
+	@mkdir -p mounts/modules_celery
 	@mkdir -p Access/access_modules
 	@chown $(APP_UID) mounts/db
 	@chown $(APP_UID) mounts/mysql_db
 	@chown $(APP_UID) mounts/logs
-	@chown $(APP_UID) mounts/modules
+	@chown $(APP_UID) mounts/modules_web
+	@chown $(APP_UID) mounts/modules_celery
 	@chown $(APP_UID) Access/access_modules
 
 ## make all : Run service, test and linter
