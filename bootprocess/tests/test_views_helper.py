@@ -21,8 +21,8 @@ class MockRequest:
 
 @pytest.mark.parametrize(
     (
-        "testName, userIsInDefaultAccessGroup,"
-        " groupCount"
+        "_test_name, user_is_in_default_access_group,"
+        " group_count"
     ),
     [
         # user is not part of default group and has respective count of git repo,
@@ -31,7 +31,8 @@ class MockRequest:
         ("UserInDefaultGroup", False, 40),
     ],
 )
-def test_getDashboardData(monkeypatch, testName, userIsInDefaultAccessGroup, groupCount):  # noqa: C901
+def test_get_dashboard_data(monkeypatch, _test_name, user_is_in_default_access_group, group_count):
+    """ method to test get_dashboard_data """
     class MockUserModelobj:
         """ mocking method UserModelobj """
         def __init__(self, user="", gitusername="", name=""):
@@ -78,7 +79,7 @@ def test_getDashboardData(monkeypatch, testName, userIsInDefaultAccessGroup, gro
             if access__access_tag == "ssh":
                 return []
             group = []
-            for i in range(groupCount):
+            for i in range(group_count):
                 group.append(i)
             return group
 
@@ -116,12 +117,12 @@ def test_getDashboardData(monkeypatch, testName, userIsInDefaultAccessGroup, gro
             return ""
 
         def __str__(self):
-            if userIsInDefaultAccessGroup:
+            if user_is_in_default_access_group:
                 return DEFAULT_ACCESS_GROUP
             return ""
 
         def __len__(self):
-            return groupCount
+            return group_count
 
     class MockThread:
         """ class for mocking Thread """
@@ -146,4 +147,4 @@ def test_getDashboardData(monkeypatch, testName, userIsInDefaultAccessGroup, gro
     request = MockRequest(username="username1")
     context = views_helper.get_dashboard_data(request)
     assert context["regions"] == ["eu-central-1"]
-    assert context["groupCount"] == groupCount
+    assert context["groupCount"] == group_count
