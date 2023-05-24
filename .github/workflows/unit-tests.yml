@@ -19,12 +19,6 @@ jobs:
         pip install -r requirements.txt
     - name: Ensure Config
       run: cp config.json.sample config.json
-    - name: Ensure git pat token
-      shell: bash
-      env:
-        CUSTOM_GITHUB_ACTIONS_PAT: ${{ secrets.CUSTOM_GITHUB_ACTIONS_PAT }}
-      run: |
-        sed -i "s|https://github.com/browserstack/enigma-access-modules.git|https://qwe:$CUSTOM_GITHUB_ACTIONS_PAT@github.com/browserstack/enigma-access-modules.git|g" config.json
     - name: Setup access modules code base
       run: python -m scripts.clone_access_modules
     - name: Ensure access modules dependencies
