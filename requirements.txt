@@ -124,3 +124,4 @@ django-session-timeout==0.1.0
 django-axes==5.41.1
 jsonschema==4.17.3
 types-jsonschema==4.17.0
+celery-stubs==0.1.3

@@ -25,7 +25,7 @@ django.utils.translation.ugettext = gettext
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-with open("config.json") as data_file:
+with open("config.json", encoding="utf-8") as data_file:
     data = json.load(data_file)
 
 # Quick-start development settings - unsuitable for production
@@ -66,16 +66,21 @@ INSTALLED_APPS = [
     "cid.apps.CidAppConfig",
     "axes",
 ]
+
+
+def cid_generator():
+    """ method to generate CID """
+    return f"{time.time()}-{random.random()}"
+
+
 CID_GENERATE = True
-CID_GENERATOR = lambda: f"{time.time()}-{random.random()}"
 CID_HEADER = "X_CORRELATION_ID"
-CID_GENERATE = True
 CID_CONCATENATE_IDS = True
-SESSION_EXPIRE_SECONDS = 7*24*60*60
+SESSION_EXPIRE_SECONDS = 7 * 24 * 60 * 60
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
-AXES_ONLY_USER_FAILURES=True
-AXES_FAILURE_LIMIT=5
-AXES_COOLOFF_TIME=2.0
+AXES_ONLY_USER_FAILURES = True
+AXES_FAILURE_LIMIT = 5
+AXES_COOLOFF_TIME = 2.0
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -198,11 +203,10 @@ USE_I18N = True
 
 USE_TZ = True
 
-DECLINE_REASONS = json.load(
-    open(
-        "constants.json",
-    )
-)["declineReasons"]
+DECLINE_REASONS = None
+with open("constants.json", encoding="utf-8") as data_file:
+    decline_data = json.load(data_file)
+    DECLINE_REASONS = decline_data["declineReasons"]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
@@ -261,7 +265,7 @@ elif data["database"]["engine"] == "sqlite3":
         "NAME": BASE_DIR / "db/db.sqlite3",
     }
 else:
-    raise Exception("Database engine %s not recognized" % data["database"]["engine"])
+    raise Exception(f"Database engine {data['database']['engine']} not recognized")
 
 PERMISSION_CONSTANTS = {"DEFAULT_APPROVER_PERMISSION": "ACCESS_APPROVE"}
 
@@ -274,39 +278,44 @@ ACCESS_MODULES = data["access_modules"]
 
 AUTOMATED_EXEC_IDENTIFIER = "automated-grant"
 
-current_log_level = 'DEBUG'
+CURRENT_LOG_LEVEL = 'DEBUG'
 logging_apps = ["django.request", "inventory", "Access", "bootprocess"]
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
         'verbose': {
-            'format': "{\"meta\":{\"timestamp\":\"%(asctime)s.%(msecs)03dZ\",\"component\":\"django\",\"application\":\"enigma\",\"team\":\"core\"},\"log\":{\"kind\":\"ENIGMA_APP\",\"dynamic_data\":\"[%(name)s:%(funcName)s:%(lineno)s] --- %(message)s\",\"level\":\"%(levelname)s\"}}",
+            'format': "{\"meta\":{\"timestamp\":\"%(asctime)s.%(msecs)03dZ\",\"component"
+                      "\":\"django\",\"application\":\"enigma\",\"team\":\"core\"},\"log\":"
+                      "{\"kind\":\"ENIGMA_APP\",\"dynamic_data\":\"[%(name)s:%(funcName)s:%"
+                      "(lineno)s] --- %(message)s\",\"level\":\"%(levelname)s\"}}",
             'datefmt': "%Y-%m-%dT%H:%M:%S"
         }
     },
     'handlers': {
         'file': {
-            'level': current_log_level,
+            'level': CURRENT_LOG_LEVEL,
             'class': 'logging.FileHandler',
             'filename': 'enigma.log',
             'formatter': 'verbose',
         },
         "console": {
-            "level": current_log_level,
+            "level": CURRENT_LOG_LEVEL,
             "class": "logging.StreamHandler",
             "formatter": "verbose",
         },
     },
     "loggers": {},
 }
+loggers = {}
 for each_app in logging_apps:
-    LOGGING["loggers"][each_app] = {
+    loggers[each_app] = {
         "handlers": ["file", "console"],
-        "level": current_log_level,
+        "level": CURRENT_LOG_LEVEL,
         "propagate": True,
         "formatter": "verbose",
     }
+LOGGING["loggers"] = loggers
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
