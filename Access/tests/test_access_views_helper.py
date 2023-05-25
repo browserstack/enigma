@@ -289,7 +289,7 @@ def test_run_access_grant(
         mockAccessModule1.tag.return_value = accessType
         mockAccessModule1.approve.return_value = [False, "Cannot be approved"]
         mockAccessModule1.access_mark_revoke_permission.return_value = "destination"
-        mocker.patch("bootprocess.general.emailSES", return_value=True)
+        mocker.patch("bootprocess.general.email_via_smtp", return_value=True)
         views_helper.all_access_modules = [mockAccessModule1]
 
     elif testName == test_run_access_grant_approveException:
@@ -302,7 +302,7 @@ def test_run_access_grant(
         mockAccessModule1.approve.return_value = True
         mockAccessModule1.approve.side_effect = Exception("Approve Exception")
         mockAccessModule1.access_mark_revoke_permission.return_value = "destination"
-        mocker.patch("bootprocess.general.emailSES", return_value=True)
+        mocker.patch("bootprocess.general.email_via_smtp", return_value=True)
         views_helper.all_access_modules = [mockAccessModule1]
 
     val = views_helper.run_access_grant(
@@ -312,4 +312,4 @@ def test_run_access_grant(
     assert val == response
     assert requestObject.status == response_status
     if response_status == "GrantFailed":
-        general.emailSES.call_count == 1
+        general.email_via_smtp.call_count == 1

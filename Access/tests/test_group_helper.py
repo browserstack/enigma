@@ -107,7 +107,7 @@ def test_approve_new_group_request(
         mocker.patch(
             "Access.helpers.generateStringFromTemplate", return_value="email body"
         )
-        mocker.patch("bootprocess.general.emailSES", return_value=True)
+        mocker.patch("bootprocess.general.email_via_smtp", return_value=True)
 
     elif testname == test_approve_new_group_request_ThrowsException:
         request.user.username = "username1"
@@ -131,7 +131,7 @@ def test_approve_new_group_request(
             "Access.helpers.generateStringFromTemplate", return_value="email body"
         )
         mocker.patch(
-            "bootprocess.general.emailSES",
+            "bootprocess.general.email_via_smtp",
             return_value=True,
             side_effect=Exception("sendEmailError"),
         )
@@ -143,7 +143,7 @@ def test_approve_new_group_request(
     assert models.GroupV2.objects.get.call_count == 1
 
     if testname != test_approve_new_group_request_ProcessReq and requestApproved:
-        assert general.emailSES.call_count == 1
+        assert general.email_via_smtp.call_count == 1
         assert models.MembershipV2.objects.filter.call_count == 2
         assert helpers.generateStringFromTemplate.call_count == 2
 

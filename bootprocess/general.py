@@ -6,7 +6,7 @@ from EnigmaAutomation.settings import EMAIL_BACKEND, DEFAULT_FROM_EMAIL
 logger = logging.getLogger(__name__)
 
 
-def emailSES(destination, subject, body):   # noqa: C0103
+def email_via_smtp(destination, subject, body):
     """ method to send email to destination with given subject and body """
     if destination and subject and body:
         with mail.get_connection(backend=EMAIL_BACKEND) as connection:
