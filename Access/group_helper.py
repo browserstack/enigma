@@ -668,6 +668,8 @@ def save_group_access_request(form_data, auth_user):
             access_labels, auth_user, is_group=False
         )
 
+        access_reason = access_request["accessReason"][accessIndex]
+
         extra_fields = accessrequest_helper.get_extra_fields(access_request)
         extra_field_labels = accessrequest_helper.get_extra_field_labels(access_module)
 
@@ -694,7 +696,7 @@ def save_group_access_request(form_data, auth_user):
                         request_id=request_id,
                         access_tag=access_tag,
                         access_label=access_label,
-                        access_reason=access_request["accessReason"],
+                        access_reason=access_reason,
                     )
                     context["status_list"].append(
                         {
