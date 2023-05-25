@@ -672,7 +672,14 @@ class GroupV2(models.Model):
 
     def check_access_exist(self, access):
         try:
-            self.group_access_mapping.get(access=access)
+            self.group_access_mapping.get(access=access, status__in=["Approved"])
+            return True
+        except GroupAccessMapping.DoesNotExist:
+            return False
+        
+    def access_mapping_exists(self, access):
+        try:
+            self.group_access_mapping.get(access=access, status__in=["Approved", "Pending"])
             return True
         except GroupAccessMapping.DoesNotExist:
             return False
