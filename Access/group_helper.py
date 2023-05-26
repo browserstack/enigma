@@ -731,7 +731,7 @@ def _create_group_access_mapping(
     if not access:
         access = AccessV2.create(access_tag=access_tag, access_label=access_label)
     else:
-        if group.access_mapping_exists(access,["Approved", "Pending"]):
+        if group.access_mapping_exists(access):
             raise GroupAccessExistsException()
     group.add_access(
         request_id=request_id,
@@ -808,7 +808,7 @@ def access_exist_in_other_groups_of_user(membership, group, access):
         .exclude(group=membership.group)
     )
     for membership in other_memberships:
-        if membership.group.access_mapping_exists(access,["Approved"]):
+        if membership.group.check_access_exist(access):
             return True
 
     return False
