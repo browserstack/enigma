@@ -78,14 +78,14 @@
 
           // handle a successful response
           success : function(json, textStatus, jqXHR) {
-              if (jqXHR.status == 200){
-                var msg = jQuery.parseJSON(json);
+              var msg = jQuery.parseJSON(json);
+              if (! msg.error){   
                 modName = $('#' + formId + " input[name='modname']").val()
                 $('#' + formId).find('#success-msg').text(msg.status.msg)
               }
               else {
                 modName = $('#' + formId + " input[name='modname']").val()
-                $('#' + formId).find('#error-msg').text("Error: Identity for " + modName + " could not saved.")
+                $('#' + formId).find('#error-msg').text(msg.error.msg)
               }
           },
 
