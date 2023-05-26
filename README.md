@@ -47,8 +47,9 @@ Enigma access management tool was developed internally at BrowserStack to solve 
 
 The following steps are for hosting Enigma locally from published docker container images.
 
-For development setup, follow these docs [using docker](/docs/“How-to”%20guides/User%20Guides/Setup%20Enigma%20Locally/Local%20Setup%20with%20Docker.md), 
-[without docker](/docs/“How-to”%20guides/User%20Guides/Setup%20Enigma%20Locally/Local%20Setup%20without%20Docker.md)
+For development setup, follow these docs:
+[Setup using docker](/docs/“How-to”%20guides/User%20Guides/Local%20Developer%20Setup/Local%20Setup%20with%20Docker.md), 
+[Setup without docker](/docs/“How-to”%20guides/User%20Guides/Local%20Developer%20Setup/Local%20Setup%20without%20Docker.md)
 
 #### Pre-requisites
 

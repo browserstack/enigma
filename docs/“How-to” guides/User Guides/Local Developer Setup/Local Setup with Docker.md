@@ -1,6 +1,6 @@
-# Setup for Local Development
+# Setup for Local Development With Docker
 
-## Pre-requisistes
+## Pre-requisites
 
 ### Install Docker
 

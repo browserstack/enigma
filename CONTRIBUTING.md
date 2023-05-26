@@ -3,7 +3,7 @@ Read our [Code of Conduct](CODE_OF_CONDUCT.md) to keep our community approachabl
 This guide will give you an overview of the contribution workflow from opening an issue, creating a PR, reviewing, and merging the PR.
 
 # Local Setup
-- Follow [Setup Guide](/docs/“How-to”%20guides/User%20Guides/Setup%20Enigma%20Locally/Local%20Setup%20with%20Docker.md) for setting up the project locally.
+- Follow [Setup Guide](/docs/“How-to”%20guides/User%20Guides/Local%20Developer%20Setup/Local%20Setup%20with%20Docker.md) for setting up the project locally.
 
 # Issues
 

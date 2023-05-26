@@ -1,4 +1,4 @@
-# Setup Enigma Locally Without Docker
+# Setup for Local Development Without Docker
 
 ## Pre-requisites
 You should have python3 installed on your system and checked out the enigma repository locally.
@@ -15,7 +15,7 @@ For detailed instructions on configuration, follow [this doc](/docs/Configuratio
 2. Add folder `db` in root folder of the repository.
 3. Add a package `access_modules` inside `Access`.
 
-Copy this [file](../../../../Access/base_email_access/access_modules_init.py) as `__init__.py` of `access_modules`
+Copy this [file](/Access/base_email_access/access_modules_init.py) as `__init__.py` of `access_modules`
 
 4. Add access modules inside `access_modules` to integrate them with Enigma. (Optional and not needed to get started)
 
