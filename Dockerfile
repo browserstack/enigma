@@ -22,6 +22,7 @@ ARG APPUID=1001
 RUN useradd -rm -d /home/app -s /bin/bash -g root -G sudo -u "$APPUID" app
 WORKDIR /srv/code/dev
 RUN mkdir -p logs
+RUN mkdir -p db
 RUN chown -R app /srv/code/dev /ebs
 USER app
 
