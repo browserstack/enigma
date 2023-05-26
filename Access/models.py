@@ -669,10 +669,10 @@ class GroupV2(models.Model):
             request_reason=request_reason,
             access=access,
         )
-        
-    def access_mapping_exists(self, access, status):
+
+    def check_access_exist(self, access):
         try:
-            self.group_access_mapping.get(access=access, status__in=status)
+            self.group_access_mapping.get(access=access, status__in=["Approved"])
             return True
         except GroupAccessMapping.DoesNotExist:
             return False
@@ -1256,6 +1256,15 @@ class UserIdentity(models.Model):
     def mark_revoke_failed_for_approved_access_mapping(self, access):
         user_mapping = self.get_granted_access_mapping(access)
         user_mapping.update(status="RevokeFailed")
+
+    def access_mapping_exists(self, access):
+        try:
+            self.user_access_mapping.get(
+                access=access, status__in=["Approved", "Pending"]
+            )
+            return True
+        except Exception:
+            return False
 
     def replicate_active_access_membership_for_module(
         self, existing_user_access_mapping
