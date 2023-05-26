@@ -501,41 +501,48 @@ def _create_access(
         }
 
     access = AccessV2.get(access_tag=access_tag, access_label=access_label)
-    if access:
-        if user_identity.access_mapping_exists(access):
+    if not access:
+        try:
+            _create_access_mapping(
+                access_tag=access_tag,
+                access_label=access_label,
+                user_identity=user_identity,
+                request_id=request_id,
+                access_reason=access_reason,
+            )
+        except Exception:
             return {
-                "title": REQUEST_DUPLICATE_ERR_MSG["title"].format(
-                    access_tag=access.access_tag
-                ),
-                "msg": REQUEST_DUPLICATE_ERR_MSG["msg"].format(
-                    access_label=json.dumps(access.access_label)
-                ),
+                "title": REQUEST_DB_ERR_MSG["error_msg"],
+                "msg": REQUEST_DB_ERR_MSG["msg"],
             }
+        return {"title": "success", "msg": "success"}
 
-    try:
-        _create_access_mapping(
-            access=access,
-            user_identity=user_identity,
-            request_id=request_id,
-            access_reason=access_reason,
-        )
-    except Exception:
+    if user_identity.access_mapping_exists(access):
         return {
-            "title": REQUEST_DB_ERR_MSG["error_msg"],
-            "msg": REQUEST_DB_ERR_MSG["msg"],
+            "title": REQUEST_DUPLICATE_ERR_MSG["title"].format(
+                access_tag=access.access_tag
+            ),
+            "msg": REQUEST_DUPLICATE_ERR_MSG["msg"].format(
+                access_label=json.dumps(access.access_label)
+            ),
         }
+
+    user_identity.user_access_mapping.create(
+        request_id=request_id,
+        request_reason=access_reason,
+        access=access,
+    )
     return {"title": "success", "msg": "success"}
 
 
 @transaction.atomic
 def _create_access_mapping(
-    user_identity, access, request_id, access_reason
+    user_identity, access_tag, access_label, request_id, access_reason
 ):
     """ Create AccessV2 and UserAccessMapping in db """
-    if not access:
-        access = AccessV2.objects.create(
-            access_tag=access.access_tag, access_label=access.access_label
-        )
+    access = AccessV2.objects.create(
+        access_tag=access_tag, access_label=access_label
+    )
 
     user_identity.user_access_mapping.create(
         request_id=request_id, request_reason=access_reason, access=access
@@ -722,6 +729,41 @@ def run_accept_request_task(
     return json_response
 
 
+def decline_group_membership(request, access_type, request_id, reason):
+    """ Decline group membership """
+    json_response = {}
+    membership = MembershipV2.get_membership(request_id)
+
+    if not membership:
+        json_response["error"] = INVALID_REQUEST_ERROR_MSG
+        return json_response
+
+    if not is_request_valid(request_id, membership):
+        json_response["error"] = USER_REQUEST_IN_PROCESS_ERR_MSG.format(
+            request_id=request_id,
+        )
+        return json_response
+
+    membership.decline(reason, request.user.user)
+
+    notifications.send_mail_for_request_decline(
+        request, "Membership Creation", request_id, reason, access_type
+    )
+
+    logger.debug(
+        USER_REQUEST_DECLINE_MSG.format(
+            request_id=request_id,
+            decline_reason=reason,
+        )
+    )
+    json_response = {}
+    json_response["msg"] = USER_REQUEST_DECLINE_MSG.format(
+        request_id=request_id,
+        decline_reason=reason,
+    )
+    return json_response
+
+
 def decline_individual_access(request, access_type, request_id, reason):
     """ Decline individual access """
     json_response = {}
@@ -730,6 +772,8 @@ def decline_individual_access(request, access_type, request_id, reason):
     if access_type == "declineNewGroup":
         access_mapping = GroupV2.get_pending_group(request_id)
         decline_new_group = True
+    elif access_type == "declineMember":
+        return decline_group_membership(request, access_type, request_id, reason)
     else:
         access_mapping = UserAccessMapping.get_access_request(request_id)
         access_type = access_mapping.access.access_tag

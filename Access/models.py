@@ -435,6 +435,15 @@ class MembershipV2(models.Model):
         membership = MembershipV2.objects.get(membership_id=membership_id)
         membership.approve(approver=approver)
 
+    def decline(self, reason, decliner):
+        self.status = "Declined"
+        self.decline_reason = reason
+        self.approver = decliner
+        self.save()
+
+    def is_already_processed(self):
+        return self.status in ["Declined", "Approved", "Processing", "Revoked"]
+
     def revoke_membership(self):
         self.status = "Revoked"
         self.save()
@@ -1200,7 +1209,10 @@ class UserIdentity(models.Model):
 
     def get_active_access_mapping(self):
         return self.user_access_mapping.filter(
-            status__in=["Approved", "Pending"], access__access_tag=self.access_tag
+            status__in=["Approved", "Pending",
+                        "SecondaryPending",
+                        "GrantFailed"],
+            access__access_tag=self.access_tag
         )
 
     def get_all_granted_access_mappings(self):
@@ -1211,7 +1223,7 @@ class UserIdentity(models.Model):
 
     def get_all_non_approved_access_mappings(self):
         return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"]
+            status__in=["Pending", "SecondaryPending", "GrantFailed"]
         )
 
     def decline_all_non_approved_access_mappings(self, decline_reason):
@@ -1225,7 +1237,7 @@ class UserIdentity(models.Model):
 
     def get_non_approved_access_mapping(self, access):
         return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"],
+            status__in=["Pending", "SecondaryPending", "GrantFailed"],
             access=access,
         )
 
