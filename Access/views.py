@@ -144,14 +144,14 @@ def save_identity(request):
             "title": IDENTITY_UNCHANGED_ERROR_MESSAGE["title"],
             "msg": IDENTITY_UNCHANGED_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
-        return JsonResponse(json.dumps(context), safe=False, status=400)
+        return JsonResponse(json.dumps(context), safe=False, status=200)
 
     except Exception:
         context["error"] = {
             "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
             "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
-        return JsonResponse(json.dumps(context), safe=False, status=400)
+        return JsonResponse(json.dumps(context), safe=False, status=200)
     context["error"] = {
         "title": "Bad Request",
         "msg": "Invalid Request.",
