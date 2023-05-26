@@ -207,4 +207,9 @@ class BaseEmailAccess(object):
         return "base_email_access/accessRequest.html"
 
     def email_via_smtp(self, destination, subject, body):
+        """
+         method to send email via smtp.
+         It is calling bootprocess.general.email_via_smtp under the hood to reduce external imports of bootprocess in
+         access_modules
+        """
         email_via_smtp(destination, subject, body)
