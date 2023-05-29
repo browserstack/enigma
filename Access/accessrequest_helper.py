@@ -221,8 +221,8 @@ def get_pending_requests(request):
         user = request.user.user
         if user.has_permission(
                 PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]):
-            context["membershipPending"] = GroupV2.getPendingMemberships()
-            context["newGroupPending"] = GroupV2.getPendingCreation()
+            context["membershipPending"] = GroupV2.get_pending_memberships()
+            context["newGroupPending"] = GroupV2.get_pending_creation()
         else:
             context["membershipPending"] = 0
             context["newGroupPending"] = 0

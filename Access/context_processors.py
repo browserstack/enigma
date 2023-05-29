@@ -19,17 +19,17 @@ def add_variables_to_context(request):
     context = {}
     context["currentYear"] = datetime.datetime.now().year
     context["users"] = User.objects.filter().only("user")
-    context["anyApprover"] = currentUser.isAnApprover(getPossibleApproverPermissions())
+    context["anyApprover"] = currentUser.is_an_approver(getPossibleApproverPermissions())
     context["is_ops"] = currentUser.is_ops
     context["access_list"] = [
         {"tag": each_tag, "desc": each_module.access_desc()}
         for each_tag, each_module in all_access_modules.items()
     ]
 
-    context["pendingCount"] = currentUser.getPendingApprovalsCount(all_access_modules)
-    context["grantFailureCount"] = currentUser.getFailedGrantsCount()
-    context["revokeFailureCount"] = currentUser.getFailedRevokesCount()
+    context["pendingCount"] = currentUser.get_pending_approvals_count(all_access_modules)
+    context["grantFailureCount"] = currentUser.get_failed_grants_count()
+    context["revokeFailureCount"] = currentUser.get_failed_revokes_count()
 
-    context["groups"] = sorted([group.name for group in currentUser.getOwnedGroups()])
+    context["groups"] = sorted([group.name for group in currentUser.get_owned_groups()])
 
     return context

@@ -189,6 +189,6 @@ def get_generic_user_access_mapping(user_access_mapping):
         user_access_mapping.access.access_tag
     )
     if access_module:
-        access_details = user_access_mapping.getAccessRequestDetails(access_module)
+        access_details = user_access_mapping.get_access_request_details(access_module)
     logger.debug("Generic access generated: " + str(access_details))
     return access_details

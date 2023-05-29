@@ -150,64 +150,64 @@ class User(models.Model):
         self.state = state_key
         self.save()
 
-    def isAnApprover(self, allApproverPermissions):
+    def is_an_approver(self, all_approver_permissions):
         permission_labels = [permission.label for permission in self.permissions]
-        approver_permissions = allApproverPermissions
+        approver_permissions = all_approver_permissions
         return len(list(set(permission_labels) & set(approver_permissions))) > 0
 
-    def isPrimaryApproverForModule(self, accessModule, accessLabel=None):
-        module_permissions = accessModule.fetch_approver_permissions(accessLabel)
+    def is_primary_approver_for_module(self, access_module, access_label=None):
+        module_permissions = access_module.fetch_approver_permissions(access_label)
         return self.has_permission(module_permissions["1"])
 
-    def isSecondaryApproverForModule(self, accessModule, accessLabel=None):
-        module_permissions = accessModule.fetch_approver_permissions(accessLabel)
+    def is_secondary_approver_for_module(self, access_module, access_label=None):
+        module_permissions = access_module.fetch_approver_permissions(access_label)
         return "2" in module_permissions and self.has_permission(
             module_permissions["2"]
         )
 
-    def isAnApproverForModule(
-        self, accessModule, accessLabel=None, approverType="Primary"
+    def is_an_approver_for_module(
+        self, access_module, access_label=None, approver_type="Primary"
     ):
-        if approverType == "Secondary":
-            return self.isSecondaryApproverForModule(accessModule, accessLabel)
+        if approver_type == "Secondary":
+            return self.is_secondary_approver_for_module(access_module, access_label)
 
-        return self.isPrimaryApproverForModule(accessModule, accessLabel)
+        return self.is_primary_approver_for_module(access_module, access_label)
 
-    def getPendingApprovalsCount(self, all_access_modules):
-        pendingCount = 0
+    def get_pending_approvals_count(self, all_access_modules):
+        pending_count = 0
         if self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]):
-            pendingCount += GroupV2.getPendingMemberships().count()
-            pendingCount += len(GroupV2.getPendingCreation())
+            pending_count += GroupV2.get_pending_memberships().count()
+            pending_count += len(GroupV2.get_pending_creation())
 
         for each_tag, each_access_module in all_access_modules.items():
             all_requests = each_access_module.get_pending_access_objects(self)
-            pendingCount += len(all_requests["individual_requests"])
-            pendingCount += len(all_requests["group_requests"])
+            pending_count += len(all_requests["individual_requests"])
+            pending_count += len(all_requests["group_requests"])
 
-        return pendingCount
+        return pending_count
 
-    def getFailedGrantsCount(self):
+    def get_failed_grants_count(self):
         return (
             UserAccessMapping.objects.filter(status__in=["GrantFailed"]).count()
-            if self.isAdminOrOps()
+            if self.is_admin_or_ops()
             else 0
         )
 
-    def getFailedRevokesCount(self):
+    def get_failed_revokes_count(self):
         return (
             UserAccessMapping.objects.filter(status__in=["RevokeFailed"]).count()
-            if self.isAdminOrOps()
+            if self.is_admin_or_ops()
             else 0
         )
 
-    def getOwnedGroups(self):
-        if self.isAdminOrOps():
+    def get_owned_groups(self):
+        if self.is_admin_or_ops():
             return GroupV2.objects.all().filter(status="Approved")
 
-        groupOwnerMembership = MembershipV2.objects.filter(is_owner=True, user=self)
-        return [membership_obj.group for membership_obj in groupOwnerMembership]
+        group_owner_membership = MembershipV2.objects.filter(is_owner=True, user=self)
+        return [membership_obj.group for membership_obj in group_owner_membership]
 
-    def isAdminOrOps(self):
+    def is_admin_or_ops(self):
         return self.is_ops or self.user.is_superuser
 
     def get_all_approved_memberships(self):
@@ -215,7 +215,7 @@ class User(models.Model):
 
     def is_allowed_admin_actions_on_group(self, group):
         return (
-            group.member_is_owner(self) or self.isAdminOrOps()
+            group.member_is_owner(self) or self.is_admin_or_ops()
         )
 
     def is_allowed_to_offboard_user_from_group(self, group):
@@ -260,7 +260,7 @@ class User(models.Model):
         for request_mapping in access_request_mappings:
             access_module = all_access_modules[request_mapping.access.access_tag]
             access_history.append(
-                request_mapping.getAccessRequestDetails(access_module)
+                request_mapping.get_access_request_details(access_module)
             )
 
         return access_history
@@ -345,7 +345,7 @@ def create_user(sender, instance, created, **kwargs):
     user.email = instance.email
     try:
         user.avatar = instance.avatar
-    except Exception as e:
+    except Exception as exc:
         pass
     user.save()
 
@@ -515,14 +515,14 @@ class GroupV2(models.Model):
 
     @staticmethod
     def create(
-        name="", requester=None, description="", needsAccessApprove=True, date_time=""
+        name="", requester=None, description="", needs_access_approve=True, date_time=""
     ):
         return GroupV2.objects.create(
             name=name,
             group_id=name + "-group-" + date_time,
             requester=requester,
             description=description,
-            needsAccessApprove=needsAccessApprove,
+            needsAccessApprove=needs_access_approve,
         )
 
     def add_member(
@@ -549,7 +549,7 @@ class GroupV2(models.Model):
                     date_time=date_time,
                 )
 
-    def getPendingMemberships():
+    def get_pending_memberships():
         return MembershipV2.objects.filter(status="Pending", group__status="Approved")
 
     def is_already_processed(self):
@@ -561,7 +561,7 @@ class GroupV2(models.Model):
         self.save()
 
     @staticmethod
-    def getPendingCreation():
+    def get_pending_creation():
         new_group_pending = GroupV2.objects.filter(status="Pending")
         new_group_pending_data = []
         for new_group in new_group_pending:
@@ -796,7 +796,7 @@ class UserAccessMapping(models.Model):
         except UserAccessMapping.DoesNotExist:
             return None
 
-    def getAccessRequestDetails(self, access_module):
+    def get_access_request_details(self, access_module):
         access_request_data = {}
         access_tags = [self.access.access_tag]
         access_labels = [self.access.access_label]
@@ -1044,7 +1044,7 @@ class GroupAccessMapping(models.Model):
     def __str__(self):
         return self.request_id
 
-    def getAccessRequestDetails(self, access_module):
+    def get_access_request_details(self, access_module):
         access_request_data = {}
         access_tags = [self.access.access_tag]
         access_labels = [self.access.access_label]
@@ -1204,10 +1204,12 @@ class UserIdentity(models.Model):
     )
 
     def deactivate(self):
+        """ method to deactivate the status for UserIdentity """
         self.status = "Inactive"
         self.save()
 
     def get_active_access_mapping(self):
+        """ method to get active access mappings for UserIdentity """
         return self.user_access_mapping.filter(
             status__in=["Approved", "Pending",
                         "SecondaryPending",
@@ -1216,48 +1218,58 @@ class UserIdentity(models.Model):
         )
 
     def get_all_granted_access_mappings(self):
+        """ method to get all granted access mappings for UserIdentity """
         return self.user_access_mapping.filter(
             status__in=["Approved", "Processing", "Offboarding"],
             access__access_tag=self.access_tag,
         )
 
     def get_all_non_approved_access_mappings(self):
+        """ method to get all non-approved access mappings for UserIdentity """
         return self.user_access_mapping.filter(
             status__in=["Pending", "SecondaryPending", "GrantFailed"]
         )
 
     def decline_all_non_approved_access_mappings(self, decline_reason):
+        """ method to decline all non approved access mappings for UserIdentity """
         user_mapping = self.get_all_non_approved_access_mappings()
         user_mapping.update(status="Declined", decline_reason=decline_reason)
 
     def get_granted_access_mapping(self, access):
+        """ method to get granted access mappings for UserIdentity """
         return self.user_access_mapping.filter(
             status__in=["Approved", "Processing", "Offboarding"], access=access
         )
 
     def get_non_approved_access_mapping(self, access):
+        """ method to get non approved access mappings for UserIdentity """
         return self.user_access_mapping.filter(
             status__in=["Pending", "SecondaryPending", "GrantFailed"],
             access=access,
         )
 
     def decline_non_approved_access_mapping(self, access, decline_reason):
+        """ method to decline non approved access mapping for UserIdentity """
         user_mapping = self.get_non_approved_access_mapping(access)
         user_mapping.update(status="Declined", decline_reason=decline_reason)
 
     def offboarding_approved_access_mapping(self, access):
+        """ method to offboard approved access mapping for UserIdentity """
         user_mapping = self.get_granted_access_mapping(access)
         user_mapping.update(status="Offboarding")
 
     def revoke_approved_access_mapping(self, access):
+        """ method to revoke approved access mapping for UserIdentity """
         user_mapping = self.get_granted_access_mapping(access)
         user_mapping.update(status="Revoked")
 
     def mark_revoke_failed_for_approved_access_mapping(self, access):
+        """ method to mark revoke failed for approved access mapping for UserIdentity """
         user_mapping = self.get_granted_access_mapping(access)
         user_mapping.update(status="RevokeFailed")
 
     def access_mapping_exists(self, access):
+        """ method to check if access mapping exists fo rUserIdentity """
         try:
             self.user_access_mapping.get(
                 access=access, status__in=["Approved", "Pending"]
@@ -1269,6 +1281,7 @@ class UserIdentity(models.Model):
     def replicate_active_access_membership_for_module(
         self, existing_user_access_mapping
     ):
+        """ method to replicate active access membership for module for UserIdentity """
         new_user_access_mapping = []
 
         for i, user_access in enumerate(existing_user_access_mapping):
@@ -1308,6 +1321,7 @@ class UserIdentity(models.Model):
         reason,
         access_type="Individual",
     ):
+        """ method to create access mapping for UserIdentity """
         return self.user_access_mapping.create(
             request_id=request_id,
             access=access,
@@ -1318,9 +1332,10 @@ class UserIdentity(models.Model):
         )
 
     def has_approved_access(self, access):
+        """ method to check approved access for UserIdentity """
         return self.user_access_mapping.filter(
             status="Approved", access=access
         ).exists()
 
     def __str__(self):
-        return "%s" % (self.identity)
+        return f"{self.identity}"

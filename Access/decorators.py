@@ -4,7 +4,7 @@ from Access.helpers import getPossibleApproverPermissions
 
 def user_admin_or_ops(function):
     def wrap(request, *args, **kwargs):
-        if request.user.user.isAdminOrOps():
+        if request.user.user.is_admin_or_ops():
             return function(request, *args, **kwargs)
         else:
             raise PermissionDenied
@@ -41,7 +41,7 @@ def user_with_permission(permissions_list):
 def user_any_approver(function):
     def wrap(request, *args, **kwargs):
         all_approve_permissions = getPossibleApproverPermissions()
-        is_any_approver = request.user.user.isAnApprover(all_approve_permissions)
+        is_any_approver = request.user.user.is_an_approver(all_approve_permissions)
         if is_any_approver:
             return function(request, *args, **kwargs)
         else:
