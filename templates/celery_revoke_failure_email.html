@@ -6,5 +6,5 @@ Failure reason: {{ message }}
 
 <BR/><BR/>
 {% if access_tag %}
-  <a target='_blank' href="{% url 'pendingFailure' %}?access_type={{ access_tag }}">View all failed grants</a>
+  <a target='_blank' href="{% url 'pendingFailure' %}?access_type={{ access_tag|urlencode }}">View all failed grants</a>
 {% endif %}

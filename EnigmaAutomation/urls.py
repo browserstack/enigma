@@ -101,5 +101,8 @@ urlpatterns = [
     re_path(r"^group/revokeAccess", revoke_group_access, name="revoke_group_access"),
 ]
 
+handler404 = 'Access.views.error_404'
+handler500 = 'Access.views.error_500'
+
 for tag, each_module in get_available_access_modules().items():
     urlpatterns.extend(each_module.urlpatterns)

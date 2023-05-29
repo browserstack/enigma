@@ -1,24 +1,25 @@
 version: '3'
-
 services:
   web:
     container_name: dev
+    image: browserstack/enigma:v1
     build:
       context: .
       dockerfile: Dockerfile
       target: web
+      args:
+        APPUID: ${APPUID}
     env_file:
     - ./secrets/ops_app_dev.env
     volumes:
-    - ./mounts/logs/:/ebs/logs/
-    - ./mounts/db/:/srv/code/dev/db/
+    - ./:/srv/code/dev
+    - ./mounts/modules_web:/srv/code/dev/Access/access_modules
+    - ./mounts/db:/srv/code/dev/db
+    - ./mounts/logs:/ebs/logs
     ports:
     - 8000:8000
     depends_on:
     - db
-    command: >
-      bash -c "echo Starting Django runserver;
-      python manage.py runserver 0.0.0.0:8000"
   db:
     container_name: db
     image: mysql/mysql-server:8.0.31
@@ -27,21 +28,30 @@ services:
     env_file:
     - ./secrets/ops_mysql_dev.env
     volumes:
-    - ./mounts/mysql_db/data:/var/lib/mysql
+    - ./mounts/mysql_db:/var/lib/mysql
+    security_opt:
+    - no-new-privileges:true
   redis:
     container_name: redis
     image: redis:alpine
     command: --port 6379
     ports:
     - 6379:6379
+    read_only: true
+    security_opt:
+    - no-new-privileges:true
   celery:
     container_name: celery
     build:
       context: .
       dockerfile: Dockerfile
       target: web
+      args:
+        APPUID: ${APPUID}
     volumes:
-    - ./mounts/db/:/srv/code/dev/db/
+    - ./mounts/modules_celery:/srv/code/dev/Access/access_modules
+    - ./mounts/db:/srv/code/dev/db
+    - ./mounts/logs:/ebs/logs
     env_file:
     - ./secrets/ops_app_celery.env
     depends_on:
@@ -49,9 +59,15 @@ services:
     - redis
     - web
     command: >
-      bash -c "
-      echo Starting celery;
-      python3 -m celery -A EnigmaAutomation worker -n worker1 -l DEBUG"
+      /bin/bash -c "
+        while ! nc -z redis 6379;
+        do
+          echo sleeping;
+          sleep 1;
+        done;
+        echo Connected!;
+        echo Starting celery;
+        python3 -m celery -A EnigmaAutomation worker -n worker1 -l DEBUG"
   test:
     container_name: test
     build:
@@ -62,4 +78,4 @@ services:
     - ./secrets/ops_app_test.env
     volumes:
     - .:/srv/code/dev
-    - ./mounts/logs/:/ebs/logs/
+    - ./mounts/logs:/ebs/logs

@@ -82,21 +82,21 @@ var current_username = "";
     reqParams = []
     var allowTag = true;
     if(access_type.length){
-      reqParams.push("accessTag="+access_type)
-      reqParams.push("accessTagExact="+access_type)
+      reqParams.push("accessTag="+encodeURIComponent(access_type))
+      reqParams.push("accessTagExact="+encodeURIComponent(access_type))
       allowTag = false
     }
     for(var i = 0; i<fields.length; i++){
       if(fields[i].value && fields[i].value.trim().length)
         if(fields[i].id != "accessTag" || allowTag){
-          reqParams.push(fields[i].id+"="+fields[i].value)
+          reqParams.push(fields[i].id+"="+encodeURIComponent(fields[i].value))
         }
     }
-    reqParams.push("responseType="+contentType)
+    reqParams.push("responseType="+encodeURIComponent(contentType))
     reqParams.push("page="+String(page_number))
     url = new URL(window.location.href)
     if(url.searchParams.get("username")){
-      reqParams.push("username="+url.searchParams.get("username"))
+      reqParams.push("username="+encodeURIComponent(url.searchParams.get("username")))
     }
     urlBuilder = "userAccesses?" + reqParams.join("&");
     return urlBuilder;
@@ -129,7 +129,7 @@ var current_username = "";
     elem.style.background = "#429244";
     title_line  = $("#access-header-row")
     title_html = "<h4 id='header-title'>Access List for User {{username}}</h4>"
-    if(access_type.length && access_type != "other"){
+    if(access_type.length) {
       title_html = `<button class="btn btn-danger" data-toggle="modal" data-target="#revokeModal"
                     onclick='revokeConfirm("module-`+access_type+`", "{{username}}")''
                     style="float: left;" id=module-`+access_type+`>Revoke all `+ access_type+`</button>
@@ -171,7 +171,7 @@ var current_username = "";
             html_string += "<td>"+record["offboarding_date"]+"</td>"
             html_string += "<td>"+record["grantOwner"]+"</td>"
             html_string += "<td>"+record["revokeOwner"]+"</td>"
-            html_string += "<td>{% if is_ops %} <a class=\"btn btn-primary\" target=\"_blank\" href=\"/individual_resolve?requestId="+record["requestId"]+"&ops_resolve=true\">ReGrant</a></td>{% endif %}"
+            html_string += "<td>{% if is_ops %} <a class=\"btn btn-primary\" target=\"_blank\" href=\"/individual_resolve?requestId="+encodeURIComponent(record["requestId"])+"&ops_resolve=true\">ReGrant</a></td>{% endif %}"
             html_string += "<td>"+record["type"]+"</td>"
             html_string += "</tr>"
           }
@@ -191,7 +191,7 @@ jQuery(document).ready(function ($) {
 
   $(document).on('click', '.revoke-button', function(){
     id = $(this).attr("id");
-    urlBuilder = "/access/markRevoked?requestId="+id+"&username="+current_username
+    urlBuilder = "/access/markRevoked?requestId="+encodeURIComponent(id)+"&username="+encodeURIComponent(current_username)
     $.ajax({url: urlBuilder,
         success: function(result){
           console.log("yes", id+"-revoke-button", id+"-access-status")
@@ -333,7 +333,7 @@ jQuery(document).ready(function ($) {
         <td>{{item.grantOwner}}</td>
         <td>{{item.revokeOwner}}</td>
         <td>{% if is_ops %}
-          <a class="btn btn-primary" target="_blank" href="/individual_resolve?requestId={{ item.requestId }}&ops_resolve=true">ReGrant</a></td>
+          <a class="btn btn-primary" target="_blank" href="/individual_resolve?requestId={{ item.requestId|urlencode }}&ops_resolve=true">ReGrant</a></td>
           {% endif %}
           <td>{{item.access_type}}</td>
       </tr>
