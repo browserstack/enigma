@@ -104,7 +104,6 @@ def test_verify_response_with_array_of_access_list_with_two_elements():
 
 @given("empty configured access_modules are There")
 def step_impl(context, mocker):
-    # Mock the get_available_access_modules function to return an empty dictionary
     get_available_access_modules = mocker.MagicMock(return_value={})
     context.get_available_access_modules = get_available_access_modules
 
@@ -170,7 +169,6 @@ def step_impl(context, mocker):
         "access_access_tag3",
         "access_access_tag4",
     ]
-
     access_tag1 = mocker.MagicMock()
     access_tag2 = mocker.MagicMock()
     access_tag3 = mocker.MagicMock()
@@ -193,7 +191,6 @@ def step_impl(context, mocker):
         "access_access_tag3",
         "access_access_tag4",
     ]
-
     access_tag1 = mocker.MagicMock()
     access_tag2 = mocker.MagicMock()
     access_tag3 = mocker.MagicMock()
@@ -205,13 +202,11 @@ def step_impl(context, mocker):
 
 @when("get_request_access function is called")
 def step_impl(context, mocker):
-    # Mock the request object to have an empty query string
     context.response = accessrequest_helper.get_request_access(context.request)
 
 
 @when("get_request_access function is called for invalid request type")
 def step_impl(context, mocker):
-    # Mock the request object to have an empty query string
     context.request.GET.getlist.side_effect = KeyError("accesses")
     context.response = accessrequest_helper.get_request_access(context.request)
 
@@ -219,9 +214,7 @@ def step_impl(context, mocker):
 @then("Return value should be access list with two modules")
 def step_impl(context):
     assert context.response["accesses"] is not None
-
     assert len(context.response["accesses"]) == 2
-
     for access in context.response["accesses"]:
         assert "formDesc" in access
         assert "accessTag" in access
@@ -253,7 +246,6 @@ def step_impl(context):
 def step_impl(context):
     assert context.response["accesses"] is not None
     assert len(context.response["accesses"]) == 4
-
     for access in context.response["accesses"]:
         assert "formDesc" in access
         assert "accessTag" in access
@@ -268,9 +260,7 @@ def step_impl(context):
 @then("Return value should return all four access with extra fields")
 def step_impl(context):
     assert context.response["accesses"] is not None
-
     assert len(context.response["accesses"]) == 4
-
     for access in context.response["accesses"]:
         assert "extraFields" in access
     assert helpers.get_available_access_modules.call_count==1
@@ -279,9 +269,7 @@ def step_impl(context):
 @then("Return value should return all four access with notice/alert")
 def step_impl(context):
     assert context.response["accesses"] is not None
-
     assert len(context.response["accesses"]) == 4
-
     for access in context.response["accesses"]:
         assert "notice" in access
     assert helpers.get_available_access_modules.call_count==1
