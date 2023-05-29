@@ -718,6 +718,13 @@ class GroupV2(models.Model):
         except GroupAccessMapping.DoesNotExist:
             return False
 
+    def access_mapping_exists(self, access):
+        try:
+            self.group_access_mapping.get(access=access, status__in=["Approved","Pending"])
+            return True
+        except GroupAccessMapping.DoesNotExist:
+            return False
+
     def get_all_approved_members(self):
         return self.membership_group.filter(status="Approved")
 
