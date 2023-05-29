@@ -27,7 +27,7 @@ Feature: Validate Approver Permission
         Then Return value should be empty json
 
     Scenario: User who made the request has primary approver access & access_mapping is not in pending state & module supports secondary approval 
-        Given User who made request has primary approver access
+        Given User who made request has primary approver access with false response
         And access_mapping is not in pending state
         And Modules supports secondary approval
         When validate_approver_permissions function is called
@@ -49,10 +49,10 @@ Feature: Validate Approver Permission
         Then Return value should be empty json
 
     Scenario: When the user who made the request has secondary approver access & access_mapping is in primary pending state & module does needs secondary approval 
-        Given User who made request has secondary approver access
+        Given User who made request has only secondary approver access with false response
         And access_mapping is in pending state
         And Modules does not need secondary approval
         When validate_approver_permissions function is called 
         Then Return value should be permission denied json
-
+        
   
