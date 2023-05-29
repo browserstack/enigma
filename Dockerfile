@@ -5,7 +5,7 @@
 # Set the base image to use to Ubuntu
 FROM python:3.11-slim-buster AS base
 
-ENV DJANGO_SETTINGS_MODULE=EnigmaAutomation.settings
+ENV DJANGO_SETTINGS_MODULE=enigma_automation.settings
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update -y \
   && apt-get install --no-install-recommends -y \

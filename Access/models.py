@@ -2,7 +2,7 @@ from django.contrib.auth.models import User as user
 from django.db import models, transaction
 from django.db.models.signals import post_save
 from django.conf import settings
-from EnigmaAutomation.settings import PERMISSION_CONSTANTS
+from enigma_automation.settings import PERMISSION_CONSTANTS
 import datetime
 import enum
 

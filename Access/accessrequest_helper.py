@@ -6,7 +6,7 @@ import logging
 import time
 from django.db import transaction
 
-from EnigmaAutomation.settings import (
+from enigma_automation.settings import (
     DECLINE_REASONS,
     MAIL_APPROVER_GROUPS,
     PERMISSION_CONSTANTS,

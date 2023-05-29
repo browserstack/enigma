@@ -36,7 +36,7 @@ from Access.userlist_helper import (
     IdentityNotChangedException,
 )
 from Access.views_helper import render_error_message
-from EnigmaAutomation.settings import PERMISSION_CONSTANTS
+from enigma_automation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver
 

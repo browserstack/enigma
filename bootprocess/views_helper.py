@@ -5,7 +5,7 @@ from Access.models import (
     GroupV2,
     UserAccessMapping,
 )
-from EnigmaAutomation.settings import DEFAULT_ACCESS_GROUP
+from enigma_automation.settings import DEFAULT_ACCESS_GROUP
 from Access.views_helper import generate_user_mappings, execute_group_access
 import json
 import datetime

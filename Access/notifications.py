@@ -1,6 +1,6 @@
 from bootprocess import general
 from Access import helpers
-from EnigmaAutomation.settings import MAIL_APPROVER_GROUPS
+from enigma_automation.settings import MAIL_APPROVER_GROUPS
 import logging
 
 logger = logging.getLogger(__name__)
