@@ -2,7 +2,7 @@
 import logging
 from django.core import mail
 from django.core.mail import BadHeaderError
-from EnigmaAutomation.settings import EMAIL_BACKEND, DEFAULT_FROM_EMAIL
+from enigma_automation.settings import EMAIL_BACKEND, DEFAULT_FROM_EMAIL
 logger = logging.getLogger(__name__)
 
 

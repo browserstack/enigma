@@ -8,7 +8,7 @@ from Access.models import (
     GroupV2,
 )
 from Access.views_helper import generate_user_mappings, execute_group_access
-from EnigmaAutomation.settings import DEFAULT_ACCESS_GROUP
+from enigma_automation.settings import DEFAULT_ACCESS_GROUP
 
 logger = logging.getLogger(__name__)
 
