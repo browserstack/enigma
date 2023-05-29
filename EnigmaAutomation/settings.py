@@ -17,22 +17,37 @@ from pathlib import Path
 import os
 import time
 import random
+import django
+from django.utils.translation import gettext
+django.utils.translation.ugettext = gettext
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+with open("config.json") as data_file:
+    data = json.load(data_file)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "abc"
+# SECURITY WARNING: The secret key must be a large random value and it must be kept secret.
+SECRET_KEY = data["django_setup"]["SECRET_KEY"]
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# SECURITY WARNING: don't run with debug set to True on production!
+DEBUG = data["django_setup"]["DEBUG"]
+# SECURITY WARNING: You must set settings.ALLOWED_HOSTS if DEBUG is False.
+ALLOWED_HOSTS = data["django_setup"]["ALLOWED_HOSTS"]
+CSRF_TRUSTED_ORIGINS = data["django_setup"]["CSRF_TRUSTED_ORIGINS"]
 
-ALLOWED_HOSTS = []
+# SECURITY WARNING: Set this to True to avoid transmitting the CSRF cookie over HTTP.
+CSRF_COOKIE_SECURE = True
 
+# SECURITY WARNING: Set this to True to avoid transmitting the session cookie over HTTP.
+SESSION_COOKIE_SECURE = True
+
+# SECURITY WARNING: Use the HttpOnly attribute to prevent access to cookie values via JavaScript.
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_HTTPONLY = True
 
 # Application definition
 
@@ -48,26 +63,36 @@ INSTALLED_APPS = [
     "Access",
     "rest_framework",
     "cid.apps.CidAppConfig",
+    "axes",
 ]
 CID_GENERATE = True
 CID_GENERATOR = lambda: f"{time.time()}-{random.random()}"
 CID_HEADER = "X_CORRELATION_ID"
 CID_GENERATE = True
 CID_CONCATENATE_IDS = True
+SESSION_EXPIRE_SECONDS = 7*24*60*60
+SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
+AXES_ONLY_USER_FAILURES=True
+AXES_FAILURE_LIMIT=5
+AXES_COOLOFF_TIME=2.0
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django_session_timeout.middleware.SessionTimeoutMiddleware',
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "social_django.middleware.SocialAuthExceptionMiddleware",
     "cid.middleware.CidMiddleware",
+    'axes.middleware.AxesMiddleware',
 ]
 
 AUTHENTICATION_BACKENDS = (
+    'axes.backends.AxesStandaloneBackend',
     "social_core.backends.google.GoogleOAuth2",
     "django.contrib.auth.backends.ModelBackend",
 )
@@ -128,12 +153,13 @@ WSGI_APPLICATION = "EnigmaAutomation.wsgi.application"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        "NAME": (
-            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-        ),
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
         "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        'OPTIONS': {
+            'min_length': 9,
+        }
     },
     {
         "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
@@ -141,8 +167,19 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
+    {
+        "NAME": "Access.validators.NumberValidator",
+    },
+    {
+        "NAME": "Access.validators.UppercaseValidator",
+    },
+    {
+        "NAME": "Access.validators.SymbolValidator",
+    },
+    {
+        "NAME": "Access.validators.RepeatedValidator"
+    },
 ]
-
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -174,13 +211,9 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
-with open("config.json") as data_file:
-    data = json.load(data_file)
-
-
-SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = data["googleapi"]["SOCIAL_AUTH_GOOGLE_OAUTH2_KEY"]
-SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = data["googleapi"]["SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET"]
+google_auth_config = data["sso"]["googleapi"]
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = google_auth_config["SOCIAL_AUTH_GOOGLE_OAUTH2_KEY"]
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = google_auth_config["SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET"]
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
 LOGIN_URL = 'login/'
 
@@ -268,3 +301,13 @@ for each_app in logging_apps:
         "propagate": True,
         "formatter": "verbose",
     }
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+EMAIL_HOST = data["emails"]["EMAIL_HOST"]
+EMAIL_PORT = data["emails"]["EMAIL_PORT"]
+EMAIL_HOST_USER = data["emails"]["EMAIL_HOST_USER"]
+EMAIL_HOST_PASSWORD = data["emails"]["EMAIL_HOST_PASSWORD"]
+EMAIL_USE_TLS = data["emails"]["EMAIL_USE_TLS"]
+EMAIL_USE_SSL = data["emails"]["EMAIL_USE_SSL"]
+DEFAULT_FROM_EMAIL = data["emails"]["DEFAULT_FROM_EMAIL"]

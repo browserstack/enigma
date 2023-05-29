@@ -6,18 +6,48 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "googleapi": {
-      "description": "Config keys related to Google SSO",
+    "django_setup": {
+      "description": "Config keys related to Django setup",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": {
-          "description": "Google OAuth2 Key",
+        "SECRET_KEY": {
+          "description": "Django Secret Key to be used. Keep this value secret",
           "type": "string"
         },
-        "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": {
-          "description": "Google OAuth2 secret",
-          "type": "string"
+        "DEBUG": {
+          "description": "Turns on/off debug mode.",
+          "type": "boolean"
+        },
+        "ALLOWED_HOSTS": {
+          "description": "A list of strings representing the host/domain names that can be served.",
+          "type": "array"
+        },
+        "CSRF_TRUSTED_ORIGINS": {
+          "description": "A list of string represnting the urls that are CSRT trusted origins",
+          "type": "array"
+        }
+      }
+    },
+    "sso": {
+      "description": "Config keys related to SSO",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "googleapi": {
+          "description": "Config keys related to Google SSO",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": {
+              "description": "Google OAuth2 Key",
+              "type": "string"
+            },
+            "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": {
+              "description": "Google OAuth2 secret",
+              "type": "string"
+            }
+          }
         }
       }
     },
@@ -69,11 +99,16 @@
     "access_modules": {
       "description": "List of access modules attached to this tool",
       "type": "object",
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "git_urls": {
           "description": "List of git URLs of access modules",
           "type": "array"
+        },
+        "RETRY_LIMIT": {
+          "description": "Number of retries before raising cloning failure exception",
+          "type": "integer",
+          "minimum": 1
         }
       }
     },
@@ -95,6 +130,34 @@
       "properties": {
         "access-approve": {
           "description": "Access approve email",
+          "type": "string"
+        },
+        "EMAIL_HOST": {
+          "description": "The host to use for sending email.",
+          "type": "string"
+        },
+        "EMAIL_PORT": {
+          "description": "Port to use for the SMTP server.",
+          "type": "string"
+        },
+        "EMAIL_HOST_USER": {
+          "description": "Username to use for the SMTP server.",
+          "type": "string"
+        },
+        "EMAIL_HOST_PASSWORD": {
+          "description": "Password to use for the SMTP server.",
+          "type": "string"
+        },
+        "EMAIL_USE_TLS": {
+          "description": "Whether to use a TLS (secure) connection when talking to the SMTP server: port 587",
+          "type": "boolean"
+        },
+        "EMAIL_USE_SSL": {
+          "description": "Whether to use an implicit TLS (secure) connection when talking to the SMTP server: port 465",
+          "type": "boolean"
+        },
+        "DEFAULT_FROM_EMAIL": {
+          "description": "Default email address to use for correspondence from the site manager(s)",
           "type": "string"
         }
       }
@@ -135,6 +198,6 @@
     }
   },
   "required": [
-    "googleapi"
+    "sso"
   ]
 }

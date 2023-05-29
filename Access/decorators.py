@@ -1,4 +1,5 @@
 from django.core.exceptions import PermissionDenied
+from Access.helpers import getPossibleApproverPermissions
 
 
 def user_admin_or_ops(function):
@@ -35,3 +36,16 @@ def user_with_permission(permissions_list):
         return wrap
 
     return user_with_permission_decorator
+
+
+def user_any_approver(function):
+    def wrap(request, *args, **kwargs):
+        all_approve_permissions = getPossibleApproverPermissions()
+        is_any_approver = request.user.user.isAnApprover(all_approve_permissions)
+        if is_any_approver:
+            return function(request, *args, **kwargs)
+        else:
+            raise PermissionDenied
+    wrap.__doc__ = function.__doc__
+    wrap.__name__ = function.__name__
+    return wrap
