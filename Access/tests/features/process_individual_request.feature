@@ -1,3 +1,5 @@
+""" Test for individual pending requests"""
+
 Scenario: No pending requests
           Given individual_pending_requests is empty
           When process_individual_requests is called
