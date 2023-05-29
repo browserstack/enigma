@@ -120,19 +120,20 @@ def step_impl(access_mapping):
 
 
 @given("User who made request has primary approver access")
-def step_impl(context, mocker, access_mapping,request_1):
+def step_impl(context, mocker, access_mapping, request_1):
     """User who made request has primary approver access."""
-    mock_permissions = {"approver_permissions": {"1": "ACCESS_APPROVE","2":""}}
+    mock_permissions = {"approver_permissions": {"1": "ACCESS_APPROVE", "2": ""}}
     mocker.patch(
         "Access.accessrequest_helper._get_approver_permissions",
         return_value=mock_permissions,
     )
     request_1.user.user.has_permission.return_value = True
 
+
 @given("User who made request has primary approver access with false response")
-def step_impl(context, mocker, access_mapping,request_1):
+def step_impl(context, mocker, access_mapping, request_1):
     """User who made request has primary approver access."""
-    mock_permissions = {"approver_permissions": {"1": "ACCESS_APPROVE","2":""}}
+    mock_permissions = {"approver_permissions": {"1": "ACCESS_APPROVE", "2": ""}}
     mocker.patch(
         "Access.accessrequest_helper._get_approver_permissions",
         return_value=mock_permissions,
@@ -141,17 +142,18 @@ def step_impl(context, mocker, access_mapping,request_1):
 
 
 @given("User who made request has secondary approver access")
-def step_impl(mocker, context, access_mapping,request_1):
-    mock_permissions = {"approver_permissions": {"1": "","2": "ACCESS_APPROVE"}}
+def step_impl(mocker, context, access_mapping, request_1):
+    mock_permissions = {"approver_permissions": {"1": "", "2": "ACCESS_APPROVE"}}
     mocker.patch(
         "Access.accessrequest_helper._get_approver_permissions",
         return_value=mock_permissions,
     )
     request_1.user.user.has_permission.return_value = True
 
+
 @given("User who made request has only secondary approver access with false response")
-def step_impl(mocker, context, access_mapping,request_1):
-    mock_permissions = {"approver_permissions": {"1": "","2": "ACCESS_APPROVE"}}
+def step_impl(mocker, context, access_mapping, request_1):
+    mock_permissions = {"approver_permissions": {"1": "", "2": "ACCESS_APPROVE"}}
     mocker.patch(
         "Access.accessrequest_helper._get_approver_permissions",
         return_value=mock_permissions,
@@ -161,7 +163,7 @@ def step_impl(mocker, context, access_mapping,request_1):
 
 @given("User who made request not have any approver access")
 def step_impl(mocker, request_1):
-    mock_permissions = {"approver_permissions": {"1":"","2":""}}
+    mock_permissions = {"approver_permissions": {"1": "", "2": ""}}
     mocker.patch(
         "Access.accessrequest_helper._get_approver_permissions",
         return_value=mock_permissions,

@@ -54,5 +54,4 @@ Feature: Validate Approver Permission
         And Modules does not need secondary approval
         When validate_approver_permissions function is called 
         Then Return value should be permission denied json
-        
   
