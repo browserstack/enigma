@@ -38,7 +38,7 @@ def context(mocker):
 
 @scenario("./features/get_pending_request.feature", "Error Handling")
 def test_error_handling():
-    """Error Handling."""
+    """Error Handling for get-pending-request."""
     pass
 
 
