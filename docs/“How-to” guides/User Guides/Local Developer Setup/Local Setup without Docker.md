@@ -19,7 +19,7 @@ Copy this [file](/Access/base_email_access/access_modules_init.py) as `__init__.
 
 4. Add access modules inside `access_modules` to integrate them with Enigma. (Optional and not needed to get started)
 
-Copy each access module folder that you want to support manually here ensuring directory hierarchy in the following manner:
+Copy each access module folder that you want to support, ensuring directory hierarchy in the following manner:
 ```
 - Access
 |-- access_modules
