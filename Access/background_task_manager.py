@@ -196,7 +196,7 @@ def run_access_revoke(request_id):
         )
         revoke_success = False
         message = str(traceback.format_exc())
-    
+
 
     if revoke_success:
         access_mapping.revoke()

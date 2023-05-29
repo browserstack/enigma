@@ -38,7 +38,7 @@ from Access.userlist_helper import (
 from Access.views_helper import render_error_message
 from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
-from .decorators import user_admin_or_ops, authentication_classes, user_with_permission
+from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 
@@ -251,8 +251,8 @@ def group_access_list(request, group_name):
 
         return render(request, "EnigmaOps/groupAccessList.html", context)
     except Exception as ex:
-        logger.debug(
-            "Error in request not found OR Invalid request type, Error: %s", str(ex)
+        logger.exception(
+            "Error in Group Access List, Error: %s", str(ex)
         )
         json_response = {}
         json_response["error"] = {
@@ -328,7 +328,7 @@ def add_user_to_group(request, group_name):
 
 @api_view(["GET"])
 @login_required
-@user_with_permission([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])
+@user_any_approver
 def pending_requests(request):
     """pending access requests"""
     context = get_pending_requests(request)
@@ -424,6 +424,7 @@ def _get_request_ids_for_bulk_processing(posted_request_ids, selector):
 
 
 @login_required
+@user_any_approver
 def decline_access(request, access_type, request_id):
     """Decline an access request.
 
@@ -457,7 +458,7 @@ def remove_group_member(request):
         JsonResponse: Status of the User remove.
     """
     try:
-        response = group_helper.remove_member(request)
+        response = group_helper.remove_member(request, request.user)
         if "error" in response:
             return JsonResponse(response, status=400)
         return JsonResponse({"message": "Success"})
@@ -748,3 +749,11 @@ def revoke_group_access(request):
         logger.exception("Error while revoking group access %s" % (traceback.format_exc()))
         logger.debug("Something went wrong while revoking group access")
         return JsonResponse({"message": "Failed to revoke group Access"}, status=400)
+
+def error_404(request, exception, template_name='404.html'):
+        data = {}
+        return render(request,template_name,data)
+
+def error_500(request, template_name='500.html'):
+        data = {}
+        return render(request,template_name,data)

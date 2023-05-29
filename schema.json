@@ -6,18 +6,48 @@
   "type": "object",
   "additionalProperties": false,
   "properties": {
-    "googleapi": {
-      "description": "Config keys related to Google SSO",
+    "django_setup": {
+      "description": "Config keys related to Django setup",
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": {
-          "description": "Google OAuth2 Key",
+        "SECRET_KEY": {
+          "description": "Django Secret Key to be used. Keep this value secret",
           "type": "string"
         },
-        "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": {
-          "description": "Google OAuth2 secret",
-          "type": "string"
+        "DEBUG": {
+          "description": "Turns on/off debug mode.",
+          "type": "boolean"
+        },
+        "ALLOWED_HOSTS": {
+          "description": "A list of strings representing the host/domain names that can be served.",
+          "type": "array"
+        },
+        "CSRF_TRUSTED_ORIGINS": {
+          "description": "A list of string represnting the urls that are CSRT trusted origins",
+          "type": "array"
+        }
+      }
+    },
+    "sso": {
+      "description": "Config keys related to SSO",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "googleapi": {
+          "description": "Config keys related to Google SSO",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "SOCIAL_AUTH_GOOGLE_OAUTH2_KEY": {
+              "description": "Google OAuth2 Key",
+              "type": "string"
+            },
+            "SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET": {
+              "description": "Google OAuth2 secret",
+              "type": "string"
+            }
+          }
         }
       }
     },
@@ -168,6 +198,6 @@
     }
   },
   "required": [
-    "googleapi"
+    "sso"
   ]
 }
