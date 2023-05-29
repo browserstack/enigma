@@ -1,109 +1,195 @@
-import json
-import sys
-import shutil
-from git import Repo, GitCommandError
-import time
+""" Script to clone access modules from git urls specified in config.json """
+
+import logging
 import os
+import shutil
+import sys
+import time
 
-print("Starting cloning setup")
-try:
-    f = open("./config.json", "r")
-    config = json.load(f)
-    RETRY_LIMIT = config["access_modules"]["RETRY_LIMIT"]
-    urls = config["access_modules"]["git_urls"]
+from git import Repo, GitCommandError
 
+from . import helpers
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO,
+    handlers=[
+        logging.StreamHandler()
+    ]
+)
+
+
+def ensure_access_modules_config(config):
+    """ Validate access_modules config """
+    if "access_modules" not in config:
+        raise Exception(
+            "Not configured properly."
+            "Config is expected to have access_modules key"
+        )
+
+    if "git_urls" not in config["access_modules"]:
+        raise Exception(
+            "Not configured properly."
+            " Config is expected to have git_urls key"
+            " as an array of git repos for access modules"
+        )
+
+
+def remove_stale_cloned_modules():
+    """
+    Remove already present modules so that we can clone new ones
+    This is to ensure that we are on the correct commit
+    """
     for each_access_module in os.listdir('Access/access_modules'):
-        path_to_remove = "Access/access_modules/%s" % each_access_module
-        print("Deleting %s" % path_to_remove)
-        try:
-            if os.path.isdir(path_to_remove):
-                shutil.rmtree(path_to_remove)
-        except Exception as e:
-            print("Got Error while deleting the path %s. Error: %s" % (path_to_remove, str(e)))
-    shutil.copyfile('Access/base_email_access/access_modules_init.py', "Access/access_modules/__init__.py")
+        helpers.remove_directory_with_contents(
+            f"Access/access_modules/{each_access_module}")
 
-    requirements_file = 'Access/access_modules/requirements.txt'
-    if not os.path.exists(requirements_file):
-          open(requirements_file, 'w').close()
 
-    print("All urls: %s" % (",".join(urls)))
-    for url in urls:
-        specified_branch = None
-        if "#" in url:
-            specified_branch = url.split("#")[1]
-            url = url.split("#")[0]
-        folder_name = url.split("/").pop()[:-4]
-        folder_path = "./Access/access_modules/" + folder_name
+def initialize_init_file():
+    """
+    Initialize __init__.py file in access modules root directory
+    from a template. This is to ensure that the modules are loaded
+    properly
+    """
+    shutil.copyfile(
+        'Access/base_email_access/access_modules_init.py',
+        "Access/access_modules/__init__.py"
+    )
+
+
+def get_repo_url_and_branch(formatted_git_arg):
+    """ Get url and branch from formatted git url string """
+    url = formatted_git_arg
+    target_branch = None
+    if "#" in url:
+        target_branch = url.split("#")[1]
+        url = url.split("#")[0]
+    return url, target_branch
+
+
+def clone_repo(formatted_git_arg, retry_limit):
+    """ Clone a single repo """
+    url, target_branch = get_repo_url_and_branch(formatted_git_arg)
+
+    folder_name = url.split("/").pop()[:-4]
+    target_folder_path = "./Access/access_modules/" + folder_name
+
+    retry_exception = None
+    for clone_attempt in range(1, retry_limit + 1):
         try:
+            logger.info("Cloning Repo")
+            if target_branch:
+                Repo.clone_from(url, target_folder_path, branch=target_branch)
+            else:
+                Repo.clone_from(url, target_folder_path)
+        except (GitCommandError, Exception) as exception:
+            sleep_time = 10 * clone_attempt
+            logger.error(
+                "Error while cloning repo. Error %s.",
+                exception,
+            )
+            logger.info(
+                "Retrying cloning: %s/%s. Backoff sleep %s",
+                clone_attempt,
+                retry_limit,
+                sleep_time,
+            )
+            retry_exception = exception
+            time.sleep(sleep_time)
+        else:
             retry_exception = None
-            for i in range(1, RETRY_LIMIT + 1):
-                try:
-                    if specified_branch:
-                        Repo.clone_from(url, folder_path, branch=specified_branch)
-                    else:
-                        Repo.clone_from(url, folder_path)
-                except (GitCommandError, Exception) as ex:
-                    print("error occurred: ", ex)
-                    print("retry:{1}/{2}".format(ex, i, RETRY_LIMIT))
-                    retry_exception = ex
-                    time.sleep(10 * i)
-                    print("retrying")
-                else:
-                    retry_exception = None
-                    break
-            if (retry_exception != None):
-                print("max retry count reached")
-                raise retry_exception
+            break
 
-            # move all folders, not files in the cloned repo to the access_modules
-            # folder except the .git, .github and secrets folder
-            for file in os.listdir(folder_path):
-                if (
-                        os.path.isdir(folder_path + "/" + file)
-                        and file != ".git"
-                        and file != ".github"
-                        and file != "secrets"
-                    ) :
-                    try :
-                        os.rename(
-                            folder_path + "/" + file, "./Access/access_modules/" + file
-                        )
-                    except:
-                         print("File is already present.")
+    if retry_exception is not None:
+        logger.exception("Max retry count reached while cloning repo")
+        raise retry_exception
 
-                if(file == "requirements.txt"):
-                    current_requirements_file = folder_path + "/" + file
-                    #Read the requirements
-                    with open(requirements_file, 'r') as f1:
-                             requirements1 = f1.readlines()
+    return target_folder_path
 
-                    with open(current_requirements_file, 'r') as f1:
-                             requirements2 = f1.readlines()
 
-                    # Merge the requirements
-                    merged_requirements = list(set(requirements1 + requirements2))
+def move_modules_from_cloned_repo(cloned_path):
+    """
+    Move access modules from the cloned folder to proper structure
+    """
+    for each_path in os.listdir(cloned_path):
+        blacklist_paths = [
+            ".git",
+            ".github",
+            "secrets",
+            "docs",
+        ]
+        if (
+            os.path.isdir(cloned_path + "/" + each_path)
+            and each_path not in blacklist_paths
+        ):
+            try:
+                os.rename(
+                    cloned_path + "/" + each_path,
+                    "./Access/access_modules/" + each_path
+                )
+            except Exception as exception:
+                logger.exception(
+                    "Failed to move access module to proper structure %s",
+                    exception
+                )
+                raise Exception(
+                    f"Failed to move access module to proper structure {exception}") from exception
 
-                    #update the requirements.txt
-                    with open(requirements_file, 'w') as out_file:
-                        for requirement in sorted(merged_requirements):
-                             out_file.write(requirement)
 
-            print("Cloning successful!")
-        except Exception as e:
-           print("error-->",e)
-           print("failed cloning " + folder_name + ".")
+def ensure_access_modules_requirements(
+        cloned_path, core_requirements_file_path):
+    """ Consolidate requirements from multiple access modules """
+    for each_path in os.listdir(cloned_path):
+        if each_path == "requirements.txt":
+            current_requirements_file = cloned_path + "/" + each_path
 
-        # remove the cloned repo folder entirely with all its contents which
-        # includes folders and files using shutil.rmtree()
-        # shutil.rmtree() sometimes throws an error on windows,
-        # so we use try and except to ignore the error
-        try:
-            shutil.rmtree(folder_path)
-        except Exception as e:
-            print(e)
-            print("failed to remove " + folder_path + " folder.")
+            all_requirements = helpers.read_content_from_file(
+                current_requirements_file)
+            all_requirements.extend(
+                helpers.read_content_from_file(core_requirements_file_path))
 
-except Exception as e:
-    print("Access module cloning failed!")
-    print(str(e))
-    sys.exit(1)
+            # Ensure requirements are unique
+            merged_requirements = list(set(all_requirements))
+
+            # Update the requirements.txt
+            helpers.write_content_to_file(
+                core_requirements_file_path, sorted(merged_requirements))
+
+
+def clone_access_modules():
+    """ Core function to clone access modules repo """
+    config = helpers.read_json_from_file("./config.json")
+    ensure_access_modules_config(config)
+
+    retry_limit = config["access_modules"].get("RETRY_LIMIT", 5)
+    git_urls = config["access_modules"]["git_urls"]
+    requirements_file_path = 'Access/access_modules/requirements.txt'
+
+    helpers.ensure_folder_exists('Access/access_modules')
+
+    remove_stale_cloned_modules()
+    initialize_init_file()
+
+    helpers.ensure_file_exists(requirements_file_path)
+
+    for formatted_git_arg in git_urls:
+        cloned_path = clone_repo(formatted_git_arg, retry_limit)
+
+        ensure_access_modules_requirements(cloned_path, requirements_file_path)
+        move_modules_from_cloned_repo(cloned_path)
+
+        logger.info("Cloning successful!")
+        helpers.remove_directory_with_contents(cloned_path)
+
+
+def __main__():
+    logger.info("Starting cloning setup")
+    try:
+        clone_access_modules()
+    except Exception as exception:
+        logger.exception("Access module cloning failed!")
+        logger.exception(exception)
+        sys.exit(1)
+
+
+__main__()

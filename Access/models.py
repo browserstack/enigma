@@ -1,10 +1,28 @@
 from django.contrib.auth.models import User as user
 from django.db import models, transaction
 from django.db.models.signals import post_save
+from django.conf import settings
 from EnigmaAutomation.settings import PERMISSION_CONSTANTS
 import datetime
 import enum
 
+
+class StoredPassword(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        editable=False
+    )
+    password = models.CharField(
+        'Password hash',
+        max_length=255,
+        editable=False
+    )
+    date = models.DateTimeField(
+        'Date',
+        auto_now_add=True,
+        editable=False
+    )
 
 class ApprovalType(enum.Enum):
     Primary = "Primary"
@@ -197,10 +215,7 @@ class User(models.Model):
 
     def is_allowed_admin_actions_on_group(self, group):
         return (
-            group.member_is_owner(self)
-            or self.user.is_superuser
-            or self.is_ops
-            or self.has_permission(PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"])
+            group.member_is_owner(self) or self.isAdminOrOps()
         )
 
     def is_allowed_to_offboard_user_from_group(self, group):
@@ -309,15 +324,14 @@ class User(models.Model):
             )
         except User.DoesNotExist:
             return None
-    
+
     @staticmethod
     def get_system_user():
         try:
             return User.objects.get(name="system_user")
         except User.DoesNotExist:
-            django_user = user.objects.create(username="system_user")
-            system_user = User.objects.create(email="system_user@root.root", user=django_user, name=django_user.username)
-            return system_user
+            django_user = user.objects.create(username="system_user",email="system_user@root.root")
+            return django_user.user
 
     def __str__(self):
         return "%s" % (self.user)
@@ -420,6 +434,15 @@ class MembershipV2(models.Model):
     def approve_membership(membership_id, approver):
         membership = MembershipV2.objects.get(membership_id=membership_id)
         membership.approve(approver=approver)
+
+    def decline(self, reason, decliner):
+        self.status = "Declined"
+        self.decline_reason = reason
+        self.approver = decliner
+        self.save()
+
+    def is_already_processed(self):
+        return self.status in ["Declined", "Approved", "Processing", "Revoked"]
 
     def revoke_membership(self):
         self.status = "Revoked"
@@ -1186,7 +1209,10 @@ class UserIdentity(models.Model):
 
     def get_active_access_mapping(self):
         return self.user_access_mapping.filter(
-            status__in=["Approved", "Pending"], access__access_tag=self.access_tag
+            status__in=["Approved", "Pending",
+                        "SecondaryPending",
+                        "GrantFailed"],
+            access__access_tag=self.access_tag
         )
 
     def get_all_granted_access_mappings(self):
@@ -1197,7 +1223,7 @@ class UserIdentity(models.Model):
 
     def get_all_non_approved_access_mappings(self):
         return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"]
+            status__in=["Pending", "SecondaryPending", "GrantFailed"]
         )
 
     def decline_all_non_approved_access_mappings(self, decline_reason):
@@ -1211,7 +1237,7 @@ class UserIdentity(models.Model):
 
     def get_non_approved_access_mapping(self, access):
         return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"],
+            status__in=["Pending", "SecondaryPending", "GrantFailed"],
             access=access,
         )
 
