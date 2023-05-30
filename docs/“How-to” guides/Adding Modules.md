@@ -37,6 +37,10 @@ When a new resource is required, it's corresponding module has to be added in [E
     Note: The tag uniquely identifies access
     This tag is used as configuration key to set properties required by the module in file `config.json` in the central repository.
     ```
+- Add function `can_auto_approve`.
+    ```
+    Note: `can_auto_approve` method returns bool value (True/False) as per requirement of 'auto' or 'manual' approval for the module.
+    ```
 - Implement `approve` and `revoke` functions to implement respective functionalities.
 
 Refer to [Engima Access Modules](https://github.com/browserstack/enigma-access-modules.git) for further understanding of the default implementations and file structure.
