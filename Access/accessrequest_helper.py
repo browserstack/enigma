@@ -703,7 +703,7 @@ def run_accept_request_task(
     json_response = {}
     json_response["status"] = []
     approval_type = (
-        ApprovalType.Primary if is_primary_approver else ApprovalType.Secondary
+        ApprovalType.PRIMARY if is_primary_approver else ApprovalType.SECONDARY
     )
     json_response["msg"] = REQUEST_PROCESS_MSG.format(request_id=request_id)
 
