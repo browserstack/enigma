@@ -328,7 +328,7 @@ class User(models.Model):
     @staticmethod
     def get_system_user():
         try:
-            return User.objects.get(name="system_user")
+            return User.objects.get(user__username="system_user")
         except User.DoesNotExist:
             django_user = user.objects.create(username="system_user",email="system_user@root.root")
             return django_user.user
