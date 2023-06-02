@@ -127,7 +127,7 @@ def test_get_request_access(
 
     request = HttpRequest()
     request.method = "GET"
-    request.GET = QueryDict("accesses=AccModule1")
+    request.GET = QueryDict("accesses=access_AccModule1")
     context = accessrequest_helper.get_request_access(request)
     if not getAvailableAccessModulesThrowsException:
         assert str(context["accesses"][0]) == str(contextoutput["accesses"][0])
