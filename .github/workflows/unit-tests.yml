@@ -25,6 +25,6 @@ jobs:
       run: |
         pip install -r Access/access_modules/requirements.txt --no-cache-dir --ignore-installed
     - name: Lint code base
-      run: python -m pylama Access/accessrequest_helper.py scripts enigma_automation
+      run: python -m pylama Access/accessrequest_helper.py scripts bootprocess enigma_automation
     - name: Test with pytest
       run: python -m pytest -v --cov --disable-warnings

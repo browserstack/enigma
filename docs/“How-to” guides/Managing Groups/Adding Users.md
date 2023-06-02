@@ -1,6 +1,6 @@
 This document describes how to add users to a group on Enigma.
 
-A user has to be successfully onboarded on Enigma before they can be added to a group. (Refer: [User Creation](../Adding%20Users.md))
+A user has to be successfully onboarded on Enigma before they can be added to a group. (Refer: [User Creation](/docs/%E2%80%9CHow-to%E2%80%9D%20guides/Adding%20Users.md))
 
 To add users to a group:
 - Select 'Add New Members' from Group section in the left side panel on Enigma Dashboard.

@@ -4,7 +4,7 @@ import traceback
 
 from Access.models import UserAccessMapping, GroupAccessMapping
 from enigma_automation.settings import ACCESS_APPROVE_EMAIL, PERMISSION_CONSTANTS
-from bootprocess.general import emailSES
+from bootprocess.general import email_via_smtp
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +149,7 @@ class BaseEmailAccess(object):
                     " by %s" % (label_desc, self.access_desc(), user.email, approver)
                 )
 
-                emailSES(email_targets, email_subject, email_body)
+                self.email_via_smtp(email_targets, email_subject, email_body)
                 return True, ""
         except Exception as e:
             logger.error(
@@ -166,7 +166,7 @@ class BaseEmailAccess(object):
         email_body = ""
 
         try:
-            emailSES(email_targets, email_subject, email_body)
+            self.email_via_smtp(email_targets, email_subject, email_body)
         except Exception as e:
             logger.error("Could not send email for error %s", str(e))
 
@@ -205,3 +205,11 @@ class BaseEmailAccess(object):
 
     def fetch_access_request_form_path(self):
         return "base_email_access/accessRequest.html"
+
+    def email_via_smtp(self, destination, subject, body):
+        """
+         method to send email via smtp.
+         It is calling bootprocess.general.email_via_smtp under the hood to reduce external imports of bootprocess in
+         access_modules
+        """
+        email_via_smtp(destination, subject, body)
