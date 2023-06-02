@@ -19,14 +19,13 @@ import time
 import random
 import django
 from django.utils.translation import gettext
+from scripts.helpers import read_json_from_file
 django.utils.translation.ugettext = gettext
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-with open("config.json", encoding="utf-8") as data_file:
-    data = json.load(data_file)
-
+data = read_json_from_file(BASE_DIR / 'config.json')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
@@ -197,10 +196,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-DECLINE_REASONS = None
-with open("constants.json", encoding="utf-8") as data_file:
-    decline_data = json.load(data_file)
-    DECLINE_REASONS = decline_data["declineReasons"]
+constants_data = read_json_from_file(BASE_DIR / 'constants.json')
+DECLINE_REASONS = constants_data["declineReasons"]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
