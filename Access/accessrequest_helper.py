@@ -100,10 +100,14 @@ ERROR_MARKING_RESOLVE_FAIL_LOG_MSG = (
     "Error in resolving request {request_id}. Error:{error} ."
 )
 
+
 class ImplementationPendingException(Exception):
+    """Implementation Pending Exception"""
+
     def __init__(self):
         self.message = "Implementation Pending"
         super().__init__(self.message)
+
 
 def get_request_access(request):
     """ Get list of all accesses for requesting access to """
@@ -421,7 +425,7 @@ def create_request(auth_user, access_request_form):
     json_response = _validate_access_request(access_request_form, auth_user)
     if json_response:
         return json_response
-    
+
     access_tag = access_request_form.get("access_tag")
 
     if not auth_user.user.get_active_identity(access_tag=access_tag):
@@ -432,12 +436,12 @@ def create_request(auth_user, access_request_form):
             ),
         }
         return json_response
-    
+
     access_reason = access_request_form.get("access_reason")
     access_module = helpers.get_available_access_module_from_tag(access_tag)
     module_access_labels = access_module.validate_request(access_request_form, auth_user.user)
 
-    for index, access_label in enumerate(module_access_labels):
+    for _, access_label in enumerate(module_access_labels):
         request_id = (
             auth_user.username
             + "-"
@@ -446,9 +450,12 @@ def create_request(auth_user, access_request_form):
             + datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
         )
 
-        access_create_error = _create_access(auth_user, access_label, access_tag, request_id, access_reason)
+        access_create_error = _create_access(
+            auth_user, access_label, access_tag,
+            request_id, access_reason
+        )
         if access_create_error:
-            logger.info(f"Duplicate request found: {access_create_error}")
+            logger.info("Duplicate request found: %s", access_create_error)
             continue
 
         if access_module.can_auto_approve():
@@ -557,7 +564,7 @@ def _validate_access_request(access_request_form, user):
             "error_msg": REQUEST_EMPTY_FORM_ERR_MSG["error_msg"],
             "msg": REQUEST_EMPTY_FORM_ERR_MSG["msg"]
         }
-    
+
     return json_response
 
 
