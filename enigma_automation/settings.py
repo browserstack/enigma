@@ -13,7 +13,6 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 from os.path import join
 from pathlib import Path
 import glob
-import json
 import os
 import time
 import random
