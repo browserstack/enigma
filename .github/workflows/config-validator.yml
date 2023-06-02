@@ -1,5 +1,5 @@
 # github action to run commit-msg hook on pull request commits and push commits to master branch
-name: config-validator
+name: Validate sample config
 on: pull_request
 jobs:
   config-validator:
