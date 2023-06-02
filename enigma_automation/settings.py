@@ -12,7 +12,6 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 
 import glob
 from os.path import join
-import json
 from pathlib import Path
 import os
 import time
