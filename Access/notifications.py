@@ -39,7 +39,7 @@ def send_new_group_create_notification(auth_user, date_time, new_group, member_l
         reason=new_group.description,
         needsAccessApprove=new_group.needsAccessApprove,
     )
-    general.emailSES(MAIL_APPROVER_GROUPS, subject, body)
+    general.email_via_smtp(MAIL_APPROVER_GROUPS, subject, body)
     logger.debug("Email sent for " + subject + " to " + str(MAIL_APPROVER_GROUPS))
 
 
@@ -55,7 +55,7 @@ def send_new_group_approved_notification(group, group_id, initial_member_names):
     destination.append(group.requester.email)
     # TODO send a mail to initial members
     logger.debug(group_id + " -- Approved email sent to - " + str(destination))
-    general.emailSES(destination, subject, body)
+    general.email_via_smtp(destination, subject, body)
 
 
 def send_membership_accepted_notification(user, group, membership):
@@ -69,21 +69,22 @@ def send_membership_accepted_notification(user, group, membership):
     destination = []
     destination.append(membership.requested_by.email)
     destination.append(user.email)
-    general.emailSES(destination, subject, body)
+    general.email_via_smtp(destination, subject, body)
 
 
-def send_mulitple_membership_accepted_notification(user_names, group, membership):
-    subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(user_names, group.name)
-    body = helpers.generateStringFromTemplate(
-        filename="membershipAcceptedEmailBody.html",
-        user_name=",".join(user_names),
-        group_name=group.name,
-        approver=membership.approver.name,
-    )
-    destination = []
-    destination.append(membership.requested_by.email)
-    destination.append(user_names)
-    general.emailSES(destination, subject, body)
+def send_mulitple_membership_accepted_notification(all_user_emails, group_name, membership):
+    for each_user_email in all_user_emails.keys():
+        subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(each_user_email, group_name)
+        body = helpers.generateStringFromTemplate(
+            filename="membershipAcceptedEmailBody.html",
+            user_name=",".join(each_user_email),
+            group_name=group_name,
+            approver=membership.approver.name,
+        )
+        destination = []
+        destination.append(membership.requested_by.email)
+        destination.append(each_user_email)
+        general.email_via_smtp(destination, subject, body)
 
 
 def generateGroupMemberTable(memberList):
@@ -99,7 +100,7 @@ def send_group_owners_update_mail(destination, group_name, updated_by):
             group_name, ", ".join(destination), updated_by
         )
 
-        general.emailSES(destination, subject, body)
+        general.email_via_smtp(destination, subject, body)
     except Exception as e:
         logger.exception(str(e))
         logger.error("Something when wrong while sending Email.")
@@ -119,7 +120,7 @@ def send_group_access_add_email(
         ),
     )
     subject = GROUP_ACCESS_ADDED_SUBJECT.format(group_name=group_name)
-    general.emailSES(destination, subject, body)
+    general.email_via_smtp(destination, subject, body)
     return ""
 
 
@@ -137,7 +138,7 @@ def send_revoke_failure_mail(
             access_tag=access_tag,
         )
 
-        general.emailSES(targets, subject, body)
+        general.email_via_smtp(targets, subject, body)
     except Exception as e:
         logger.error("Something when wrong while sending membership revoke email")
         logger.exception(str(e))
@@ -158,7 +159,7 @@ def send_mail_for_request_decline(
         approver=request.user.username,
         reason=reason,
     )
-    general.emailSES(destination, subject, body)
+    general.email_via_smtp(destination, subject, body)
     logger.debug("Email sent for " + subject + " to " + str(destination))
 
 
@@ -172,7 +173,7 @@ def send_mail_for_request_granted_failure(user, approver, access_type, request_i
         str(user.email),
         request_id,
     )
-    general.emailSES(destination, subject, body)
+    general.email_via_smtp(destination, subject, body)
     logger.debug("Email sent for " + subject + " to " + str(destination))
 
 
@@ -198,7 +199,7 @@ def send_mail_for_member_approval(userEmail, requester, group_name, reason):
             reason,
         ),
     )
-    general.emailSES(destination, subject, body)
+    general.email_via_smtp(destination, subject, body)
 
 
 def generate_user_add_to_group_email_body(
@@ -222,7 +223,7 @@ def send_mail_for_access_grant_failed(
     subject = str("Access Grant Failed - ") + access_type.upper()
     body = ACCESS_GRANT_FAILED_MESSAGE.format(user_email, request_id)
     body = body + "Failure Reason - " + message
-    general.emailSES(destination, subject, body)
+    general.email_via_smtp(destination, subject, body)
 
 
 def send_group_access_declined(
@@ -239,7 +240,7 @@ def send_group_access_declined(
     )
 
     subject = subject = "Declined Request " + request_id
-    general.emailSES(destination, subject, body)
+    general.email_via_smtp(destination, subject, body)
 
 
 def send_accept_group_access_failed(destination, request_id, error):
@@ -249,7 +250,7 @@ def send_accept_group_access_failed(destination, request_id, error):
         )
 
         subject = subject = "Failed Request " + request_id
-        general.emailSES(destination, subject, body)
+        general.email_via_smtp(destination, subject, body)
     except Exception as e:
         logger.exception(str(e))
         logger.error("Something when wrong while sending Email.")
@@ -262,7 +263,7 @@ def send_decline_group_access_failed(destination, request_id, error):
         )
 
         subject = subject = "Declined Failed Request " + request_id
-        general.emailSES(destination, subject, body)
+        general.email_via_smtp(destination, subject, body)
     except Exception as e:
         logger.exception(str(e))
         logger.error("Something when wrong while sending Email.")
@@ -277,5 +278,5 @@ def send_mail_for_request_resolve(auth_user, access_type, request_id):
         request_id=request_id,
         access_type=access_type,
     )
-    general.emailSES(destination, subject, body)
+    general.email_via_smtp(destination, subject, body)
     logger.debug("Email sent for " + subject + " to " + str(destination))
