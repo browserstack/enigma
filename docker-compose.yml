@@ -67,7 +67,7 @@ services:
         done;
         echo Connected!;
         echo Starting celery;
-        python3 -m celery -A EnigmaAutomation worker -n worker1 -l DEBUG"
+        python3 -m celery -A enigma_automation worker -n worker1 -l DEBUG"
   test:
     container_name: test
     build:

@@ -3,7 +3,7 @@ import logging
 import traceback
 
 from Access.models import UserAccessMapping, GroupAccessMapping
-from EnigmaAutomation.settings import ACCESS_APPROVE_EMAIL, PERMISSION_CONSTANTS
+from enigma_automation.settings import ACCESS_APPROVE_EMAIL, PERMISSION_CONSTANTS
 from bootprocess.general import email_via_smtp
 
 logger = logging.getLogger(__name__)

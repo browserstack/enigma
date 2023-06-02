@@ -3,7 +3,7 @@ import threading
 import pytest
 from bootprocess import views_helper
 from Access import models
-from EnigmaAutomation.settings import DEFAULT_ACCESS_GROUP
+from enigma_automation.settings import DEFAULT_ACCESS_GROUP
 
 
 class MockAuthUser:

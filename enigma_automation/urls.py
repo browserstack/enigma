@@ -1,4 +1,4 @@
-"""EnigmaAutomation URL Configuration
+"""enigma_automation URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.1/topics/http/urls/
@@ -13,10 +13,10 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from bootprocess.views import dashboard, logout_view
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import re_path, include, path
+from bootprocess.views import dashboard, logout_view
 from Access.views import (
     revoke_group_access,
     user_offboarding,
@@ -104,8 +104,8 @@ urlpatterns = [
     re_path(r"^group/revokeAccess", revoke_group_access, name="revoke_group_access"),
 ]
 
-handler404 = 'Access.views.error_404'
-handler500 = 'Access.views.error_500'
+HANDLER_404 = 'Access.views.error_404'
+HANDLER_500 = 'Access.views.error_500'
 
 for tag, each_module in get_available_access_modules().items():
     urlpatterns.extend(each_module.urlpatterns)

@@ -58,5 +58,5 @@
 
 4. To start a worker use the following command:
 	```bash
-	python3 -m celery -A EnigmaAutomation worker -n worker1 -l DEBUG
+	python3 -m celery -A enigma_automation worker -n worker1 -l DEBUG
 	```
