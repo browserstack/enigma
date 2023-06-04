@@ -1,162 +1,141 @@
 {% extends 'global_layout.html' %}
+{% load myaccess_css_helpers %}
 {% load static %}
 
+{% block head_body %}
+<script src={% static "js/showAccessHistory.js" %}></script>
+{% endblock %}
+
+{% block nav_breadcrumb %}
+<nav class="flex px-8 py-6 flex-shrink-0" aria-label="Breadcrumb">
+  <ol role="list" class="flex items-center space-x-4">
+    <li>
+      <div>
+        <a href="{% url 'dashboard' %}" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-5 w-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+          </svg>
+          <span class="sr-only">Home</span>
+        </a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'showAccessHistory' %}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">My Access</a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block content_body %}
-<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-<link rel="stylesheet" type="text/css" href="{% static "css/theme.bootstrap_4.css" %}">
+<div class="px-4 sm:px-6 lg:px-8 w-full">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-xl font-semibold text-gray-900">My Access</h1>
+    </div>
+    <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+      <a href="{% url 'newAccessRequest' %}" class="text-blue-600 hover:text-blue-900">
+        <button type="button" class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto">Request Access</button>
+      </a>
+    </div>
+  </div>
+  <div class="flex flex-row gap-4 place-content-end mt-8">
+    <div class="w-2/12">
+      <div class="relative" onclick="focusFilterStatus(this);">
+        <button type="button" class="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+          <span class="block truncate text-gray-500">Status</span>
+          <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#000000" aria-hidden="true">
+              <path d="M0 0h24v24H0z" fill="none"/>
+              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" clip-rule="evenodd"/>
+            </svg>
+          </span>
+        </button>
 
-<script src="{% static "js/jquery.tablesorter.js" %}"></script>
-<script src="{% static "js/jquery.tablesorter.widgets.js" %}"></script>
-<script src="{% static "js/jquery.tablesorter.pager.js" %}"></script>
+        <ul class="hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label" aria-activedescendant="listbox-option-3">
+          {% for each_status in possibleStatuses %}
+          <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0" role="option" onclick="selectLI(this);">
+            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
+              <input type="checkbox" id="status-checkbox-{{ each_status }}">
+            </span>
 
-<!-- <link rel="stylesheet" type="text/css" href="{% static "css/custom.css" %}"> -->
-
-<style id="css">
-
-  table.hover-highlight td:before,
-  table.focus-highlight td:before {
-    background: #fff;
-  }
-
-  body {
-    overflow: visible;
-  }
-
-  a.lia {
-    color: white !important;
-  }
-
-  select.tablesorter-filter {
-    display: block;
-  }
-
-  input[type='search'].tablesorter-filter {
-    background: white;
-  }
-
-  .col.s12 {
-    padding: 0px;
-  }
-</style>
-
-<script id="js">
-$(function() {
-
-  $("table").tablesorter({
-    theme : "bootstrap",
-
-    widthFixed: true,
-
-    // widget code contained in the jquery.tablesorter.widgets.js file
-    // use the zebra stripe widget if you plan on hiding any rows (filter widget)
-    // the uitheme widget is NOT REQUIRED!
-    widgets : [ "filter", "columns" ],
-    widgetOptions : {
-      // using the default zebra striping class name, so it actually isn't included in the theme variable above
-      // this is ONLY needed for bootstrap theming if you are using the filter widget, because rows are hidden
-      zebra : ["even", "odd"],
-      // class names added to columns when sorted
-      columns: [ "primary", "secondary", "tertiary" ],
-      // reset filters button
-      filter_reset : ".reset",
-      // extra css class name (string or array) added to the filter element (input or select)
-      filter_cssFilter: [
-        'form-control',
-        'form-control custom-select',
-        'form-control', // select needs custom class names :(
-        'form-control',
-        'form-control',
-        'form-control',
-        'form-control',
-        'form-control'
-      ]
-
-    }
-  })
-  .tablesorterPager({
-
-    // target the pager markup - see the HTML block below
-    container: $(".ts-pager"),
-
-    // target the pager page select dropdown - choose a page
-    cssGoto  : ".pagenum",
-
-    // remove rows from the table to speed up the sort of large tables.
-    // setting this to false, only hides the non-visible rows; needed if you plan to add/remove rows with the pager enabled.
-    removeRows: false,
-
-    // output string - default is '{page}/{totalPages}';
-    // possible variables: {page}, {totalPages}, {filteredPages}, {startRow}, {endRow}, {filteredRows} and {totalRows}
-    output: '( {startRow} - {endRow} ) Total: {filteredRows}'
-
-  });
-
-});
-</script>
-
-<div class="page-header" style="margin-bottom:0px;">
-  <div class="container-fluid">
-    <h2 class="h5 no-margin-bottom">Access List</h2>
+            <span class="font-normal block truncate ml-8">{{ each_status }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="mt-8 flex flex-col">
+    <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-normal text-gray-400 sm:pl-6 uppercase w-1/6">Module</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-1/6">Status</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-1/3 max-w-md">Type of Access</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-1/6">Access via Group</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-1/12">Action</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white">
+              {% for each_access in dataList %}
+              <tr {% if forloop.counter|divisibleby:2 %}class="bg-gray-50"{% endif %}>
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-6">
+                  <div class="text-gray-900">{{ each_access.access_desc }}</div>
+                  <div class="text-gray-400">{{ each_access.requestId }}</div>
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{% access_status_content each_access.status|safe %}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-2xl truncate">{{ each_access.accessCategory }}</td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ each_access.accessRequestType }}</td>
+                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                  <a href="#" class="text-blue-100 hover:text-blue-200">
+                    <button type="button" class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto">Regrant Access</button>
+                  </a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-<div class="wrapper">
-  <div id="demo">
-    <table class="table table-bordered table-striped"><!-- add materialize classes, as desired -->
-    <thead class="thead-dark">
-  		<tr>
-        <th data-placeholder="Search">ID</th>
-        <th class="filter-select filter-exact" data-placeholder="ALL">Access Type</th>
-        <th data-placeholder="Search">Access</th>
-        <th data-placeholder="Search">Approver</th>
-        <th class="filter-select filter-exact" data-placeholder="ALL">Status</th>
-        <th data-placeholder="Search">Access Reason</th>
-        <th data-placeholder="Search">Decline Reason</th>
-        <th data-placeholder="Search">Action</th>
-      </tr>
-  	</thead>
-  	<tfoot>
-  		<!-- include "tablesorter-ignoreRow" class for pager rows in thead -->
-      <tr class="tablesorter-ignoreRow">
-  			<th colspan="8" class="ts-pager form-horizontal" style="padding:1%">
-  				<button type="button" class="btn btn-primary first" style="padding: 0px 30px;"><i class="small material-icons">first_page</i></button>
-  				<button type="button" class="btn btn-primary prev" style="padding: 0px 30px;"><i class="small material-icons">navigate_before</i></button>
-  				<span class="pagedisplay"></span>
-  				<!-- this can be any element, including an input -->
-  				<button type="button" class="btn btn-primary next" style="padding: 0px 30px;"><i class="small material-icons">navigate_next</i></button>
-  				<button type="button" class="btn btn-primary last" style="padding: 0px 30px;"><i class="small material-icons">last_page</i></button>
-  				<select class="pagesize browser-default form-control col-sm-1" title="Select page size" style="display:  inherit;">
-  					<option selected="selected" value="40">40</option>
-  					<option value="50">50</option>
-  					<option value="60">60</option>
-  					<option value="70">70</option>
-  				</select>
-  				<select class="pagenum browser-default form-control col-sm-1" title="Select page number" style="display:  inherit;"></select>
-  			</th>
-  		</tr>
-  	</tfoot>
-  	<tbody>
-      {% for item in dataList %}
-      <tr >
-        <td>{{ item.requestId }}</td>
-        <td>{{ item.access_desc }}</td>
-        <td>{{ item.accessCategory }} details: {{ item.accessMeta | pprint }}</td>
-        {% if item.approver_2 %}
-            <td>
-              1: {{ item.approver_1 }}
-              <br>
-              2: {{ item.approver_2 }}
-            </td>
-        {% else %}
-            <td>{{ item.approver_1 }}</td>
-        {% endif %}
-        <td>{{ item.status }}</td>
-        <td>{{ item.accessReason }}</td>
-        <td>{{ item.decline_reason }}</td>
-        <td><a class="btn btn-primary" target="_blank"  href="/individual_resolve?requestId={{ item.requestId|urlencode }}">ReGrant</a></td>
-      </tr>
-      {% endfor %}
-  	</tbody>
-  </table></div>
+<nav class="flex items-center justify-between border-t border-gray-200 sm:px-0 pt-6 px-4 sm:px-6 lg:px-8 pb-6 w-full">
+  <div class="-mt-px flex w-0 flex-1">
+    {% if currentPagination > 1 %}
+    <a href="?page={{ currentPagination|add:"-1" }}" class="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+      <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M18 10a.75.75 0 01-.75.75H4.66l2.1 1.95a.75.75 0 11-1.02 1.1l-3.5-3.25a.75.75 0 010-1.1l3.5-3.25a.75.75 0 111.02 1.1l-2.1 1.95h12.59A.75.75 0 0118 10z" clip-rule="evenodd" />
+      </svg>
+      Previous
+    </a>
+    {% endif %}
+  </div>
 
-</div>
+  <div class="hidden md:-mt-px md:flex">
+    {% for navIter in allPages %}
+      <a href="?page={{ navIter }}" class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium {% get_navigation_class navIter currentPagination %}">{{ navIter }}</a>
+    {% endfor %}
+    {% comment %} <span class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium border-transparent text-gray-500">...</span> {% endcomment %}
+  </div>
+  <div class="-mt-px flex w-0 flex-1 justify-end">
+    {% if currentPagination < maxPagination %}
+    <a href="?page={{ currentPagination|add:"1" }}" class="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+      Next
+      <svg class="ml-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M2 10a.75.75 0 01.75-.75h12.59l-2.1-1.95a.75.75 0 111.02-1.1l3.5 3.25a.75.75 0 010 1.1l-3.5 3.25a.75.75 0 11-1.02-1.1l2.1-1.95H2.75A.75.75 0 012 10z" clip-rule="evenodd" />
+      </svg>
+    </a>
+    {% endif %}
+  </div>
+</nav>
 {% endblock %}
