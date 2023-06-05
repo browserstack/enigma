@@ -1,5 +1,5 @@
 from django import template
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 
 register = template.Library()
 
@@ -65,7 +65,7 @@ def access_status_content(status):
     }
     details = status_mapping[status]
 
-    return mark_safe('''
+    return format_html('''
     <span class="inline-flex ''' + details["icon_class"] + '''">
         <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#000000" class="h-6 w-6" stroke="currentColor">''' + details["span_path"] + '''</svg>
         <span class="px-3 ''' + details["text_class"] + '''">''' + status + '''</span>

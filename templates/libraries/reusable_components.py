@@ -1,6 +1,6 @@
 """ Common html templates for reusability """
 from django import template
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 
 register = template.Library()
 
@@ -8,7 +8,7 @@ register = template.Library()
 @register.simple_tag
 def get_error_panel_with_message(error_subject, error_body):
     """ Uncollapsible panel with error message """
-    return mark_safe('''<div class="mt-5 rounded-md bg-yellow-50 p-4">
+    return format_html('''<div class="mt-5 rounded-md bg-yellow-50 p-4">
         <div class="flex">
         <div class="flex-shrink-0">
             <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
