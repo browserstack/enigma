@@ -2,7 +2,7 @@ from django.contrib.auth.models import User as user
 from django.db import models, transaction
 from django.db.models.signals import post_save
 from django.conf import settings
-from EnigmaAutomation.settings import PERMISSION_CONSTANTS
+from enigma_automation.settings import PERMISSION_CONSTANTS
 import datetime
 import enum
 
@@ -73,7 +73,6 @@ class SshPublicKey(models.Model):
         return str(self.key)
 
 
-# Create your models here.
 class User(models.Model):
     """
     Represents an user belonging to the organistaion
@@ -207,6 +206,10 @@ class User(models.Model):
         groupOwnerMembership = MembershipV2.objects.filter(is_owner=True, user=self)
         return [membership_obj.group for membership_obj in groupOwnerMembership]
 
+    def get_active_groups(self):
+        all_active_memberships = self.membership_user.filter(status="Approved")
+        return [each_membership.group for each_membership in all_active_memberships]
+
     def isAdminOrOps(self):
         return self.is_ops or self.user.is_superuser
 
@@ -241,29 +244,57 @@ class User(models.Model):
             return User.objects.get(email=email)
         except User.DoesNotExist:
             return None
+    
+    def get_all_memberships(self):
+        return self.membership_user.all()
 
-    def get_user_access_mappings(self):
-        all_user_identities = self.module_identity.all()
-        access_request_mappings = []
+    def get_groups_history(self):
+        all_user_membership = self.get_all_memberships()
+        group_history = []
+        for each_membership in all_user_membership:
+            group_access = each_membership.get_membership_details()
+            if len(group_access) > 1:
+                group_history.append(group_access)
+
+        return group_history
+
+    def get_group_access_count(self):
+        return self.membership_user.filter(group__status="Approved").count()
+
+    def get_user_access_mapping_related_manager(self):
+        all_user_identities = self.module_identity.order_by('id').reverse()
+        access_request_mapping_related_manager = []
         for each_identity in all_user_identities:
-            access_request_mappings.extend(
-                each_identity.user_access_mapping.prefetch_related(
-                    "access", "approver_1", "approver_2"
-                )
-            )
-        return access_request_mappings
+            access_request_mapping_related_manager.append(each_identity.user_access_mapping)
+        return access_request_mapping_related_manager
 
-    def get_access_history(self, all_access_modules):
-        access_request_mappings = self.get_user_access_mappings()
+    def get_access_history(self, all_access_modules, start_index, count):
+        access_request_mapping_related_manager = self.get_user_access_mapping_related_manager()
         access_history = []
 
-        for request_mapping in access_request_mappings:
-            access_module = all_access_modules[request_mapping.access.access_tag]
-            access_history.append(
-                request_mapping.getAccessRequestDetails(access_module)
-            )
+        for request_mapping_related_manager in access_request_mapping_related_manager:
+            all_user_access_mappings = request_mapping_related_manager.order_by('id').reverse()
 
-        return access_history
+            for each_user_access_mapping in all_user_access_mappings:
+                access_module = all_access_modules[each_user_access_mapping.access.access_tag]
+                access_history.append(each_user_access_mapping.getAccessRequestDetails(access_module))
+
+            # skip till start_index
+            if start_index <= len(access_history):
+                access_history = access_history[start_index:]
+                start_index = 0
+            else:
+                start_index = start_index - len(access_history)
+                access_history = []
+
+            # end loop if count to return is reached
+            if start_index == 0 and len(access_history) >= count:
+                break
+
+        return access_history[0:count]
+
+    def get_total_access_count(self):
+        return UserAccessMapping.objects.filter(user_identity__user=self).count()
 
     @staticmethod
     def get_user_from_username(username):
@@ -328,7 +359,7 @@ class User(models.Model):
     @staticmethod
     def get_system_user():
         try:
-            return User.objects.get(name="system_user")
+            return User.objects.get(user__username="system_user")
         except User.DoesNotExist:
             django_user = user.objects.create(username="system_user",email="system_user@root.root")
             return django_user.user
@@ -451,6 +482,16 @@ class MembershipV2(models.Model):
     def update_membership(group, reason):
         membership = MembershipV2.objects.filter(group=group)
         membership.update(status="Declined", decline_reason=reason)
+    
+    def get_membership_details(self):
+        access_request_data = {}
+        if self.group.status == "Approved":
+            access_request_data["group_id"] = self.group.group_id
+            access_request_data["name"] = self.group.name
+            access_request_data["status"] = self.status
+            access_request_data["role"] = "Owner" if self.is_owner else "Member"
+
+        return access_request_data
 
     @staticmethod
     def get_membership(membership_id):
@@ -672,7 +713,14 @@ class GroupV2(models.Model):
 
     def check_access_exist(self, access):
         try:
-            self.group_access_mapping.get(access=access)
+            self.group_access_mapping.get(access=access, status__in=["Approved"])
+            return True
+        except GroupAccessMapping.DoesNotExist:
+            return False
+
+    def access_mapping_exists(self, access):
+        try:
+            self.group_access_mapping.get(access=access, status__in=["Approved","Pending"])
             return True
         except GroupAccessMapping.DoesNotExist:
             return False
@@ -847,6 +895,7 @@ class UserAccessMapping(models.Model):
         )
         access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
+        access_request_data["accessRequestType"] = self.access_type
 
         return access_request_data
 
@@ -871,6 +920,13 @@ class UserAccessMapping(models.Model):
         return UserAccessMapping.objects.filter(request_id=request_id).exclude(
             status="Revoked"
         )
+
+    @staticmethod
+    def get_unique_statuses():
+        return [
+            status[0]
+            for status in UserAccessMapping.objects.order_by().values_list('status').distinct()
+        ]
 
     def is_approved(self):
         return self.status == "Approved"
@@ -1069,6 +1125,7 @@ class GroupAccessMapping(models.Model):
         access_request_data["status"] = self.status
         access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
+        access_request_data["accessRequestType"] = "Group Request"
 
         return access_request_data
 

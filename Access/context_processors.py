@@ -1,5 +1,3 @@
-import datetime
-
 from Access.models import User
 from Access.helpers import get_available_access_modules, getPossibleApproverPermissions
 
@@ -17,19 +15,9 @@ def add_variables_to_context(request):
     all_access_modules = get_available_access_modules()
 
     context = {}
-    context["currentYear"] = datetime.datetime.now().year
-    context["users"] = User.objects.filter().only("user")
-    context["anyApprover"] = currentUser.isAnApprover(getPossibleApproverPermissions())
-    context["is_ops"] = currentUser.is_ops
-    context["access_list"] = [
-        {"tag": each_tag, "desc": each_module.access_desc()}
-        for each_tag, each_module in all_access_modules.items()
-    ]
+    context["currentUser"] = currentUser
 
-    context["pendingCount"] = currentUser.getPendingApprovalsCount(all_access_modules)
-    context["grantFailureCount"] = currentUser.getFailedGrantsCount()
-    context["revokeFailureCount"] = currentUser.getFailedRevokesCount()
-
-    context["groups"] = sorted([group.name for group in currentUser.getOwnedGroups()])
+    context["totalAccessCount"] = currentUser.get_total_access_count()
+    context["groupsMemberFor"] = len(currentUser.get_active_groups())
 
     return context

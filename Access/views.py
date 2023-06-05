@@ -1,6 +1,6 @@
 """Django views."""
 import json
-import logging, traceback
+import math, logging, traceback
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
 from django.contrib.auth.decorators import login_required
@@ -9,6 +9,7 @@ from django.core.paginator import Paginator
 from django.contrib.auth.models import User as djangoUser
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.template.response import TemplateResponse
 
 from Access import views_helper
 from Access import group_helper
@@ -23,6 +24,8 @@ from Access.accessrequest_helper import (
     accept_group_access,
     run_accept_request_task,
     run_ignore_failure_task,
+    ImplementationPendingException,
+    REQUEST_FAILED_MSG
 )
 from Access.models import User, UserAccessMapping, GroupAccessMapping
 
@@ -36,11 +39,15 @@ from Access.userlist_helper import (
     IdentityNotChangedException,
 )
 from Access.views_helper import render_error_message
-from EnigmaAutomation.settings import PERMISSION_CONSTANTS
+from enigma_automation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
-from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver
+from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver, paginated_search
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
+IMPLEMENTATION_PENDING_ERROR_MESSAGE = {
+    "error_msg": "Failed to process the request",
+    "msg": "Implementation of the {feature_name} feature is pending."
+}
 
 logger = logging.getLogger(__name__)
 logger.info("Server Started")
@@ -67,13 +74,54 @@ def show_access_history(request):
             "Please login again",
         )
 
+    page = int(request.GET.get('page') or 1) - 1
+    limit = 20
+
+    start_index = page * limit
+    max_pagination = math.ceil(access_user.get_total_access_count() / limit)
+
     return render(
         request,
         "EnigmaOps/showAccessHistory.html",
         {
             "dataList": access_user.get_access_history(
-                helper.get_available_access_modules()
-            )
+                helper.get_available_access_modules(),
+                start_index,
+                limit,
+            ),
+            "maxPagination": max_pagination,
+            "allPages": range(1, max_pagination + 1),
+            "currentPagination": page + 1,
+            "possibleStatuses": UserAccessMapping.get_unique_statuses(),
+        },
+    )
+
+@login_required
+def new_access_request(request):
+    if request.method == "POST":
+        return render_error_message(
+            request,
+            "POST for this endpoint is not supported",
+            "Invalid Request",
+            "Error request not found OR Invalid request type",
+        )
+
+    try:
+        access_user = User.objects.get(email=request.user.email)
+    except Exception as e:
+        return render_error_message(
+            request,
+            "Access user with email %s not found. Error: %s"
+            % (request.user.email, str(e)),
+            "Invalid Request",
+            "Please login again",
+        )
+
+    return render(
+        request,
+        "EnigmaOps/newAccessRequest.html",
+        {
+            "modulesList": helper.get_available_access_modules(),
         },
     )
 
@@ -144,14 +192,14 @@ def save_identity(request):
             "title": IDENTITY_UNCHANGED_ERROR_MESSAGE["title"],
             "msg": IDENTITY_UNCHANGED_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
-        return JsonResponse(json.dumps(context), safe=False, status=400)
+        return JsonResponse(json.dumps(context), safe=False, status=200)
 
     except Exception:
         context["error"] = {
             "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
             "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
-        return JsonResponse(json.dumps(context), safe=False, status=400)
+        return JsonResponse(json.dumps(context), safe=False, status=200)
     context["error"] = {
         "title": "Bad Request",
         "msg": "Invalid Request.",
@@ -210,11 +258,30 @@ def request_access(request):
         HTTPResponse: Access request form template or the status of access save request.
     """
     if request.POST:
-        print((request.POST))
-        context = create_request(
-            auth_user=request.user, access_request_form=request.POST
-        )
-        return render(request, "EnigmaOps/accessStatus.html", context)
+        status = 200
+        try:
+            context = create_request(
+                auth_user=request.user, access_request_form=request.POST
+            )
+            if "error" in context:
+                status = 400
+            return JsonResponse(context, status=200)
+        except ImplementationPendingException:
+            status = 400
+            context  = {
+                "error": {
+                    "error_msg": IMPLEMENTATION_PENDING_ERROR_MESSAGE["error_msg"],
+                    "msg": IMPLEMENTATION_PENDING_ERROR_MESSAGE["msg"].format(
+                        feature_name="can_auto_approve"
+                    )
+                }
+            }
+        except Exception:
+            status = 500
+            context = {
+                "error": REQUEST_FAILED_MSG
+            }
+        return JsonResponse(context, status=status)
 
     context = get_request_access(request)
     return render(request, "EnigmaOps/accessRequestForm.html", context)
@@ -289,9 +356,48 @@ def update_group_owners(request, group_name):
 
 
 @login_required
+@paginated_search
 def group_dashboard(request):
-    """Template to capture new group data."""
-    return render(request, "EnigmaOps/createNewGroup.html")
+    if request.method == "POST":
+        return render_error_message(
+            request,
+            "POST for groupHistory not supported",
+            "Invalid Request",
+            "Error request not found OR Invalid request type",
+        )
+
+    try:
+        access_user = request.user.user
+    except Exception as e:
+        return render_error_message(
+            request,
+            "Access user with email %s not found. Error: %s"
+            % (request.user.email, str(e)),
+            "Invalid Request",
+            "Please login again",
+        )
+    
+    selected_role = request.GET.getlist("role")
+    selected_status = request.GET.getlist("status")
+
+    context = {
+        "search_data_key": "dataList",
+        "search_rows": ["name"],
+        "dataList": access_user.get_groups_history(),
+        "statusFilter": {
+            "selected": selected_status,
+            "notSelected": group_helper.get_group_status_list(selected_status),
+        },
+        "roleFilter": {
+            "selected": selected_role,
+            "notSelected": group_helper.get_group_member_role_list(selected_role)
+        },
+        "search_value": request.GET.get("search"),
+        "filter_rows": ["role", "status"]
+    }
+    return TemplateResponse(
+        request,
+        "EnigmaOps/showGroupHistory.html"), context
 
 
 def approve_new_group(request, group_id):
