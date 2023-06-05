@@ -84,7 +84,7 @@ lint: setup_mounts ensure_web_container_for_test
 schema_validate: export APPUID = $(APP_UID)
 schema_validate: setup_mounts ensure_web_container_for_test
 	@echo "Validating Schema"
-	@docker exec dev python scripts/validator.py
+	@docker exec dev python -m scripts.validator
 	@if [ "$$?" -ne 0 ]; then \
 		echo "Schema validation failed"; \
 		exit 1; \
