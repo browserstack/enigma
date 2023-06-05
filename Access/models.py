@@ -267,13 +267,6 @@ class User(models.Model):
         """ method to check if user is active """
         return self.current_state() == "active"
 
-    @staticmethod
-    def get_user_by_email(email):
-        try:
-            return User.objects.get(email=email)
-        except User.DoesNotExist:
-            return None
-
     def get_all_memberships(self):
         """ method to get all memberships of the user """
         return self.membership_user.all()
@@ -477,7 +470,6 @@ class MembershipV2(models.Model):
         max_length=255, null=False, blank=False, choices=STATUS, default="Pending"
     )
     reason = models.TextField(null=True, blank=True)
-
     approver = models.ForeignKey(
         "User",
         null=True,
@@ -753,6 +745,7 @@ class GroupV2(models.Model):
         )
 
     def get_group_access_count(self):
+        """ method to get group access count """
         return self.get_active_accesses().count()
 
     def is_self_approval(self, approver):
