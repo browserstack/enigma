@@ -4,7 +4,7 @@ from django.db import transaction
 import datetime
 import logging
 from Access.views_helper import execute_group_access
-from EnigmaAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
+from enigma_automation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 from . import helpers as helper
 from Access.background_task_manager import revoke_request
 import json
@@ -668,6 +668,8 @@ def save_group_access_request(form_data, auth_user):
             access_labels, auth_user, is_group=False
         )
 
+        access_reason = access_request["accessReason"][accessIndex]
+
         extra_fields = accessrequest_helper.get_extra_fields(access_request)
         extra_field_labels = accessrequest_helper.get_extra_field_labels(access_module)
 
@@ -694,7 +696,7 @@ def save_group_access_request(form_data, auth_user):
                         request_id=request_id,
                         access_tag=access_tag,
                         access_label=access_label,
-                        access_reason=access_request["accessReason"],
+                        access_reason=access_reason,
                     )
                     context["status_list"].append(
                         {
@@ -729,7 +731,7 @@ def _create_group_access_mapping(
     if not access:
         access = AccessV2.create(access_tag=access_tag, access_label=access_label)
     else:
-        if group.check_access_exist(access):
+        if group.access_mapping_exists(access):
             raise GroupAccessExistsException()
     group.add_access(
         request_id=request_id,

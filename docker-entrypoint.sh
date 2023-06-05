@@ -27,7 +27,7 @@ function prepend() {
 
 
 log "===== Cloning Access Modules ====="
-python scripts/clone_access_modules.py 2>&1 | prepend
+python -m scripts.clone_access_modules 2>&1 | prepend
 
 log "===== Install requirements for access modules ====="
 pip install -r Access/access_modules/requirements.txt --no-cache-dir --ignore-installed 2>&1 | prepend
