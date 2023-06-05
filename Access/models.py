@@ -470,7 +470,6 @@ class MembershipV2(models.Model):
         max_length=255, null=False, blank=False, choices=STATUS, default="Pending"
     )
     reason = models.TextField(null=True, blank=True)
-
     approver = models.ForeignKey(
         "User",
         null=True,
@@ -744,6 +743,10 @@ class GroupV2(models.Model):
         return self.group_access_mapping.filter(
             status__in=["Approved", "Pending", "Declined", "SecondaryPending"]
         )
+
+    def get_group_access_count(self):
+        """ method to get group access count """
+        return self.get_active_accesses().count()
 
     def is_self_approval(self, approver):
         """ method to check it is self-approval """
@@ -1224,7 +1227,7 @@ class GroupAccessMapping(models.Model):
         access_request_data["status"] = self.status
         access_request_data["revokeOwner"] = ",".join(access_module.revoke_owner())
         access_request_data["grantOwner"] = ",".join(access_module.grant_owner())
-        access_request_data["accessRequestType"] = "Group Request"
+        access_request_data["module"] = access_tag.split('_')[0].capitalize()
 
         return access_request_data
 

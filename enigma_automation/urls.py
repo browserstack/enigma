@@ -68,11 +68,7 @@ urlpatterns = [
     re_path(r"^user/offboardUser$", user_offboarding, name="offboarding_user"),
     path("access/requestAccess", request_access, name="requestAccess"),
     re_path(r"^group/requestAccess$", group_access, name="groupRequestAccess"),
-    re_path(
-        r"^group/access/list/(?P<group_name>[\w -]+)$",
-        group_access_list,
-        name="groupAccessList",
-    ),
+    path("group/access/list", group_access_list, name="groupAccessList"),
     re_path(
         r"^group/new/accept/(?P<requestId>.*)$",
         approve_new_group,

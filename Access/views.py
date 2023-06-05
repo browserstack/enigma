@@ -309,14 +309,58 @@ def group_access(request):
 
 
 @login_required
-def group_access_list(request, group_name):
+@paginated_search
+def group_access_list(request):
     """lists the accesses for a group."""
     try:
-        context = group_helper.get_group_access_list(request.user, group_name)
-        if "error" in context:
-            return render(request, "EnigmaOps/accessStatus.html", context)
+        group_name = request.GET.get('group_name')
+        group_detail = group_helper.get_group_access_list(request.user, group_name)
+        if "error" in group_detail:
+            return TemplateResponse(request, "EnigmaOps/accessStatus.html"), group_detail
 
-        return render(request, "EnigmaOps/groupAccessList.html", context)
+        group_detail = group_helper.get_role_based_on_membership(group_detail)
+        context = {
+            "search_value": request.GET.get("search"),
+            "groupName": group_name,
+            "allowRevoke": group_detail["allowRevoke"]
+        }
+
+        show_tab = request.GET.get("show_tab")
+        if show_tab == "membersList":
+            selected_role = request.GET.getlist("role")
+            selected_current_state = request.GET.getlist("current_state")
+            context["roleFilter"] = {
+                "selected": selected_role,
+                "notSelected": group_helper.get_group_member_role_list(selected_role)
+            }
+            context["currentStateFilter"] = {
+                "selected": selected_current_state,
+                "notSelected": group_helper.get_user_states(selected_current_state)
+            }
+            context["search_data_key"] = "userList"
+            context["search_rows"] = ["name", "email"]
+            context["filter_rows"] = ["role", "current_state"]
+            context["userList"] = group_detail["userList"]
+            context["isMembersList"] = True
+        else:
+            selected_access_type = request.GET.getlist("accessType")
+            selected_status = request.GET.getlist("status")
+            context["accessTypeFilter"] = {
+                "selected": selected_access_type,
+                "notSelected": group_helper.get_group_member_access_type(selected_access_type)
+            }
+            context["statusFilter"] = {
+                "selected": selected_status,
+                "notSelected": group_helper.get_group_status_list(selected_status),
+            }
+            context["search_data_key"] = "dataList"
+            context["search_rows"] = ["module", "status", "accessType"]
+            context["dataList"] = group_detail['genericAccesses']
+            context["filter_rows"] = ["accessType", "status"]
+
+        return TemplateResponse(
+            request,
+            "EnigmaOps/groupAccessList.html"), context
     except Exception as ex:
         logger.exception(
             "Error in Group Access List, Error: %s", str(ex)
@@ -326,7 +370,7 @@ def group_access_list(request, group_name):
             "error_msg": INVALID_REQUEST_MESSAGE,
             "msg": INVALID_REQUEST_MESSAGE,
         }
-        return render(request, "EnigmaOps/accessStatus.html", json_response)
+        return TemplateResponse(request, "EnigmaOps/accessStatus.html"), json_response
 
 
 @login_required
@@ -376,7 +420,7 @@ def group_dashboard(request):
             "Invalid Request",
             "Please login again",
         )
-    
+
     selected_role = request.GET.getlist("role")
     selected_status = request.GET.getlist("status")
 

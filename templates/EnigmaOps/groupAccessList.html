@@ -1,37 +1,125 @@
 {% extends 'global_layout.html' %}
 {% load static %}
+
+{% block head_body %}
+<script src={% static "js/pagination.js" %}></script>
+<script src={% static "js/groupAccessList.js" %}></script>
+<script src={% static "js/showAccessHistory.js" %}></script>
+{% endblock %}
+
+{% block nav_breadcrumb %}
+<nav class="flex px-8 py-6 flex-shrink-0" aria-label="Breadcrumb">
+  <ol role="list" class="flex items-center space-x-4">
+    <li>
+      <div>
+        <a href="{% url 'dashboard' %}" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-5 w-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+            fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd"
+              d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z"
+              clip-rule="evenodd" />
+          </svg>
+          <span class="sr-only">Home</span>
+        </a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd"
+            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+            clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'groupDashboard' %}"
+          class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Groups</a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd"
+            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+            clip-rule="evenodd" />
+        </svg>
+        <a class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Group Details</a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
 {% block content_body %}
 
-<link rel="stylesheet" type="text/css" href="{% static "css/theme.bootstrap_4.css" %}">
-<script src="{% static "js/jquery.tablesorter.js" %}"></script>
-<script src="{% static "js/jquery.tablesorter.widgets.js" %}"></script>
-
-<link rel="stylesheet" type="text/css" href="{% static "css/jquery.tablesorter.pager.css" %}">
-<script src="{% static "js/jquery.tablesorter.pager.js" %}"></script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-<link rel="stylesheet" href={% static "css/group_list.css" %}>
-
-<div class="page-header">
-  <div class="container-fluid">
-    <h2 class="h2 no-margin-bottom">Group Access List</h2>
+<div class="px-4 sm:px-6 lg:px-8 w-full">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-2xl font-bold text-gray-900">{{groupName}}</h1>
+    </div>
   </div>
-</div>
 
-<div class="wrapper">
-  <!-- Nav tabs -->
-  <ul class="nav nav-tabs">
-    <li class="nav-item">
-      <a class="nav-link active" data-toggle="tab" href="#users">Users</a>
-    </li>
-    <li class="nav-item">
-      <a class="nav-link" data-toggle="tab" href="#genericAcceses">Access List</a>
-    </li>
-  </ul>
+  <div id="tabs" class="mt-2 border-b border-gray-200 dark:border-gray-700">
+    <ul class="flex flex-wrap text-sm font-medium
+                       text-center text-gray-500 dark:text-gray-500 gap-8">
+      <li class="mr-2">
+        <a href="{% url 'groupAccessList' %}?group_name={{ groupName }}&show_tab=accessList"
+           {% if not isMembersList %}
+           class="inline-flex py-4 border-b-2 rounded-t-lg group
+                  active text-blue-600 border-blue-600
+                  dark:text-blue-500 dark:border-blue-500"
+          {% else %}
+          class="inline-flex py-4 border-b-2 rounded-t-lg group
+                 border-transparent hover:text-gray-600
+                 hover:border-gray-400 dark:hover:text-gray-400"
+          {% endif %}
+           aria-current="page">
+          <svg aria-hidden="true" class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5
+                                 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1
+                                 .43-1.563A6 6 0 1121.75 8.25z" clip-rule="evenodd" />
+          </svg>Access
+        </a>
+      </li>
+      <li class="mr-2">
+        <a href="{% url 'groupAccessList' %}?group_name={{ groupName }}&show_tab=membersList" aria-current="page"
+          {% if isMembersList %}
+           class="inline-flex py-4 border-b-2 rounded-t-lg group
+                  active text-blue-600 border-blue-600
+                  dark:text-blue-500 dark:border-blue-500"
+          {% else %}
+          class="inline-flex py-4 border-b-2 rounded-t-lg group
+                 border-transparent hover:text-gray-600
+                 hover:border-gray-400 dark:hover:text-gray-400"
+          {% endif %}>
+          <svg aria-hidden="true" class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg">
+            <path fill-rule="evenodd"
+              d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15
+                                      19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331
+                                      0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375
+                                      0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"
+              clip-rule="evenodd" />
+          </svg>Members
+        </a>
+      </li>
+    </ul>
 
-  <!-- Tab panes -->
-  <div class="tab-content">
-    {% include "EnigmaOps/group_access_list_tabs/users_list_tab.html" %}
-    {% include "EnigmaOps/group_access_list_tabs/generic_accesses_tab.html" %}
+    {% if not isMembersList %}
+    <div id="genericAcceses"
+      class="-mx-8 pb-6 border-t border-gray-200 border-solid h-screen fade bg-white">
+      {% include "EnigmaOps/group_access_list_tabs/generic_accesses_tab.html" %}
+    </div>
+    {% else %}
+    <div id="users"
+      class="-mx-8 pb-6 border-t border-gray-200 border-solid h-screen fade bg-white">
+      {% include "EnigmaOps/group_access_list_tabs/users_list_tab.html" %}
+    </div>
+    {% endif %}
+
   </div>
 </div>
 {% endblock %}

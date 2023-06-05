@@ -23,6 +23,11 @@ def get_available_access_module_from_tag(tag):
     return None
 
 
+def get_available_access_type():
+    available_accesses_type = [access.access_desc() for access in _get_modules_on_disk()]
+    return available_accesses_type
+
+
 def get_available_access_modules():
     global available_accesses
     if len(available_accesses) > 0:
