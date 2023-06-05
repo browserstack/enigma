@@ -24,6 +24,8 @@ from Access.accessrequest_helper import (
     accept_group_access,
     run_accept_request_task,
     run_ignore_failure_task,
+    ImplementationPendingException,
+    REQUEST_FAILED_MSG
 )
 from Access.models import User, UserAccessMapping, GroupAccessMapping
 
@@ -37,11 +39,15 @@ from Access.userlist_helper import (
     IdentityNotChangedException,
 )
 from Access.views_helper import render_error_message
-from EnigmaAutomation.settings import PERMISSION_CONSTANTS
+from enigma_automation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver, paginated_search
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
+IMPLEMENTATION_PENDING_ERROR_MESSAGE = {
+    "error_msg": "Failed to process the request",
+    "msg": "Implementation of the {feature_name} feature is pending."
+}
 
 logger = logging.getLogger(__name__)
 logger.info("Server Started")
@@ -186,14 +192,14 @@ def save_identity(request):
             "title": IDENTITY_UNCHANGED_ERROR_MESSAGE["title"],
             "msg": IDENTITY_UNCHANGED_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
-        return JsonResponse(json.dumps(context), safe=False, status=400)
+        return JsonResponse(json.dumps(context), safe=False, status=200)
 
     except Exception:
         context["error"] = {
             "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
             "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
-        return JsonResponse(json.dumps(context), safe=False, status=400)
+        return JsonResponse(json.dumps(context), safe=False, status=200)
     context["error"] = {
         "title": "Bad Request",
         "msg": "Invalid Request.",
@@ -252,10 +258,30 @@ def request_access(request):
         HTTPResponse: Access request form template or the status of access save request.
     """
     if request.POST:
-        context = create_request(
-            auth_user=request.user, access_request_form=request.POST
-        )
-        return render(request, "EnigmaOps/accessStatus.html", context)
+        status = 200
+        try:
+            context = create_request(
+                auth_user=request.user, access_request_form=request.POST
+            )
+            if "error" in context:
+                status = 400
+            return JsonResponse(context, status=200)
+        except ImplementationPendingException:
+            status = 400
+            context  = {
+                "error": {
+                    "error_msg": IMPLEMENTATION_PENDING_ERROR_MESSAGE["error_msg"],
+                    "msg": IMPLEMENTATION_PENDING_ERROR_MESSAGE["msg"].format(
+                        feature_name="can_auto_approve"
+                    )
+                }
+            }
+        except Exception:
+            status = 500
+            context = {
+                "error": REQUEST_FAILED_MSG
+            }
+        return JsonResponse(context, status=status)
 
     context = get_request_access(request)
     return render(request, "EnigmaOps/accessRequestForm.html", context)
@@ -317,7 +343,7 @@ def group_access_list(request):
             context["userList"] = group_detail["userList"]
             context["isMembersList"] = True
         else:
-            selected_access_type = request.GET.getlist("access_type")
+            selected_access_type = request.GET.getlist("accessType")
             selected_status = request.GET.getlist("status")
             context["accessTypeFilter"] = {
                 "selected": selected_access_type,
@@ -336,8 +362,8 @@ def group_access_list(request):
             request,
             "EnigmaOps/groupAccessList.html"), context
     except Exception as ex:
-        logger.debug(
-            "Error in request not found OR Invalid request type, Error: %s", str(ex)
+        logger.exception(
+            "Error in Group Access List, Error: %s", str(ex)
         )
         json_response = {}
         json_response["error"] = {
@@ -548,6 +574,7 @@ def _get_request_ids_for_bulk_processing(posted_request_ids, selector):
 
 
 @login_required
+@user_any_approver
 def decline_access(request, access_type, request_id):
     """Decline an access request.
 

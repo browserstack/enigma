@@ -2,7 +2,7 @@ from django.contrib.auth.models import User as user
 from django.db import models, transaction
 from django.db.models.signals import post_save
 from django.conf import settings
-from EnigmaAutomation.settings import PERMISSION_CONSTANTS
+from enigma_automation.settings import PERMISSION_CONSTANTS
 import datetime
 import enum
 
@@ -359,7 +359,7 @@ class User(models.Model):
     @staticmethod
     def get_system_user():
         try:
-            return User.objects.get(name="system_user")
+            return User.objects.get(user__username="system_user")
         except User.DoesNotExist:
             django_user = user.objects.create(username="system_user",email="system_user@root.root")
             return django_user.user
@@ -465,6 +465,15 @@ class MembershipV2(models.Model):
     def approve_membership(membership_id, approver):
         membership = MembershipV2.objects.get(membership_id=membership_id)
         membership.approve(approver=approver)
+
+    def decline(self, reason, decliner):
+        self.status = "Declined"
+        self.decline_reason = reason
+        self.approver = decliner
+        self.save()
+
+    def is_already_processed(self):
+        return self.status in ["Declined", "Approved", "Processing", "Revoked"]
 
     def revoke_membership(self):
         self.status = "Revoked"
@@ -707,7 +716,14 @@ class GroupV2(models.Model):
 
     def check_access_exist(self, access):
         try:
-            self.group_access_mapping.get(access=access)
+            self.group_access_mapping.get(access=access, status__in=["Approved"])
+            return True
+        except GroupAccessMapping.DoesNotExist:
+            return False
+
+    def access_mapping_exists(self, access):
+        try:
+            self.group_access_mapping.get(access=access, status__in=["Approved","Pending"])
             return True
         except GroupAccessMapping.DoesNotExist:
             return False
@@ -1253,7 +1269,10 @@ class UserIdentity(models.Model):
 
     def get_active_access_mapping(self):
         return self.user_access_mapping.filter(
-            status__in=["Approved", "Pending"], access__access_tag=self.access_tag
+            status__in=["Approved", "Pending",
+                        "SecondaryPending",
+                        "GrantFailed"],
+            access__access_tag=self.access_tag
         )
 
     def get_all_granted_access_mappings(self):
@@ -1264,7 +1283,7 @@ class UserIdentity(models.Model):
 
     def get_all_non_approved_access_mappings(self):
         return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"]
+            status__in=["Pending", "SecondaryPending", "GrantFailed"]
         )
 
     def decline_all_non_approved_access_mappings(self, decline_reason):
@@ -1278,7 +1297,7 @@ class UserIdentity(models.Model):
 
     def get_non_approved_access_mapping(self, access):
         return self.user_access_mapping.filter(
-            status__in=["approvefailed", "pending", "secondarypending", "grantfailed"],
+            status__in=["Pending", "SecondaryPending", "GrantFailed"],
             access=access,
         )
 
