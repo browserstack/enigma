@@ -132,10 +132,10 @@ def step_impl(mocker, context):
 def step_impl(context, mocker):
     context.request = mocker.MagicMock()
     context.request.GET.getlist.return_value = [
-        "access_access_tag1",
-        "access_access_tag2",
-        "access_access_tag3",
-        "access_access_tag4",
+        "access_tag1",
+        "access_tag2",
+        "access_tag3",
+        "access_tag4",
     ]
 
 
@@ -143,8 +143,8 @@ def step_impl(context, mocker):
 def step_impl(context, mocker):
     context.request = mocker.MagicMock()
     context.request.GET.getlist.return_value = [
-        "access_access_tag1",
-        "access_access_tag2",
+        "access_tag1",
+        "access_tag2",
     ]
 
 
@@ -164,10 +164,10 @@ def step_impl(context, mocker):
 def step_impl(context, mocker):
     context.request = mocker.MagicMock()
     context.request.GET.getlist.return_value = [
-        "access_access_tag1",
-        "access_access_tag2",
-        "access_access_tag3",
-        "access_access_tag4",
+        "access_tag1",
+        "access_tag2",
+        "access_tag3",
+        "access_tag4",
     ]
     access_tag1 = mocker.MagicMock()
     access_tag2 = mocker.MagicMock()
@@ -186,10 +186,10 @@ def step_impl(context, mocker):
 def step_impl(context, mocker):
     context.request = mocker.MagicMock()
     context.request.GET.getlist.return_value = [
-        "access_access_tag1",
-        "access_access_tag2",
-        "access_access_tag3",
-        "access_access_tag4",
+        "access_tag1",
+        "access_tag2",
+        "access_tag3",
+        "access_tag4",
     ]
     access_tag1 = mocker.MagicMock()
     access_tag2 = mocker.MagicMock()
