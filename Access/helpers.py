@@ -22,6 +22,13 @@ def get_available_access_module_from_tag(tag):
         return get_available_access_modules()[tag]
     return None
 
+def get_available_access_module_desc():
+    access_descriptions = []
+    for tag, each_module in get_available_access_modules().items():
+        access_descriptions.append(each_module.access_desc())
+    
+    return access_descriptions
+
 
 def get_available_access_modules():
     global available_accesses

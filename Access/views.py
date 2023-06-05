@@ -48,6 +48,7 @@ logger.info("Server Started")
 
 
 @login_required
+@paginated_search
 def show_access_history(request):
     """Show access request history for a User."""
     if request.method == "POST":
@@ -67,28 +68,32 @@ def show_access_history(request):
             "Invalid Request",
             "Please login again",
         )
+    
+    selected_status = request.GET.getlist("status")
+    selected_access_modules = request.GET.getlist("access_desc")
 
-    page = int(request.GET.get('page') or 1) - 1
-    limit = 20
-
-    start_index = page * limit
-    max_pagination = math.ceil(access_user.get_total_access_count() / limit)
-
-    return render(
-        request,
-        "EnigmaOps/showAccessHistory.html",
-        {
-            "dataList": access_user.get_access_history(
-                helper.get_available_access_modules(),
-                start_index,
-                limit,
-            ),
-            "maxPagination": max_pagination,
-            "allPages": range(1, max_pagination + 1),
-            "currentPagination": page + 1,
-            "possibleStatuses": UserAccessMapping.get_unique_statuses(),
+    context = {
+        "dataList": access_user.get_access_history(
+            helper.get_available_access_modules()
+        ),
+        "search_data_key": "dataList",
+        "search_rows": ["access_desc", "access_tag", "requestId"],
+        "filter_rows": ["status", "access_desc"],
+        "possibleStatuses": {
+            "selected": selected_status,
+            "notSelected": [status for status in UserAccessMapping.get_unique_statuses() if status not in selected_status]
         },
-    )
+         
+        "possibleAccessModules": {
+            "selected": selected_access_modules,
+            "notSelected": [access_desc for access_desc in helper.get_available_access_module_desc() if access_desc not in selected_access_modules]
+        },
+        
+        "search_value": request.GET.get('search')
+    }
+    print(context["dataList"][0])
+
+    return TemplateResponse(request, "EnigmaOps/showAccessHistory.html"), context
 
 @login_required
 def new_access_request(request):
