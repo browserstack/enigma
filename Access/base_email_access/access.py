@@ -64,7 +64,7 @@ class BaseEmailAccess(object):
         pending_access_objects = self.get_pending_access_objects(accessUser)
         return {
             request_type: [
-                request.getAccessRequestDetails(self) for request in all_requests
+                request.get_access_request_details(self) for request in all_requests
             ]
             for request_type, all_requests in pending_access_objects.items()
         }
@@ -99,7 +99,7 @@ class BaseEmailAccess(object):
         for each_pending_request in all_pending_requests:
             approverType = "Primary" if pending_status == "Pending" else "Secondary"
 
-            if accessUser.isAnApproverForModule(
+            if accessUser.is_an_approver_for_module(
                 self, each_pending_request.access.access_label, approverType
             ):
                 user_pending_requests.append(each_pending_request)
