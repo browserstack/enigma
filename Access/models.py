@@ -794,8 +794,9 @@ class GroupV2(models.Model):
             return False
 
     def access_mapping_exists(self, access):
+        """ method to check access mapping exists """
         try:
-            self.group_access_mapping.get(access=access, status__in=["Approved","Pending"])
+            self.group_access_mapping.get(access=access, status__in=["Approved", "Pending"])
             return True
         except GroupAccessMapping.DoesNotExist:
             return False
