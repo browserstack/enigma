@@ -227,6 +227,7 @@ class User(models.Model):
         return [membership_obj.group for membership_obj in group_owner_membership]
 
     def get_active_groups(self):
+        """ method to get active groups """
         all_active_memberships = self.membership_user.filter(status="Approved")
         return [each_membership.group for each_membership in all_active_memberships]
 
@@ -267,9 +268,11 @@ class User(models.Model):
         return self.current_state() == "active"
 
     def get_all_memberships(self):
+        """ method to get all memberships of the user """
         return self.membership_user.all()
 
     def get_groups_history(self):
+        """ method to get groups history """
         all_user_membership = self.get_all_memberships()
         group_history = []
         for each_membership in all_user_membership:
@@ -280,9 +283,11 @@ class User(models.Model):
         return group_history
 
     def get_group_access_count(self):
+        """ method to get group access count """
         return self.membership_user.filter(group__status="Approved").count()
 
     def get_user_access_mapping_related_manager(self):
+        """ method to get user access mapping related manager """
         all_user_identities = self.module_identity.order_by('id').reverse()
         access_request_mapping_related_manager = []
         for each_identity in all_user_identities:
@@ -298,7 +303,8 @@ class User(models.Model):
             all_user_access_mappings = request_mapping_related_manager.order_by('id').reverse()
             for each_user_access_mapping in all_user_access_mappings:
                 access_module = all_access_modules[each_user_access_mapping.access.access_tag]
-                access_history.append(each_user_access_mapping.getAccessRequestDetails(access_module))
+                access_history.\
+                    append(each_user_access_mapping.get_access_request_details(access_module))
 
             # skip till start_index
             if start_index <= len(access_history):
@@ -315,6 +321,7 @@ class User(models.Model):
         return access_history[0:count]
 
     def get_total_access_count(self):
+        """ method to get total access count """
         return UserAccessMapping.objects.filter(user_identity__user=self).count()
 
     @staticmethod
@@ -529,8 +536,9 @@ class MembershipV2(models.Model):
         """ method to update membership """
         membership = MembershipV2.objects.filter(group=group)
         membership.update(status="Declined", decline_reason=reason)
-    
+
     def get_membership_details(self):
+        """ method to get membership details """
         access_request_data = {}
         if self.group.status == "Approved":
             access_request_data["group_id"] = self.group.group_id
@@ -595,10 +603,8 @@ class GroupV2(models.Model):
     @staticmethod
     def group_exists(group_name):
         """ method to check if group exists by group name """
-        if len(
-            GroupV2.objects.filter(name=group_name).filter(
+        if GroupV2.objects.filter(name=group_name).filter(
                 status__in=["Approved", "Pending"]
-            )
         ):
             return True
         return False
@@ -995,6 +1001,7 @@ class UserAccessMapping(models.Model):
 
     @staticmethod
     def get_unique_statuses():
+        """ method to get unique statuses """
         return [
             status[0]
             for status in UserAccessMapping.objects.order_by().values_list('status').distinct()
