@@ -1,19 +1,20 @@
+""" helper for views of bootprocess """
 import logging
+import json
+import datetime
 from Access.models import (
     User as access_user,
     MembershipV2,
     GroupV2,
-    UserAccessMapping,
 )
-from EnigmaAutomation.settings import DEFAULT_ACCESS_GROUP
 from Access.views_helper import generate_user_mappings, execute_group_access
-import json
-import datetime
+from enigma_automation.settings import DEFAULT_ACCESS_GROUP
 
 logger = logging.getLogger(__name__)
 
 
-def getDashboardData(request):
+def get_dashboard_data(request):
+    """ helper to get dashboard data """
     user = access_user.objects.get(user__username=request.user)
 
     # Add users to DEFAULT_ACCESS_GROUP if the user is not already on the group
@@ -31,7 +32,7 @@ def getDashboardData(request):
                 .filter(status="Approved")
                 .only("user")
             )
-            group_owner = [member for member in group_members.filter(is_owner=True)]
+            group_owner = list(group_members.filter(is_owner=True))
             membership_id = (
                 user.name
                 + "-"
@@ -61,17 +62,17 @@ def getDashboardData(request):
                 + request.user.username
             )
 
-    with open("instanceTypes.json") as data_file:
+    with open("instanceTypes.json", encoding="utf-8") as data_file:
         data = json.load(data_file)
     ec2_regions = list(data.keys())
 
     context = {}
 
-    groupCount = len(
+    group_count = len(
         MembershipV2.objects.filter(user=request.user.user, status="Approved")
     )
 
     context["regions"] = ec2_regions
-    context["groupCount"] = groupCount
+    context["groupCount"] = group_count
 
     return context

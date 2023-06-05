@@ -13,7 +13,7 @@ services:
     - ./secrets/ops_app_dev.env
     volumes:
     - ./:/srv/code/dev
-    - ./mounts/modules:/srv/code/dev/Access/access_modules
+    - ./mounts/modules_web:/srv/code/dev/Access/access_modules
     - ./mounts/db:/srv/code/dev/db
     - ./mounts/logs:/ebs/logs
     ports:
@@ -49,7 +49,7 @@ services:
       args:
         APPUID: ${APPUID}
     volumes:
-    - ./mounts/modules:/srv/code/dev/Access/access_modules
+    - ./mounts/modules_celery:/srv/code/dev/Access/access_modules
     - ./mounts/db:/srv/code/dev/db
     - ./mounts/logs:/ebs/logs
     env_file:
@@ -67,7 +67,7 @@ services:
         done;
         echo Connected!;
         echo Starting celery;
-        python3 -m celery -A EnigmaAutomation worker -n worker1 -l DEBUG"
+        python3 -m celery -A enigma_automation worker -n worker1 -l DEBUG"
   test:
     container_name: test
     build:

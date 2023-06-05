@@ -1,4 +1,5 @@
 {% extends 'global_layout.html' %}
+{% load reusable_components %}
 {% load myaccess_css_helpers %}
 {% load static %}
 
@@ -164,23 +165,9 @@
   </div>
 
   {% if search_error %}
-  <div class="mt-5 rounded-md bg-yellow-50 p-4">
-    <div class="flex">
-      <div class="flex-shrink-0">
-        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
-        </svg>
-      </div>
-      <div class="ml-3">
-        <h3 class="text-sm font-medium text-yellow-800">No exact match found</h3>
-        <div class="mt-2 text-sm text-yellow-700">
-          <p>{{search_error}}</p>
-        </div>
-      </div>
-    </div>
-  </div>
+  {% get_error_panel_with_message "No exact match found" search_error %}
   {% endif %}
-  
+
 
   <div class="mt-8 flex flex-col">
     <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -284,7 +271,7 @@
   class="mt-8 flex items-center justify-between border-t border-gray-200 sm:px-0 pt-6 px-4 sm:px-6 lg:px-8 pb-6 w-full">
   <div class="-mt-px flex w-0 flex-1">
     {% if currentPagination > 1 %}
-    <a onclick="change_page('{{ currentPagination }}', -1)" 
+    <a onclick="change_page('{{ currentPagination }}', -1)"
       class="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
       <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
         fill="currentColor" aria-hidden="true">

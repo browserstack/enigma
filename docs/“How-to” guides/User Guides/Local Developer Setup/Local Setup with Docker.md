@@ -1,6 +1,6 @@
-# Setup for Local Development
+# Setup for Local Development With Docker
 
-## Pre-requisistes
+## Pre-requisites
 
 ### Install Docker
 
@@ -23,13 +23,13 @@ colima start
 ### Clone Repository
 Clone the repo in local system
 ```bash
-git clone https://github.com/browserstack/enigma-public-central.git
+git clone https://github.com/browserstack/enigma.git
 ```
 - copy config.json.sample to config.json
 
 #### For private repo in git_urls in `config.json`
 ```bash
- "https://<git-username>:<github-token>@github.com/browserstack/enigma-public-access-modules.git"
+ "https://<git-username>:<github-token>@github.com/browserstack/enigma-access-modules.git"
 ```
 where `github-token` is a pat token from https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
 

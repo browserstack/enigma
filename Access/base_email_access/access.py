@@ -3,8 +3,8 @@ import logging
 import traceback
 
 from Access.models import UserAccessMapping, GroupAccessMapping
-from EnigmaAutomation.settings import ACCESS_APPROVE_EMAIL, PERMISSION_CONSTANTS
-from bootprocess.general import emailSES
+from enigma_automation.settings import ACCESS_APPROVE_EMAIL, PERMISSION_CONSTANTS
+from bootprocess.general import email_via_smtp
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +24,7 @@ class BaseEmailAccess(object):
 
     # Override in module for specific person who should mark access as revoked
     def access_mark_revoke_permission(self, access_type):
-        # TODO: define ACCESS_REVOKE_PERMISSIONS_MAPPING
-        return ACCESS_REVOKE_PERMISSIONS_MAPPING["security"]
+        return ACCESS_APPROVE_EMAIL
 
     # module's tag() method should return a tag present in
     # hash returned by access_types() "type" key
@@ -65,7 +64,7 @@ class BaseEmailAccess(object):
         pending_access_objects = self.get_pending_access_objects(accessUser)
         return {
             request_type: [
-                request.getAccessRequestDetails(self) for request in all_requests
+                request.get_access_request_details(self) for request in all_requests
             ]
             for request_type, all_requests in pending_access_objects.items()
         }
@@ -100,7 +99,7 @@ class BaseEmailAccess(object):
         for each_pending_request in all_pending_requests:
             approverType = "Primary" if pending_status == "Pending" else "Secondary"
 
-            if accessUser.isAnApproverForModule(
+            if accessUser.is_an_approver_for_module(
                 self, each_pending_request.access.access_label, approverType
             ):
                 user_pending_requests.append(each_pending_request)
@@ -150,7 +149,7 @@ class BaseEmailAccess(object):
                     " by %s" % (label_desc, self.access_desc(), user.email, approver)
                 )
 
-                emailSES(email_targets, email_subject, email_body)
+                self.email_via_smtp(email_targets, email_subject, email_body)
                 return True, ""
         except Exception as e:
             logger.error(
@@ -167,7 +166,7 @@ class BaseEmailAccess(object):
         email_body = ""
 
         try:
-            emailSES(email_targets, email_subject, email_body)
+            self.email_via_smtp(email_targets, email_subject, email_body)
         except Exception as e:
             logger.error("Could not send email for error %s", str(e))
 
@@ -206,3 +205,11 @@ class BaseEmailAccess(object):
 
     def fetch_access_request_form_path(self):
         return "base_email_access/accessRequest.html"
+
+    def email_via_smtp(self, destination, subject, body):
+        """
+         method to send email via smtp.
+         It is calling bootprocess.general.email_via_smtp under the hood to reduce external imports of bootprocess in
+         access_modules
+        """
+        email_via_smtp(destination, subject, body)

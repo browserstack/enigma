@@ -58,6 +58,7 @@ def get_identity_templates(auth_user):
                 {
                     "accessUserTemplatePath": module.get_identity_template(),
                     "identity": user_identity.identity,
+                    "extraFields": module.get_extra_fields(),
                 }
             )
             all_modules.pop(user_identity.access_tag)
@@ -72,6 +73,7 @@ def get_identity_templates(auth_user):
         context["unconfigured_identity_template"].append(
             {
                 "accessUserTemplatePath": mod.get_identity_template(),
+                "extraFields": mod.get_extra_fields(),
             }
         )
     return context

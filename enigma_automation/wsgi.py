@@ -1,5 +1,5 @@
 """
-WSGI config for EnigmaAutomation project.
+WSGI config for enigma_automation project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "EnigmaAutomation.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "enigma_automation.settings")
 
 application = get_wsgi_application()
