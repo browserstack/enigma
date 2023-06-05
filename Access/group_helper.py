@@ -131,7 +131,7 @@ def create_group(request):
         name=new_group_name,
         requester=request.user.user,
         description=reason,
-        needsAccessApprove=needs_access_approve,
+        needs_access_approve=needs_access_approve,
         date_time=base_datetime_prefix,
     )
 
@@ -174,7 +174,7 @@ def get_generic_access(group_mapping):
     if not access_module:
         return {}
 
-    access_details = group_mapping.getAccessRequestDetails(access_module)
+    access_details = group_mapping.get_access_request_details(access_module)
     logger.debug("Generic access generated: " + str(access_details))
     return access_details
 

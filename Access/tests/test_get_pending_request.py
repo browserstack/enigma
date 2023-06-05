@@ -57,7 +57,7 @@ def step_impl(context, mocker):
     )
     mock_exception = Exception("Error in request not found OR Invalid request type")
     mocker.patch(
-        "Access.models.GroupV2.getPendingCreation",
+        "Access.models.GroupV2.get_pending_creation",
         side_effect=mock_exception,
     )
 
@@ -66,9 +66,9 @@ def step_impl(context, mocker):
 def step_impl(context, mocker):
     """request to view all pending requests."""
     mocker.patch(
-        "Access.models.GroupV2.getPendingMemberships", return_value=mocker.MagicMock
+        "Access.models.GroupV2.get_pending_memberships", return_value=mocker.MagicMock
     )
-    mocker.patch("Access.models.GroupV2.getPendingCreation", return_value=[])
+    mocker.patch("Access.models.GroupV2.get_pending_creation", return_value=[])
     mocker.patch(
         "Access.accessrequest_helper.get_pending_accesses_from_modules",
         return_value=("test-user-1", "test-ser-2"),
@@ -79,9 +79,9 @@ def step_impl(context, mocker):
 def step_impl(context, mocker):
     """request to view pending requests."""
     mocker.patch(
-        "Access.models.GroupV2.getPendingMemberships", return_value=mocker.MagicMock
+        "Access.models.GroupV2.get_pending_memberships", return_value=mocker.MagicMock
     )
-    mocker.patch("Access.models.GroupV2.getPendingCreation", return_value=[])
+    mocker.patch("Access.models.GroupV2.get_pending_creation", return_value=[])
     mocker.patch(
         "Access.accessrequest_helper.get_pending_accesses_from_modules",
         return_value=("test-user-1", "test-ser-2"),
@@ -100,16 +100,16 @@ def step_impl(context):
     """all pending access requests from modules."""
     assert "genericRequests" in context.result
     assert "groupGenericRequests" in context.result
-    assert Access.models.GroupV2.getPendingMemberships.call_count == 1
-    assert Access.models.GroupV2.getPendingCreation.call_count == 1
+    assert Access.models.GroupV2.get_pending_memberships.call_count == 1
+    assert Access.models.GroupV2.get_pending_creation.call_count == 1
 
 
 @then("return an error response")
 def step_impl(context):
     """return an error response."""
     assert context.result is not None
-    assert Access.models.GroupV2.getPendingMemberships.call_count == 1
-    assert Access.models.GroupV2.getPendingCreation.call_count == 1
+    assert Access.models.GroupV2.get_pending_memberships.call_count == 1
+    assert Access.models.GroupV2.get_pending_creation.call_count == 1
 
 
 @then("return the retrieved requests in the context variable")
