@@ -215,7 +215,7 @@ google_auth_config = data["sso"]["googleapi"]
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = google_auth_config["SOCIAL_AUTH_GOOGLE_OAUTH2_KEY"]
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = google_auth_config["SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET"]
 SOCIAL_AUTH_LOGIN_REDIRECT_URL = '/'
-LOGIN_URL = 'login/'
+LOGIN_URL = 'login'
 
 if data["background_task_manager"]["type"] == "celery":
     background_task_manager_config = data["background_task_manager"]["config"]
