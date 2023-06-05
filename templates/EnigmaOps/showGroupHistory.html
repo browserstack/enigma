@@ -167,7 +167,7 @@
   {% if search_error %}
   {% get_error_panel_with_message "No exact match found" search_error %}
   {% endif %}
-  
+
 
   <div class="mt-8 flex flex-col">
     <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -271,7 +271,7 @@
   class="mt-8 flex items-center justify-between border-t border-gray-200 sm:px-0 pt-6 px-4 sm:px-6 lg:px-8 pb-6 w-full">
   <div class="-mt-px flex w-0 flex-1">
     {% if currentPagination > 1 %}
-    <a onclick="change_page('{{ currentPagination }}', -1)" 
+    <a onclick="change_page('{{ currentPagination }}', -1)"
       class="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
       <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
         fill="currentColor" aria-hidden="true">

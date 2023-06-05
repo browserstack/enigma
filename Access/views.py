@@ -420,7 +420,7 @@ def group_dashboard(request):
             "Invalid Request",
             "Please login again",
         )
-    
+
     selected_role = request.GET.getlist("role")
     selected_status = request.GET.getlist("status")
 

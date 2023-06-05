@@ -38,7 +38,7 @@ from Access.tests.helper_mocks import MockPermission
         ),
     ],
 )
-def test_isAnApprover(
+def test_is_an_approver(
     mocker, testName, permissionLabels, approverPermissions, expectedAnswer
 ):
     mocker.patch("Access.models.User.user", return_value=Mock())
@@ -50,4 +50,4 @@ def test_isAnApprover(
 
     accessUser = User()
     accessUser.permissions = permissions
-    assert accessUser.isAnApprover(approverPermissions) == expectedAnswer
+    assert accessUser.is_an_approver(approverPermissions) == expectedAnswer
