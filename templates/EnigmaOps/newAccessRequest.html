@@ -65,15 +65,13 @@
               <div class="inline-block min-w-full align-middle">
                 <div class="relative overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                   <table class="min-w-full table-fixed divide-gray-300">
-                    <tbody class="divide-gray-200 bg-white">
+                    <tbody class="divide-gray-200 bg-white" id="module-list-table">
                       {% for each_tag, each_module in modulesList.items %}
-                      <tr id="{{ each_tag }}-tablerow" class="hover:bg-blue-50 hover:text-blue-700">
+                      <tr onclick="handleModuleSelection(this)" module_tag="{{ each_tag }}"  module_desc="{{ each_module.access_desc }}"  class="hover:bg-blue-50 hover:text-blue-700">
                         <td class="relative w-12 px-6 sm:w-16 sm:px-8">
-                          <div class="absolute inset-y-0 left-0 w-0.5 bg-blue-600 hidden" id="{{ each_tag }}-marker"></div>
-
-                          <input type="checkbox" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6" onclick="handleModuleSelection(this, '{{ each_tag }}', '{{ each_module.access_desc }}');" id="{{ each_tag }}-checkbox"></input>
+                          <input type="checkbox" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6" onclick="handleModuleSelectionCheckbox(this)"></input>
                         </td>
-                        <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium text-gray-900" id="{{ each_tag }}-tabledesc">{{ each_module.access_desc }}</td>
+                        <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium text-gray-900" id="description-td">{{ each_module.access_desc }}</td>
                       </tr>
                       {% endfor %}
                     </tbody>
