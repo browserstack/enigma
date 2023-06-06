@@ -1,5 +1,5 @@
 from Access.models import User
-from Access.helpers import get_available_access_modules, getPossibleApproverPermissions
+from Access.helpers import get_available_access_modules, get_possible_approver_permissions
 
 
 def add_variables_to_context(request):
@@ -21,4 +21,6 @@ def add_variables_to_context(request):
     context["groupsMemberFor"] = len(currentUser.get_active_groups())
     context["users"] = User.objects.filter().exclude(
         user__username='system_user').only("user")
+    context["pendingActionsCount"] = currentUser.get_pending_approvals_count(all_access_modules)
+
     return context
