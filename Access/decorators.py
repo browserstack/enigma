@@ -1,5 +1,5 @@
 from django.core.exceptions import PermissionDenied
-from Access.helpers import getPossibleApproverPermissions
+from Access.helpers import get_possible_approver_permissions
 from django.core.paginator import Paginator
 
 
@@ -41,7 +41,7 @@ def user_with_permission(permissions_list):
 
 def user_any_approver(function):
     def wrap(request, *args, **kwargs):
-        all_approve_permissions = getPossibleApproverPermissions()
+        all_approve_permissions = get_possible_approver_permissions()
         is_any_approver = request.user.user.is_an_approver(all_approve_permissions)
         if is_any_approver:
             return function(request, *args, **kwargs)

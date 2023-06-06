@@ -105,7 +105,7 @@ def test_approve_new_group_request(
             return_value=mock_membership_update,
         )
         mocker.patch(
-            "Access.helpers.generateStringFromTemplate", return_value="email body"
+            "Access.helpers.generate_string_from_template", return_value="email body"
         )
         mocker.patch("bootprocess.general.email_via_smtp", return_value=True)
 
@@ -128,7 +128,7 @@ def test_approve_new_group_request(
             return_value=mock_membership_update,
         )
         mocker.patch(
-            "Access.helpers.generateStringFromTemplate", return_value="email body"
+            "Access.helpers.generate_string_from_template", return_value="email body"
         )
         mocker.patch(
             "bootprocess.general.email_via_smtp",
@@ -145,7 +145,7 @@ def test_approve_new_group_request(
     if testname != test_approve_new_group_request_ProcessReq and requestApproved:
         assert general.email_via_smtp.call_count == 1
         assert models.MembershipV2.objects.filter.call_count == 2
-        assert helpers.generateStringFromTemplate.call_count == 2
+        assert helpers.generate_string_from_template.call_count == 2
 
 
 test_get_user_group_group_not_found = "GroupNotFound"

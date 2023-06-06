@@ -72,7 +72,7 @@ test: setup_mounts ensure_web_container_for_test
 lint: export APPUID = $(APP_UID)
 lint: setup_mounts ensure_web_container_for_test
 	@docker exec dev python -m pylama --version
-	@docker exec dev python -m pylama Access/accessrequest_helper.py Access/models.py Access/views.py Access/views_helper.py Access/validators.py Access/notifications.py scripts bootprocess enigma_automation
+	@docker exec dev python -m pylama Access/accessrequest_helper.py Access/models.py Access/views.py Access/views_helper.py Access/validators.py Access/notifications.py Access/helpers.py scripts bootprocess enigma_automation
 	@if [ "$$?" -ne 0 ]; then \
 		echo "Linter checks failed"; \
 		exit 1; \
