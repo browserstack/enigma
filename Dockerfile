@@ -5,7 +5,7 @@
 # Set the base image to use to Ubuntu
 FROM python:3.11-slim-buster AS base
 
-ENV DJANGO_SETTINGS_MODULE=EnigmaAutomation.settings
+ENV DJANGO_SETTINGS_MODULE=enigma_automation.settings
 RUN DEBIAN_FRONTEND=noninteractive \
   apt-get update -y \
   && apt-get install --no-install-recommends -y \
@@ -16,11 +16,14 @@ RUN DEBIAN_FRONTEND=noninteractive \
 # Set env variables used in this Dockerfile (add a unique prefix, such as DEV)
 RUN apt update && apt install -y netcat dnsutils libmariadbclient-dev
 
+RUN mkdir -p /ebs/logs && touch /ebs/logs/engima.log && chmod 777 /ebs/logs/engima.log
+
 ARG APPUID=1001
 RUN useradd -rm -d /home/app -s /bin/bash -g root -G sudo -u "$APPUID" app
 WORKDIR /srv/code/dev
 RUN mkdir -p logs
-RUN chown -R app /srv/code/dev
+RUN mkdir -p db
+RUN chown -R app /srv/code/dev /ebs
 USER app
 
 

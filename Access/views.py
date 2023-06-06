@@ -9,6 +9,7 @@ from django.core.paginator import Paginator
 from django.contrib.auth.models import User as djangoUser
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.template.response import TemplateResponse
 
 from Access import views_helper
 from Access import group_helper
@@ -23,6 +24,8 @@ from Access.accessrequest_helper import (
     accept_group_access,
     run_accept_request_task,
     run_ignore_failure_task,
+    ImplementationPendingException,
+    REQUEST_FAILED_MSG
 )
 from Access.models import User, UserAccessMapping, GroupAccessMapping
 
@@ -36,11 +39,15 @@ from Access.userlist_helper import (
     IdentityNotChangedException,
 )
 from Access.views_helper import render_error_message
-from EnigmaAutomation.settings import PERMISSION_CONSTANTS
+from enigma_automation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
-from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver
+from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver, paginated_search
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
+IMPLEMENTATION_PENDING_ERROR_MESSAGE = {
+    "error_msg": "Failed to process the request",
+    "msg": "Implementation of the {feature_name} feature is pending."
+}
 
 logger = logging.getLogger(__name__)
 logger.info("Server Started")
@@ -185,14 +192,14 @@ def save_identity(request):
             "title": IDENTITY_UNCHANGED_ERROR_MESSAGE["title"],
             "msg": IDENTITY_UNCHANGED_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
-        return JsonResponse(json.dumps(context), safe=False, status=400)
+        return JsonResponse(json.dumps(context), safe=False, status=200)
 
     except Exception:
         context["error"] = {
             "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
             "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
-        return JsonResponse(json.dumps(context), safe=False, status=400)
+        return JsonResponse(json.dumps(context), safe=False, status=200)
     context["error"] = {
         "title": "Bad Request",
         "msg": "Invalid Request.",
@@ -251,11 +258,30 @@ def request_access(request):
         HTTPResponse: Access request form template or the status of access save request.
     """
     if request.POST:
-        print((request.POST))
-        context = create_request(
-            auth_user=request.user, access_request_form=request.POST
-        )
-        return render(request, "EnigmaOps/accessStatus.html", context)
+        status = 200
+        try:
+            context = create_request(
+                auth_user=request.user, access_request_form=request.POST
+            )
+            if "error" in context:
+                status = 400
+            return JsonResponse(context, status=200)
+        except ImplementationPendingException:
+            status = 400
+            context  = {
+                "error": {
+                    "error_msg": IMPLEMENTATION_PENDING_ERROR_MESSAGE["error_msg"],
+                    "msg": IMPLEMENTATION_PENDING_ERROR_MESSAGE["msg"].format(
+                        feature_name="can_auto_approve"
+                    )
+                }
+            }
+        except Exception:
+            status = 500
+            context = {
+                "error": REQUEST_FAILED_MSG
+            }
+        return JsonResponse(context, status=status)
 
     context = get_request_access(request)
     return render(request, "EnigmaOps/accessRequestForm.html", context)
@@ -283,24 +309,68 @@ def group_access(request):
 
 
 @login_required
-def group_access_list(request, group_name):
+@paginated_search
+def group_access_list(request):
     """lists the accesses for a group."""
     try:
-        context = group_helper.get_group_access_list(request.user, group_name)
-        if "error" in context:
-            return render(request, "EnigmaOps/accessStatus.html", context)
+        group_name = request.GET.get('group_name')
+        group_detail = group_helper.get_group_access_list(request.user, group_name)
+        if "error" in group_detail:
+            return TemplateResponse(request, "EnigmaOps/accessStatus.html"), group_detail
 
-        return render(request, "EnigmaOps/groupAccessList.html", context)
+        group_detail = group_helper.get_role_based_on_membership(group_detail)
+        context = {
+            "search_value": request.GET.get("search"),
+            "groupName": group_name,
+            "allowRevoke": group_detail["allowRevoke"]
+        }
+
+        show_tab = request.GET.get("show_tab")
+        if show_tab == "membersList":
+            selected_role = request.GET.getlist("role")
+            selected_current_state = request.GET.getlist("current_state")
+            context["roleFilter"] = {
+                "selected": selected_role,
+                "notSelected": group_helper.get_group_member_role_list(selected_role)
+            }
+            context["currentStateFilter"] = {
+                "selected": selected_current_state,
+                "notSelected": group_helper.get_user_states(selected_current_state)
+            }
+            context["search_data_key"] = "userList"
+            context["search_rows"] = ["name", "email"]
+            context["filter_rows"] = ["role", "current_state"]
+            context["userList"] = group_detail["userList"]
+            context["isMembersList"] = True
+        else:
+            selected_access_type = request.GET.getlist("accessType")
+            selected_status = request.GET.getlist("status")
+            context["accessTypeFilter"] = {
+                "selected": selected_access_type,
+                "notSelected": group_helper.get_group_member_access_type(selected_access_type)
+            }
+            context["statusFilter"] = {
+                "selected": selected_status,
+                "notSelected": group_helper.get_group_status_list(selected_status),
+            }
+            context["search_data_key"] = "dataList"
+            context["search_rows"] = ["module", "status", "accessType"]
+            context["dataList"] = group_detail['genericAccesses']
+            context["filter_rows"] = ["accessType", "status"]
+
+        return TemplateResponse(
+            request,
+            "EnigmaOps/groupAccessList.html"), context
     except Exception as ex:
-        logger.debug(
-            "Error in request not found OR Invalid request type, Error: %s", str(ex)
+        logger.exception(
+            "Error in Group Access List, Error: %s", str(ex)
         )
         json_response = {}
         json_response["error"] = {
             "error_msg": INVALID_REQUEST_MESSAGE,
             "msg": INVALID_REQUEST_MESSAGE,
         }
-        return render(request, "EnigmaOps/accessStatus.html", json_response)
+        return TemplateResponse(request, "EnigmaOps/accessStatus.html"), json_response
 
 
 @login_required
@@ -330,9 +400,48 @@ def update_group_owners(request, group_name):
 
 
 @login_required
+@paginated_search
 def group_dashboard(request):
-    """Template to capture new group data."""
-    return render(request, "EnigmaOps/createNewGroup.html")
+    if request.method == "POST":
+        return render_error_message(
+            request,
+            "POST for groupHistory not supported",
+            "Invalid Request",
+            "Error request not found OR Invalid request type",
+        )
+
+    try:
+        access_user = request.user.user
+    except Exception as e:
+        return render_error_message(
+            request,
+            "Access user with email %s not found. Error: %s"
+            % (request.user.email, str(e)),
+            "Invalid Request",
+            "Please login again",
+        )
+
+    selected_role = request.GET.getlist("role")
+    selected_status = request.GET.getlist("status")
+
+    context = {
+        "search_data_key": "dataList",
+        "search_rows": ["name"],
+        "dataList": access_user.get_groups_history(),
+        "statusFilter": {
+            "selected": selected_status,
+            "notSelected": group_helper.get_group_status_list(selected_status),
+        },
+        "roleFilter": {
+            "selected": selected_role,
+            "notSelected": group_helper.get_group_member_role_list(selected_role)
+        },
+        "search_value": request.GET.get("search"),
+        "filter_rows": ["role", "status"]
+    }
+    return TemplateResponse(
+        request,
+        "EnigmaOps/showGroupHistory.html"), context
 
 
 def approve_new_group(request, group_id):
@@ -465,6 +574,7 @@ def _get_request_ids_for_bulk_processing(posted_request_ids, selector):
 
 
 @login_required
+@user_any_approver
 def decline_access(request, access_type, request_id):
     """Decline an access request.
 

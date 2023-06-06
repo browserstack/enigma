@@ -1,0 +1,313 @@
+{% extends 'global_layout.html' %}
+{% load reusable_components %}
+{% load myaccess_css_helpers %}
+{% load static %}
+
+{% block head_body %}
+<script src={% static "js/showAccessHistory.js" %}></script>
+<script src={% static "js/globalSearchMisc.js" %}></script>
+{% endblock %}
+
+{% block nav_breadcrumb %}
+<nav class="flex px-8 py-6 flex-shrink-0" aria-label="Breadcrumb">
+  <ol role="list" class="flex items-center space-x-4">
+    <li>
+      <div>
+        <a href="{% url 'dashboard' %}" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-5 w-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+            fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd"
+              d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z"
+              clip-rule="evenodd" />
+          </svg>
+          <span class="sr-only">Home</span>
+        </a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd"
+            d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z"
+            clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'groupDashboard' %}"
+          class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Groups</a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content_body %}
+<div class="px-4 sm:px-6 lg:px-8 w-full">
+  <div class="sm:flex sm:items-center">
+    <div class="sm:flex-auto">
+      <h1 class="text-2xl font-bold text-gray-900">Groups</h1>
+    </div>
+    <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+      <a href="{% url 'createNewGroup' %}" class="text-blue-600 hover:text-blue-900">
+        <button type="button"
+          class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 m-1
+                 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
+          Create a group
+        </button>
+      </a>
+    </div>
+  </div>
+
+  {% if dataList %}
+  <div class="mt-8 flex flex-col gap-4">
+    <div>
+      <h1 class="text-lg font-medium text-gray-900">All Groups</h1>
+    </div>
+
+    <div class="flex flex-row gap-4 items-center">
+      <div class="sm:flex-auto">
+        <div class="w-4/6 float:left relative">
+          <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white">
+            <input onkeydown="search(event, this)" id="global-search" type="search"
+              class="flex-none rounded-md border-none text-gray-500 text-sm font-normal px-4 py-2 min-w-full"
+              placeholder="Search by group name, role type or status" {% if search_value %} value="{{search_value}}" {% endif %}>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+              <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor"
+                viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path fill-rule="evenodd"
+                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                  clip-rule="evenodd"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="w-1/6 float-right relative" onclick="focusFilterStatus(this);">
+        <button type="button"
+          class="min-w-full cursor-default rounded-md border
+                                      border-gray-300 bg-white px-4 py-2 text-left shadow-sm focus:border-blue-500
+                                      focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+          aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+          <span class="block truncate text-gray-500">Role</span>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24" fill="#000000" aria-hidden="true">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" clip-rule="evenodd" />
+            </svg>
+          </div>
+        </button>
+
+        <ul
+          class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+          tabindex="-1" role="listbox" aria-labelledby="listbox-label"
+          aria-activedescendant="listbox-option-3">
+          {% for filter in roleFilter.selected %}
+          <li
+            class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+            id="listbox-option-0" role="option">
+            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="role" onclick="select_filter(this)" checked>
+            <label for="group_{{filter}}">{{filter}}</label>
+          </li>
+          {% endfor %}
+          {% for filter in roleFilter.notSelected %}
+          <li
+            class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+            id="listbox-option-0" role="option">
+            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="role" onclick="select_filter(this)">
+            <label for="group_{{filter}}">{{filter}}</label>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+
+      <div class="w-1/6 float-right relative" onclick="focusFilterStatus(this);">
+        <button type="button"
+          class="min-w-full cursor-default rounded-md border
+                                      border-gray-300 bg-white px-4 py-2 text-left shadow-sm focus:border-blue-500
+                                      focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm"
+          aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+          <span class="block truncate text-gray-500">Status</span>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24" fill="#000000" aria-hidden="true">
+              <path d="M0 0h24v24H0z" fill="none" />
+              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" clip-rule="evenodd" />
+            </svg>
+          </div>
+        </button>
+
+        <ul
+          class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+          tabindex="-1" role="listbox" aria-labelledby="listbox-label"
+          aria-activedescendant="listbox-option-3">
+          {% for filter in statusFilter.selected %}
+          <li
+            class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+            id="listbox-option-0" role="option">
+            <input type="checkbox" onclick="select_filter(this)" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" checked>
+            <label for="group_{{filter}}">{{filter}}</label>
+          </li>
+          {% endfor %}
+          {% for filter in statusFilter.notSelected %}
+          <li
+            class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+            id="listbox-option-0" role="option">
+            <input type="checkbox" onclick="select_filter(this)" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}">
+            <label for="group_{{filter}}">{{filter}}</label>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  {% if search_error %}
+  {% get_error_panel_with_message "No exact match found" search_error %}
+  {% endif %}
+
+
+  <div class="mt-8 flex flex-col">
+    <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
+      <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
+        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+          <table class="min-w-full divide-y divide-gray-300">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col"
+                  class="py-3.5 pl-4 pr-3 text-left text-sm font-normal text-gray-400 sm:pl-6 uppercase w-2/5">
+                  Groups
+                </th>
+                <th scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-1/5">
+                  Status
+                </th>
+                <th scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-1/5 max-w-md">
+                  Role
+                </th>
+                <th scope="col"
+                  class="px-3 py-3.5 text-left text-sm font-normal text-gray-400 uppercase w-1/5">
+                  Action
+                </th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200 bg-white">
+              {% for each_group in dataList %}
+              <tr {% if forloop.counter|divisibleby:2 %}class="bg-gray-50" {% endif %}>
+                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-6">
+                  <a href="/group/access/list?group_name={{ each_group.name }}"
+                    class="text-blue-600 hover:text-blue-900">{{ each_group.name }}</a>
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                  {% access_status_content each_group.status|safe %}
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-2xl truncate">
+                  {{ each_group.role }}
+                </td>
+                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-sm font-medium sm:pr-6">
+                  {% if each_group.role == "Owner" and each_group.status == "Approved" %}
+                  <a type="button" href="{% url 'groupRequestAccess' %}" class="inline-flex items-center justify-center rounded-md border
+                              border-transparent bg-blue-100 px-4 py-2 text-sm font-medium
+                                                    text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none
+                                                    focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
+                                                    sm:w-auto">Add Module
+                  </a>
+                  <a type="button" href="{% url 'addUserToGroup' each_group.name %}" class="inline-flex items-center justify-center rounded-md border
+                                                    border-transparent bg-blue-100 px-4 py-2 text-sm font-medium
+                                                    text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none
+                                                    focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
+                                                    sm:w-auto">Add Member
+                  </a>
+                  {%else%}
+                  NA
+                  {%endif%}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="mt-8 w-full box-border rounded-md border border-gray-200 bg-white">
+    <div class="flex h-64 justify-center items-center">
+      <div class="flex flex-col place-items-center gap-2">
+        <div class="flex flex-row text-gray-400 hover:text-gray-500">
+          <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 0 24 24" width="40px"
+            fill="currentColor">
+            <path d="M0 0h24v24H0V0z" fill="none" />
+            <path
+              d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-sm font-medium text-gray-900">No Groups</h1>
+        </div>
+        <div>
+          <h1 class="text-sm font-normal text-gray-700">No group data available. Create a group to
+            get started.</h1>
+        </div>
+        <div class="mt-6 place-items-center">
+          <a href="{% url 'createNewGroup' %}">
+            <button type="button" class="box-border border border-gray-300
+                                         px-4 py-2 text-sm font-medium shadow-sm rounded-md
+                                         sm:w-auto">
+              Create a group
+            </button>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% if dataList %}
+<nav
+  class="mt-8 flex items-center justify-between border-t border-gray-200 sm:px-0 pt-6 px-4 sm:px-6 lg:px-8 pb-6 w-full">
+  <div class="-mt-px flex w-0 flex-1">
+    {% if currentPagination > 1 %}
+    <a onclick="change_page('{{ currentPagination }}', -1)"
+      class="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+      <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+        fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd"
+          d="M18 10a.75.75 0 01-.75.75H4.66l2.1 1.95a.75.75 0 11-1.02 1.1l-3.5-3.25a.75.75 0 010-1.1l3.5-3.25a.75.75 0 111.02 1.1l-2.1 1.95h12.59A.75.75 0 0118 10z"
+          clip-rule="evenodd" />
+      </svg>
+      Previous
+    </a>
+    {% endif %}
+  </div>
+
+  <div class="hidden md:-mt-px md:flex">
+    {% for navIter in allPages %}
+    <a onclick="change_page('{{ navIter }}')"
+      class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium {% get_navigation_class navIter currentPagination %}">
+      {{ navIter }}</a>
+    {% endfor %}
+    {% comment %} <span
+      class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium border-transparent text-gray-500">...</span>
+    {% endcomment %}
+  </div>
+  <div class="-mt-px flex w-0 flex-1 justify-end">
+    {% if currentPagination < maxPagination %} <a onclick="change_page('{{ currentPagination }}', 1)"
+      class="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+      Next
+      <svg class="ml-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+        fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd"
+          d="M2 10a.75.75 0 01.75-.75h12.59l-2.1-1.95a.75.75 0 111.02-1.1l3.5 3.25a.75.75 0 010 1.1l-3.5 3.25a.75.75 0 11-1.02-1.1l2.1-1.95H2.75A.75.75 0 012 10z"
+          clip-rule="evenodd" />
+      </svg>
+      </a>
+      {% endif %}
+  </div>
+</nav>
+{% endif %}
+
+{% endblock %}

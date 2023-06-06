@@ -7,7 +7,7 @@ import datetime
 import random
 
 from Access.access_modules import *  # NOQA
-from EnigmaAutomation.settings import PERMISSION_CONSTANTS
+from enigma_automation.settings import PERMISSION_CONSTANTS
 from Access.models import User
 
 logger = logging.getLogger(__name__)
@@ -21,6 +21,11 @@ def get_available_access_module_from_tag(tag):
     if tag in all_modules:
         return get_available_access_modules()[tag]
     return None
+
+
+def get_available_access_type():
+    available_accesses_type = [access.access_desc() for access in _get_modules_on_disk()]
+    return available_accesses_type
 
 
 def get_available_access_modules():
