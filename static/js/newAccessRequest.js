@@ -15,67 +15,70 @@ const handleSelectionView = () => {
   }
 };
 
-const selectCheckbox = (moduleTag, checked) => {
+const selectCheckbox = (elem, checked) => {
   if(checked) {
-    $(`#${moduleTag}-marker`).show();
-    $(`#${moduleTag}-checkbox`).prop('checked', true);
-    $(`#${moduleTag}-tablerow`).removeClass('hover:bg-blue-50 hover:text-blue-700');
-    $(`#${moduleTag}-tabledesc`).addClass('text-blue-600');
+    $(elem).find('input').prop('checked', true);
+    $(elem).removeClass('hover:bg-blue-50 hover:text-blue-700').addClass('bg-gray-50');
+    $(elem).children('td#description-td').removeClass('text-gray-900').addClass('text-blue-600');
   } else {
-    $(`#${moduleTag}-marker`).hide();
-    $(`#${moduleTag}-checkbox`).prop('checked', false);
-    $(`#${moduleTag}-tablerow`).addClass('hover:bg-blue-50 hover:text-blue-700');
-    $(`#${moduleTag}-tabledesc`).removeClass('text-blue-600');
+    $(elem).find('input').prop('checked', false);
+    $(elem).children('td#description-td').addClass('text-gray-900').removeClass('text-blue-600');
+    $(elem).addClass('hover:bg-blue-50 hover:text-blue-700').removeClass('bg-gray-50');
   }
 };
 
-const addModuleSelection = (moduleTag, moduleDesc) => {
+const addModuleSelection = (elem) => {
   const selectionList = $('#module-selection-table');
   const newSpan = $("#module-selection-row-template").clone(true, true);
 
-  selectCheckbox(moduleTag, true);
+  selectCheckbox(elem, true);
+  const moduleDesc = $(elem).attr("module_desc");
+  const moduleTag = $(elem).attr("module_tag");
 
   newSpan.appendTo(selectionList);
   newSpan.show();
   const tableData = newSpan.children('td');
   tableData[0].textContent = moduleDesc;
-  newSpan.attr('id', `module-selection-${moduleTag}`);
+  newSpan.attr('module_tag', moduleTag);
 
   handleSelectionView();
 };
 
-const removeSelectionSpanElem = (elem) => {
-  const spanId = elem.id || elem.attr('id');
-  const moduleTag = spanId.replace('module-selection-', '');
+const removeSelectionSpanElem = (rightElem, leftElem) => {
 
-  elem.remove();
-  selectCheckbox(moduleTag, false);
+  rightElem.remove();
+  selectCheckbox(leftElem, false);
 
   handleSelectionView();
 };
 
-const removeModuleSelection = (moduleTag) => {
-  removeSelectionSpanElem($(`#module-selection-${moduleTag}`));
+const removeModuleSelection = (elem) => {
+  removeSelectionSpanElem($("#module-selection-table").find(`tr[module_tag="${$(elem).attr('module_tag')}"]`), elem);
 };
 
 const removeModuleSelectionUI = (elem) => {
-  removeSelectionSpanElem(elem.parentElement.parentElement);
+  rightElem = elem.parentElement.parentElement;
+  removeSelectionSpanElem(rightElem, $("#module-list-table").find(`tr[module_tag="${$(rightElem).attr('module_tag')}"]`));
 };
 
 const removeAllModules = () => {
   const modules = $('#module-selection-table').children('tr');
   for(iter = 0; iter < modules.length; iter++) {
-    removeSelectionSpanElem(modules[iter]);
+    removeSelectionSpanElem(modules[iter], $("#module-list-table").find(`tr[module_tag="${$(modules[iter]).attr('module_tag')}"]`));
   }
 };
 
-const handleModuleSelection = (elem, moduleTag, moduleDesc) => {
-  if(elem.checked) {
-    addModuleSelection(moduleTag, moduleDesc);
+const handleModuleSelection = (elem) => {
+  if(!$(elem).find('input').prop('checked')) {
+    addModuleSelection(elem);
   } else {
-    removeModuleSelection(moduleTag);
+    removeModuleSelection(elem);
   }
 };
+
+const handleModuleSelectionCheckbox = (elem) => {
+  $(elem).prop('checked', !$(elem).prop('checked'));
+}
 
 const raiseAccessRequest = () => {
   const modules = $('#module-selection-table').children('tr');

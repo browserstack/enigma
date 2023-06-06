@@ -4,6 +4,7 @@
 
 {% block head_body %}
 <script src={% static "js/showAccessHistory.js" %}></script>
+<script src={% static "js/globalSearchMisc.js" %}></script>
 {% endblock %}
 
 {% block nav_breadcrumb %}
@@ -44,33 +45,97 @@
       </a>
     </div>
   </div>
-  <div class="flex flex-row gap-4 place-content-end mt-8">
-    <div class="w-2/12">
-      <div class="relative" onclick="focusFilterStatus(this);">
-        <button type="button" class="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
-          <span class="block truncate text-gray-500">Status</span>
-          <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#000000" aria-hidden="true">
-              <path d="M0 0h24v24H0z" fill="none"/>
-              <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" clip-rule="evenodd"/>
+  <div class="flex flex-row gap-4 items-center mt-8">
+    <div class="sm:flex-auto">
+      <div class="w-3/6 float:left relative">
+        <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white">
+          <input id="global-search" type="search" onkeydown="search(event, this)"
+            class="flex-none rounded-md border-none text-gray-500 text-sm font-normal px-4 py-2 min-w-full"
+            placeholder="Search by module name or request id" {% if search_value %} value="{{search_value}}" {% endif %}>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor"
+              viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd"
+                d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                clip-rule="evenodd"></path>
             </svg>
-          </span>
-        </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="float-right relative" onclick="focusFilterStatus(this);">
+      <button type="button" class="relative w-[300px] cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+        <span class="block truncate text-gray-500">Module</span>
+        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+          <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#000000" aria-hidden="true">
+            <path d="M0 0h24v24H0z" fill="none"/>
+            <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" clip-rule="evenodd"/>
+          </svg>
+        </span>
+      </button>
 
-        <ul class="hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label" aria-activedescendant="listbox-option-3">
-          {% for each_status in possibleStatuses %}
-          <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0" role="option" onclick="selectLI(this);">
-            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type="checkbox" id="status-checkbox-{{ each_status }}">
-            </span>
+      <ul class="hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label" aria-activedescendant="listbox-option-3">
+        {% for each_access_module in possibleAccessModules.selected %}
+        <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0">
+          <input type="checkbox" param="access_desc" value="{{ each_access_module }}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="status-checkbox-{{ each_access_module }}" name="status-checkbox-{{ each_access_module }}" onclick="select_filter(this)" checked>
+          <label for="status-checkbox-{{ each_access_module }}">{{each_access_module}}</label>
+        </li>
+        {% endfor %}
+        {% for each_access_module in possibleAccessModules.notSelected %}
+        <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0">
+          <input type="checkbox" param="access_desc" value="{{ each_access_module }}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="status-checkbox-{{ each_access_module }}" name="status-checkbox-{{ each_access_module }}" onclick="select_filter(this)">
+          <label for="status-checkbox-{{ each_access_module }}">{{each_access_module}}</label>
+        </li>
+        {% endfor %}
+      </ul>
+    </div> 
+    <div class="w-1/6 float-right relative" onclick="focusFilterStatus(this);">
+      <button type="button" class="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
+        <span class="block truncate text-gray-500">Status</span>
+        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+          <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" fill="#000000" aria-hidden="true">
+            <path d="M0 0h24v24H0z" fill="none"/>
+            <path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z" clip-rule="evenodd"/>
+          </svg>
+        </span>
+      </button>
 
-            <span class="font-normal block truncate ml-8">{{ each_status }}</span>
-          </li>
-          {% endfor %}
-        </ul>
+      <ul class="hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label" aria-activedescendant="listbox-option-3">
+        {% for each_status in possibleStatuses.selected %}
+        <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0">
+          <input type="checkbox" param="status" value="{{each_status}}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="status-checkbox-{{ each_status }}" name="status-checkbox-{{ each_status }}" onclick="select_filter(this)" checked>
+          <label for="status-checkbox-{{ each_status }}">{{each_status}}</label>
+        </li>
+        {% endfor %}
+        {% for each_status in possibleStatuses.notSelected %}
+        <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0">
+          <input type="checkbox" param="status" value="{{each_status}}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="status-checkbox-{{ each_status }}" name="status-checkbox-{{ each_status }}" onclick="select_filter(this)">
+          <label for="status-checkbox-{{ each_status }}">{{each_status}}</label>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  {% if search_error %}
+  <div class="mt-5 rounded-md bg-yellow-50 p-4">
+    <div class="flex">
+      <div class="flex-shrink-0">
+        <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v3.5a.75.75 0 01-1.5 0v-3.5A.75.75 0 0110 5zm0 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+        </svg>
+      </div>
+      <div class="ml-3">
+        <h3 class="text-sm font-medium text-yellow-800">No exact match found</h3>
+        <div class="mt-2 text-sm text-yellow-700">
+          <p>{{search_error}}</p>
+        </div>
       </div>
     </div>
   </div>
+  {% endif %}
+
+
   <div class="mt-8 flex flex-col">
     <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
       <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
@@ -92,7 +157,7 @@
                   <div class="text-gray-900">{{ each_access.access_desc }}</div>
                   <div class="text-gray-400">{{ each_access.requestId }}</div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{% access_status_content each_access.status|safe %}</td>
+                <td data-tooltip-target="tooltip-light" class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{% access_status_content each_access.status|safe %}</td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-2xl truncate">{{ each_access.accessCategory }}</td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ each_access.accessRequestType }}</td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
@@ -109,12 +174,17 @@
     </div>
   </div>
 </div>
-<nav class="flex items-center justify-between border-t border-gray-200 sm:px-0 pt-6 px-4 sm:px-6 lg:px-8 pb-6 w-full">
+<nav
+  class="mt-8 flex items-center justify-between border-t border-gray-200 sm:px-0 pt-6 px-4 sm:px-6 lg:px-8 pb-6 w-full">
   <div class="-mt-px flex w-0 flex-1">
     {% if currentPagination > 1 %}
-    <a href="?page={{ currentPagination|add:"-1" }}" class="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
-      <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path fill-rule="evenodd" d="M18 10a.75.75 0 01-.75.75H4.66l2.1 1.95a.75.75 0 11-1.02 1.1l-3.5-3.25a.75.75 0 010-1.1l3.5-3.25a.75.75 0 111.02 1.1l-2.1 1.95h12.59A.75.75 0 0118 10z" clip-rule="evenodd" />
+    <a onclick="change_page('{{ currentPagination }}', -1)" 
+      class="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+      <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+        fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd"
+          d="M18 10a.75.75 0 01-.75.75H4.66l2.1 1.95a.75.75 0 11-1.02 1.1l-3.5-3.25a.75.75 0 010-1.1l3.5-3.25a.75.75 0 111.02 1.1l-2.1 1.95h12.59A.75.75 0 0118 10z"
+          clip-rule="evenodd" />
       </svg>
       Previous
     </a>
@@ -123,19 +193,26 @@
 
   <div class="hidden md:-mt-px md:flex">
     {% for navIter in allPages %}
-      <a href="?page={{ navIter }}" class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium {% get_navigation_class navIter currentPagination %}">{{ navIter }}</a>
+    <a onclick="change_page('{{ navIter }}')"
+      class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium {% get_navigation_class navIter currentPagination %}">
+      {{ navIter }}</a>
     {% endfor %}
-    {% comment %} <span class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium border-transparent text-gray-500">...</span> {% endcomment %}
+    {% comment %} <span
+      class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium border-transparent text-gray-500">...</span>
+    {% endcomment %}
   </div>
   <div class="-mt-px flex w-0 flex-1 justify-end">
-    {% if currentPagination < maxPagination %}
-    <a href="?page={{ currentPagination|add:"1" }}" class="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
+    {% if currentPagination < maxPagination %} <a onclick="change_page('{{ currentPagination }}', 1)"
+      class="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
       Next
-      <svg class="ml-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-        <path fill-rule="evenodd" d="M2 10a.75.75 0 01.75-.75h12.59l-2.1-1.95a.75.75 0 111.02-1.1l3.5 3.25a.75.75 0 010 1.1l-3.5 3.25a.75.75 0 11-1.02-1.1l2.1-1.95H2.75A.75.75 0 012 10z" clip-rule="evenodd" />
+      <svg class="ml-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+        fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd"
+          d="M2 10a.75.75 0 01.75-.75h12.59l-2.1-1.95a.75.75 0 111.02-1.1l3.5 3.25a.75.75 0 010 1.1l-3.5 3.25a.75.75 0 11-1.02-1.1l2.1-1.95H2.75A.75.75 0 012 10z"
+          clip-rule="evenodd" />
       </svg>
-    </a>
-    {% endif %}
+      </a>
+      {% endif %}
   </div>
 </nav>
 {% endblock %}
