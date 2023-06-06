@@ -12,7 +12,6 @@ from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.response import TemplateResponse
 from django.db.models import Q
-from django.core import serializers
 
 from Access import views_helper
 from Access import group_helper
@@ -30,7 +29,7 @@ from Access.accessrequest_helper import (
     ImplementationPendingException,
     REQUEST_FAILED_MSG
 )
-from Access.models import User, UserAccessMapping, GroupAccessMapping, user as duser
+from Access.models import User, UserAccessMapping, GroupAccessMapping
 
 from Access.userlist_helper import (
     getallUserList,
@@ -108,7 +107,6 @@ def show_access_history(request):
     return TemplateResponse(request, "EnigmaOps/showAccessHistory.html"), context
 
 
-
 @login_required
 def new_access_request(request):
     """ new access request """
@@ -148,12 +146,10 @@ def pending_failure(request):
         return render(request, "EnigmaOps/failureAdminRequests.html", response)
     except Exception as ex:
         logger.error(
-            "Error in request not found OR Invalid request type, Error: %s", str(
-                ex)
+            "Error in request not found OR Invalid request type, Error: %s", str(ex)
         )
         json_response = {}
-        json_response["error"] = {"error_msg": str(
-            ex), "msg": INVALID_REQUEST_MESSAGE}
+        json_response["error"] = {"error_msg": str(ex), "msg": INVALID_REQUEST_MESSAGE}
         return render(request, "EnigmaOps/accessStatus.html", json_response)
 
 
@@ -166,12 +162,10 @@ def pending_revoke(request):
         return render(request, "EnigmaOps/failureAdminRequests.html", response)
     except Exception as ex:
         logger.debug(
-            "Error in request not found OR Invalid request type, Error: %s", str(
-                ex)
+            "Error in request not found OR Invalid request type, Error: %s", str(ex)
         )
         json_response = {}
-        json_response["error"] = {"error_msg": str(
-            ex), "msg": INVALID_REQUEST_MESSAGE}
+        json_response["error"] = {"error_msg": str(ex), "msg": INVALID_REQUEST_MESSAGE}
         return render(request, "EnigmaOps/accessStatus.html", json_response)
 
 
@@ -234,13 +228,15 @@ def create_new_group(request):
         if "status" in context:
             return JsonResponse(context, status=200)
 
-    paginator = Paginator(User.objects.filter(state='1').exclude(user__username='system_user').exclude(user=request.user).only("user"), 10)
-    next = (2 if int(paginator.num_pages) > 1 else None)
-    previous = None
+    paginator = Paginator(User.objects.filter(state='1')
+    .exclude(user__username='system_user')
+    .exclude(user=request.user).only("user"), 10)
+    next_page = (2 if int(paginator.num_pages) > 1 else None)
+    previous_page = None
     return render(request, "EnigmaOps/createNewGroup.html", {
         "users": paginator.get_page(1),
-        "next_page": next,
-        "previous_page": previous
+        "next_page": next_page,
+        "previous_page": previous_page
     })
 
 
@@ -325,8 +321,7 @@ def group_access(request):
         status of whether the group access save request.
     """
     if request.POST:
-        context = group_helper.save_group_access_request(
-            request.POST, request.user)
+        context = group_helper.save_group_access_request(request.POST, request.user)
         return render(request, "EnigmaOps/accessStatus.html", context)
 
     context = group_helper.get_group_access(request.GET, request.user)
@@ -419,8 +414,7 @@ def update_group_owners(request, group_name):
         return JsonResponse(context, status=200)
     except Exception as ex:
         logger.debug(
-            "Error in request not found OR Invalid request type, Error: %s", str(
-                ex)
+            "Error in request not found OR Invalid request type, Error: %s", str(ex)
         )
         json_response = {}
         json_response["error"] = INVALID_REQUEST_MESSAGE
@@ -548,8 +542,7 @@ def accept_bulk(request, selector):
             elif selector == "groupAccess":
                 json_response = accept_group_access(request.user, request_id)
             elif selector == "moduleAccess":
-                json_response = accept_user_access_requests(
-                    request.user, request_id)
+                json_response = accept_user_access_requests(request.user, request_id)
             else:
                 raise ValidationError("Invalid request")
             if "error" in json_response:
@@ -617,8 +610,7 @@ def decline_access(request, access_type, request_id):
     """
     if request.GET:
         try:
-            context = get_decline_access_request(
-                request, access_type, request_id)
+            context = get_decline_access_request(request, access_type, request_id)
             return JsonResponse(context, status=200)
         except Exception:
             logger.exception("Error declining access, Error: %s", traceback.format_exc())
@@ -793,8 +785,7 @@ def mark_revoked(request):
                     access_tag=access_tag, status=["Approved", "Offboarding"]
                 )
             else:
-                raise Exception(
-                    f"User with username '{username}' does not exist")
+                raise Exception(f"User with username '{username}' does not exist")
         else:
             requests = UserAccessMapping.get_unrevoked_accesses_by_request_id(
                 request_id=request_id
@@ -825,8 +816,7 @@ def individual_resolve(request):
             raise Exception("Request id not found in the request")
 
         for request_id in request_ids:
-            user_access_mapping = UserAccessMapping.get_access_request(
-                request_id)
+            user_access_mapping = UserAccessMapping.get_access_request(request_id)
             if user_access_mapping.status.lower() in ["grantfailed", "approved"]:
                 response = run_accept_request_task(
                     False,
@@ -858,8 +848,7 @@ def ignore_failure(request, selector):
         json_response = {"status_list": []}
         request_ids = request.GET.getlist("requestId")
         for request_id in request_ids:
-            user_access_mapping = UserAccessMapping.get_access_request(
-                request_id)
+            user_access_mapping = UserAccessMapping.get_access_request(request_id)
             if user_access_mapping.status.lower() in ["grantfailed", "revokefailed"]:
                 run_ignore_failure_task(
                     request.user,
@@ -906,8 +895,7 @@ def resolve_bulk(request):
         json_response = {"status_list": []}
         request_ids = request.GET.getlist("requestId")
         for request_id in request_ids:
-            user_access_mapping = UserAccessMapping.get_access_request(
-                request_id)
+            user_access_mapping = UserAccessMapping.get_access_request(request_id)
             if user_access_mapping.status.lower() in ["grantfailed"]:
                 response = run_accept_request_task(
                     False,
