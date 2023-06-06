@@ -294,7 +294,7 @@ class User(models.Model):
             access_request_mapping_related_manager.append(each_identity.user_access_mapping)
         return access_request_mapping_related_manager
 
-    def get_access_history(self, all_access_modules, start_index, count):
+    def get_access_history(self, all_access_modules):
         """ method to get access history for all access modules """
         access_request_mapping_related_manager = self.get_user_access_mapping_related_manager()
         access_history = []
@@ -306,19 +306,7 @@ class User(models.Model):
                 access_history.\
                     append(each_user_access_mapping.get_access_request_details(access_module))
 
-            # skip till start_index
-            if start_index <= len(access_history):
-                access_history = access_history[start_index:]
-                start_index = 0
-            else:
-                start_index = start_index - len(access_history)
-                access_history = []
-
-            # end loop if count to return is reached
-            if start_index == 0 and len(access_history) >= count:
-                break
-
-        return access_history[0:count]
+        return access_history
 
     def get_total_access_count(self):
         """ method to get total access count """
