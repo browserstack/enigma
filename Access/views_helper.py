@@ -1,19 +1,19 @@
-from django.shortcuts import render
-from django.http import HttpResponse
+""" helper module for views """
 import datetime
 import logging
-import traceback
 
 import csv
+from django.shortcuts import render
+from django.http import HttpResponse
+from Access.background_task_manager import accept_request
 from . import helpers as helper
 from .models import UserAccessMapping
-from bootprocess import general
-from Access.background_task_manager import background_task, accept_request
 
 logger = logging.getLogger(__name__)
 
 
 def generate_user_mappings(user, group, membership):
+    """ method to generate user mappings """
     group_mappings = group.get_approved_accesses()
 
     user_mappings_list = []
@@ -60,6 +60,7 @@ def generate_user_mappings(user, group, membership):
 
 
 def execute_group_access(user_mappings_list):
+    """ method to execute group access """
     for mapping in user_mappings_list:
         user = mapping.user_identity.user
         if user.current_state() == "active":
@@ -67,31 +68,28 @@ def execute_group_access(user_mappings_list):
                 decline_group_other_access(mapping)
             else:
                 accept_request(mapping)
-                logger.debug("Successful group access grant for " + mapping.request_id)
+                logger.debug("Successful group access grant for %s", mapping.request_id)
         else:
             mapping.decline_access(decline_reason="User is not active")
             logger.debug(
-                "Skipping group access grant for user "
-                + user.user.username
-                + " as user is not active"
+                "Skipping group access grant for user %s as user is not active", user.user.username
             )
 
 
 def decline_group_other_access(access_mapping):
+    """ method to decline other access in the group """
     user = access_mapping.user
     access_mapping.decline_access(
         decline_reason="Auto decline for 'Other Access'. Please replace this with correct access."
     )
     logger.debug(
-        "Skipping group access grant for user "
-        + user.user.username
-        + " for request_id "
-        + access_mapping.request_id
-        + " as it is 'Other Access'"
+        "Skipping group access grant for user %s for request_id %s, as it is 'Other Access'",
+        user.user.username, access_mapping.request_id
     )
 
 
 def get_next_index(request_id, similar_id_mappings):
+    """ method to get next index """
     idx = 0
     while True:
         new_request_id = request_id + "_" + str(idx)
@@ -101,6 +99,7 @@ def get_next_index(request_id, similar_id_mappings):
 
 
 def render_error_message(request, log_message, user_message, user_message_description):
+    """ method to render error message """
     logger.error(log_message)
     return render(
         request,
@@ -115,6 +114,7 @@ def render_error_message(request, log_message, user_message, user_message_descri
 
 
 def get_filters_for_access_list(request):
+    """ method to get filters for access list """
     filters = {}
     if "accessTag" in request.GET:
         filters["access__access_tag__icontains"] = request.GET.get("accessTag")
@@ -128,6 +128,7 @@ def get_filters_for_access_list(request):
 
 
 def prepare_datalist(paginator, record_date):
+    """ method to prepare data-list """
     data_list = []
     for each_access_request in paginator:
         if (
@@ -141,6 +142,7 @@ def prepare_datalist(paginator, record_date):
 
 
 def gen_all_user_access_list_csv(data_list):
+    """ method to get all user access list in csv """
     logger.debug("Processing CSV response")
     response = HttpResponse(content_type="text/csv")
     filename = (
@@ -185,10 +187,11 @@ def gen_all_user_access_list_csv(data_list):
 
 
 def get_generic_user_access_mapping(user_access_mapping):
+    """ method to get generic user access mapping """
     access_module = helper.get_available_access_module_from_tag(
         user_access_mapping.access.access_tag
     )
     if access_module:
         access_details = user_access_mapping.get_access_request_details(access_module)
-    logger.debug("Generic access generated: " + str(access_details))
+    logger.debug("Generic access generated: %s", str(access_details))
     return access_details
