@@ -19,5 +19,6 @@ def add_variables_to_context(request):
 
     context["totalAccessCount"] = currentUser.get_total_access_count()
     context["groupsMemberFor"] = len(currentUser.get_active_groups())
+    context["pendingActionsCount"] = currentUser.getPendingApprovalsCount(all_access_modules)
 
     return context
