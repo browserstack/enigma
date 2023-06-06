@@ -6,6 +6,7 @@ import re
 import datetime
 import random
 from typing import Dict
+from typing import List
 from django.template import loader
 from Access.access_modules import *  # NOQA
 from Access.models import User
@@ -13,7 +14,7 @@ from enigma_automation.settings import PERMISSION_CONSTANTS
 
 logger = logging.getLogger(__name__)
 
-MAP_ACCESSES: Dict[str, list[object]] = {}
+MAP_ACCESSES: Dict[str, List[object]] = {}
 
 
 def get_available_access_module_from_tag(tag):
@@ -23,11 +24,13 @@ def get_available_access_module_from_tag(tag):
         return get_available_access_modules()[tag]
     return None
 
+
 def get_available_access_module_desc():
+    """ method to get available access module description """
     access_descriptions = []
-    for tag, each_module in get_available_access_modules().items():
+    for _tag, each_module in get_available_access_modules().items():
         access_descriptions.append(each_module.access_desc())
-    
+
     return access_descriptions
 
 

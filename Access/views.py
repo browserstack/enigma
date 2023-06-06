@@ -1,6 +1,5 @@
 """Django views."""
 import json
-import math
 import logging
 import traceback
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
@@ -77,7 +76,7 @@ def show_access_history(request):
             "Invalid Request",
             "Please login again",
         )
-    
+
     selected_status = request.GET.getlist("status")
     selected_access_modules = request.GET.getlist("access_desc")
 
@@ -90,14 +89,16 @@ def show_access_history(request):
         "filter_rows": ["status", "access_desc"],
         "possibleStatuses": {
             "selected": selected_status,
-            "notSelected": [status for status in UserAccessMapping.get_unique_statuses() if status not in selected_status]
+            "notSelected": [status for status in UserAccessMapping.get_unique_statuses()
+                            if status not in selected_status]
         },
-         
+
         "possibleAccessModules": {
             "selected": selected_access_modules,
-            "notSelected": [access_desc for access_desc in helper.get_available_access_module_desc() if access_desc not in selected_access_modules]
+            "notSelected": [access_desc for access_desc in helper.get_available_access_module_desc()
+                            if access_desc not in selected_access_modules]
         },
-        
+
         "search_value": request.GET.get('search')
     }
     print(context["dataList"][0])
