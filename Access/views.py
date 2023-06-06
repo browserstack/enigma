@@ -228,16 +228,7 @@ def create_new_group(request):
         if "status" in context:
             return JsonResponse(context, status=200)
 
-    paginator = Paginator(User.objects.filter(state='1')
-    .exclude(user__username='system_user')
-    .exclude(user=request.user).only("user"), 10)
-    next_page = (2 if int(paginator.num_pages) > 1 else None)
-    previous_page = None
-    return render(request, "EnigmaOps/createNewGroup.html", {
-        "users": paginator.get_page(1),
-        "next_page": next_page,
-        "previous_page": previous_page
-    })
+    return render(request, "EnigmaOps/createNewGroup.html")
 
 
 @login_required
@@ -951,20 +942,22 @@ def error_500(request, template_name='500.html'):
 
 
 def get_active_users(request):
+    """ Json responce of active users """
     search = request.GET.get("search")
     page = (int(request.GET.get("page")) if request.GET.get("page") else 1)
-    users = duser.objects.filter(user__state='1').exclude(
+    users = djangoUser.objects.filter(user__state='1').exclude(
         username='system_user'
     ).exclude(
         user=request.user.user
     ).filter(
-        Q(first_name__icontains = search) | Q(last_name__icontains = search) | Q(email__icontains = search)
+        Q(first_name__icontains=search)
+        | Q(last_name__icontains=search)
+        | Q(email__icontains=search)
     ).values('first_name', 'last_name', 'email')
     paginator = Paginator(users, 10)
-    
-    
+
     return JsonResponse({
         "users": json.dumps(list(paginator.get_page(page))),
-        "next_page": (page+1 if page < paginator.num_pages else None),
-        "previous_page": (page-1 if page > 1 else None),
+        "next_page": (page + 1 if page < paginator.num_pages else None),
+        "previous_page": (page - 1 if page > 1 else None),
     }, status=200)

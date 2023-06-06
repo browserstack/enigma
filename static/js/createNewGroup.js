@@ -22,7 +22,9 @@ const selectAllToggleSelection = (elem) => {
     const members = $("#users-list-table").children('tr');
   
     for (iter = 0; iter < members.length; iter++) {
-      addMemberSelection(members[iter])
+      if(!selectedList[$(members[iter]).attr("email")]){
+        addMemberSelection(members[iter])
+      }
     }
   } else {
     removeAllMembers()
@@ -92,6 +94,10 @@ const handleMemberSelection = (elem) => {
     removeMemberSelection(elem);
   }
 };
+
+const handleMemberSelectionCheckbox = (elem) => {
+  $(elem).prop('checked', !$(elem).prop('checked'));
+}
 
 $(function () {
   $('#newGroupName').on('input', function () {
@@ -223,9 +229,9 @@ function update_users(search, page) {
         <td id="checkbox-td" class="relative w-12 px-6 sm:w-16 sm:px-8">
           <input type="checkbox" value="${user["email"]}"
             name="selectedUserList"
-            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 focus:ring-blue-500 sm:left-6" ${ selectedList[user["email"]]? "checked": "" } onclick="handleMemberSelection(this.parentElement.parentElement)"></input>
+            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 focus:ring-blue-500 sm:left-6" ${ selectedList[user["email"]]? "checked": "" } onclick="handleMemberSelectionCheckbox(this)"></input>
         </td>
-        <td id="description-td" class="whitespace-nowrap py-2 pr-3 text-sm font-normal ${ selectedList[user["email"]]? "text-blue-600" : "text-gray-900"}">
+        <td id="description-td" class="whitespace-nowrap py-4 pr-3 text-sm font-normal ${ selectedList[user["email"]]? "text-blue-600" : "text-gray-900"}">
           ${user["first_name"]} ${user["last_name"]} ${user["email"]}</td>
       </tr>`;
       })
@@ -263,3 +269,7 @@ function change_page(page) {
     update_users(get_search_val(), Number(page));
   }
 }
+
+$(window).on("load", () => {
+  update_users("", undefined)
+})

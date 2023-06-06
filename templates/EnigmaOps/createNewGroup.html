@@ -73,14 +73,14 @@
     </div>
   </div>
 
-  <div class="grid grid-cols-2 max-h-min">
+  <div class="grid grid-cols-2 max-h-min mt-5">
     <div>
-      <div class="flex flex-col mt-6">
+      <div class="flex flex-col">
         <div class="w-full"><label class="text-sm font-medium text-gray-700">Add members</label></div>
         <div class="flex flex-row">
           <div class="relative flex-auto items-center">
             <input id="global-search" type="search" onkeydown="search(event, this)"
-              class="flex-auto w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600"
+              class="flex-auto w-full rounded-md border-gray-300 shadow-sm focus:border-blue-600 focus:ring-blue-600 sm:text-sm"
               placeholder="Search by name or email ID"></input>
             <div class="absolute inset-y-0 right-0 py-1.5 pr-1.5">
               <svg aria-hidden="true" class="text-gray-500 h-full" height="18px" width="18px" fill="currentColor"
@@ -108,17 +108,7 @@
                 <div class="relative overflow-hidden ring-black ring-opacity-5 md:rounded-lg">
                   <table class="min-w-full table-fixed divide-gray-300">
                     <tbody class="divide-gray-200 bg-white" id="users-list-table">
-                      {% for user in users %}
-                      <tr onclick="handleMemberSelection(this)" email="{{ user.email }}" user_name="{{ user.user.first_name }} {{ user.user.last_name }}" class="hover:bg-blue-50 hover:text-blue-700">
-                        <td id="checkbox-td" class="relative w-12 px-6 sm:w-16 sm:px-8">
-                          <input type="checkbox" value="{{user.email}}"
-                            name="selectedUserList"
-                            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 focus:ring-blue-500 sm:left-6" onclick="handleMemberSelection(this.parentElement.parentElement)"></input>
-                        </td>
-                        <td id="description-td" class="whitespace-nowrap py-2 pr-3 text-sm font-normal text-gray-900">
-                          {{user.user.first_name}} {{user.user.last_name}} {{user.email }}</td>
-                      </tr>
-                      {% endfor %}
+
                     </tbody>
                   </table>
                   <div class="grid grid-cols-2">
@@ -134,7 +124,7 @@
     </div>
 
     <div>
-      <div class="flex flex-col mt-16 ml-4">
+      <div class="flex flex-col mt-10 ml-4">
         <div class="flex flex-row items-center">
           <h1 class="text-xl text-gray-900">Selected members</h1>
           <span
@@ -185,10 +175,10 @@
   <div>
     <div>
 
-      <div class="mt-2 flex flex-col">
+      <div class="mt-5 flex flex-col">
         <label class="leading-loose text-sm font-medium">Reason for group</label>
         <input type="text" id="newGroupReason" name="newGroupReason"
-          class="w-30 h-42 px-4 py-2 border-2 rounded-lg border-gray-200 focus:outline-none focus:border-yellow-500"
+          class="w-1/2 h-42 px-4 py-2 border-2 rounded-lg border-gray-200 focus:outline-none focus:border-yellow-500 sm:text-sm"
           placeholder="Please mention the reason for creating this group" required>
         <p id="invalidGroupReason" class="text-sm text-red-600 hidden mt-1"> This field can't be empty</p>
       </div>
@@ -196,7 +186,7 @@
     </div>
 
     <div>
-      <div class="mt-8 flex items-center ml-4 mt-6">
+      <div class="mt-5 flex items-center">
         <input checked type="checkbox" value="true" id="requiresAccessApprove" name="requiresAccessApprove"
           class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:border-gray-600">
         <label for="checked-checkbox" class="ml-2 text-sm font-semibold text-gray-900 dark:text-black-300">Needs premission
@@ -219,7 +209,7 @@
 <table class="hidden">
   <tr id="member-selection-row-template" class="hidden max-h-4 px-6 hover:bg-blue-50 hover:text-blue-700">
     <td class="relative w-full px-4" id="member-selection-row-tabledesc">Member Desc</td>
-    <td class="whitespace-nowrap px-4 py-2 text-sm font-medium justify-right content-right max-w-2"
+    <td class="whitespace-nowrap px-4 py-4 text-sm font-medium justify-right content-right max-w-2"
       id="member-selection-row-cancel">
       <button type="button"
         class="ml-0.5 mr-0.5 inline-flex max-w-2 flex-shrink-0 items-center justify-center rounded-full focus:bg-blue-500 focus:text-white focus:outline-none" onclick="removeMemberSelectionUI(this);">
