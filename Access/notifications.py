@@ -30,7 +30,7 @@ USER_REQUEST_RESOLVE_SUBJECT = "[Enigma][Access Management] - Request Resolved -
 def send_new_group_create_notification(auth_user, date_time, new_group, member_list):
     """ method to send group create notification """
     subject = NEW_GROUP_EMAIL_SUBJECT + auth_user.email + " -- " + date_time
-    body = helpers.generateStringFromTemplate(
+    body = helpers.generate_string_from_template(
         filename="groupCreationEmailBody.html",
         user=str(auth_user.user),
         first_name=auth_user.first_name,
@@ -52,7 +52,7 @@ def send_new_group_approved_notification(group, group_id, initial_member_names):
     if initial_member_names:
         body += NEW_MEMBERS_ADDED_MESSAGE
         body += generate_group_member_table(initial_member_names)
-    body = helpers.generateStringFromTemplate(filename="email.html", emailBody=body)
+    body = helpers.generate_string_from_template(filename="email.html", emailBody=body)
     destination = []
     destination += MAIL_APPROVER_GROUPS[:]
     destination.append(group.requester.email)
@@ -64,7 +64,7 @@ def send_new_group_approved_notification(group, group_id, initial_member_names):
 def send_membership_accepted_notification(user, group, membership):
     """ method to send membership accepted notification """
     subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(user.name, group.name)
-    body = helpers.generateStringFromTemplate(
+    body = helpers.generate_string_from_template(
         filename="membershipAcceptedEmailBody.html",
         user_name=user.name,
         group_name=group.name,
@@ -80,7 +80,7 @@ def send_mulitple_membership_accepted_notification(all_user_emails, group_name, 
     """ method to send multiple membership accepted notification """
     for each_user_email in all_user_emails.keys():
         subject = MEMBERSHIP_ACCEPTED_SUBJECT.format(each_user_email, group_name)
-        body = helpers.generateStringFromTemplate(
+        body = helpers.generate_string_from_template(
             filename="membershipAcceptedEmailBody.html",
             user_name=",".join(each_user_email),
             group_name=group_name,
@@ -96,7 +96,7 @@ def generate_group_member_table(member_list):
     """ method to generate group number table """
     if len(member_list) <= 0:
         return "No members are being added initially"
-    return helpers.generateStringFromTemplate("listToTable.html", memberList=member_list)
+    return helpers.generate_string_from_template("listToTable.html", memberList=member_list)
 
 
 def send_group_owners_update_mail(destination, group_name, updated_by):
@@ -116,9 +116,9 @@ def send_group_access_add_email(
     destination, group_name, requester, request_id, member_list
 ):
     """ method to send email for group access add """
-    body = helpers.generateStringFromTemplate(
+    body = helpers.generate_string_from_template(
         filename="email.html",
-        emailBody=helpers.generateStringFromTemplate(
+        emailBody=helpers.generate_string_from_template(
             "add_access_to_group.html",
             request_id=request_id,
             group_name=group_name,
@@ -137,7 +137,7 @@ def send_revoke_failure_mail(
     """ method to send email for revoke failure """
     try:
         subject = f"Celery Revoke Failed for the request: {request_id}"
-        body = helpers.generateStringFromTemplate(
+        body = helpers.generate_string_from_template(
             "celery_revoke_failure_email.html",
             request_id=request_id,
             revoker_email=revoker_email,
@@ -161,7 +161,7 @@ def send_mail_for_request_decline(
     subject = USER_ACCESS_REQUEST_DENIED_SUBJECT.format(
         auth_user.email, access_type, description
     )
-    body = helpers.generateStringFromTemplate(
+    body = helpers.generate_string_from_template(
         filename="requestDeclineEmail.html",
         user=auth_user.email,
         request_id=request_id,
@@ -196,7 +196,7 @@ def send_mail_for_member_approval(user_email, requester, group_name, reason):
         + "]"
     )
     destination = MAIL_APPROVER_GROUPS[:]
-    body = helpers.generateStringFromTemplate(
+    body = helpers.generate_string_from_template(
         filename="email.html",
         emailBody=generate_user_add_to_group_email_body(
             user_email,
@@ -214,7 +214,7 @@ def generate_user_add_to_group_email_body(
     user_email, primary_approver, other_approver, requester, group_name, reason
 ):
     """ method to generate user add to group email body """
-    return helpers.generateStringFromTemplate(
+    return helpers.generate_string_from_template(
         filename="add_user_to_group_mail.html",
         user_email=user_email,
         primary_approver=primary_approver,
@@ -240,7 +240,7 @@ def send_group_access_declined(
     destination, group_name, requester, decliner, request_id, declined_access, reason
 ):
     """ method to send email for group access declined """
-    body = helpers.generateStringFromTemplate(
+    body = helpers.generate_string_from_template(
         "groupAccessDeclined.html",
         request_id=request_id,
         requester=requester,
@@ -257,7 +257,7 @@ def send_group_access_declined(
 def send_accept_group_access_failed(destination, request_id, error):
     """ method to send email for accept group access failed """
     try:
-        body = helpers.generateStringFromTemplate(
+        body = helpers.generate_string_from_template(
             "acceptGroupAccessFailed.html", request_id=request_id, error=error
         )
 
@@ -271,7 +271,7 @@ def send_accept_group_access_failed(destination, request_id, error):
 def send_decline_group_access_failed(destination, request_id, error):
     """ method to send decline group access failed """
     try:
-        body = helpers.generateStringFromTemplate(
+        body = helpers.generate_string_from_template(
             "declineGroupAccessFailed.html", request_id=request_id, error=error
         )
 
@@ -286,7 +286,7 @@ def send_mail_for_request_resolve(auth_user, access_type, request_id):
     """ method to send mail for request resolve """
     destination = [auth_user.email]
     subject = USER_REQUEST_RESOLVE_SUBJECT.format(request_id)
-    body = helpers.generateStringFromTemplate(
+    body = helpers.generate_string_from_template(
         filename="requestResolvedEmail.html",
         user=auth_user.email,
         request_id=request_id,
