@@ -3,7 +3,7 @@ Read our [Code of Conduct](CODE_OF_CONDUCT.md) to keep our community approachabl
 This guide will give you an overview of the contribution workflow from opening an issue, creating a PR, reviewing, and merging the PR.
 
 # Local Setup
-- Follow [Setup Guide](/docs/one-click-dev.md) for setting up the project locally.
+- Follow [Setup Guide](/docs/“How-to”%20guides/User%20Guides/Local%20Developer%20Setup/Local%20Setup%20with%20Docker.md) for setting up the project locally.
 
 # Issues
 
@@ -17,7 +17,7 @@ Scan through our existing issues to find one that interests you. You can narrow 
 
 ## Did you write a patch that fixes a bug or adds functionality?
 - Commit the changes once you are happy with them. Always write a clear log message for your commits.
-  - For commit message we follow [Conventional Commit Message Guideline](https://www.conventionalcommits.org). To enforce this we use [pre-commit](https://pre-commit.com), to setup the same go through [pre-commit setup section of the README](https://github.com/browserstack/enigma-public-central#for-contributing-code)
+  - For commit message we follow [Conventional Commit Message Guideline](https://www.conventionalcommits.org). To enforce this we use [pre-commit](https://pre-commit.com), to setup the same go through [pre-commit setup section of the README](https://github.com/browserstack/enigma#for-contributing-code)
   - Make sure there are no lint issues, check lint issues by running `make lint`. If there are some in the portion which you have touched, fix those lint issues.
   - If you are making changes to config then please update [schema.json file](schema.json) also.
   - We use [semgrep](https://semgrep.dev) for static code analysis and finding vulnerabilities. To check issues locally run `make run_semgrep`.

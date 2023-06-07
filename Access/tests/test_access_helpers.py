@@ -3,7 +3,7 @@ from Access import helpers
 from Access.helpers import (
     get_available_access_modules,
     _get_modules_on_disk,
-    getPossibleApproverPermissions,
+    get_possible_approver_permissions,
 )
 from Access.tests.helper_mocks import MockAccessModule
 
@@ -31,7 +31,7 @@ def test_get_available_access_modules(
 ):
     mocker.patch("Access.helpers._get_modules_on_disk", return_value=expectedModuleList)
 
-    helpers.available_accesses = available_accesses
+    helpers.MAP_ACCESSES["AVAILABLE_ACCESSES"] = available_accesses
     modules = list(get_available_access_modules().values())
     assert len(modules) == len(expectedModuleList)
     for i in range(len(modules)):
@@ -53,7 +53,7 @@ def test_get_modules_on_disk(mocker, testName, cached_accesses, expectedModuleLi
         "glob.glob", return_value=["dir1", "dir2"] + ["base_somedir", "__pycache__"]
     )
     mocker.patch("os.path.isfile", return_value=False)
-    helpers.cached_accesses = cached_accesses
+    helpers.MAP_ACCESSES["CACHED_ACCESSES"] = cached_accesses
     modules = _get_modules_on_disk()
     assert len(modules) == len(expectedModuleList)
     for i in range(len(modules)):
@@ -115,4 +115,4 @@ def test_getPossibleApproverPermissions(
     mocker.patch(
         "Access.helpers.get_available_access_modules", return_value=modulesPresent
     )
-    assert getPossibleApproverPermissions().sort() == expectedApprovers.sort()
+    assert get_possible_approver_permissions().sort() == expectedApprovers.sort()

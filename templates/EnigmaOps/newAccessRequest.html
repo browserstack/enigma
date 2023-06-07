@@ -33,7 +33,7 @@
         <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
           <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
         </svg>
-        <a href="{% url 'newAccessRequest' %}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Request Access</a>
+        <a href="{% url 'newAccessRequest' %}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Request module access</a>
       </div>
     </li>
   </ol>
@@ -44,7 +44,7 @@
 <div class="px-4 sm:px-6 lg:px-8 h-4/5 w-full">
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
-      <h1 class="text-xl font-semibold text-gray-900">Request Access</h1>
+      <h1 class="text-xl font-semibold text-gray-900">Request module access</h1>
     </div>
   </div>
   <div class="grid grid-cols-2 gap-4">
@@ -65,15 +65,13 @@
               <div class="inline-block min-w-full align-middle">
                 <div class="relative overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                   <table class="min-w-full table-fixed divide-gray-300">
-                    <tbody class="divide-gray-200 bg-white">
+                    <tbody class="divide-gray-200 bg-white" id="module-list-table">
                       {% for each_tag, each_module in modulesList.items %}
-                      <tr id="{{ each_tag }}-tablerow" class="hover:bg-blue-50 hover:text-blue-700">
+                      <tr onclick="handleModuleSelection(this)" module_tag="{{ each_tag }}"  module_desc="{{ each_module.access_desc }}"  class="hover:bg-blue-50 hover:text-blue-700">
                         <td class="relative w-12 px-6 sm:w-16 sm:px-8">
-                          <div class="absolute inset-y-0 left-0 w-0.5 bg-blue-600 hidden" id="{{ each_tag }}-marker"></div>
-
-                          <input type="checkbox" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6" onclick="handleModuleSelection(this, '{{ each_tag }}', '{{ each_module.access_desc }}');" id="{{ each_tag }}-checkbox"></input>
+                          <input type="checkbox" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6" onclick="handleModuleSelectionCheckbox(this)"></input>
                         </td>
-                        <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium text-gray-900" id="{{ each_tag }}-tabledesc">{{ each_module.access_desc }}</td>
+                        <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium text-gray-900" id="description-td">{{ each_module.access_desc }}</td>
                       </tr>
                       {% endfor %}
                     </tbody>
@@ -94,13 +92,13 @@
         <div class="mx-auto max-w-2xl h-96">
           <div class="flex gap-4 content-center justify-center min-w-full min-h-full">
             <div class="block m-auto content-center justify-center">
-              <div class="h-64 w-96 bg-gray-200 block m-auto content-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" width="18px" class="text-gray-100 h-full w-32 flex-shrink-0 justify-center content-center block m-auto" fill="currentColor" aria-hidden="true">
-                  <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5v-4.58l.99.99 4-4 4 4 4-3.99L19 12.43V19zm0-9.41l-1.01-1.01-4 4.01-4-4-4 4-.99-1V5h14v4.59z"/>
-                </svg>
+              <div class="m-auto content-center justify-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" height="40px" viewBox="0 96 960 960" width="40px" class="text-gray-400 flex-shrink-0 justify-center content-center block m-auto" fill="currentColor" aria-hidden="true">
+                    <path d="M479.754 801Q504 801 519.5 786.246q15.5-14.755 15.5-39Q535 723 519.746 707q-15.255-16-39.5-16Q456 691 440.5 706.982 425 722.965 425 747.211q0 24.245 15.254 39.017Q455.509 801 479.754 801ZM436 624h94V354h-94v270Zm44.404 377q-88.872 0-166.125-33.084-77.254-33.083-135.183-91.012-57.929-57.929-91.012-135.119Q55 664.594 55 575.638q0-88.957 33.084-166.285 33.083-77.328 90.855-134.809 57.772-57.482 135.036-91.013Q391.238 150 480.279 150q89.04 0 166.486 33.454 77.446 33.453 134.853 90.802 57.407 57.349 90.895 134.877Q906 486.66 906 575.734q0 89.01-33.531 166.247-33.531 77.237-91.013 134.86-57.481 57.623-134.831 90.891Q569.276 1001 480.404 1001Zm.096-94q137.5 0 234-96.372T811 575.5q0-137.5-96.312-234Q618.375 245 479.5 245q-137.5 0-234 96.312Q149 437.625 149 576.5q0 137.5 96.372 234T480.5 907Zm-.5-331Z"/>
+                  </svg>
               </div>
-              <h4 class="text-lg tracking-tight text-center text-gray-900 sm:text-lg mt-10">Oops, Nothing Here!</h4>
-              <p class="mt-2 text-sm leading-8 text-center text-gray-600">Please select modules from the left panel</p>
+              <h4 class="text-sm[14px] leading-5 font-medium tracking-tight text-center text-gray-900 sm:text-lg mt-2">You have not selected any modules yet</h4>
+              <p class="mt-2 text-sm[14px] leading-5 font-normal text-center text-gray-700">Please select modules from the left panel.</p>
             </div>
           </div>
         </div>

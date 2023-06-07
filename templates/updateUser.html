@@ -13,7 +13,7 @@
     <section class="content">
       <!-- Horizontal Form -->
       <div class="box box-danger">
-        <form class="form-horizontal" action="create_post" method="post" id="config_usrform{{ forloop.counter }}" name="usrform">
+        <form class="form-horizontal" action="create_post" method="post" id="config_usrform{{ forloop.counter }}" name="usrform" onsubmit = "form_post('config_usrform{{ forloop.counter }}', 'update')">
             {% csrf_token %}
           <div class="page-header mx-3">
               <div style="color: red;" id="error-msg">
@@ -24,7 +24,7 @@
                 {% include includePath %}
               {% endwith %}
             <div class="form-group">
-                <button id="update_identity" onclick = "form_post('config_usrform{{ forloop.counter }}', 'update')" type="submit" value="update" name="state" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Update</button>
+                <button id="update_identity" type="submit" value="update" name="state" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Update</button>
               </div>
           </div>
         </form>
@@ -38,7 +38,7 @@
     <section class="content">
       <!-- Horizontal Form -->
       <div class="box box-danger">
-        <form class="form-horizontal" action="create_post" method="post" id="unconfig_usrform{{ forloop.counter }}" name="usrform">
+        <form class="form-horizontal" action="create_post" method="post" id="unconfig_usrform{{ forloop.counter }}" name="usrform" onsubmit = "form_post('unconfig_usrform{{ forloop.counter }}', 'update')">
             {% csrf_token %}
           <div class="page-header mx-3">
               <div style="color: red;" id="error-msg">
@@ -49,7 +49,7 @@
                 {% include includePath %}
               {% endwith %}
             <div class="form-group">
-                <button id="update_identity" onclick = "form_post('unconfig_usrform{{ forloop.counter }}', 'update')" type="submit" value="update" name="state" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Update</button>
+                <button id="update_identity" type="submit" value="update" name="state" class="btn btn-primary" style="border: none;color: white;text-align: center;text-decoration: none;display: inline-block;font-size: 16px;">Update</button>
               </div>
           </div>
         </form>
@@ -78,14 +78,14 @@
 
           // handle a successful response
           success : function(json, textStatus, jqXHR) {
-              if (jqXHR.status == 200){
-                var msg = jQuery.parseJSON(json);
+              var msg = jQuery.parseJSON(json);
+              if (! msg.error){   
                 modName = $('#' + formId + " input[name='modname']").val()
                 $('#' + formId).find('#success-msg').text(msg.status.msg)
               }
               else {
                 modName = $('#' + formId + " input[name='modname']").val()
-                $('#' + formId).find('#error-msg').text("Error: Identity for " + modName + " could not saved.")
+                $('#' + formId).find('#error-msg').text(msg.error.msg)
               }
           },
 

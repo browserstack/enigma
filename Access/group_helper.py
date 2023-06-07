@@ -4,10 +4,12 @@ from django.db import transaction
 import datetime
 import logging
 from Access.views_helper import execute_group_access
-from EnigmaAutomation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
+from enigma_automation.settings import MAIL_APPROVER_GROUPS, PERMISSION_CONSTANTS
 from . import helpers as helper
 from Access.background_task_manager import revoke_request
 import json
+
+from .helpers import get_available_access_type
 
 logger = logging.getLogger(__name__)
 
@@ -145,7 +147,7 @@ def create_group(request):
         name=new_group_name,
         requester=request.user.user,
         description=reason,
-        needsAccessApprove=needs_access_approve,
+        needs_access_approve=needs_access_approve,
         date_time=base_datetime_prefix,
     )
 
@@ -188,13 +190,14 @@ def get_generic_access(group_mapping):
     if not access_module:
         return {}
 
-    access_details = group_mapping.getAccessRequestDetails(access_module)
+    access_details = group_mapping.get_access_request_details(access_module)
     logger.debug("Generic access generated: " + str(access_details))
     return access_details
 
 
 def get_group_access_list(auth_user, group_name):
     context = {}
+
     group = GroupV2.get_active_group_by_name(group_name)
     if not group:
         logger.debug(f"Group does not exist with group name {group_name}")
@@ -225,7 +228,7 @@ def get_group_access_list(auth_user, group_name):
             "name": member.user.name,
             "email": member.user.email,
             "is_owner": member.is_owner,
-            "current_state": member.user.current_state(),
+            "current_state": member.user.current_state().capitalize(),
             "membership_id": member.membership_id,
         }
         for member in group_members
@@ -246,6 +249,15 @@ def get_group_access_list(auth_user, group_name):
         context["genericAccesses"] = []
 
     return context
+
+
+def get_role_based_on_membership(group_detail):
+    for user in group_detail["userList"]:
+        if user["is_owner"]:
+            user["role"] = "Owner"
+        else:
+            user["role"] = "Member"
+    return group_detail
 
 
 def update_owners(request, group_name):
@@ -690,7 +702,6 @@ def save_group_access_request(form_data, auth_user):
             module_access_labels[0][field] = extra_fields[0]
             extra_fields = extra_fields[1:]
 
-
     request_id = (
         group.name
         + "-"
@@ -738,7 +749,7 @@ def _create_group_access_mapping(
     if not access:
         access = AccessV2.create(access_tag=access_tag, access_label=access_label)
     else:
-        if group.check_access_exist(access):
+        if group.access_mapping_exists(access):
             raise GroupAccessExistsException()
     group.add_access(
         request_id=request_id,
@@ -896,9 +907,58 @@ def get_selected_users_by_email(user_emails):
         )
     return selected_users
 
-def get_group_status_list():
+def get_group_status_list(selected_list):
     status_list = []
     for status in MembershipV2.STATUS:
-        status_list.append(status[0])
+        if status[0] not in selected_list:
+            status_list.append(status[0])
 
     return status_list
+
+def get_group_member_access_type(selected_list):
+    access_type = []
+    all_types = get_available_access_type()
+    for type in all_types:
+        if type not in selected_list:
+            access_type.append(type)
+
+    return access_type
+
+
+def get_user_states(selected_list):
+    user_state = []
+    for state in User.USER_STATUS_CHOICES:
+        current_state = state[1].capitalize()
+        if current_state not in selected_list:
+            user_state.append(current_state)
+
+    return user_state
+
+def get_user_current_state():
+    current_state = []
+    for state in User.USER_STATUS_CHOICES:
+        current_state.append(state[1].capitalize())
+
+    return current_state
+
+def get_access_types(group_mappings):
+    status_list = []
+
+    for group_mapping in group_mappings:
+        access_module = helpers.get_available_access_module_from_tag(
+            group_mapping.access.access_tag
+        )
+        if not access_module:
+            break
+        status_list.append(access_module.access_desc())
+
+    return set(status_list)
+
+def get_group_member_role_list(selected_list):
+    roles = ["Member", "Owner"]
+    role_list = []
+    for role in roles:
+        if role not in selected_list:
+            role_list.append(role)
+
+    return role_list

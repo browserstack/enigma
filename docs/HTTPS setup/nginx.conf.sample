@@ -28,7 +28,7 @@ http {
     ssl_certificate_key   /certs/<ssl_key_file_name>;
 
     add_header X-XSS-Protection "1; mode=block";
-    add_header Strict-Transport-Security "max-age=31536000";
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains";
     add_header Access-Control-Allow-Credentials "true";
     add_header Access-Control-Allow-Origin $http_origin;
 
