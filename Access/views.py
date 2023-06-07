@@ -42,7 +42,8 @@ from Access.userlist_helper import (
 from Access.views_helper import render_error_message
 from enigma_automation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
-from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver
+from .decorators import user_admin_or_ops, authentication_classes, \
+     user_with_permission, user_any_approver, paginated_search
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 IMPLEMENTATION_PENDING_ERROR_MESSAGE = {
@@ -267,11 +268,30 @@ def request_access(request):
         HTTPResponse: Access request form template or the status of access save request.
     """
     if request.POST:
-        print((request.POST))
-        context = create_request(
-            auth_user=request.user, access_request_form=request.POST
-        )
-        return render(request, "EnigmaOps/accessStatus.html", context)
+        status = 200
+        try:
+            context = create_request(
+                auth_user=request.user, access_request_form=request.POST
+            )
+            if "error" in context:
+                status = 400
+            return JsonResponse(context, status=200)
+        except ImplementationPendingException:
+            status = 400
+            context = {
+                "error": {
+                    "error_msg": IMPLEMENTATION_PENDING_ERROR_MESSAGE["error_msg"],
+                    "msg": IMPLEMENTATION_PENDING_ERROR_MESSAGE["msg"].format(
+                        feature_name="can_auto_approve"
+                    )
+                }
+            }
+        except Exception:
+            status = 500
+            context = {
+                "error": REQUEST_FAILED_MSG
+            }
+        return JsonResponse(context, status=status)
 
     context = get_request_access(request)
     return render(request, "EnigmaOps/accessRequestForm.html", context)
@@ -323,7 +343,6 @@ def group_access(request):
             if "error" in context :
                 status = 400
         except Exception as exception:
-            print(exception)
             status = 500
             context = {
                 "error" : group_helper.GROUP_REQUEST_ERR_MSG
@@ -331,8 +350,6 @@ def group_access(request):
         return JsonResponse(context, status=status)
 
     context = group_helper.get_group_access(request.GET, request.user)
-    if "status" in context:
-        return render(request, 'EnigmaOps/accessStatus.html',context)
     return render(request, "EnigmaOps/groupAccessRequestForm.html", context)
 
 
