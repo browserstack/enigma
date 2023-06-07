@@ -67,7 +67,7 @@
       <input type="text" pattern="[A-Za-z0-9][A-Za-z0-9-]{2,}"
         class="block w-1/2 rounded-md border-gray-300 pr-12 shadow-sm focus:border-blue-600 focus:ring-blue-600 sm:text-sm"
         id="newGroupName" name="newGroupName"
-        placeholder="Minimum 3 chars with no spaces and special chars, hyphens allowed"
+        placeholder="Minimum 3 chars with no spaces and special chars, hyphens allowed" oninput="validateGroupName(this)"
         required>
       <p id="invalidGroupName" class="text-sm text-red-600 hidden mt-1"> Invalid Group name</p>
     </div>
@@ -178,8 +178,8 @@
       <div class="mt-5 flex flex-col">
         <label class="leading-loose text-sm font-medium">Reason for group</label>
         <input type="text" id="newGroupReason" name="newGroupReason"
-          class="w-1/2 h-42 px-4 py-2 border-2 rounded-lg border-gray-200 focus:outline-none focus:border-yellow-500 sm:text-sm"
-          placeholder="Please mention the reason for creating this group" required>
+          class="block w-1/2 rounded-md border-gray-300 pr-12 shadow-sm focus:border-blue-600 focus:ring-blue-600 sm:text-sm"
+          placeholder="Please mention the reason for creating this group" oninput="validateGroupReason(this)" required>
         <p id="invalidGroupReason" class="text-sm text-red-600 hidden mt-1"> This field can't be empty</p>
       </div>
 
@@ -197,7 +197,7 @@
 
     <div class = "mb-5">
       <button type="submit" id="submitNewGroup"
-        class="items-center rounded-md border border-transparent w-40 bg-blue-500 mt-8 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="flex items-center place-content-center rounded-md border border-transparent w-40 bg-blue-500 mt-8 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         onclick="submitRequest()">
         Submit request
       </button>
@@ -222,6 +222,8 @@
   </tr>
 </table>
 
-{% include 'EnigmaOps/shared/components/notification-modal/notificationModalTemplate.html' %}
+<div id="redirect_to_dashboard" class="hidden">
+  {% include "EnigmaOps/shared/redirect_to_dashboard.html" %}
+</div>
 
 {% endblock %}

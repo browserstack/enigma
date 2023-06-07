@@ -99,57 +99,45 @@ const handleMemberSelectionCheckbox = (elem) => {
   $(elem).prop('checked', !$(elem).prop('checked'));
 }
 
-$(function () {
-  $('#newGroupName').on('input', function () {
-    var groupName = $(this).val();
-    var groupNamePattern = /[A-Za-z0-9][A-Za-z0-9-]{2,}/;
-    var error = document.getElementById("invalidGroupName")
-    if (groupNamePattern.test(groupName)) {
-      $(this).removeClass("border-red-500");
-      error.classList.add("hidden");
-    } else {
-      $(this).addClass("border-red-500");
-      error.classList.remove("hidden");
-    }
-  });
-});
-
-$(function () {
-  $('#newGroupReason').on('input', function () {
-    var groupReason = $(this).val();
-    var groupReasonPattern = /.+/;
-    var error = document.getElementById("invalidGroupReason")
-    if (groupReasonPattern.test(groupReason)) {
-      $(this).removeClass("border-red-500");
-      error.classList.add("hidden");
-    } else {
-      $(this).addClass("border-red-500");
-      error.classList.remove("hidden");
-    }
-  });
-});
-
-function showNotificiation(type, message, title) {
-  if (type === "success") {
-    $(".notification_success").removeClass("hidden")
-    $(".notification_fail").addClass("hidden")
+const validateGroupName = (elem) => {
+  const groupName = $(elem).val();
+  const groupNamePattern = /[A-Za-z0-9][A-Za-z0-9-]{2,}/;
+  const error = $("#invalidGroupName")
+  if (groupNamePattern.test(groupName)) {
+    $(elem).removeClass("border-red-500");
+    error.addClass("hidden");
+    return true;
+  } else {
+    $(elem).addClass("border-red-500");
+    error.removeClass("hidden");
+    return false;
   }
-  else if (type === "failed") {
-    $(".notification_success").addClass("hidden")
-    $(".notification_fail").removeClass("hidden")
-  }
-  $(".notification_message").html(message)
-  $(".notification_title").html(title)
-  $("#notification_bar").removeClass("hidden")
 }
 
-function showRequestSuccessMessage(message) {
-  const successMessage = document.getElementById('request-success-message')
-  successMessage.innerText = message;
-  const modal = document.getElementById("request-submitted-modal");
-  const modalOverlay = document.getElementById("modalOverlay");
-  modal.classList.remove("hidden");
-  modalOverlay.classList.remove("hidden");
+const validateGroupReason = (elem) => {
+  const groupReason = $(elem).val();
+  const groupReasonPattern = /.+/;
+  const error = $("#invalidGroupReason")
+  if (groupReasonPattern.test(groupReason)) {
+    $(elem).removeClass("border-red-500");
+    error.addClass("hidden");
+    return true;
+  } else {
+    $(elem).addClass("border-red-500");
+    error.removeClass("hidden");
+    return false;
+  }
+}
+
+// Implementation Pending
+function showNotificiation(type, message, title) {
+
+}
+
+function showRedirectModal(title, message="") {
+  $("#redirect_to_dashboard").show();
+  $("#modal-title").html(title);
+  $("#modal-message").html(message);
 }
 
 function closeNotification() {
@@ -159,10 +147,8 @@ function closeNotification() {
 function submitRequest() {
   const members = $('#member-selection-table').children('tr');
   const emails = [];
-  var isValid = true;
   var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
-  var newGroupNamePattern = /[A-Za-z0-9][A-Za-z0-9-]{2,}/;
-  var newGroupReasonPattern = /.+/;
+  console.log(csrf_token)
   var urlBuilder = "/group/create"
 
 
@@ -171,41 +157,26 @@ function submitRequest() {
   }
 
   const selectedUserList = emails
-  const newGroupName = $("#newGroupName").val();
-  const newGroupReason = $("#newGroupReason").val();
+  const newGroupNameElem = $("#newGroupName");
+  const newGroupReasonElem = $("#newGroupReason");
   const requiresAccessApprove = $("#requiresAccessApprove").prop("checked");
 
-  if (!newGroupNamePattern.test(newGroupName)) {
-    var error = document.getElementById("invalidGroupName");
-    var newGroup = document.getElementById("newGroupName");
-    newGroup.classList.add("border-red-500");
-    error.classList.remove("hidden");
-    isValid = false;
-  }
-
-  if (!newGroupReasonPattern.test(newGroupReason)) {
-    var error = document.getElementById("invalidGroupReason");
-    var newGroup = document.getElementById("newGroupReason");
-    newGroup.classList.add("border-red-500");
-    error.classList.remove("hidden");
-    isValid = false;
-  }
-
-  if (!isValid)
+  if (!validateGroupName(newGroupNameElem) || !validateGroupReason(newGroupReasonElem)) {
     return;
+  }
   else {
     $.ajax({
       url: urlBuilder,
       type: "POST",
       data: {
-        newGroupName: newGroupName,
-        newGroupReason: newGroupReason,
-        requiresAccessApprove: requiresAccessApprove,
-        selectedUserList: selectedUserList,
-        csrfmiddlewaretoken: csrf_token
+        "newGroupName": newGroupNameElem.val(),
+        "newGroupReason": newGroupReasonElem.val(),
+        "requiresAccessApprove": requiresAccessApprove,
+        "selectedUserList": selectedUserList,
+        "csrfmiddlewaretoken": csrf_token
       },
       success: function (result) {
-        showRequestSuccessMessage(result.status.msg)
+        showRedirectModal("Request Submitted", result.status.msg)
       },
       error: function (XMLHttpRequest, textStatus, errorThrown) {
         const msg = JSON.parse(XMLHttpRequest.responseText).error.msg
