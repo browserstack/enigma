@@ -1,3 +1,9 @@
+const userSelectedList = {};
+
+const handleUserSelectionCheckbox = (elem) => {
+  $(elem).prop('checked', !$(elem).prop('checked'));
+}
+
 const handleSelectionView = (defaultLength) => {
 
   let finalCount = $('#user-selection-table').children('tr').length - defaultLength
@@ -12,67 +18,69 @@ const handleSelectionView = (defaultLength) => {
   }
 };
 
-const selectCheckbox = (userTag, checked) => {
+const selectCheckbox = (elem, checked) => {
   if(checked) {
-    $(`#${userTag}-marker`).show();
-    $(`#${userTag}-checkbox`).prop('checked', true);
-    $(`#${userTag}-tablerow`).removeClass('hover:bg-blue-50 hover:text-blue-700').addClass('bg-gray-50');
-    $(`#${userTag}-tabledesc`).removeClass('text-gray-900').addClass('text-blue-600');
+    $(elem).find('input').prop('checked', true);
+    $(elem).removeClass('hover:bg-blue-50 hover:text-blue-700').addClass('bg-gray-50');
+    $(elem).children('td#adduser-description-td').removeClass('text-gray-900').addClass('text-blue-600');
   } else {
-    $(`#${userTag}-marker`).hide();
-    $(`#${userTag}-checkbox`).prop('checked', false);
-    $(`#${userTag}-tablerow`).removeClass('bg-gray-50').addClass('hover:bg-blue-50 hover:text-blue-700');
-    $(`#${userTag}-tabledesc`).removeClass('text-blue-600').addClass('text-gray-900');
+    $(elem).find('input').prop('checked', false);
+    $(elem).removeClass('bg-gray-50').addClass('hover:bg-blue-50 hover:text-blue-700');
+    $(elem).children('td#adduser-description-td').removeClass('text-blue-600').addClass('text-gray-900');
   }
 };
 
-const addUserSelection = (userTag, userDesc, defaultLength) => {
+const addUserSelection = (elem, defaultLength) => {
   const selectionList = $('#user-selection-table');
   const newSpan = $("#user-selection-row-template").clone(true, true);
 
-  selectCheckbox(userTag, true);
+  selectCheckbox(elem, true);
+  const email = $(elem).attr("email");
 
   newSpan.appendTo(selectionList);
   newSpan.show();
   const tableData = newSpan.children('td');
-  tableData[0].textContent = userDesc;
-  newSpan.attr('id', `user-selection-${userTag}`);
+  tableData[0].textContent = email;
+  newSpan.attr('email', email);
 
+  userSelectedList[email] = true;
   handleSelectionView(defaultLength);
 };
 
-const removeSelectionSpanElem = (elem, defaultLength) => {
-  const spanId = elem.id || elem.attr('id');
-  const userTag = spanId.replace('user-selection-', '');
+const removeSelectionSpanElem = (rightElem, leftElem, defaultLength) => {
+  rightElem.remove();
+  selectCheckbox(leftElem, false);
 
-  elem.remove();
-  selectCheckbox(userTag, false);
-
+  userSelectedList[$(leftElem).attr("email") || $(rightElem).attr("email")] = false;
   handleSelectionView(defaultLength);
 };
 
-const removeUserSelection = (userTag, defaultLength) => {
-  removeSelectionSpanElem($(`#user-selection-${userTag}`),defaultLength);
+const removeUserSelection = (elem, defaultLength) => {
+  $("#selectAllUsers").prop("checked", false);
+  removeSelectionSpanElem($("#user-selection-table").find(`tr[email="${$(elem).attr('email')}"]`), elem, defaultLength);
 };
 
 const removeUserSelectionUI = (elem, defaultLength) => {
-  removeSelectionSpanElem(elem.parentElement.parentElement, defaultLength);
+  rightElem = elem.parentElement.parentElement;
+  $("#selectAllUsers").prop("checked", false);
+  removeSelectionSpanElem(rightElem, $("#user-table").find(`tr[email="${$(rightElem).attr('email')}"]`), defaultLength);
+  updateSelectedUser(defaultLength);
 };
 
 const removeAllUsers = (defaultLength) => {
-  const modules = $('#user-selection-table').children('tr');
-  for(iter = defaultLength; iter < modules.length; iter++) {
-    removeSelectionSpanElem(modules[iter]);
+  const users = $('#user-selection-table').children('tr');
+  $("#selectAllUsers").prop("checked", false);
+  for(iter = defaultLength; iter < users.length; iter++) {
+    removeSelectionSpanElem(users[iter], $("#user-table").find(`tr[email="${$(users[iter]).attr('email')}"]`), defaultLength);
   }
-
-  handleSelectionView(defaultLength);
+  updateSelectedUser(defaultLength);
 };
 
 function updateSelectedUser(defaultLength) {
   const users_list = $('#user-selection-table').children('tr');
   const users_array = [];
   for(iter = defaultLength; iter < users_list.length; iter++) {
-    users_array.push(`${users_list[iter].cells[0].innerHTML}`);
+    users_array.push($(users_list[iter]).attr("email"));
   }
 
   $('#selected-users').val(users_array);
@@ -81,9 +89,8 @@ function updateSelectedUser(defaultLength) {
 const selectAllUsers = (defaultLength) => {
   const users = $('#user-table').children('tr');
   for(iter = 0; iter < users.length; iter++) {
-    const user = users[iter].id.split('-tablerow')[0];
-    if(!$(`#${user}-checkbox`).prop('checked')) {
-      addUserSelection(users[iter].id.split('-tablerow')[0], users[iter].cells[1].innerHTML, defaultLength);
+    if(!userSelectedList[$(users[iter]).attr('email')]) {
+      addUserSelection(users[iter], defaultLength);
     }
   }
   updateSelectedUser(defaultLength);
@@ -97,13 +104,13 @@ const selectAllUserToggle = (elem, defaultLength) => {
   }
 }
 
-const handleUserSelection = (elem, userTag, userDesc, defaultLength) => {
-  if(elem.checked) {
-    addUserSelection(userTag, userDesc, defaultLength);
+const handleUserSelection = (elem, defaultLength) => {
+  if(!$(elem).find('input').prop('checked')) {
+    addUserSelection(elem, defaultLength);
   } else {
-    removeUserSelection(userTag, defaultLength);
+    removeUserSelection(elem, defaultLength);
   }
-  updateSelectedUser(defaultLength)
+  updateSelectedUser(defaultLength);
 };
 
 function submitRequest(event, elem) {
