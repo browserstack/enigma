@@ -1,3 +1,7 @@
+const handleModuleSelectionCheckbox = (elem) => {
+  $(elem).prop('checked', !$(elem).prop('checked'));
+}
+
 const handleSelectionView = () => {
   const finalCount = $('#module-selection-table').children('tr').length;
 
@@ -15,65 +19,64 @@ const handleSelectionView = () => {
   }
 };
 
-const selectCheckbox = (moduleTag, checked) => {
+const selectCheckbox = (elem, checked) => {
   if(checked) {
-    $(`#${moduleTag}-marker`).show();
-    $(`#${moduleTag}-checkbox`).prop('checked', true);
-    $(`#${moduleTag}-tablerow`).removeClass('hover:bg-blue-50 hover:text-blue-700').addClass('bg-gray-50');
-    $(`#${moduleTag}-tabledesc`).removeClass('text-gray-900').addClass('text-blue-600');
+    $(elem).find('input').prop('checked', true);
+    $(elem).removeClass('hover:bg-blue-50 hover:text-blue-700').addClass('bg-gray-50');
+    $(elem).children('td#groupaccessrequest-description-td').removeClass('text-gray-900').addClass('text-blue-600');
   } else {
-    $(`#${moduleTag}-marker`).hide();
-    $(`#${moduleTag}-checkbox`).prop('checked', false);
-    $(`#${moduleTag}-tablerow`).removeClass('bg-gray-50').addClass('hover:bg-blue-50 hover:text-blue-700');
-    $(`#${moduleTag}-tabledesc`).removeClass('text-blue-600').addClass('text-gray-900');
+    $(elem).find('input').prop('checked', false);
+    $(elem).removeClass('bg-gray-50').addClass('hover:bg-blue-50 hover:text-blue-700');
+    $(elem).children('td#groupaccessrequest-description-td').removeClass('text-blue-600').addClass('text-gray-900');
   }
 };
 
-const addModuleSelection = (moduleTag, moduleDesc) => {
+const addModuleSelection = (elem) => {
   const selectionList = $('#module-selection-table');
   const newSpan = $("#module-selection-row-template").clone(true, true);
 
-  selectCheckbox(moduleTag, true);
+  selectCheckbox(elem, true);
+  const module_tag = $(elem).attr("module_tag");
+  const module_desc = $(elem).attr("module_desc");
 
   newSpan.appendTo(selectionList);
   newSpan.show();
   const tableData = newSpan.children('td');
-  tableData[0].textContent = moduleDesc;
-  newSpan.attr('id', `module-selection-${moduleTag}`);
+  tableData[0].textContent = module_desc;
+  newSpan.attr('module_tag', module_tag);
+  newSpan.attr('module_desc', module_desc);
 
   handleSelectionView();
 };
 
-const removeSelectionSpanElem = (elem) => {
-  const spanId = elem.id || elem.attr('id');
-  const moduleTag = spanId.replace('module-selection-', '');
-
-  elem.remove();
-  selectCheckbox(moduleTag, false);
+const removeSelectionSpanElem = (rightElem, leftElem) => {
+  rightElem.remove();
+  selectCheckbox(leftElem, false);
 
   handleSelectionView();
 };
 
-const removeModuleSelection = (moduleTag) => {
-  removeSelectionSpanElem($(`#module-selection-${moduleTag}`));
+const removeModuleSelection = (elem) => {
+  removeSelectionSpanElem($("#module-selection-table").find(`tr[module_tag="${$(elem).attr('module_tag')}"]`), elem);
 };
 
 const removeModuleSelectionUI = (elem) => {
-  removeSelectionSpanElem(elem.parentElement.parentElement);
+  rightElem = elem.parentElement.parentElement; 
+  removeSelectionSpanElem(rightElem, $("#module-list-table").find(`tr[module_tag="${$(rightElem).attr('module_tag')}"]`));
 };
 
 const removeAllModules = () => {
   const modules = $('#module-selection-table').children('tr');
   for(iter = 0; iter < modules.length; iter++) {
-    removeSelectionSpanElem(modules[iter]);
+    removeSelectionSpanElem(modules[iter], $("#module-list-table").find(`tr[module_tag="${$(modules[iter]).attr('module_tag')}"]`));
   }
 };
 
-const handleModuleSelection = (elem, moduleTag, moduleDesc) => {
-  if(elem.checked) {
-    addModuleSelection(moduleTag, moduleDesc);
+const handleModuleSelection = (elem) => {
+  if(!$(elem).find('input').prop('checked')) {
+    addModuleSelection(elem);
   } else {
-    removeModuleSelection(moduleTag);
+    removeModuleSelection(elem);
   }
 };
 
@@ -83,7 +86,7 @@ const raiseAccessRequest = () => {
   const accessTags = [];
 
   for(iter = 0; iter < modules.length; iter++) {
-    accessTags.push(`accessList=${modules[iter].id.replace('module-selection-', '')}`);
+    accessTags.push(`accessList=${$(modules[iter]).attr("module_tag")}`);
   }
   accessTags.push(`groupName=${groupName}`);
 
