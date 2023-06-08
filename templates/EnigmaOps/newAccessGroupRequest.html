@@ -52,7 +52,7 @@
       <h1 class="text-xl text-gray-900">All modules</h1>
       <div class="mt-4 flex flex-col">
         <div class="relative flex items-center">
-          <input type="text" name="groupAccessRequestSearch" id="groupAccessRequestSearch" class="block w-full rounded-md border-gray-300 pr-12 shadow-sm focus:border-blue-600 focus:ring-blue-600 sm:text-sm" placeholder="Search module">
+          <input type="text" name="groupAccessRequestSearch" id="groupAccessRequestSearch" class="block w-full rounded-md border-gray-300 pr-12 shadow-sm focus:border-blue-600 focus:ring-blue-600 sm:text-sm" placeholder="Search module" onkeydown="search(event, this)">
           <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
             <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" class="text-gray-500 h-full" width="18px" fill="currentColor" aria-hidden="true">
               <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -66,14 +66,7 @@
                 <div class="relative overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
                   <table class="min-w-full table-fixed divide-gray-300">
                     <tbody class="divide-gray-200 bg-white" id="module-list-table">
-                      {% for each_tag, each_module in modulesList.items %}
-                      <tr onclick="handleModuleSelection(this)" class="hover:bg-blue-50 hover:text-blue-700" module_tag="{{ each_tag }}" module_desc="{{ each_module.access_desc }}">
-                        <td class="relative w-12 px-6 sm:w-16 sm:px-8">
-                          <input type="checkbox" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6" id="groupaccessrequest-checkbox-td" onclick="handleModuleSelectionCheckbox(this)"></input>
-                        </td>
-                        <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium text-gray-900" id="groupaccessrequest-description-td">{{ each_module.access_desc }}</td>
-                      </tr>
-                      {% endfor %}
+                      
                     </tbody>
                   </table>
                 </div>

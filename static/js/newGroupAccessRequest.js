@@ -1,3 +1,5 @@
+const moduleSelectedList = {};
+
 const handleModuleSelectionCheckbox = (elem) => {
   $(elem).prop('checked', !$(elem).prop('checked'));
 }
@@ -46,6 +48,7 @@ const addModuleSelection = (elem) => {
   newSpan.attr('module_tag', module_tag);
   newSpan.attr('module_desc', module_desc);
 
+  moduleSelectedList[module_tag] = true;
   handleSelectionView();
 };
 
@@ -53,6 +56,7 @@ const removeSelectionSpanElem = (rightElem, leftElem) => {
   rightElem.remove();
   selectCheckbox(leftElem, false);
 
+  moduleSelectedList[$(rightElem).attr("module_tag") || $(leftElem).attr("module_tag")] = false;
   handleSelectionView();
 };
 
@@ -93,3 +97,39 @@ const raiseAccessRequest = () => {
   const finalUrl = `/group/requestAccess?${accessTags.join("&")}`;
   window.location = finalUrl;
 };
+
+function search(event, elem) {
+  if(event.key === "Enter") {
+    fetchAccessModules($(elem).val());
+  }
+}
+
+const fetchAccessModules = (search=undefined) => {
+  $.ajax({
+    url: "/api/v1/getAccessModules",
+    data: {"search": search},
+    error: function (XMLHttpRequest, textStatus, errorThrown) {
+      const msg = XMLHttpRequest.responseJSON;
+      showNotificiation("Failed", msg["error"]);
+    }
+  }).done(function(data, statusText, xhr) {
+    if(data["modulesList"]) {
+      $("#module-list-table tr").remove()
+
+      const rows = data["modulesList"].map((moduleList) => {
+        return `<tr onclick="handleModuleSelection(this)" module_tag="${moduleList[0]}"  module_desc="${ moduleList[1] }"  class="${moduleSelectedList[moduleList[0]]? "bg-gray-50": "hover:bg-blue-50 hover:text-blue-700"}">
+        <td class="relative w-12 px-6 sm:w-16 sm:px-8">
+          <input type="checkbox" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6" ${ moduleSelectedList[moduleList[0]]? "checked": "" } onclick="handleModuleSelectionCheckbox(this)" groupaccessrequest-checkbox-td></input>
+        </td>
+        <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium ${ moduleSelectedList[moduleList[0]]? "text-blue-600" : "text-gray-900"}" id="groupaccessrequest-description-td">${ moduleList[1] }</td>
+      </tr>`
+      });
+
+      $("#module-list-table").append(rows.join(""));
+    }
+  });
+}
+
+$(window).on("load", ()=> {
+  fetchAccessModules();
+})

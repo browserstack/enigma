@@ -319,7 +319,6 @@ def new_group_access_request(request):
         )
 
     context = {
-        "modulesList": helper.get_available_access_modules(),
         "groupName": dict(request.GET.lists())["groupName"][0]
     }
     return render(request, "EnigmaOps/newAccessGroupRequest.html", context)
