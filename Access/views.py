@@ -45,7 +45,7 @@ from enigma_automation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, \
     user_with_permission, user_any_approver, paginated_search
-from.paginator_decorators import paginator
+from .paginator_decorators import paginator
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 IMPLEMENTATION_PENDING_ERROR_MESSAGE = {
@@ -696,16 +696,16 @@ def all_user_access_list(request, load_ui=True):
             paginator_obj = Paginator(generic_accesses, 10)
             last_page = paginator_obj.num_pages
             page = min(page, last_page) if page > last_page else page
-            paginator = paginator_obj.page(page)
+            page_items = paginator_obj.page(page)
         else:
-            paginator = generic_accesses
+            page_items = generic_accesses
 
         access_types = list(
             set(generic_accesses.values_list("access__access_tag", flat=True))
         )
 
         data_list = views_helper.prepare_datalist(
-            paginator=paginator, record_date=record_date
+            paginator=page_items, record_date=record_date
         )
 
         context = {}
