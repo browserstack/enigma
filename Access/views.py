@@ -944,7 +944,7 @@ def get_access_modules(request):
         modules_list = []
         all_modules_list = []
         for access_tag, module in helper.get_available_access_modules().items():
-            if search.lower() in access_tag or search.lower() in module.access_desc().lower():
+            if search.lower() in module.access_desc().lower():
                 modules_list.append((access_tag, module.access_desc()))
 
             all_modules_list.append((access_tag, module.access_desc()))
