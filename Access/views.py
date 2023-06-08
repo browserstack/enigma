@@ -43,7 +43,7 @@ from Access.views_helper import render_error_message
 from enigma_automation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, \
-     user_with_permission, user_any_approver, paginated_search
+    user_with_permission, user_any_approver, paginated_search
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 IMPLEMENTATION_PENDING_ERROR_MESSAGE = {
@@ -296,6 +296,7 @@ def request_access(request):
 
 @login_required
 def new_group_access_request(request):
+    """Group Request Access"""
     if request.method == "POST":
         return render_error_message(
             request,
@@ -306,11 +307,10 @@ def new_group_access_request(request):
 
     try:
         access_user = User.objects.get(email=request.user.email)
-    except Exception as e:
+    except Exception as ex:
         return render_error_message(
             request,
-            "Access user with email %s not found. Error: %s"
-            % (request.user.email, str(e)),
+            f"Access user with email {request.user.email} not found. Error: {str(ex)}",
             "Invalid Request",
             "Please login again",
         )
@@ -336,12 +336,12 @@ def group_access(request):
         status = 200
         try:
             context = group_helper.save_group_access_request(request.POST, request.user)
-            if "error" in context :
+            if "error" in context:
                 status = 400
-        except Exception as exception:
+        except Exception:
             status = 500
             context = {
-                "error" : group_helper.GROUP_REQUEST_ERR_MSG
+                "error": group_helper.GROUP_REQUEST_ERR_MSG
             }
         return JsonResponse(context, status=status)
 
@@ -514,10 +514,10 @@ def add_user_to_group(request, group_name):
         return render(request, "EnigmaOps/accessStatus.html", context)
 
     context = group_helper.get_user_group(request, group_name)
-    all_users = User.objects.filter().exclude( user__username='system_user').only("user")
+    all_users = User.objects.filter().exclude(user__username='system_user').only("user")
     context["users"] = []
-    for user in all_users :
-        if user not in context["groupMembers"] :
+    for user in all_users:
+        if user not in context["groupMembers"]:
             context["users"].append(user)
     return render(request, "EnigmaOps/addUserToGroupForm.html", context)
 
