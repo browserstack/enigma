@@ -952,9 +952,11 @@ def get_active_users(request):
         ).exclude(
             user=request.user.user
         )
+        query_first_name = Q(first_name__icontains=search)
+        query_last_name = Q(last_name__icontains=search)
+        query_email = Q(email__icontains=search)
         users = all_active_users.filter(
-            Q(first_name__icontains=search) |
-            Q(last_name__icontains=search) | Q(email__icontains=search)
+            query_first_name | query_last_name | query_email
         ).values('first_name', 'last_name', 'email')
 
         response = {}
