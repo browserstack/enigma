@@ -953,9 +953,8 @@ def get_active_users(request):
             user=request.user.user
         )
         users = all_active_users.filter(
-            Q(first_name__icontains=search)
-            | Q(last_name__icontains=search)
-            | Q(email__icontains=search)
+            Q(first_name__icontains=search) |
+            Q(last_name__icontains=search) | Q(email__icontains=search)
         ).values('first_name', 'last_name', 'email')
 
         response = {}
