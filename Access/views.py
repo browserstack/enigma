@@ -306,7 +306,7 @@ def new_group_access_request(request):
         )
 
     try:
-        access_user = User.objects.get(email=request.user.email)
+        User.objects.get(email=request.user.email)
     except Exception as ex:
         return render_error_message(
             request,
