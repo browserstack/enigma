@@ -45,6 +45,7 @@ from enigma_automation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, \
     user_with_permission, user_any_approver, paginated_search
+from.paginator_decorators import paginator
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 IMPLEMENTATION_PENDING_ERROR_MESSAGE = {
@@ -942,11 +943,11 @@ def error_500(request, template_name='500.html'):
 
 
 @login_required
+@paginator
 def get_active_users(request):
     """ Json responce of active users """
     try:
         search = (request.GET.get("search") if request.GET.get("search") else "")
-        page = (int(request.GET.get("page")) if request.GET.get("page") else 1)
         all_active_users = djangoUser.objects.filter(user__state='1').exclude(
             username='system_user'
         ).exclude(
@@ -964,13 +965,11 @@ def get_active_users(request):
             users = all_active_users.values('first_name', 'last_name', 'email')
             response["search_error"] = ("Please try adjusting your search",
                                         "to find what you're looking for.")
-        paginator = Paginator(list(users), 10)
 
-        response["users"] = json.dumps(list(paginator.get_page(page)))
-        response["next_page"] = (page + 1 if page < paginator.num_pages else None)
-        response["previous_page"] = (page - 1 if page > 1 else None)
+        response["users"] = list(users)
+        response["rowList"] = "users"
 
-        return JsonResponse(response, status=200)
+        return response
     except Exception as exception:
         logger.exception("Something when wrong while searching users: %s", str(exception))
         return JsonResponse({

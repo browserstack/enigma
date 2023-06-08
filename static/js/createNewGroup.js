@@ -197,7 +197,7 @@ function update_users(search, page) {
     }
   }).done(function(data, statusText, xhr) {
     if(data["users"]) {
-      const users = JSON.parse(data["users"]);
+      const users = data["users"];
       $("#users-list-table tr").remove();
 
       const rows = users.map((user) => {
@@ -220,8 +220,8 @@ function update_users(search, page) {
         $("#next_page").attr("onclick", `change_page('None')`);
       }
 
-      if(data["previous_page"]) {
-        $("#prev_page").attr("onclick", `change_page('${data["previous_page"]}')`);
+      if(data["prev_page"]) {
+        $("#prev_page").attr("onclick", `change_page('${data["prev_page"]}')`);
       } else {
         $("#prev_page").attr("onclick", `change_page('None')`);
       }
