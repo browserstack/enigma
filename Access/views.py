@@ -934,8 +934,10 @@ def error_500(request, template_name='500.html'):
     data = {}
     return render(request, template_name, data)
 
+
 @login_required
 def get_access_modules(request):
+    """ Json response to get access modules """
     try:
         search = (request.GET.get("search") if request.GET.get("search") else "")
 
