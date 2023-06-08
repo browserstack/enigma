@@ -111,10 +111,23 @@
 
                     </tbody>
                   </table>
-                  <div class="grid grid-cols-2">
-                    <button id="prev_page" class="col-start-1" onclick="change_page('{{ previous_page }}')" >previous</button>
-                    <button id="next_page" class="col-start-2" onclick="change_page('{{ next_page }}')">next</button>
-                  </div>
+                  <nav
+                    class="flex flex-shrink-0 px-4 items-center rounded-b-lg justify-between align-bottom border-t border-gray-200 bg-white pt-4 pb-4 sticky">
+                    <button type="button" id="prev_page"
+                      class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 sticky">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="rotate-180 fill-gray-400 mr-4" height="20" viewBox="0 -960 960 960" width="20">
+                        <path d="m691-265-68-67 100-100H103v-94h621L623-626l67-67 214 214-213 214Z"/>
+                      </svg>
+                      Previous
+                    </button>
+                    <button type="button" id="next_page"
+                      class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 sticky">
+                      Next
+                      <svg xmlns="http://www.w3.org/2000/svg" class="fill-gray-400 ml-4" height="20" viewBox="0 -960 960 960" width="20">
+                        <path d="m691-265-68-67 100-100H103v-94h621L623-626l67-67 214 214-213 214Z"/>
+                      </svg>
+                    </button>
+                  </nav>
                 </div>
               </div>
             </div>

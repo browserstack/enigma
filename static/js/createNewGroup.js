@@ -189,7 +189,12 @@ function submitRequest() {
 function update_users(search, page) {
   $.ajax({
     url: "/api/v1/getActiveUsers",
-    data: {"search": search, "page":page}
+    data: {"search": search, "page":page},
+    error: function (XMLHttpRequest, textStatus, errorThrown) {
+      const msg = XMLHttpRequest.responseJSON;
+      alert(msg["error"]);
+      showNotificiation("Failed", msg["error"]);
+    }
   }).done(function(data, statusText, xhr) {
     if(data["users"]) {
       const users = JSON.parse(data["users"]);
@@ -219,6 +224,11 @@ function update_users(search, page) {
         $("#prev_page").attr("onclick", `change_page('${data["previous_page"]}')`);
       } else {
         $("#prev_page").attr("onclick", `change_page('None')`);
+      }
+
+      if(data["search_error"]) {
+        alert(data["search_error"])
+        showNotificiation(data["search_error"])
       }
     }
   })

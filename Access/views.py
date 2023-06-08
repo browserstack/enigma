@@ -941,23 +941,37 @@ def error_500(request, template_name='500.html'):
     return render(request, template_name, data)
 
 
+@login_required
 def get_active_users(request):
     """ Json responce of active users """
-    search = request.GET.get("search")
-    page = (int(request.GET.get("page")) if request.GET.get("page") else 1)
-    users = djangoUser.objects.filter(user__state='1').exclude(
-        username='system_user'
-    ).exclude(
-        user=request.user.user
-    ).filter(
-        Q(first_name__icontains=search)
-        | Q(last_name__icontains=search)
-        | Q(email__icontains=search)
-    ).values('first_name', 'last_name', 'email')
-    paginator = Paginator(users, 10)
+    try:
+        search = (request.GET.get("search") if request.GET.get("search") else "")
+        page = (int(request.GET.get("page")) if request.GET.get("page") else 1)
+        all_active_users = djangoUser.objects.filter(user__state='1').exclude(
+            username='system_user'
+        ).exclude(
+            user=request.user.user
+        )
+        users = all_active_users.filter(
+            Q(first_name__icontains=search)
+            | Q(last_name__icontains=search)
+            | Q(email__icontains=search)
+        ).values('first_name', 'last_name', 'email')
 
-    return JsonResponse({
-        "users": json.dumps(list(paginator.get_page(page))),
-        "next_page": (page + 1 if page < paginator.num_pages else None),
-        "previous_page": (page - 1 if page > 1 else None),
-    }, status=200)
+        response = {}
+        if not users:
+            users = all_active_users.values('first_name', 'last_name', 'email')
+            response["search_error"] = ("Please try adjusting your search",
+                                        "to find what you're looking for.")
+        paginator = Paginator(list(users), 10)
+
+        response["users"] = json.dumps(list(paginator.get_page(page)))
+        response["next_page"] = (page + 1 if page < paginator.num_pages else None)
+        response["previous_page"] = (page - 1 if page > 1 else None)
+
+        return JsonResponse(response, status=200)
+    except Exception as exception:
+        logger.exception("Something when wrong while searching users: %s", str(exception))
+        return JsonResponse({
+            "error": "Failed to fetch active users."
+        }, status=500)
