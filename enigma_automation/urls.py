@@ -18,6 +18,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import re_path, include, path
 from bootprocess.views import dashboard, logout_view
 from Access.views import (
+    get_access_modules,
     revoke_group_access,
     user_offboarding,
     show_access_history,
@@ -100,6 +101,7 @@ urlpatterns = [
     re_path(r"^resolve_bulk", resolve_bulk, name="resolve_bulk"),
     re_path(r"^ignore/(?P<selector>.*)$", ignore_failure, name="ignoreFailure"),
     re_path(r"^group/revokeAccess", revoke_group_access, name="revoke_group_access"),
+    path("api/v1/getAccessModules", get_access_modules, name="getAccessModules")
 ]
 
 HANDLER_404 = 'Access.views.error_404'
