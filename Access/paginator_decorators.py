@@ -4,7 +4,7 @@ from django.http import JsonResponse
 def paginator(view_function):
     def wrap(request, *args, **kwargs):
         response = view_function(request, *args, **kwargs)
-        if type(response) == JsonResponse:
+        if type(response) != dict:
             return response
         page = (int(request.GET.get("page")) if request.GET.get("page") else 1)
         paginator = Paginator(response[response["rowList"]], 10)

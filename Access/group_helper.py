@@ -106,7 +106,6 @@ def create_group(request):
             data.get("requiresAccessApprove")
             and data.get("requiresAccessApprove") == "true"
         )
-        print(data.getlist("selectedUserList[]"))
         if data.getlist("selectedUserList[]"):
             group_members = data.getlist("selectedUserList[]")
     except Exception as e:

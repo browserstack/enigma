@@ -103,7 +103,6 @@ def show_access_history(request):
 
         "search_value": request.GET.get('search')
     }
-    print(context["dataList"][0])
 
     return TemplateResponse(request, "EnigmaOps/showAccessHistory.html"), context
 

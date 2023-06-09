@@ -215,15 +215,23 @@ function update_users(search, page) {
       $("#users-list-table").append(rows.join(""));
       
       if(data["next_page"]) {
+        $("#user-list-nav").removeClass("hidden");
         $("#next_page").attr("onclick", `change_page('${data["next_page"]}')`);
       } else {
+        $("#user-list-nav").removeClass("hidden");
         $("#next_page").attr("onclick", `change_page('None')`);
       }
 
       if(data["prev_page"]) {
+        $("#user-list-nav").removeClass("hidden");
         $("#prev_page").attr("onclick", `change_page('${data["prev_page"]}')`);
       } else {
+        $("#user-list-nav").removeClass("hidden");
         $("#prev_page").attr("onclick", `change_page('None')`);
+      }
+
+      if(!data["next_page"] && ! data["prev_page"]) {
+        $("#user-list-nav").addClass("hidden")
       }
       $("#user-scroll-bar").scrollTop(0)
       if(data["search_error"]) {
