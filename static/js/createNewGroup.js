@@ -225,7 +225,7 @@ function update_users(search, page) {
       } else {
         $("#prev_page").attr("onclick", `change_page('None')`);
       }
-
+      $("#user-scroll-bar").scrollTop(0)
       if(data["search_error"]) {
         alert(data["search_error"])
         showNotificiation(data["search_error"])
