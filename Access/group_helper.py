@@ -99,16 +99,15 @@ def create_group(request):
     base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
     try:
         data = request.POST
-        data = dict(data.lists())
         group_members = []
-        new_group_name = (data["newGroupName"][0]).lower()
-        reason = data["newGroupReason"][0]
+        new_group_name = data.get("newGroupName").lower()
+        reason = data.get("newGroupReason")
         needs_access_approve = (
-            "requiresAccessApprove" in data
-            and data["requiresAccessApprove"][0] == "true"
+            data.get("requiresAccessApprove")
+            and data.get("requiresAccessApprove") == "true"
         )
-        if "selectedUserList[]" in data:
-            group_members = data["selectedUserList[]"]
+        if data.getlist("selectedUserList[]"):
+            group_members = data.getlist("selectedUserList[]")
     except Exception as e:
         logger.exception(e)
         logger.error("Error in Create New Group request.")
