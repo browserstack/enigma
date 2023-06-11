@@ -98,38 +98,3 @@ def step_impl(mocker,context):
     assert context.result == {
         "error": "Error in request not found OR Invalid request type"
     }
-
-
-
-
-
-
-
-
-
-# from behave import given, when, then
-# from myapp.utils import get_grant_failed_requests
-
-# @given('an error occurs while executing the method')
-# def step_given_error_occurs(context):
-#     # Implement the necessary setup or mock the error condition
-#     # For example, raise an exception to simulate an error
-#     context.error = Exception("An error occurred")
-
-# @when('the get_grant_failed_requests method is called')
-# def step_when_get_grant_failed_requests_called(context):
-#     # Call the get_grant_failed_requests method
-#     request = context.request
-#     try:
-#         context.result = get_grant_failed_requests(request)
-#     except Exception as e:
-#         context.error = e
-
-# @then('it should return an error response with details of the error')
-# def step_then_check_error_response(context):
-#     # Check if an error occurred and validate the error response
-#     assert context.error is not None
-#     # You can further customize this step to validate the error response details,
-#     # such as specific error message or status code, based on your application's error handling logic
-#     # For example, assert context.error.message == "An error occurred"
-#     pass
