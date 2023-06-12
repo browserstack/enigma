@@ -148,7 +148,6 @@ function submitRequest() {
   const members = $('#member-selection-table').children('tr');
   const emails = [];
   var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
-  console.log(csrf_token)
   var urlBuilder = "/group/create"
 
 

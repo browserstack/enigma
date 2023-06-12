@@ -398,8 +398,6 @@ def get_user_group(request, group_name):
             raise Exception("Permission denied, you're not owner of this group")
 
         group_members = get_users_from_groupmembers(group_members)
-        group_existing_member_emails = group.get_approved_and_pending_member_emails()
-        context["group_existing_member_emails"] = set([email for email in group_existing_member_emails])
         context["groupMembers"] = group_members
         context["groupName"] = group_name
         return context

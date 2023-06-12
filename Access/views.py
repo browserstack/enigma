@@ -972,6 +972,7 @@ def get_active_users(request):
             "error": "Failed to fetch active users."
         }, status=500)
 
+
 @login_required
 def get_access_modules(request):
     """ Json response to get access modules """

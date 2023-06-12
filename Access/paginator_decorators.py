@@ -11,6 +11,7 @@ def paginator(view_function):
         response["next_page"] = (page + 1 if page < paginator.num_pages else None)
         response["prev_page"] = (page - 1 if page > 1 else None)
         response[response["rowList"]] = list(paginator.get_page(page))
+        del response["rowList"]
 
         return JsonResponse(response)
 

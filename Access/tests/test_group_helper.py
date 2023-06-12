@@ -159,17 +159,17 @@ test_get_user_group_can_access_group = "UserCanAccessGroup"
         (
             test_get_user_group_group_not_found,
             "TestGroupName1",
-            "{'group_existing_member_emails': set(), 'groupMembers': [], 'groupName': 'TestGroupName1'}",
+            "{'groupMembers': [], 'groupName': 'TestGroupName1'}",
         ),
         (
             test_get_user_group_cannot_access_group,
             "TestGroupName1",
-            "{'group_existing_member_emails': set(), 'groupMembers': [], 'groupName': 'TestGroupName1'}",
+            "{'groupMembers': [], 'groupName': 'TestGroupName1'}",
         ),
         (
             test_get_user_group_can_access_group,
             "TestGroupName1",
-            "{'group_existing_member_emails': set(), 'groupMembers': 'user1', 'groupName': 'TestGroupName1'}",
+            "{'groupMembers': 'user1', 'groupName': 'TestGroupName1'}",
         ),
     ],
 )
