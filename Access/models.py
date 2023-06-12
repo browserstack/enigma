@@ -590,9 +590,7 @@ class GroupV2(models.Model):
     @staticmethod
     def group_exists(group_name):
         """ method to check if group exists by group name """
-        if GroupV2.objects.filter(name=group_name).filter(
-                status__in=["Approved", "Pending"]
-        ):
+        if GroupV2.objects.filter(name=group_name):
             return True
         return False
 

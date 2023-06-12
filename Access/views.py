@@ -11,6 +11,7 @@ from django.contrib.auth.models import User as djangoUser
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.template.response import TemplateResponse
+from django.db.models import Q
 
 from Access import views_helper
 from Access import group_helper
@@ -44,6 +45,7 @@ from enigma_automation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
 from .decorators import user_admin_or_ops, authentication_classes, \
     user_with_permission, user_any_approver, paginated_search
+from .paginator_decorators import paginator
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
 IMPLEMENTATION_PENDING_ERROR_MESSAGE = {
@@ -101,7 +103,6 @@ def show_access_history(request):
 
         "search_value": request.GET.get('search')
     }
-    print(context["dataList"][0])
 
     return TemplateResponse(request, "EnigmaOps/showAccessHistory.html"), context
 
@@ -219,10 +220,12 @@ def create_new_group(request):
     """Template to capture new group info, or status of save request."""
     if request.POST:
         context = group_helper.create_group(request)
-        if "status" in context or "error" in context:
-            return render(request, "EnigmaOps/accessStatus.html", context)
-        return render(request, "EnigmaOps/createNewGroup.html", context)
-    return render(request, "EnigmaOps/createNewGroup.html", {})
+        if "error" in context:
+            return JsonResponse(context, status=400)
+        if "status" in context:
+            return JsonResponse(context, status=200)
+
+    return render(request, "EnigmaOps/createNewGroup.html")
 
 
 @login_required
@@ -728,16 +731,16 @@ def all_user_access_list(request, load_ui=True):
             paginator_obj = Paginator(generic_accesses, 10)
             last_page = paginator_obj.num_pages
             page = min(page, last_page) if page > last_page else page
-            paginator = paginator_obj.page(page)
+            page_items = paginator_obj.page(page)
         else:
-            paginator = generic_accesses
+            page_items = generic_accesses
 
         access_types = list(
             set(generic_accesses.values_list("access__access_tag", flat=True))
         )
 
         data_list = views_helper.prepare_datalist(
-            paginator=paginator, record_date=record_date
+            paginator=page_items, record_date=record_date
         )
 
         context = {}
@@ -972,6 +975,41 @@ def error_500(request, template_name='500.html'):
     """ render template for 500 error code """
     data = {}
     return render(request, template_name, data)
+
+
+@login_required
+@paginator
+def get_active_users(request):
+    """ Json responce of active users """
+    try:
+        search = (request.GET.get("search") if request.GET.get("search") else "")
+        all_active_users = djangoUser.objects.filter(user__state='1').exclude(
+            username='system_user'
+        ).exclude(
+            user=request.user.user
+        )
+        query_first_name = Q(first_name__icontains=search)
+        query_last_name = Q(last_name__icontains=search)
+        query_email = Q(email__icontains=search)
+        users = all_active_users.filter(
+            query_first_name | query_last_name | query_email
+        ).values('first_name', 'last_name', 'email')
+
+        response = {}
+        if not users:
+            users = all_active_users.values('first_name', 'last_name', 'email')
+            response["search_error"] = ("Please try adjusting your search",
+                                        "to find what you're looking for.")
+
+        response["users"] = list(users)
+        response["rowList"] = "users"
+
+        return response
+    except Exception as exception:
+        logger.exception("Something when wrong while searching users: %s", str(exception))
+        return JsonResponse({
+            "error": "Failed to fetch active users."
+        }, status=500)
 
 
 @login_required
