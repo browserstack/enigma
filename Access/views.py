@@ -131,9 +131,6 @@ def new_access_request(request):
     return render(
         request,
         "EnigmaOps/newAccessRequest.html",
-        {
-            "modulesList": helper.get_available_access_modules(),
-        },
     )
 
 
@@ -974,3 +971,30 @@ def get_active_users(request):
         return JsonResponse({
             "error": "Failed to fetch active users."
         }, status=500)
+
+@login_required
+def get_access_modules(request):
+    """ Json response to get access modules """
+    try:
+        search = (request.GET.get("search") if request.GET.get("search") else "")
+
+        modules_list = []
+        all_modules_list = []
+        for access_tag, module in helper.get_available_access_modules().items():
+            if search.lower() in module.access_desc().lower():
+                modules_list.append((access_tag, module.access_desc()))
+
+            all_modules_list.append((access_tag, module.access_desc()))
+
+        response = {
+            "modulesList": modules_list if modules_list else all_modules_list,
+        }
+
+        if not modules_list:
+            search_error = "Please try adjusting your search to find what you're looking for."
+            response["search_error"] = search_error
+
+        return JsonResponse(response, status=200)
+    except Exception as exception:
+        logger.exception("Error while fetching Access modules: %s", str(exception))
+        return JsonResponse({"error": "Failed to fetch access modules"}, status=500)

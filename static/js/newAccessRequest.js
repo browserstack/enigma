@@ -1,3 +1,5 @@
+const selectedList = {};
+
 const handleSelectionView = () => {
   const finalCount = $('#module-selection-table').children('tr').length;
 
@@ -30,10 +32,11 @@ const selectCheckbox = (elem, checked) => {
 const addModuleSelection = (elem) => {
   const selectionList = $('#module-selection-table');
   const newSpan = $("#module-selection-row-template").clone(true, true);
-
+  
   selectCheckbox(elem, true);
   const moduleDesc = $(elem).attr("module_desc");
   const moduleTag = $(elem).attr("module_tag");
+  selectedList[moduleTag] = true;
 
   newSpan.appendTo(selectionList);
   newSpan.show();
@@ -48,6 +51,7 @@ const removeSelectionSpanElem = (rightElem, leftElem) => {
 
   rightElem.remove();
   selectCheckbox(leftElem, false);
+  selectedList[$(leftElem).attr("module_tag") || $(rightElem).attr("module_tag")] = false;
 
   handleSelectionView();
 };
@@ -85,9 +89,46 @@ const raiseAccessRequest = () => {
   const accessTags = [];
 
   for(iter = 0; iter < modules.length; iter++) {
-    accessTags.push(`accesses=${modules[iter].id.replace('module-selection-', '')}`);
+    accessTags.push(`accesses=${$(modules[iter]).attr("module_tag")}`);
   }
 
   const finalUrl = `/access/requestAccess?${accessTags.join("&")}`;
   window.location = finalUrl;
 };
+
+
+function search(event, elem) {
+  if(event.key === "Enter") {
+    fetchAccessModules($(elem).val());
+  }
+}
+
+const fetchAccessModules = (search=undefined) => {
+  $.ajax({
+    url: "/api/v1/getAccessModules",
+    data: {"search": search},
+    error: function (XMLHttpRequest, textStatus, errorThrown) {
+      const msg = XMLHttpRequest.responseJSON;
+      showNotificiation("Failed", msg["error"]);
+    }
+  }).done(function(data, statusText, xhr) {
+    if(data["modulesList"]) {
+      $("#module-list-table tr").remove()
+
+      const rows = data["modulesList"].map((moduleList) => {
+        return `<tr onclick="handleModuleSelection(this)" module_tag="${moduleList[0]}"  module_desc="${ moduleList[1] }"  class="${selectedList[moduleList[0]]? "bg-gray-50": "hover:bg-blue-50 hover:text-blue-700"}">
+        <td class="relative w-12 px-6 sm:w-16 sm:px-8">
+          <input type="checkbox" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6" ${ selectedList[moduleList[0]]? "checked": "" } onclick="handleModuleSelectionCheckbox(this)"></input>
+        </td>
+        <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium ${ selectedList[moduleList[0]]? "text-blue-600" : "text-gray-900"}" id="description-td">${ moduleList[1] }</td>
+      </tr>`
+      });
+
+      $("#module-list-table").append(rows.join(""));
+    }
+  });
+}
+
+$(window).on("load", ()=> {
+  fetchAccessModules();
+})
