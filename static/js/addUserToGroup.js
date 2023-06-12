@@ -4,9 +4,9 @@ const handleUserSelectionCheckbox = (elem) => {
   $(elem).prop('checked', !$(elem).prop('checked'));
 }
 
-const handleSelectionView = (defaultLength) => {
+const handleSelectionView = () => {
 
-  let finalCount = $('#user-selection-table').children('tr').length - defaultLength
+  let finalCount = $('#user-selection-table').children('tr').length
 
   if(finalCount < 1) {
     $('#user-selection-list').children('nav').hide();
@@ -30,7 +30,7 @@ const selectCheckbox = (elem, checked) => {
   }
 };
 
-const addUserSelection = (elem, defaultLength) => {
+const addUserSelection = (elem) => {
   const selectionList = $('#user-selection-table');
   const newSpan = $("#user-selection-row-template").clone(true, true);
 
@@ -44,73 +44,73 @@ const addUserSelection = (elem, defaultLength) => {
   newSpan.attr('email', email);
 
   userSelectedList[email] = true;
-  handleSelectionView(defaultLength);
+  handleSelectionView();
 };
 
-const removeSelectionSpanElem = (rightElem, leftElem, defaultLength) => {
+const removeSelectionSpanElem = (rightElem, leftElem) => {
   rightElem.remove();
   selectCheckbox(leftElem, false);
 
   userSelectedList[$(leftElem).attr("email") || $(rightElem).attr("email")] = false;
-  handleSelectionView(defaultLength);
+  handleSelectionView();
 };
 
-const removeUserSelection = (elem, defaultLength) => {
+const removeUserSelection = (elem) => {
   $("#selectAllUsers").prop("checked", false);
-  removeSelectionSpanElem($("#user-selection-table").find(`tr[email="${$(elem).attr('email')}"]`), elem, defaultLength);
+  removeSelectionSpanElem($("#user-selection-table").find(`tr[email="${$(elem).attr('email')}"]`), elem);
 };
 
-const removeUserSelectionUI = (elem, defaultLength) => {
+const removeUserSelectionUI = (elem) => {
   rightElem = elem.parentElement.parentElement;
   $("#selectAllUsers").prop("checked", false);
-  removeSelectionSpanElem(rightElem, $("#user-table").find(`tr[email="${$(rightElem).attr('email')}"]`), defaultLength);
-  updateSelectedUser(defaultLength);
+  removeSelectionSpanElem(rightElem, $("#user-table").find(`tr[email="${$(rightElem).attr('email')}"]`));
+  updateSelectedUser();
 };
 
-const removeAllUsers = (defaultLength) => {
+const removeAllUsers = () => {
   const users = $('#user-selection-table').children('tr');
   $("#selectAllUsers").prop("checked", false);
-  for(iter = defaultLength; iter < users.length; iter++) {
-    removeSelectionSpanElem(users[iter], $("#user-table").find(`tr[email="${$(users[iter]).attr('email')}"]`), defaultLength);
+  for(iter = 0; iter < users.length; iter++) {
+    removeSelectionSpanElem(users[iter], $("#user-table").find(`tr[email="${$(users[iter]).attr('email')}"]`));
   }
-  updateSelectedUser(defaultLength);
+  updateSelectedUser();
 };
 
-function updateSelectedUser(defaultLength) {
+function updateSelectedUser() {
   const users_list = $('#user-selection-table').children('tr');
   const users_array = [];
-  for(iter = defaultLength; iter < users_list.length; iter++) {
+  for(iter = 0; iter < users_list.length; iter++) {
     users_array.push($(users_list[iter]).attr("email"));
   }
 
   $('#selected-users').val(users_array);
 }
 
-const selectAllUsers = (defaultLength) => {
+const selectAllUsers = () => {
   const users = $('#user-table').children('tr');
   for(iter = 0; iter < users.length; iter++) {
     if(!userSelectedList[$(users[iter]).attr('email')]) {
-      addUserSelection(users[iter], defaultLength);
+      addUserSelection(users[iter]);
     }
   }
-  updateSelectedUser(defaultLength);
+  updateSelectedUser();
 }
 
-const selectAllUserToggle = (elem, defaultLength) => {
+const selectAllUserToggle = (elem) => {
   if(elem.checked) {
-    selectAllUsers(defaultLength);
+    selectAllUsers();
   } else {
-    removeAllUsers(defaultLength);
+    removeAllUsers();
   }
 }
 
-const handleUserSelection = (elem, defaultLength) => {
+const handleUserSelection = (elem) => {
   if(!$(elem).find('input').prop('checked')) {
-    addUserSelection(elem, defaultLength);
+    addUserSelection(elem);
   } else {
-    removeUserSelection(elem, defaultLength);
+    removeUserSelection(elem);
   }
-  updateSelectedUser(defaultLength);
+  updateSelectedUser();
 };
 
 function submitRequest(event, elem) {
@@ -149,3 +149,76 @@ function showRedirectModal(title, message="") {
 function showNotification(type, title, message) {
   // TODO
 };
+
+function update_users(search, page) {
+  $.ajax({
+    url: "/api/v1/getActiveUsers",
+    data: {"search": search, "page":page},
+    error: function (XMLHttpRequest, textStatus, errorThrown) {
+      const msg = XMLHttpRequest.responseJSON;
+      // showNotificiation("Failed", msg["error"]);
+    }
+  }).done(function(data, statusText, xhr) {
+    if(data["users"]) {
+      const users = data["users"];
+      $("#user-table tr").remove();
+
+      const rows = users.map((user) => {
+        return `<tr onclick="handleUserSelection(this)" email="${user["email"]}" user_name="${user["first_name"]} ${user["last_name"]}" class="${userSelectedList[user["email"]]? "bg-gray-50": "hover:bg-blue-50 hover:text-blue-700"}">
+        <td class="relative w-12 px-6 sm:w-16 sm:px-8">
+          <input type="checkbox" id="adduser-checkbox-td" value="${user["email"]}"
+            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 focus:ring-blue-500 sm:left-6" ${ userSelectedList[user["email"]]? "checked": "" } onclick="handleUserSelectionCheckbox(this)"></input>
+        </td>
+        <td id="adduser-description-td" class="whitespace-nowrap py-4 pr-3 text-sm font-normal ${ userSelectedList[user["email"]]? "text-blue-600" : "text-gray-900"}">
+          ${user["first_name"]} ${user["last_name"]} ${user["email"]}</td>
+      </tr>`;
+      })
+
+      $("#user-table").append(rows.join(""));
+
+      if(data["next_page"]) {
+        $("#user-list-nav").removeClass("hidden");
+        $("#next_page").attr("onclick", `change_page('${data["next_page"]}')`);
+      } else {
+        $("#user-list-nav").removeClass("hidden");
+        $("#next_page").attr("onclick", `change_page('None')`);
+      }
+
+      if(data["prev_page"]) {
+        $("#user-list-nav").removeClass("hidden");
+        $("#prev_page").attr("onclick", `change_page('${data["prev_page"]}')`);
+      } else {
+        $("#user-list-nav").removeClass("hidden");
+        $("#prev_page").attr("onclick", `change_page('None')`);
+      }
+
+      if(!data["next_page"] && ! data["prev_page"]) {
+        $("#user-list-nav").addClass("hidden")
+      }
+      // $("#user-scroll-bar").scrollTop(0)
+      if(data["search_error"]) {
+        // showNotificiation(data["search_error"])
+      }
+    }
+  })
+}
+
+function addUserSearch(event, elem) {
+  if(event.key === "Enter") {
+    update_users($(elem).val(), undefined);
+  }
+}
+
+function get_search_val() {
+  return $("#global-search").val();
+}
+
+function change_page(page) {
+  if(page !== 'None'){
+    update_users(get_search_val(), Number(page));
+  }
+}
+
+$(window).on("load", () => {
+  update_users("", undefined)
+})

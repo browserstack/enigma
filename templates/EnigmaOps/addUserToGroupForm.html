@@ -79,9 +79,9 @@
   <div class="grid grid-cols-2 gap-4">
     <div class="flex-col">
       <div class="mt-2 flex flex-col">
-        <div class="flex felx-row">
+        <div class="flex flex-row">
           <div class="flex-auto relative flex items-center">
-            <input type="text" name="adduserSearch" id="addUserSearch" class="block w-full rounded-md border-gray-300 pr-12 shadow-sm focus:border-blue-600 focus:ring-blue-600 sm:text-sm" placeholder="Search by name or email ID">
+            <input type="text" name="adduserSearch" id="addUserSearch" class="block w-full rounded-md border-gray-300 pr-12 shadow-sm focus:border-blue-600 focus:ring-blue-600 sm:text-sm" placeholder="Search by name or email ID" onkeydown="addUserSearch(event, this)">
             <div class="absolute inset-y-0 right-0 flex py-1.5 pr-1.5">
               <svg xmlns="http://www.w3.org/2000/svg" height="18px" viewBox="0 0 24 24" class="text-gray-500 h-full" width="18px" fill="currentColor" aria-hidden="true">
                 <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -90,7 +90,7 @@
           </div>
 
           <div class="flex-none flex">
-            <input type="checkbox" onclick="selectAllUserToggle(this, '{{ groupMembers|length }}')" name="select-all-user" id="selectAllUsers" class="ml-4 mr-2 mt-2 px-1 py-1 top-1/2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6">
+            <input type="checkbox" onclick="selectAllUserToggle(this)" name="select-all-user" id="selectAllUsers" class="ml-4 mr-2 mt-2 px-1 py-1 top-1/2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6">
             <label class="ml-1 mr-3 mt-1 mb-2 text-base leading-6 font-normal text-gray-900">Select all</label>
           </div>
         </div>
@@ -102,26 +102,26 @@
                 <div class="relative overflow-y-auto">
                   <table class="min-w-full table-fixed divide-gray-300">
                     <tbody id="user-table" class="divide-gray-200 bg-white">
-                      {% for user in users %}
-                        <tr onclick="handleUserSelection(this, '{{ groupMembers|length }}')" class="hover:bg-blue-50 hover:text-blue-700" email="{{ user.email }}">
-                          <td class="relative w-12 px-6 sm:w-16 sm:px-8">
-                            <input type="checkbox" id="adduser-checkbox-td" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6" onclick="handleUserSelectionCheckbox(this)"></input>
-                          </td>
-                          <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium text-gray-900" id="adduser-description-td">{{ user.email }}</td>
-                        </tr>
-                      {% endfor %}
-                      {% for user in groupMembers %}
-                        <tr id="{{ user.user.username }}-tablerow" class="hover:bg-blue-50 hover:text-blue-700">
-                          <td class="relative w-12 px-6 sm:w-16 sm:px-8">
-                            <div class="absolute inset-y-0 left-0 w-0.5 bg-blue-600 hidden" id="{{ user.user.username }}-marker"></div>
 
-                            <input type="checkbox" disabled checked="true" class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6" id="{{ user.user.username }}-checkbox"></input>
-                          </td>
-                          <td class="whitespace-nowrap py-4 pr-3 text-sm font-medium text-gray-900" id="{{ user.user.username }}-tabledesc">{{ user.email }}</td>
-                        </tr>
-                      {% endfor %}
                     </tbody>
                   </table>
+                  <nav id="user-list-nav"
+                     class="hidden flex flex-shrink-0 px-4 items-center rounded-b-lg justify-between align-bottom border-t border-gray-200 bg-white pt-4 pb-4 sticky">
+                     <button type="button" id="prev_page"
+                       class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 sticky">
+                       <svg xmlns="http://www.w3.org/2000/svg" class="rotate-180 fill-gray-400 mr-4" height="20" viewBox="0 -960 960 960" width="20">
+                         <path d="m691-265-68-67 100-100H103v-94h621L623-626l67-67 214 214-213 214Z"/>
+                       </svg>
+                       Previous
+                     </button>
+                     <button type="button" id="next_page"
+                       class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 sticky">
+                       Next
+                       <svg xmlns="http://www.w3.org/2000/svg" class="fill-gray-400 ml-4" height="20" viewBox="0 -960 960 960" width="20">
+                         <path d="m691-265-68-67 100-100H103v-94h621L623-626l67-67 214 214-213 214Z"/>
+                       </svg>
+                     </button>
+                   </nav>
                 </div>
               </div>
             </div>
@@ -138,24 +138,12 @@
         <div class="flex-1 relative overflow-y-auto space-y-1 inline-block rounded-md min-w-full align-middle">
           <table class="min-w-full table-fixed rounded-md divide-gray-300">
             <tbody class="divide-gray-200 bg-white" id="user-selection-table">
-              {% for user in groupMembers %}
-              <tr id="default-{{ user.name }}" class="max-h-4 px-6 hover:bg-blue-50 hover:text-blue-700">
-                <td class="relative text-sm leading-5 font-medium w-full px-4 py-4" id="user-selection-row-tabledesc">{{ user.email }}</td>
-                <td class="hidden whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-900 justify-right content-right max-w-2" id="user-selection-row-cancel">
-                  <button type="button" class="ml-0.5 mr-0.5 inline-flex max-w-2 flex-shrink-0 items-center justify-center rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:bg-blue-500 focus:text-white focus:outline-none">
-                    <span class="sr-only">Remove large option</span>
-                    <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
-                      <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
-                    </svg>
-                  </button>
-                </td>
-              </tr>
-              {% endfor %}  
+  
             </tbody>
           </table>
         </div>
         <nav class="flex flex-shrink-0 px-4 items-center justify-between align-bottom border-t border-gray-200 pt-2 pb-2 hidden">
-          <button type="button" class="inline-flex items-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-base font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2" onclick="removeAllUsers('{{ groupMembers|length }}');">
+          <button type="button" class="inline-flex items-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-base font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2" onclick="removeAllUsers();">
             Remove all new
           </button>
         </nav>
@@ -166,7 +154,7 @@
     <tr id="user-selection-row-template" class="hidden max-h-4 px-6 hover:bg-blue-50 hover:text-blue-700">
       <td class="relative w-full px-4 text-sm leading-5 font-medium" id="user-selection-row-tabledesc">User</td>
       <td class="whitespace-nowrap px-4 py-4 text-sm font-medium text-gray-900 justify-right content-right max-w-2" id="user-selection-row-cancel">
-        <button type="button" class="ml-0.5 mr-0.5 inline-flex max-w-2 flex-shrink-0 items-center justify-center rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:bg-blue-500 focus:text-white focus:outline-none" onclick="removeUserSelectionUI(this, '{{ groupMembers|length }}');">
+        <button type="button" class="ml-0.5 mr-0.5 inline-flex max-w-2 flex-shrink-0 items-center justify-center rounded-full text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:bg-blue-500 focus:text-white focus:outline-none" onclick="removeUserSelectionUI(this);">
           <span class="sr-only">Remove large option</span>
           <svg class="h-2 w-2" stroke="currentColor" fill="none" viewBox="0 0 8 8">
             <path stroke-linecap="round" stroke-width="1.5" d="M1 1l6 6m0-6L1 7" />
