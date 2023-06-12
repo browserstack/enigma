@@ -31,7 +31,7 @@ GROUP_ACCESS_MAPPING_NOT_FOUND = "Group Access Mapping not found in the database
 
 NEW_GROUP_CREATE_ERROR_GROUP_EXISTS = {
     "error_msg": "Invalid Group Name",
-    "msg": "A group with name {group_name} already exists. Please choose a new name.",
+    "msg": "This group name already exists. Please choose a new name.",
 }
 
 REQUEST_NOT_FOUND_ERROR = "Error request not found OR Invalid request type"
@@ -99,15 +99,15 @@ def create_group(request):
     base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
     try:
         data = request.POST
-        data = dict(data.lists())
-        new_group_name = (data["newGroupName"][0]).lower()
-        reason = data["newGroupReason"][0]
+        group_members = []
+        new_group_name = data.get("newGroupName").lower()
+        reason = data.get("newGroupReason")
         needs_access_approve = (
-            "requiresAccessApprove" in data
-            and data["requiresAccessApprove"][0] == "true"
+            data.get("requiresAccessApprove")
+            and data.get("requiresAccessApprove") == "true"
         )
-        if "selectedUserList" in data:
-            selected_users = data["selectedUserList"]
+        if data.getlist("selectedUserList[]"):
+            group_members = data.getlist("selectedUserList[]")
     except Exception as e:
         logger.exception(e)
         logger.error("Error in Create New Group request.")
@@ -145,8 +145,8 @@ def create_group(request):
         date_time=base_datetime_prefix,
     )
 
-    if "selectedUserList" in data:
-        initial_members = list(map(str, selected_users))
+    if group_members:
+        initial_members = list(map(str, group_members))
         new_group.add_members(
             users=User.objects.filter(email__in=initial_members),
             requested_by=request.user.user,

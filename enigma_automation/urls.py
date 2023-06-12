@@ -18,6 +18,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import re_path, include, path
 from bootprocess.views import dashboard, logout_view
 from Access.views import (
+    get_active_users,
     get_access_modules,
     revoke_group_access,
     user_offboarding,
@@ -62,7 +63,7 @@ urlpatterns = [
     re_path(r"^resolve/pendingRevoke", pending_revoke, name="pendingRevoke"),
     re_path(r"^user/updateUserInfo/", update_user_info, name="updateUserInfo"),
     re_path(r"^user/saveIdentity/", save_identity, name="saveIdentity"),
-    re_path(r"^group/create$", create_new_group, name="createNewGroup"),
+    path("group/create", create_new_group, name="createNewGroup"),
     path("group/dashboard/", group_dashboard, name="groupDashboard"),
     re_path(r"^access/userAccesses$", all_user_access_list, name="allUserAccessList"),
     re_path(r"^access/usersList$", all_users_list, name="allUsersList"),
@@ -99,6 +100,8 @@ urlpatterns = [
     re_path(r"^resolve_bulk", resolve_bulk, name="resolve_bulk"),
     re_path(r"^ignore/(?P<selector>.*)$", ignore_failure, name="ignoreFailure"),
     re_path(r"^group/revokeAccess", revoke_group_access, name="revoke_group_access"),
+
+    path("api/v1/getActiveUsers", get_active_users, name="get_active_users"),
     path("api/v1/getAccessModules", get_access_modules, name="getAccessModules")
 ]
 
