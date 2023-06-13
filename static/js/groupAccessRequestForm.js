@@ -4,7 +4,6 @@ function submitRequest(event, elem, multi, access_tag, accesses="") {
   event.preventDefault()
   form = $(elem)
   let actionUrl = form.attr('action');
-  console.log(actionUrl)
   $.ajax({
     type: "POST",
     url: actionUrl,

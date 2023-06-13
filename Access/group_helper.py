@@ -675,7 +675,6 @@ def get_group_access(form_data, auth_user):
 def save_group_access_request(form_data, auth_user):
     json_response = _validate_group_access_request(form_data, auth_user)
     if json_response:
-        print("yes1")
         return json_response
     
     access_request = dict(form_data.lists())
@@ -688,7 +687,6 @@ def save_group_access_request(form_data, auth_user):
         group=group, auth_user=auth_user
     )
     if validation_error:
-        print("yes2")
         return validation_error
     
     access_module = helper.get_available_access_modules()[access_tag]
