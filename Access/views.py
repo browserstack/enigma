@@ -983,6 +983,7 @@ def get_active_users(request):
         ).exclude(
             user=request.user.user
         )
+        response = {}
         if request.GET.get("groupName"):
             group_name = request.GET.get("groupName")
             context = group_helper.get_user_group(request, group_name)
@@ -998,7 +999,6 @@ def get_active_users(request):
             query_first_name | query_last_name | query_email
         ).values('first_name', 'last_name', 'email')
 
-        response = {}
         if not users:
             users = all_active_users.values('first_name', 'last_name', 'email')
             response["search_error"] = ("Please try adjusting your search",
