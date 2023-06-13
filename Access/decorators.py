@@ -52,7 +52,6 @@ def user_any_approver(function):
     wrap.__name__ = function.__name__
     return wrap
 
-
 def paginated_search(view_function):
     def wrap(request, *args, **kwargs):
         template, context = view_function(request, *args, **kwargs)

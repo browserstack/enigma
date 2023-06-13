@@ -298,6 +298,33 @@ def request_access(request):
 
 
 @login_required
+def new_group_access_request(request):
+    """Group Request Access"""
+    if request.method == "POST":
+        return render_error_message(
+            request,
+            "POST for this endpoint is not supported",
+            "Invalid Request",
+            "Error request not found OR Invalid request type",
+        )
+
+    try:
+        User.objects.get(email=request.user.email)
+    except Exception as ex:
+        return render_error_message(
+            request,
+            f"Access user with email {request.user.email} not found. Error: {str(ex)}",
+            "Invalid Request",
+            "Please login again",
+        )
+
+    context = {
+        "groupName": dict(request.GET.lists())["groupName"][0]
+    }
+    return render(request, "EnigmaOps/newAccessGroupRequest.html", context)
+
+
+@login_required
 def group_access(request):
     """Request access to a group.
 
@@ -309,12 +336,19 @@ def group_access(request):
         status of whether the group access save request.
     """
     if request.POST:
-        context = group_helper.save_group_access_request(request.POST, request.user)
-        return render(request, "EnigmaOps/accessStatus.html", context)
+        status = 200
+        try:
+            context = group_helper.save_group_access_request(request.POST, request.user)
+            if "error" in context:
+                status = 400
+        except Exception:
+            status = 500
+            context = {
+                "error": group_helper.GROUP_REQUEST_ERR_MSG
+            }
+        return JsonResponse(context, status=status)
 
     context = group_helper.get_group_access(request.GET, request.user)
-    if "status" in context:
-        return render(request, 'EnigmaOps/accessStatus.html', context)
     return render(request, "EnigmaOps/groupAccessRequestForm.html", context)
 
 
@@ -949,6 +983,15 @@ def get_active_users(request):
         ).exclude(
             user=request.user.user
         )
+        response = {}
+        if request.GET.get("groupName"):
+            group_name = request.GET.get("groupName")
+            context = group_helper.get_user_group(request, group_name)
+            if "error" in context:
+                response["error"] = context["error"]
+            group_user_names = [user.user.username for user in context["groupMembers"]]
+            all_active_users = all_active_users.exclude(username__in=group_user_names)
+
         query_first_name = Q(first_name__icontains=search)
         query_last_name = Q(last_name__icontains=search)
         query_email = Q(email__icontains=search)
@@ -956,7 +999,6 @@ def get_active_users(request):
             query_first_name | query_last_name | query_email
         ).values('first_name', 'last_name', 'email')
 
-        response = {}
         if not users:
             users = all_active_users.values('first_name', 'last_name', 'email')
             response["search_error"] = ("Please try adjusting your search",

@@ -209,18 +209,16 @@
                 </td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-sm font-medium sm:pr-6">
                   {% if each_group.role == "Owner" and each_group.status == "Approved" %}
-                  <a type="button" href="{% url 'groupRequestAccess' %}" class="inline-flex items-center justify-center rounded-md border
+                  <button class="inline-flex items-center justify-center rounded-md border
                               border-transparent bg-blue-100 px-4 py-2 text-sm font-medium
                                                     text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none
                                                     focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
-                                                    sm:w-auto">Add Module
-                  </a>
-                  <a type="button" href="{% url 'addUserToGroup' each_group.name %}" class="inline-flex items-center justify-center rounded-md border
-                                                    border-transparent bg-blue-100 px-4 py-2 text-sm font-medium
+                                                    sm:w-auto" value="{{ each_group.name }}" onclick="showGroupModal($(this).val())" >Add Module </button>
+                  <button class="inline-flex items-center justify-center rounded-md border
+                              border-transparent bg-blue-100 px-4 py-2 text-sm font-medium
                                                     text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none
                                                     focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
-                                                    sm:w-auto">Add Member
-                  </a>
+                                                    sm:w-auto" value="{{ each_group.name }}" onclick="showMemberModal($(this).val())" >Add Member </button>
                   {%else%}
                   NA
                   {%endif%}
@@ -310,4 +308,80 @@
 </nav>
 {% endif %}
 
+<div id="group_modal" class="group_modal relative z-10 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+  <div class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full  items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+
+              <div class="border-b px-4 py-3 bg-gray-100 flex">
+                  <div class="groupModalHeading">
+                    <h1 class="text-lg font-medium text-gray-900">Group access request</h1>
+                  </div>
+                  <div class="close_group_modal ml-auto inline-block text-sm cursor-pointer">
+                      <svg onclick="closeGroupModal()" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                  </div>
+              </div>
+
+              <form class="form-horizontal" action="{% url 'newAccessGroupRequest' %}" method="GET" id="usrform" name="usrform">   
+                  <div class="flex-row text-sm px-4 pt-4 pb-8">
+                      <label for="groupName" class="text-sm font-medium test-gray-700 " name="groupName">Select Group</label>
+                      <select id="groupName" class="w-full text-sm rounded-md border-gray-200 mt-1 mb-5" name="groupName" required>
+                          {% for each_group in dataList %}
+                          {% if each_group.role == "Owner" and each_group.status == "Approved" %}                         
+                          <option id="{{ each_group.name }}" value="{{ each_group.name }}">{{ each_group.name }}</option>
+                          {%endif%}                          
+                          {% endfor %}
+                      </select>
+                  </div>
+
+                  <div class="border-t w-full p-3 justify-end bg-gray-100 flex">
+                      <button type="button" class="mr-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium" onclick="closeGroupModal()">Cancel</button>
+                      <button type="submit" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">OK</button>
+                  </div>   
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div id="member_modal" class="member_modal relative z-10 hidden" aria-labelledby="add-modal-title" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+  <div class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full  items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+
+              <div class="border-b px-4 py-3 bg-gray-100 flex">
+                  <div class="ModalHeading">
+                    <h1 class="text-lg font-medium text-gray-900">Add new members</h1>
+                  </div>
+                  <div class="close_member_modal ml-auto inline-block text-sm cursor-pointer">
+                      <svg onclick="closeMemberModal()" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                  </div>
+              </div>
+
+              <form onsubmit="clickAddmemberFinalButton();return false">
+                  <div class="flex-row text-sm px-4 pt-4 pb-8">
+                      <label for="groupName" class="text-sm font-medium test-gray-700 " name="groupName">Select Group</label>
+                      <select id="memberGroupName" class="w-full text-sm rounded-md border-gray-200 mt-1 mb-5" name="groupName" required>
+                          {% for each_group in dataList %}
+                          {% if each_group.role == "Owner" and each_group.status == "Approved" %} 
+                          <option id="grpname-{{each_group.name }}" value="{{ each_group.name }}">{{ each_group.name }}</option>
+                          {%endif%}
+                          {% endfor %}
+                      </select>
+                  </div>
+
+                  <div class="border-t w-full p-3 justify-end bg-gray-100 flex">
+                      <button type="button" class="mr-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium" onclick="closeMemberModal()">Cancel</button>
+                      <button type="submit" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">OK</button>
+                  </div>   
+              </form>
+
+          </div>
+      </div>
+  </div>
+</div>
 {% endblock %}

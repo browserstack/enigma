@@ -83,16 +83,30 @@ ADD_MEMBER_REQUEST_SUBMITTED_MESSAGE = {
     permissions as the group",
 }
 
+GROUP_REQUEST_ERR_MSG = {
+    "error_msg": "Invalid Request",
+    "msg": "Please Contact Admin",
+}
+
+GROUP_REQUEST_EMPTY_FORM_ERR_MSG = {
+    "error_msg": "The submitted form is empty. Tried direct access to group reqeust access page",
+    "msg": "Error Occured while submitting your Request. Please contact the Admin",
+}
+
+GROUP_REQUEST_NO_GROUP_ERR_MSG = {
+    "error_msg": "This Group is not yet approved",
+    "msg": "This Group is not yet approved. Please contact admin for any queries ",
+}
+
+GROUP_REQUEST_SUCCESS_MSG = {
+    "title": "Request Submitted {access_tag}",
+    "msg": "Once approved you will receive the update",
+}
+
 DUPLICATE_GROUP_MEMBER_ADD_REQUEST = "User or User's, {user_emails} is already added to \
 group/or pending approval for group addition"
 NO_GROUP_ERROR = "There is no group named {group_name}. Please contact admin for \
     any queries."
-
-
-class GroupAccessExistsException(Exception):
-    def __init__(self):
-        self.message = "Group Access Exists"
-        super().__init__(self.message)
 
 
 def create_group(request):
@@ -385,7 +399,7 @@ def get_user_group(request, group_name):
                 + request.user.username
             )
             context = {}
-            context["status"] = {
+            context["error"] = {
                 "title": "Invalid Group",
                 "msg": NO_GROUP_ERROR.format(group_name=group_name),
             }
@@ -420,8 +434,7 @@ def add_user_to_group(request):
     try:
         base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
         data = request.POST
-        data = dict(data.lists())
-        group = GroupV2.get_approved_group_by_name(data["groupName"][0])
+        group = GroupV2.get_approved_group_by_name(data.get("groupName"))
         if not group:
             context = {}
             context["error"] = {"error_msg": "Request failed", "msg": "Group not found"}
@@ -434,9 +447,11 @@ def add_user_to_group(request):
                 "msg": NON_OWNER_PERMISSION_DENIED_ERROR["msg"],
             }
             return context
+        
+        selected_users_list = json.loads(data.get("selectedUserList"))
 
         duplicate_request_emails = _check_if_members_in_group(
-            group=group, selected_members=data["selectedUserList"]
+            group=group, selected_members=selected_users_list
         )
 
         if duplicate_request_emails:
@@ -447,7 +462,7 @@ def add_user_to_group(request):
             context["error"] = {"error_msg": "Duplicate Request", "msg": msg}
             return context
 
-        selected_users = get_selected_users_by_email(data["selectedUserList"])
+        selected_users = get_selected_users_by_email(selected_users_list)
 
         users_added = {}
         user_not_added = []
@@ -457,7 +472,7 @@ def add_user_to_group(request):
                     membership = group.add_member(
                         user=user,
                         requested_by=request.user.user,
-                        reason=data["memberReason"][0],
+                        reason=data.get("memberReason"),
                         date_time=base_datetime_prefix,
                     )
                     membership_id = membership.membership_id
@@ -494,8 +509,8 @@ def add_user_to_group(request):
             notifications.send_mail_for_member_approval(
                 ",".join(user_not_added),
                 str(request.user),
-                data["groupName"][0],
-                data["memberReason"][0],
+                data.get("groupName"),
+                data.get("memberReason"),
             )
             context = {}
             context["status"] = {
@@ -507,7 +522,7 @@ def add_user_to_group(request):
             membership = MembershipV2.get_membership(membership_id=membership_id)
             notifications.send_mulitple_membership_accepted_notification(
                 users_added,
-                data["groupName"][0],
+                data.get("groupName"),
                 membership,
             )
             if len(selected_users) - len(users_added) == 0:
@@ -658,72 +673,62 @@ def get_group_access(form_data, auth_user):
 
 
 def save_group_access_request(form_data, auth_user):
+    json_response = _validate_group_access_request(form_data, auth_user)
+    if json_response:
+        return json_response
+    
     access_request = dict(form_data.lists())
-    group_name = access_request["groupName"][0]
+    group_name = form_data.get("groupName")
+    access_tag = form_data.get("access_tag")
+    
     group = GroupV2.get_active_group_by_name(group_name=group_name)
-
-    context = {"status_list": []}
+    
     validation_error = validate_group_access_create_request(
         group=group, auth_user=auth_user
     )
     if validation_error:
-        context["status"] = validation_error
+        return validation_error
+    
+    access_module = helper.get_available_access_modules()[access_tag]
 
-    for accessIndex, access_tag in enumerate(access_request["accessType"]):
-        access_module = helper.get_available_access_modules()[access_tag]
-        access_labels = accessrequest_helper.validate_access_labels(
-            access_labels_json=access_request["accessLabel"][accessIndex],
-            access_tag=access_tag,
-        )
+    module_access_labels = access_module.validate_request(form_data, auth_user.user)
 
-        module_access_labels = access_module.validate_request(
-            access_labels, auth_user, is_group=False
-        )
+    extra_fields = accessrequest_helper.get_extra_fields(access_request)
+    extra_field_labels = accessrequest_helper.get_extra_field_labels(access_module)
 
-        access_reason = access_request["accessReason"][accessIndex]
+    if extra_fields and extra_field_labels:
+        for field in extra_field_labels:
+            module_access_labels[0][field] = extra_fields[0]
+            extra_fields = extra_fields[1:]
 
-        extra_fields = accessrequest_helper.get_extra_fields(access_request)
-        extra_field_labels = accessrequest_helper.get_extra_field_labels(access_module)
-
-        if extra_fields and extra_field_labels:
-            for field in extra_field_labels:
-                module_access_labels[0][field] = extra_fields[0]
-                extra_fields = extra_fields[1:]
-
-
-        request_id = (
-            group.name
-            + "-"
-            + access_tag
-            + "-"
-            + datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
-        )
-        with transaction.atomic():
-            for labelIndex, access_label in enumerate(module_access_labels):
-                request_id = request_id + "_" + str(labelIndex)
-                try:
-                    _create_group_access_mapping(
-                        group=group,
-                        user=auth_user.user,
-                        request_id=request_id,
-                        access_tag=access_tag,
-                        access_label=access_label,
-                        access_reason=access_reason,
-                    )
-                    context["status_list"].append(
-                        {
-                            "title": request_id + " Request Submitted",
-                            "msg": "Once approved you will receive the update "
-                            + json.dumps(access_label),
-                        }
-                    )
-                except GroupAccessExistsException:
-                    context["status_list"].append(
-                        {
-                            "title": "Access Exists",
-                            "msg": "Access already exists" + json.dumps(access_label),
-                        }
-                    )
+    request_id = (
+        group.name
+        + "-"
+        + access_tag
+        + "-"
+        + datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
+    )
+    with transaction.atomic():
+        for labelIndex, access_label in enumerate(module_access_labels):
+            request_id = request_id + "_" + str(labelIndex)
+            try:
+                group_access_create_error = _create_group_access_mapping(
+                    group=group,
+                    user=auth_user.user,
+                    request_id=request_id,
+                    access_tag=access_tag,
+                    access_label=access_label,
+                    access_reason=access_request["accessReason"],
+                )
+            except GroupAccessExistsException:
+                error_msg = "Duplicate request found" + json.dumps(access_label)
+                logger.info(f"{error_msg}")
+        json_response["status"] = {
+            "title": GROUP_REQUEST_SUCCESS_MSG["title"].format(
+                access_tag=access_tag
+            ),
+            "msg": GROUP_REQUEST_SUCCESS_MSG["msg"]
+        }
         # email_destination = access_module.get_approvers()
         # member_list = group.get_all_approved_members()
         # notifications.send_group_access_add_email(
@@ -733,7 +738,7 @@ def save_group_access_request(form_data, auth_user):
         #     request_id=request_id,
         #     member_list=member_list,
         # )
-    return context
+    return json_response
 
 
 def _create_group_access_mapping(
@@ -753,15 +758,39 @@ def _create_group_access_mapping(
     )
 
 
+def _validate_group_access_request(form_data, auth_user):
+    json_response = {}
+    if not form_data:
+        json_response["error"] = {
+            "error_msg": GROUP_REQUEST_ERR_MSG["error_msg"],
+            "msg": GROUP_REQUEST_ERR_MSG["msg"]
+        }
+        logger.debug("Tried a direct Access to groupAccessRequest by-" + auth_user.username)
+        return json_response
+
+    if not form_data.get("groupName") or not form_data.get("access_tag") or not form_data.get("accessReason"):
+        json_response["error"] = {
+            "error_msg": GROUP_REQUEST_EMPTY_FORM_ERR_MSG["error_msg"],
+            "msg": GROUP_REQUEST_EMPTY_FORM_ERR_MSG["msg"]
+        }
+    return json_response    
+
+
 def validate_group_access_create_request(group, auth_user):
+    json_response = {}
     if not group:
-        logger.exception("This Group is not yet approved")
-        return {"title": "Permisison Denied", "msg": "This Group is not yet approved"}
+        json_response["error"] = {
+            "error_msg": GROUP_REQUEST_NO_GROUP_ERR_MSG["error_msg"],
+            "msg": GROUP_REQUEST_NO_GROUP_ERR_MSG["msg"]
+        }
+        return json_response
 
     if not auth_user.user.is_allowed_admin_actions_on_group(group):
-        logger.exception("Permission denied, you're not owner of this group")
-        return {"title": "Permision Denied", "msg": "You're not owner of this group"}
-    return None
+        json_response["error"] = {
+            "error_msg": NON_OWNER_PERMISSION_DENIED_ERROR["error_msg"],
+            "msg": NON_OWNER_PERMISSION_DENIED_ERROR["msg"]
+        }
+    return json_response
 
 
 def revoke_user_access(user, access, revoker, decline_message):
