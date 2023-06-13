@@ -517,11 +517,6 @@ def add_user_to_group(request, group_name):
         return render(request, "EnigmaOps/accessStatus.html", context)
 
     context = group_helper.get_user_group(request, group_name)
-    all_users = User.objects.filter().exclude(user__username='system_user').only("user")
-    context["users"] = []
-    for user in all_users:
-        if user not in context["groupMembers"]:
-            context["users"].append(user)
     return render(request, "EnigmaOps/addUserToGroupForm.html", context)
 
 
@@ -988,6 +983,14 @@ def get_active_users(request):
         ).exclude(
             user=request.user.user
         )
+        if request.GET.get("groupName"):
+            group_name = request.GET.get("groupName")
+            context = group_helper.get_user_group(request, group_name)
+            if "error" in context:
+                response["error"] = context["error"]
+            group_user_names = [user.user.username for user in context["groupMembers"]]
+            all_active_users = all_active_users.exclude(username__in=group_user_names)
+
         query_first_name = Q(first_name__icontains=search)
         query_last_name = Q(last_name__icontains=search)
         query_email = Q(email__icontains=search)

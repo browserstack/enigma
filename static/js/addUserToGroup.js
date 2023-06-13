@@ -83,7 +83,7 @@ function updateSelectedUser() {
     users_array.push($(users_list[iter]).attr("email"));
   }
 
-  $('#selected-users').val(users_array);
+  $('#selected-users').val(JSON.stringify(users_array));
 }
 
 const selectAllUsers = () => {
@@ -150,10 +150,10 @@ function showNotification(type, title, message) {
   // TODO
 };
 
-function update_users(search, page) {
+function update_users(search, page, groupName) {
   $.ajax({
     url: "/api/v1/getActiveUsers",
-    data: {"search": search, "page":page},
+    data: {"search": search, "page":page, "groupName":groupName},
     error: function (XMLHttpRequest, textStatus, errorThrown) {
       const msg = XMLHttpRequest.responseJSON;
       // showNotificiation("Failed", msg["error"]);
@@ -178,24 +178,24 @@ function update_users(search, page) {
 
       if(data["next_page"]) {
         $("#user-list-nav").removeClass("hidden");
-        $("#next_page").attr("onclick", `change_page('${data["next_page"]}')`);
+        $("#next_page").attr("onclick", `change_page('${data["next_page"]}', '${groupName}')`);
       } else {
         $("#user-list-nav").removeClass("hidden");
-        $("#next_page").attr("onclick", `change_page('None')`);
+        $("#next_page").attr("onclick", `change_page('None', '${groupName}')`);
       }
 
       if(data["prev_page"]) {
         $("#user-list-nav").removeClass("hidden");
-        $("#prev_page").attr("onclick", `change_page('${data["prev_page"]}')`);
+        $("#prev_page").attr("onclick", `change_page('${data["prev_page"]}', '${groupName}')`);
       } else {
         $("#user-list-nav").removeClass("hidden");
-        $("#prev_page").attr("onclick", `change_page('None')`);
+        $("#prev_page").attr("onclick", `change_page('None', '${groupName}')`);
       }
 
       if(!data["next_page"] && ! data["prev_page"]) {
         $("#user-list-nav").addClass("hidden")
       }
-      // $("#user-scroll-bar").scrollTop(0)
+      $("#user-scroll-bar").scrollTop(0)
       if(data["search_error"]) {
         // showNotificiation(data["search_error"])
       }
@@ -203,9 +203,9 @@ function update_users(search, page) {
   })
 }
 
-function addUserSearch(event, elem) {
+function addUserSearch(event, elem, groupName) {
   if(event.key === "Enter") {
-    update_users($(elem).val(), undefined);
+    update_users($(elem).val(), undefined, groupName);
   }
 }
 
@@ -213,12 +213,13 @@ function get_search_val() {
   return $("#global-search").val();
 }
 
-function change_page(page) {
+function change_page(page, groupName) {
   if(page !== 'None'){
-    update_users(get_search_val(), Number(page));
+    update_users(get_search_val(), Number(page), groupName);
   }
 }
 
 $(window).on("load", () => {
-  update_users("", undefined)
+  const groupName = $("#groupNameHeading").attr("groupName");
+  update_users("", undefined, groupName);
 })

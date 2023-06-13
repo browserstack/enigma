@@ -399,7 +399,7 @@ def get_user_group(request, group_name):
                 + request.user.username
             )
             context = {}
-            context["status"] = {
+            context["error"] = {
                 "title": "Invalid Group",
                 "msg": NO_GROUP_ERROR.format(group_name=group_name),
             }
@@ -434,8 +434,7 @@ def add_user_to_group(request):
     try:
         base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
         data = request.POST
-        data = dict(data.lists())
-        group = GroupV2.get_approved_group_by_name(data["groupName"][0])
+        group = GroupV2.get_approved_group_by_name(data.get("groupName"))
         if not group:
             context = {}
             context["error"] = {"error_msg": "Request failed", "msg": "Group not found"}
@@ -448,9 +447,11 @@ def add_user_to_group(request):
                 "msg": NON_OWNER_PERMISSION_DENIED_ERROR["msg"],
             }
             return context
+        
+        selected_users_list = json.loads(data.get("selectedUserList"))
 
         duplicate_request_emails = _check_if_members_in_group(
-            group=group, selected_members=data["selectedUserList"]
+            group=group, selected_members=selected_users_list
         )
 
         if duplicate_request_emails:
@@ -461,7 +462,7 @@ def add_user_to_group(request):
             context["error"] = {"error_msg": "Duplicate Request", "msg": msg}
             return context
 
-        selected_users = get_selected_users_by_email(data["selectedUserList"])
+        selected_users = get_selected_users_by_email(selected_users_list)
 
         users_added = {}
         user_not_added = []
@@ -471,7 +472,7 @@ def add_user_to_group(request):
                     membership = group.add_member(
                         user=user,
                         requested_by=request.user.user,
-                        reason=data["memberReason"][0],
+                        reason=data.get("memberReason"),
                         date_time=base_datetime_prefix,
                     )
                     membership_id = membership.membership_id
@@ -508,8 +509,8 @@ def add_user_to_group(request):
             notifications.send_mail_for_member_approval(
                 ",".join(user_not_added),
                 str(request.user),
-                data["groupName"][0],
-                data["memberReason"][0],
+                data.get("groupName"),
+                data.get("memberReason"),
             )
             context = {}
             context["status"] = {
@@ -521,7 +522,7 @@ def add_user_to_group(request):
             membership = MembershipV2.get_membership(membership_id=membership_id)
             notifications.send_mulitple_membership_accepted_notification(
                 users_added,
-                data["groupName"][0],
+                data.get("groupName"),
                 membership,
             )
             if len(selected_users) - len(users_added) == 0:
