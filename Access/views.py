@@ -1,6 +1,7 @@
 """Django views."""
 import json
-import math, logging, traceback
+import logging
+import traceback
 from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
 from django.contrib.auth.decorators import login_required
@@ -9,6 +10,8 @@ from django.core.paginator import Paginator
 from django.contrib.auth.models import User as djangoUser
 from django.http import JsonResponse
 from django.shortcuts import render
+from django.template.response import TemplateResponse
+from django.db.models import Q
 
 from Access import views_helper
 from Access import group_helper
@@ -23,6 +26,8 @@ from Access.accessrequest_helper import (
     accept_group_access,
     run_accept_request_task,
     run_ignore_failure_task,
+    ImplementationPendingException,
+    REQUEST_FAILED_MSG
 )
 from Access.models import User, UserAccessMapping, GroupAccessMapping
 
@@ -36,17 +41,24 @@ from Access.userlist_helper import (
     IdentityNotChangedException,
 )
 from Access.views_helper import render_error_message
-from EnigmaAutomation.settings import PERMISSION_CONSTANTS
+from enigma_automation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
-from .decorators import user_admin_or_ops, authentication_classes, user_with_permission, user_any_approver
+from .decorators import user_admin_or_ops, authentication_classes, \
+    user_with_permission, user_any_approver, paginated_search
+from .paginator_decorators import paginator
 
 INVALID_REQUEST_MESSAGE = "Error in request not found OR Invalid request type"
+IMPLEMENTATION_PENDING_ERROR_MESSAGE = {
+    "error_msg": "Failed to process the request",
+    "msg": "Implementation of the {feature_name} feature is pending."
+}
 
 logger = logging.getLogger(__name__)
 logger.info("Server Started")
 
 
 @login_required
+@paginated_search
 def show_access_history(request):
     """Show access request history for a User."""
     if request.method == "POST":
@@ -67,30 +79,37 @@ def show_access_history(request):
             "Please login again",
         )
 
-    page = int(request.GET.get('page') or 1) - 1
-    limit = 20
+    selected_status = request.GET.getlist("status")
+    selected_access_modules = request.GET.getlist("access_desc")
 
-    start_index = page * limit
-    max_pagination = math.ceil(access_user.get_total_access_count() / limit)
-
-    return render(
-        request,
-        "EnigmaOps/showAccessHistory.html",
-        {
-            "dataList": access_user.get_access_history(
-                helper.get_available_access_modules(),
-                start_index,
-                limit,
-            ),
-            "maxPagination": max_pagination,
-            "allPages": range(1, max_pagination + 1),
-            "currentPagination": page + 1,
-            "possibleStatuses": UserAccessMapping.get_unique_statuses(),
+    context = {
+        "dataList": access_user.get_access_history(
+            helper.get_available_access_modules()
+        ),
+        "search_data_key": "dataList",
+        "search_rows": ["access_desc", "access_tag", "requestId"],
+        "filter_rows": ["status", "access_desc"],
+        "possibleStatuses": {
+            "selected": selected_status,
+            "notSelected": [status for status in UserAccessMapping.get_unique_statuses()
+                            if status not in selected_status]
         },
-    )
+
+        "possibleAccessModules": {
+            "selected": selected_access_modules,
+            "notSelected": [access_desc for access_desc in helper.get_available_access_module_desc()
+                            if access_desc not in selected_access_modules]
+        },
+
+        "search_value": request.GET.get('search')
+    }
+
+    return TemplateResponse(request, "EnigmaOps/showAccessHistory.html"), context
+
 
 @login_required
 def new_access_request(request):
+    """ new access request """
     if request.method == "POST":
         return render_error_message(
             request,
@@ -100,12 +119,11 @@ def new_access_request(request):
         )
 
     try:
-        access_user = User.objects.get(email=request.user.email)
-    except Exception as e:
+        User.objects.get(email=request.user.email)
+    except Exception as exc:
         return render_error_message(
             request,
-            "Access user with email %s not found. Error: %s"
-            % (request.user.email, str(e)),
+            f"Access user with email {request.user.email} not found. Error: {str(exc)}",
             "Invalid Request",
             "Please login again",
         )
@@ -113,9 +131,6 @@ def new_access_request(request):
     return render(
         request,
         "EnigmaOps/newAccessRequest.html",
-        {
-            "modulesList": helper.get_available_access_modules(),
-        },
     )
 
 
@@ -185,14 +200,14 @@ def save_identity(request):
             "title": IDENTITY_UNCHANGED_ERROR_MESSAGE["title"],
             "msg": IDENTITY_UNCHANGED_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
-        return JsonResponse(json.dumps(context), safe=False, status=400)
+        return JsonResponse(json.dumps(context), safe=False, status=200)
 
     except Exception:
         context["error"] = {
             "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
             "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
-        return JsonResponse(json.dumps(context), safe=False, status=400)
+        return JsonResponse(json.dumps(context), safe=False, status=200)
     context["error"] = {
         "title": "Bad Request",
         "msg": "Invalid Request.",
@@ -205,10 +220,12 @@ def create_new_group(request):
     """Template to capture new group info, or status of save request."""
     if request.POST:
         context = group_helper.create_group(request)
-        if "status" in context or "error" in context:
-            return render(request, "EnigmaOps/accessStatus.html", context)
-        return render(request, "EnigmaOps/createNewGroup.html", context)
-    return render(request, "EnigmaOps/createNewGroup.html", {})
+        if "error" in context:
+            return JsonResponse(context, status=400)
+        if "status" in context:
+            return JsonResponse(context, status=200)
+
+    return render(request, "EnigmaOps/createNewGroup.html")
 
 
 @login_required
@@ -251,14 +268,60 @@ def request_access(request):
         HTTPResponse: Access request form template or the status of access save request.
     """
     if request.POST:
-        print((request.POST))
-        context = create_request(
-            auth_user=request.user, access_request_form=request.POST
-        )
-        return render(request, "EnigmaOps/accessStatus.html", context)
+        status = 200
+        try:
+            context = create_request(
+                auth_user=request.user, access_request_form=request.POST
+            )
+            if "error" in context:
+                status = 400
+            return JsonResponse(context, status=200)
+        except ImplementationPendingException:
+            status = 400
+            context = {
+                "error": {
+                    "error_msg": IMPLEMENTATION_PENDING_ERROR_MESSAGE["error_msg"],
+                    "msg": IMPLEMENTATION_PENDING_ERROR_MESSAGE["msg"].format(
+                        feature_name="can_auto_approve"
+                    )
+                }
+            }
+        except Exception:
+            status = 500
+            context = {
+                "error": REQUEST_FAILED_MSG
+            }
+        return JsonResponse(context, status=status)
 
     context = get_request_access(request)
     return render(request, "EnigmaOps/accessRequestForm.html", context)
+
+
+@login_required
+def new_group_access_request(request):
+    """Group Request Access"""
+    if request.method == "POST":
+        return render_error_message(
+            request,
+            "POST for this endpoint is not supported",
+            "Invalid Request",
+            "Error request not found OR Invalid request type",
+        )
+
+    try:
+        User.objects.get(email=request.user.email)
+    except Exception as ex:
+        return render_error_message(
+            request,
+            f"Access user with email {request.user.email} not found. Error: {str(ex)}",
+            "Invalid Request",
+            "Please login again",
+        )
+
+    context = {
+        "groupName": dict(request.GET.lists())["groupName"][0]
+    }
+    return render(request, "EnigmaOps/newAccessGroupRequest.html", context)
 
 
 @login_required
@@ -273,34 +336,85 @@ def group_access(request):
         status of whether the group access save request.
     """
     if request.POST:
-        context = group_helper.save_group_access_request(request.POST, request.user)
-        return render(request, "EnigmaOps/accessStatus.html", context)
+        status = 200
+        try:
+            context = group_helper.save_group_access_request(request.POST, request.user)
+            if "error" in context:
+                status = 400
+        except Exception:
+            status = 500
+            context = {
+                "error": group_helper.GROUP_REQUEST_ERR_MSG
+            }
+        return JsonResponse(context, status=status)
 
     context = group_helper.get_group_access(request.GET, request.user)
-    if "status" in context:
-        return render(request, 'EnigmaOps/accessStatus.html',context)
     return render(request, "EnigmaOps/groupAccessRequestForm.html", context)
 
 
 @login_required
-def group_access_list(request, group_name):
+@paginated_search
+def group_access_list(request):
     """lists the accesses for a group."""
     try:
-        context = group_helper.get_group_access_list(request.user, group_name)
-        if "error" in context:
-            return render(request, "EnigmaOps/accessStatus.html", context)
+        group_name = request.GET.get('group_name')
+        group_detail = group_helper.get_group_access_list(request.user, group_name)
+        if "error" in group_detail:
+            return TemplateResponse(request, "EnigmaOps/accessStatus.html"), group_detail
 
-        return render(request, "EnigmaOps/groupAccessList.html", context)
+        group_detail = group_helper.get_role_based_on_membership(group_detail)
+        context = {
+            "search_value": request.GET.get("search"),
+            "groupName": group_name,
+            "allowRevoke": group_detail["allowRevoke"]
+        }
+
+        show_tab = request.GET.get("show_tab")
+        if show_tab == "membersList":
+            selected_role = request.GET.getlist("role")
+            selected_current_state = request.GET.getlist("current_state")
+            context["roleFilter"] = {
+                "selected": selected_role,
+                "notSelected": group_helper.get_group_member_role_list(selected_role)
+            }
+            context["currentStateFilter"] = {
+                "selected": selected_current_state,
+                "notSelected": group_helper.get_user_states(selected_current_state)
+            }
+            context["search_data_key"] = "userList"
+            context["search_rows"] = ["name", "email"]
+            context["filter_rows"] = ["role", "current_state"]
+            context["userList"] = group_detail["userList"]
+            context["isMembersList"] = True
+        else:
+            selected_access_type = request.GET.getlist("accessType")
+            selected_status = request.GET.getlist("status")
+            context["accessTypeFilter"] = {
+                "selected": selected_access_type,
+                "notSelected": group_helper.get_group_member_access_type(selected_access_type)
+            }
+            context["statusFilter"] = {
+                "selected": selected_status,
+                "notSelected": group_helper.get_group_status_list(selected_status),
+            }
+            context["search_data_key"] = "dataList"
+            context["search_rows"] = ["module", "status", "accessType"]
+            context["dataList"] = group_detail['genericAccesses']
+            context["filter_rows"] = ["accessType", "status"]
+
+        return TemplateResponse(
+            request,
+            "EnigmaOps/groupAccessList.html"), context
     except Exception as ex:
-        logger.debug(
-            "Error in request not found OR Invalid request type, Error: %s", str(ex)
+        logger.exception(
+            "Error in Group Access List, Error: %s", str(ex)
         )
         json_response = {}
         json_response["error"] = {
             "error_msg": INVALID_REQUEST_MESSAGE,
             "msg": INVALID_REQUEST_MESSAGE,
         }
-        return render(request, "EnigmaOps/accessStatus.html", json_response)
+        return TemplateResponse(request, "EnigmaOps/accessStatus.html"), json_response
 
 
 @login_required
@@ -330,7 +444,9 @@ def update_group_owners(request, group_name):
 
 
 @login_required
+@paginated_search
 def group_dashboard(request):
+    """ view group dashboard """
     if request.method == "POST":
         return render_error_message(
             request,
@@ -341,35 +457,35 @@ def group_dashboard(request):
 
     try:
         access_user = request.user.user
-    except Exception as e:
+    except Exception as exc:
         return render_error_message(
             request,
-            "Access user with email %s not found. Error: %s"
-            % (request.user.email, str(e)),
+            f"Access user with email {request.user.email} not found. Error: {str(exc)}",
             "Invalid Request",
             "Please login again",
         )
 
-    page = int(request.GET.get('page') or 1) - 1
-    limit = 20
+    selected_role = request.GET.getlist("role")
+    selected_status = request.GET.getlist("status")
 
-    start_index = page * limit
-    max_pagination = math.ceil(access_user.get_group_access_count() / limit)
-
-    return render(
-        request,
-        "EnigmaOps/showGroupHistory.html",
-        {
-            "dataList": access_user.get_groups_history(
-                start_index,
-                limit
-            ),
-            "maxPagination": max_pagination,
-            "allPages": range(1, max_pagination + 1),
-            "currentPagination": page + 1,
-            "statusFilter": group_helper.get_group_status_list(),
+    context = {
+        "search_data_key": "dataList",
+        "search_rows": ["name"],
+        "dataList": access_user.get_groups_history(),
+        "statusFilter": {
+            "selected": selected_status,
+            "notSelected": group_helper.get_group_status_list(selected_status),
         },
-    )
+        "roleFilter": {
+            "selected": selected_role,
+            "notSelected": group_helper.get_group_member_role_list(selected_role)
+        },
+        "search_value": request.GET.get("search"),
+        "filter_rows": ["role", "status"]
+    }
+    return TemplateResponse(
+        request,
+        "EnigmaOps/showGroupHistory.html"), context
 
 
 def approve_new_group(request, group_id):
@@ -464,7 +580,7 @@ def accept_bulk(request, selector):
         context["bulk_approve"] = True
         context["returnIds"] = return_ids
         return JsonResponse(context, status=200)
-    except Exception as ex:
+    except Exception:
         logger.error("Error processing bulk accept, Error: %s", traceback.format_exc())
         json_response = {}
         json_response["error"] = INVALID_REQUEST_MESSAGE
@@ -497,11 +613,12 @@ def _get_request_ids_for_bulk_processing(posted_request_ids, selector):
         selector = "groupAccess"
     else:
         access_request_ids = input_vals
-    logger.debug("Got the ids %s for bulk processing" % (",".join(access_request_ids)))
+    logger.debug("Got the ids %s for bulk processing", (",".join(access_request_ids)))
     return access_request_ids, return_ids, selector
 
 
 @login_required
+@user_any_approver
 def decline_access(request, access_type, request_id):
     """Decline an access request.
 
@@ -517,7 +634,7 @@ def decline_access(request, access_type, request_id):
         try:
             context = get_decline_access_request(request, access_type, request_id)
             return JsonResponse(context, status=200)
-        except Exception as ex:
+        except Exception:
             logger.exception("Error declining access, Error: %s", traceback.format_exc())
             return JsonResponse(
                 {"error": "Failed to decline the access request"}, status=400
@@ -539,9 +656,30 @@ def remove_group_member(request):
         if "error" in response:
             return JsonResponse(response, status=400)
         return JsonResponse({"message": "Success"})
-    except Exception as ex:
+    except Exception:
         logger.exception("Error removing memeber from group, Error: %s", traceback.format_exc())
         return JsonResponse({"error": "Failed to remove the user"}, status=400)
+
+
+def get_generic_accesses(request, user, generic_accesses, show_tabs, username):
+    """ method to get generic accesses """
+    if user:
+        generic_accesses = generic_accesses.filter(
+            user_identity__user=user.user
+        ).order_by("-requested_on")
+        show_tabs = True
+        username = user.username
+    elif "usersearch" in request.GET:
+        generic_accesses = generic_accesses.filter(
+            user_identity__user__user__username__icontains=request.GET.get(
+                "usersearch"
+            )
+        ).order_by("user_identity__user__user__username")
+    else:
+        generic_accesses = generic_accesses.order_by(
+            "user_identity__user__user__username"
+        )
+    return generic_accesses, show_tabs, username
 
 
 @api_view(["GET"])
@@ -563,9 +701,9 @@ def all_user_access_list(request, load_ui=True):
         if request.GET.get("username"):
             username = request.GET.get("username")
             user = djangoUser.objects.get(username=username)
-    except Exception as ex:
+    except Exception:
         # show all
-        logger.exception("Error raised in all_user_access_list: %s" % (traceback.format_exc()))
+        logger.exception("Error raised in all_user_access_list: %s", (traceback.format_exc()))
 
     try:
         last_page = 1
@@ -576,22 +714,8 @@ def all_user_access_list(request, load_ui=True):
         load_ui = request.GET.get("load_ui", "true").lower() == "true"
         record_date = request.GET.get("recordDate", None)
 
-        if user:
-            generic_accesses = generic_accesses.filter(
-                user_identity__user=user.user
-            ).order_by("-requested_on")
-            show_tabs = True
-            username = user.username
-        elif "usersearch" in request.GET:
-            generic_accesses = generic_accesses.filter(
-                user_identity__user__user__username__icontains=request.GET.get(
-                    "usersearch"
-                )
-            ).order_by("user_identity__user__user__username")
-        else:
-            generic_accesses = generic_accesses.order_by(
-                "user_identity__user__user__username"
-            )
+        generic_accesses, show_tabs, username = \
+            get_generic_accesses(request, user, generic_accesses, show_tabs, username)
 
         filters = views_helper.get_filters_for_access_list(request)
         generic_accesses = generic_accesses.filter(**filters)
@@ -602,16 +726,16 @@ def all_user_access_list(request, load_ui=True):
             paginator_obj = Paginator(generic_accesses, 10)
             last_page = paginator_obj.num_pages
             page = min(page, last_page) if page > last_page else page
-            paginator = paginator_obj.page(page)
+            page_items = paginator_obj.page(page)
         else:
-            paginator = generic_accesses
+            page_items = generic_accesses
 
         access_types = list(
             set(generic_accesses.values_list("access__access_tag", flat=True))
         )
 
         data_list = views_helper.prepare_datalist(
-            paginator=paginator, record_date=record_date
+            paginator=page_items, record_date=record_date
         )
 
         context = {}
@@ -637,7 +761,7 @@ def all_user_access_list(request, load_ui=True):
 
         return JsonResponse(context)
 
-    except Exception as ex:
+    except Exception:
         logger.exception(
             """Error fetching all users access list,
                         request not found OR Invalid request type, Error: %s""",
@@ -699,13 +823,14 @@ def mark_revoked(request):
             success_list.append(mapping_object.request_id)
         json_response["msg"] = "Success"
         json_response["request_ids"] = success_list
-    except Exception as ex:
+    except Exception:
         logger.exception("Error Revoking User Access, Error: %s", traceback.format_exc())
         json_response["error"] = "Error Revoking User Access"
     return JsonResponse(json_response, status=403)
 
 
 def individual_resolve(request):
+    """ method to resolve individually """
     json_response = {"status_list": []}
     try:
         request_ids = request.GET.getlist("requestId")
@@ -724,10 +849,12 @@ def individual_resolve(request):
                 )
                 json_response["status_list"] += response["status"]
             else:
-                json_response["status_list"].append({'title': 'The Request ('+request_id+') is already resolved.', 'msg': 'The request is already in final state.'})
-        return render(request,'EnigmaOps/accessStatus.html',json_response)
-    except Exception as e:
-        logger.exception("Error raised during individual_resolve %s" % (traceback.format_exc()))
+                json_response["status_list"].\
+                    append({'title': 'The Request (' + request_id + ') is already resolved.',
+                            'msg': 'The request is already in final state.'})
+        return render(request, 'EnigmaOps/accessStatus.html', json_response)
+    except Exception:
+        logger.exception("Error raised during individual_resolve %s", (traceback.format_exc()))
         json_response["error"] = {
             "error_msg": "Bad request",
             "msg": "Error in request not found OR Invalid request type",
@@ -738,6 +865,7 @@ def individual_resolve(request):
 @login_required
 @user_with_permission([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])
 def ignore_failure(request, selector):
+    """ method to ignore failure of the request """
     try:
         json_response = {"status_list": []}
         request_ids = request.GET.getlist("requestId")
@@ -760,7 +888,7 @@ def ignore_failure(request, selector):
                     }
                 )
             else:
-                logger.debug("Cannot ignore " + request_id)
+                logger.debug("Cannot ignore %s", request_id)
                 json_response["status_list"].append(
                     {
                         "title": "The Request ("
@@ -770,12 +898,12 @@ def ignore_failure(request, selector):
                     }
                 )
         return render(request, "EnigmaOps/accessStatus.html", json_response)
-    except Exception as e:
+    except Exception as exc:
         logger.debug("Error in request not found OR Invalid request type")
-        logger.exception("Error while executing ignore_failure: %s" % (traceback.format_exc()))
+        logger.exception("Error while executing ignore_failure: %s", (traceback.format_exc()))
         json_response = {}
         json_response["error"] = {
-            "error_msg": str(e),
+            "error_msg": str(exc),
             "msg": "Error in request not found OR Invalid request type",
         }
         return render(request, "EnigmaOps/accessStatus.html", json_response)
@@ -784,6 +912,7 @@ def ignore_failure(request, selector):
 @login_required
 @user_with_permission([PERMISSION_CONSTANTS["DEFAULT_APPROVER_PERMISSION"]])
 def resolve_bulk(request):
+    """ method to resolve requests in bulk """
     try:
         json_response = {"status_list": []}
         request_ids = request.GET.getlist("requestId")
@@ -808,29 +937,107 @@ def resolve_bulk(request):
                     }
                 )
         return render(request, "EnigmaOps/accessStatus.html", json_response)
-    except Exception as e:
+    except Exception:
         logger.debug("Error in request not found OR Invalid request type")
-        logger.exception("Raised error during resolve_bulk: %s" % (traceback.format_exc()))
+        logger.exception("Raised error during resolve_bulk: %s", (traceback.format_exc()))
         json_response = {}
-        json_response['error'] = {'error_msg': "Bad request", 'msg': "Error in request not found OR Invalid request type"}
-        return render(request,'EnigmaOps/accessStatus.html',json_response)
+        json_response['error'] = {'error_msg': "Bad request",
+                                  'msg': "Error in request not found OR Invalid request type"}
+        return render(request, 'EnigmaOps/accessStatus.html', json_response)
+
 
 def revoke_group_access(request):
+    """ method to revoke group access """
     try:
         response = group_helper.revoke_access_from_group(request)
-        if("error" in response):
+        if "error" in response:
             return JsonResponse(response, status=400)
 
         return JsonResponse(response)
-    except Exception as e:
-        logger.exception("Error while revoking group access %s" % (traceback.format_exc()))
+    except Exception:
+        logger.exception("Error while revoking group access %s", (traceback.format_exc()))
         logger.debug("Something went wrong while revoking group access")
         return JsonResponse({"message": "Failed to revoke group Access"}, status=400)
 
-def error_404(request, exception, template_name='404.html'):
-        data = {}
-        return render(request,template_name,data)
+
+def error_404(request, _exception, template_name='404.html'):
+    """ render template for 404 error code """
+    data = {}
+    return render(request, template_name, data)
+
 
 def error_500(request, template_name='500.html'):
-        data = {}
-        return render(request,template_name,data)
+    """ render template for 500 error code """
+    data = {}
+    return render(request, template_name, data)
+
+
+@login_required
+@paginator
+def get_active_users(request):
+    """ Json responce of active users """
+    try:
+        search = (request.GET.get("search") if request.GET.get("search") else "")
+        all_active_users = djangoUser.objects.filter(user__state='1').exclude(
+            username='system_user'
+        ).exclude(
+            user=request.user.user
+        )
+        response = {}
+        if request.GET.get("groupName"):
+            group_name = request.GET.get("groupName")
+            context = group_helper.get_user_group(request, group_name)
+            if "error" in context:
+                response["error"] = context["error"]
+            group_user_names = [user.user.username for user in context["groupMembers"]]
+            all_active_users = all_active_users.exclude(username__in=group_user_names)
+
+        query_first_name = Q(first_name__icontains=search)
+        query_last_name = Q(last_name__icontains=search)
+        query_email = Q(email__icontains=search)
+        users = all_active_users.filter(
+            query_first_name | query_last_name | query_email
+        ).values('first_name', 'last_name', 'email')
+
+        if not users:
+            users = all_active_users.values('first_name', 'last_name', 'email')
+            response["search_error"] = ("Please try adjusting your search",
+                                        "to find what you're looking for.")
+
+        response["users"] = list(users)
+        response["rowList"] = "users"
+
+        return response
+    except Exception as exception:
+        logger.exception("Something when wrong while searching users: %s", str(exception))
+        return JsonResponse({
+            "error": "Failed to fetch active users."
+        }, status=500)
+
+
+@login_required
+def get_access_modules(request):
+    """ Json response to get access modules """
+    try:
+        search = (request.GET.get("search") if request.GET.get("search") else "")
+
+        modules_list = []
+        all_modules_list = []
+        for access_tag, module in helper.get_available_access_modules().items():
+            if search.lower() in module.access_desc().lower():
+                modules_list.append((access_tag, module.access_desc()))
+
+            all_modules_list.append((access_tag, module.access_desc()))
+
+        response = {
+            "modulesList": modules_list if modules_list else all_modules_list,
+        }
+
+        if not modules_list:
+            search_error = "Please try adjusting your search to find what you're looking for."
+            response["search_error"] = search_error
+
+        return JsonResponse(response, status=200)
+    except Exception as exception:
+        logger.exception("Error while fetching Access modules: %s", str(exception))
+        return JsonResponse({"error": "Failed to fetch access modules"}, status=500)

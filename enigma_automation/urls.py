@@ -1,4 +1,4 @@
-"""EnigmaAutomation URL Configuration
+"""enigma_automation URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.1/topics/http/urls/
@@ -13,11 +13,13 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from bootprocess.views import dashboard, logout_view
 from django.contrib import admin
 from django.contrib.auth import views as auth_views
 from django.urls import re_path, include, path
+from bootprocess.views import dashboard, logout_view
 from Access.views import (
+    get_active_users,
+    get_access_modules,
     revoke_group_access,
     user_offboarding,
     show_access_history,
@@ -44,12 +46,13 @@ from Access.views import (
     individual_resolve,
     ignore_failure,
     resolve_bulk,
+    new_group_access_request,
 )
 from Access.helpers import get_available_access_modules
 
 urlpatterns = [
     re_path(r"^admin/", admin.site.urls),
-    re_path(r"^$", dashboard, name="dashboard"),
+    path("", dashboard, name="dashboard"),
     re_path(r"^login/$", auth_views.LoginView.as_view(), name="login"),
     re_path(r"^logout/$", logout_view, name="logout"),
     re_path(r"^access/markRevoked", mark_revoked, name="markRevoked"),
@@ -61,18 +64,15 @@ urlpatterns = [
     re_path(r"^resolve/pendingRevoke", pending_revoke, name="pendingRevoke"),
     re_path(r"^user/updateUserInfo/", update_user_info, name="updateUserInfo"),
     re_path(r"^user/saveIdentity/", save_identity, name="saveIdentity"),
-    re_path(r"^group/create$", create_new_group, name="createNewGroup"),
+    path("group/create", create_new_group, name="createNewGroup"),
     path("group/dashboard/", group_dashboard, name="groupDashboard"),
+    path("group/newGroupRequest", new_group_access_request, name="newAccessGroupRequest"),
     re_path(r"^access/userAccesses$", all_user_access_list, name="allUserAccessList"),
     re_path(r"^access/usersList$", all_users_list, name="allUsersList"),
     re_path(r"^user/offboardUser$", user_offboarding, name="offboarding_user"),
-    re_path(r"^access/requestAccess$", request_access, name="requestAccess"),
+    path("access/requestAccess", request_access, name="requestAccess"),
     re_path(r"^group/requestAccess$", group_access, name="groupRequestAccess"),
-    re_path(
-        r"^group/access/list/(?P<group_name>[\w -]+)$",
-        group_access_list,
-        name="groupAccessList",
-    ),
+    path("group/access/list", group_access_list, name="groupAccessList"),
     re_path(
         r"^group/new/accept/(?P<requestId>.*)$",
         approve_new_group,
@@ -102,10 +102,13 @@ urlpatterns = [
     re_path(r"^resolve_bulk", resolve_bulk, name="resolve_bulk"),
     re_path(r"^ignore/(?P<selector>.*)$", ignore_failure, name="ignoreFailure"),
     re_path(r"^group/revokeAccess", revoke_group_access, name="revoke_group_access"),
+
+    path("api/v1/getActiveUsers", get_active_users, name="get_active_users"),
+    path("api/v1/getAccessModules", get_access_modules, name="getAccessModules")
 ]
 
-handler404 = 'Access.views.error_404'
-handler500 = 'Access.views.error_500'
+HANDLER_404 = 'Access.views.error_404'
+HANDLER_500 = 'Access.views.error_500'
 
 for tag, each_module in get_available_access_modules().items():
     urlpatterns.extend(each_module.urlpatterns)

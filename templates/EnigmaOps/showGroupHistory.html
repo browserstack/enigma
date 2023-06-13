@@ -1,9 +1,11 @@
 {% extends 'global_layout.html' %}
+{% load reusable_components %}
 {% load myaccess_css_helpers %}
 {% load static %}
 
 {% block head_body %}
 <script src={% static "js/showAccessHistory.js" %}></script>
+<script src={% static "js/globalSearchMisc.js" %}></script>
 {% endblock %}
 
 {% block nav_breadcrumb %}
@@ -40,7 +42,6 @@
 {% endblock %}
 
 {% block content_body %}
-
 <div class="px-4 sm:px-6 lg:px-8 w-full">
   <div class="sm:flex sm:items-center">
     <div class="sm:flex-auto">
@@ -49,8 +50,9 @@
     <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
       <a href="{% url 'createNewGroup' %}" class="text-blue-600 hover:text-blue-900">
         <button type="button"
-          class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
+          class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 m-1
+                 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700
+                 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
           Create a group
         </button>
       </a>
@@ -65,13 +67,13 @@
 
     <div class="flex flex-row gap-4 items-center">
       <div class="sm:flex-auto">
-        <form class="w-4/6 float:left relative">
+        <div class="w-4/6 float:left relative">
           <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid bg-white">
-            <input id="global-search" type="search"
+            <input onkeydown="search(event, this)" id="global-search" type="search"
               class="flex-none rounded-md border-none text-gray-500 text-sm font-normal px-4 py-2 min-w-full"
-              placeholder="Search by group name, role type or status" required>
+              placeholder="Search by group name, role type or status" {% if search_value %} value="{{search_value}}" {% endif %}>
             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <svg aria-hidden="true" class="w-5 h5 text-gray-400" fill="currentColor"
+              <svg aria-hidden="true" class="w-5 h-5 text-gray-400" fill="currentColor"
                 viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd"
                   d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
@@ -79,7 +81,7 @@
               </svg>
             </div>
           </div>
-        </form>
+        </div>
       </div>
 
       <div class="w-1/6 float-right relative" onclick="focusFilterStatus(this);">
@@ -102,22 +104,22 @@
           class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabindex="-1" role="listbox" aria-labelledby="listbox-label"
           aria-activedescendant="listbox-option-3">
+          {% for filter in roleFilter.selected %}
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option" onclick="selectLI(this);">
-            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type="checkbox" id="group_owner" name="group_owner" value="group_owner">
-            </span>
-            <span class="font-normal block truncate ml-8">Owner</span>
+            id="listbox-option-0" role="option">
+            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="role" onclick="select_filter(this)" checked>
+            <label for="group_{{filter}}">{{filter}}</label>
           </li>
+          {% endfor %}
+          {% for filter in roleFilter.notSelected %}
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option" onclick="selectLI(this);">
-            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type="checkbox" id="group_member" name="group_member" value="group_member">
-            </span>
-            <span class="font-normal block truncate ml-8">Member</span>
+            id="listbox-option-0" role="option">
+            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="role" onclick="select_filter(this)">
+            <label for="group_{{filter}}">{{filter}}</label>
           </li>
+          {% endfor %}
         </ul>
       </div>
 
@@ -141,22 +143,31 @@
           class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabindex="-1" role="listbox" aria-labelledby="listbox-label"
           aria-activedescendant="listbox-option-3">
-          {% for filter in statusFilter %}
+          {% for filter in statusFilter.selected %}
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option" onclick="selectLI(this);">
-            <span class="text-blue-600 absolute inset-y-0 flex items-center pr-4">
-              <input type="checkbox" id="group_approved" name="group_approved"
-                value="group_approved">
-            </span>
-
-            <span class="font-normal block truncate ml-8">{{filter}}</span>
+            id="listbox-option-0" role="option">
+            <input type="checkbox" onclick="select_filter(this)" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" checked>
+            <label for="group_{{filter}}">{{filter}}</label>
+          </li>
+          {% endfor %}
+          {% for filter in statusFilter.notSelected %}
+          <li
+            class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
+            id="listbox-option-0" role="option">
+            <input type="checkbox" onclick="select_filter(this)" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}">
+            <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}
         </ul>
       </div>
     </div>
   </div>
+
+  {% if search_error %}
+  {% get_error_panel_with_message "No exact match found" search_error %}
+  {% endif %}
+
 
   <div class="mt-8 flex flex-col">
     <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -187,7 +198,7 @@
               {% for each_group in dataList %}
               <tr {% if forloop.counter|divisibleby:2 %}class="bg-gray-50" {% endif %}>
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-6">
-                  <a href="/group/access/list/{{ each_group.name }}"
+                  <a href="/group/access/list?group_name={{ each_group.name }}"
                     class="text-blue-600 hover:text-blue-900">{{ each_group.name }}</a>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
@@ -198,18 +209,16 @@
                 </td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-sm font-medium sm:pr-6">
                   {% if each_group.role == "Owner" and each_group.status == "Approved" %}
-                  <a type="button" href="{% url 'groupRequestAccess' %}" class="inline-flex items-center justify-center rounded-md border
+                  <button class="inline-flex items-center justify-center rounded-md border
                               border-transparent bg-blue-100 px-4 py-2 text-sm font-medium
                                                     text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none
                                                     focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
-                                                    sm:w-auto">Add Module
-                  </a>
-                  <a type="button" href="{% url 'addUserToGroup' each_group.name %}" class="inline-flex items-center justify-center rounded-md border
-                                                    border-transparent bg-blue-100 px-4 py-2 text-sm font-medium
+                                                    sm:w-auto" value="{{ each_group.name }}" onclick="showGroupModal($(this).val())" >Add Module </button>
+                  <button class="inline-flex items-center justify-center rounded-md border
+                              border-transparent bg-blue-100 px-4 py-2 text-sm font-medium
                                                     text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none
                                                     focus:ring-2 focus:ring-blue-600 focus:ring-offset-2
-                                                    sm:w-auto">Add Member
-                  </a>
+                                                    sm:w-auto" value="{{ each_group.name }}" onclick="showMemberModal($(this).val())" >Add Member </button>
                   {%else%}
                   NA
                   {%endif%}
@@ -260,7 +269,7 @@
   class="mt-8 flex items-center justify-between border-t border-gray-200 sm:px-0 pt-6 px-4 sm:px-6 lg:px-8 pb-6 w-full">
   <div class="-mt-px flex w-0 flex-1">
     {% if currentPagination > 1 %}
-    <a href="?page={{ currentPagination|add:" -1" }}"
+    <a onclick="change_page('{{ currentPagination }}', -1)"
       class="inline-flex items-center border-t-2 border-transparent pt-4 pr-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
       <svg class="mr-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
         fill="currentColor" aria-hidden="true">
@@ -275,7 +284,7 @@
 
   <div class="hidden md:-mt-px md:flex">
     {% for navIter in allPages %}
-    <a href="?page={{ navIter }}"
+    <a onclick="change_page('{{ navIter }}')"
       class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium {% get_navigation_class navIter currentPagination %}">
       {{ navIter }}</a>
     {% endfor %}
@@ -284,7 +293,7 @@
     {% endcomment %}
   </div>
   <div class="-mt-px flex w-0 flex-1 justify-end">
-    {% if currentPagination < maxPagination %} <a href="?page={{ currentPagination|add:" 1" }}"
+    {% if currentPagination < maxPagination %} <a onclick="change_page('{{ currentPagination }}', 1)"
       class="inline-flex items-center border-t-2 border-transparent pt-4 pl-1 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700">
       Next
       <svg class="ml-3 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
@@ -298,4 +307,81 @@
   </div>
 </nav>
 {% endif %}
+
+<div id="group_modal" class="group_modal relative z-10 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+  <div class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full  items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+
+              <div class="border-b px-4 py-3 bg-gray-100 flex">
+                  <div class="groupModalHeading">
+                    <h1 class="text-lg font-medium text-gray-900">Group access request</h1>
+                  </div>
+                  <div class="close_group_modal ml-auto inline-block text-sm cursor-pointer">
+                      <svg onclick="closeGroupModal()" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                  </div>
+              </div>
+
+              <form class="form-horizontal" action="{% url 'newAccessGroupRequest' %}" method="GET" id="usrform" name="usrform">   
+                  <div class="flex-row text-sm px-4 pt-4 pb-8">
+                      <label for="groupName" class="text-sm font-medium test-gray-700 " name="groupName">Select Group</label>
+                      <select id="groupName" class="w-full text-sm rounded-md border-gray-200 mt-1 mb-5" name="groupName" required>
+                          {% for each_group in dataList %}
+                          {% if each_group.role == "Owner" and each_group.status == "Approved" %}                         
+                          <option id="{{ each_group.name }}" value="{{ each_group.name }}">{{ each_group.name }}</option>
+                          {%endif%}                          
+                          {% endfor %}
+                      </select>
+                  </div>
+
+                  <div class="border-t w-full p-3 justify-end bg-gray-100 flex">
+                      <button type="button" class="mr-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium" onclick="closeGroupModal()">Cancel</button>
+                      <button type="submit" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">OK</button>
+                  </div>   
+              </form>
+          </div>
+      </div>
+  </div>
+</div>
+
+<div id="member_modal" class="member_modal relative z-10 hidden" aria-labelledby="add-modal-title" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+  <div class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full  items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+
+              <div class="border-b px-4 py-3 bg-gray-100 flex">
+                  <div class="ModalHeading">
+                    <h1 class="text-lg font-medium text-gray-900">Add new members</h1>
+                  </div>
+                  <div class="close_member_modal ml-auto inline-block text-sm cursor-pointer">
+                      <svg onclick="closeMemberModal()" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                  </div>
+              </div>
+
+              <form onsubmit="clickAddmemberFinalButton();return false">
+                  <div class="flex-row text-sm px-4 pt-4 pb-8">
+                      <label for="groupName" class="text-sm font-medium test-gray-700 " name="groupName">Select Group</label>
+                      <select id="memberGroupName" class="w-full text-sm rounded-md border-gray-200 mt-1 mb-5" name="groupName" required>
+                          {% for each_group in dataList %}
+                          {% if each_group.role == "Owner" and each_group.status == "Approved" %} 
+                          <option id="grpname-{{each_group.name }}" value="{{ each_group.name }}">{{ each_group.name }}</option>
+                          {%endif%}
+                          {% endfor %}
+                      </select>
+                  </div>
+
+                  <div class="border-t w-full p-3 justify-end bg-gray-100 flex">
+                      <button type="button" class="mr-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium" onclick="closeMemberModal()">Cancel</button>
+                      <button type="submit" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">OK</button>
+                  </div>   
+              </form>
+
+          </div>
+      </div>
+  </div>
+</div>
 {% endblock %}
