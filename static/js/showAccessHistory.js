@@ -39,7 +39,6 @@ const focusFilterStatus = (elem) => {
 };
 
 $(document).click(function (e) {
-  e.stopPropagation();
   var container = $(".dropdown-search-collapse");
 
   if (container.has(e.target).length === 0) {
