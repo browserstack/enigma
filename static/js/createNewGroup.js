@@ -17,19 +17,22 @@ const handleSelectionView = () => {
   }
 };
 
+// const add
+
 const selectAllToggleSelection = (elem) => {
   if(elem.checked) {
-    const members = $("#users-list-table").children('tr');
-  
-    for (iter = 0; iter < members.length; iter++) {
-      if(!selectedList[$(members[iter]).attr("email")]){
-        addMemberSelection(members[iter])
-      }
-    }
+    removeAllMembers()
+    const selectionList = $('#member-selection-table');
+    const newSpan = $("#member-selection-row-template").clone(true, true);
+    newSpan.appendTo(selectionList);
+    newSpan.show();
+    const tableData = newSpan.children('td');
+    tableData[0].textContent = "All User Selected";
+    newSpan.attr("selectAll", true)
+    handleSelectionView();
   } else {
     removeAllMembers()
   }
-
 };
 
 const selectMemberSelectionCheckbox = (elem, checked) => {
@@ -77,12 +80,18 @@ const removeMemberSelection = (elem) => {
 
 const removeMemberSelectionUI = (elem) => {
   rightElem = elem.parentElement.parentElement;
+  if($(rightElem).attr("selectAll")){
+    $("#selectAllUsers").prop("checked", false)
+  }
   removeSelectionSpanElem(rightElem, $("#users-list-table").find(`tr[email="${$(rightElem).attr('email')}"]`));
 };
 
 const removeAllMembers = () => {
   const members = $('#member-selection-table').children('tr');
   for (iter = 0; iter < members.length; iter++) {
+    if($(members[iter]).attr('selectAll')){
+      $("#selectAllUsers").prop("checked", false)
+    }
     removeSelectionSpanElem(members[iter], $("#users-list-table").find(`tr[email="${$(members[iter]).attr('email')}"]`));
   }
 };
@@ -159,6 +168,7 @@ function submitRequest() {
   const newGroupNameElem = $("#newGroupName");
   const newGroupReasonElem = $("#newGroupReason");
   const requiresAccessApprove = $("#requiresAccessApprove").prop("checked");
+  const selectAllUsers = $("#selectAllUsers").prop("checked");
 
   if (!validateGroupName(newGroupNameElem) || !validateGroupReason(newGroupReasonElem)) {
     return;
@@ -172,7 +182,8 @@ function submitRequest() {
         "newGroupReason": newGroupReasonElem.val(),
         "requiresAccessApprove": requiresAccessApprove,
         "selectedUserList": selectedUserList,
-        "csrfmiddlewaretoken": csrf_token
+        "csrfmiddlewaretoken": csrf_token,
+        "selectAllUsers": selectAllUsers,
       },
       success: function (result) {
         showRedirectModal("Request Submitted", result.status.msg)

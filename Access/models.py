@@ -390,6 +390,9 @@ class User(models.Model):
             django_user = djangoUser.objects.create(username="system_user",
                                                     email="system_user@root.root")
             return django_user.user
+    
+    def get_active_users(self):
+        return User.objects.filter(state='1').exclude(user=self.user)
 
     def __str__(self):
         return f"{self.user}"
