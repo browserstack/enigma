@@ -63,7 +63,7 @@
         </div>
       </div>
     </div>
-    <div class="float-right relative" onclick="focusFilterStatus(this);">
+    <div class="float-right relative dropdown-search-collapse" onclick="focusFilterStatus(this);">
       <button type="button" class="relative w-[300px] cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
         <span class="block truncate text-gray-500">Module</span>
         <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -76,20 +76,20 @@
 
       <ul class="hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label" aria-activedescendant="listbox-option-3">
         {% for each_access_module in possibleAccessModules.selected %}
-        <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0">
-          <input type="checkbox" param="access_desc" value="{{ each_access_module }}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="status-checkbox-{{ each_access_module }}" name="status-checkbox-{{ each_access_module }}" onclick="select_filter(this)" checked>
+        <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0" onclick="select_filter(this)">
+          <input type="checkbox" param="access_desc" value="{{ each_access_module }}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="status-checkbox-{{ each_access_module }}" name="status-checkbox-{{ each_access_module }}" onclick="select_filter_check(this)" checked>
           <label for="status-checkbox-{{ each_access_module }}">{{each_access_module}}</label>
         </li>
         {% endfor %}
         {% for each_access_module in possibleAccessModules.notSelected %}
-        <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0">
-          <input type="checkbox" param="access_desc" value="{{ each_access_module }}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="status-checkbox-{{ each_access_module }}" name="status-checkbox-{{ each_access_module }}" onclick="select_filter(this)">
+        <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0" onclick="select_filter(this)">
+          <input type="checkbox" param="access_desc" value="{{ each_access_module }}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="status-checkbox-{{ each_access_module }}" name="status-checkbox-{{ each_access_module }}" onclick="select_filter_check(this)">
           <label for="status-checkbox-{{ each_access_module }}">{{each_access_module}}</label>
         </li>
         {% endfor %}
       </ul>
     </div> 
-    <div class="w-1/6 float-right relative" onclick="focusFilterStatus(this);">
+    <div class="w-1/6 float-right relative dropdown-search-collapse" onclick="focusFilterStatus(this);">
       <button type="button" class="relative w-full cursor-default rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-left shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 sm:text-sm" aria-haspopup="listbox" aria-expanded="true" aria-labelledby="listbox-label">
         <span class="block truncate text-gray-500">Status</span>
         <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
@@ -102,14 +102,14 @@
 
       <ul class="hidden absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm" tabindex="-1" role="listbox" aria-labelledby="listbox-label" aria-activedescendant="listbox-option-3">
         {% for each_status in possibleStatuses.selected %}
-        <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0">
-          <input type="checkbox" param="status" value="{{each_status}}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="status-checkbox-{{ each_status }}" name="status-checkbox-{{ each_status }}" onclick="select_filter(this)" checked>
+        <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0"  onclick="select_filter(this)">
+          <input type="checkbox" param="status" value="{{each_status}}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="status-checkbox-{{ each_status }}" name="status-checkbox-{{ each_status }}" onclick="select_filter_check(this)" checked>
           <label for="status-checkbox-{{ each_status }}">{{each_status}}</label>
         </li>
         {% endfor %}
         {% for each_status in possibleStatuses.notSelected %}
-        <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0">
-          <input type="checkbox" param="status" value="{{each_status}}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="status-checkbox-{{ each_status }}" name="status-checkbox-{{ each_status }}" onclick="select_filter(this)">
+        <li class="text-gray-900 relative cursor-default select-none py-2 pl-3 pr-9 hover:bg-gray-200 hover:text-black" id="listbox-option-0" onclick="select_filter(this)">
+          <input type="checkbox" param="status" value="{{each_status}}" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" id="status-checkbox-{{ each_status }}" name="status-checkbox-{{ each_status }}" onclick="select_filter_check(this)">
           <label for="status-checkbox-{{ each_status }}">{{each_status}}</label>
         </li>
         {% endfor %}

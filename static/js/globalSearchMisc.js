@@ -44,21 +44,29 @@ function search(event, elem) {
 }
 
 function select_filter(elem) {
+  parent = elem
+  elem = $(elem).find("input")
   const query_param = current_query_params();
   query_param["page"] = [];
   const key = $(elem).attr("param");
 
-  if(elem.checked) {
+  if(!$(elem).prop('checked')) {
     query_param[key] ? query_param[key].push($(elem).val()) : query_param[key] = [$(elem).val()];
   }
-  else {
-    const index =  query_param[key].indexOf($(elem).val());
+  else { 
+    const index =  query_param[key].indexOf($(elem).attr("value"));
     if(index > -1) {
       query_param[key].splice(index, 1);
     }
   }
   const url = create_url_from_query_params(query_param);
+  $(parent).prop('checked', true)
   window.location.href = url;
+}
+
+function select_filter_check(elem) {
+  a = $(elem).prop('checked')
+  $(elem).prop('checked', !a)
 }
 
 function create_url_from_query_params(query_param) {
