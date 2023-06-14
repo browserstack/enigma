@@ -30,7 +30,23 @@ const focusFilterStatus = (elem) => {
     currentStatusFilterState = 'shown';
     ulElem.show();
   } else {
+    const shownElem = $(".dropdown-search-collapse").children('ul');
+    shownElem.hide();
+
     currentStatusFilterState = 'hidden';
     ulElem.hide();
   }
 };
+
+$(document).click(function (e) {
+  e.stopPropagation();
+  var container = $(".dropdown-search-collapse");
+
+  if (container.has(e.target).length === 0) {
+    const ulElem = $(".dropdown-search-collapse").children('ul');
+    if(currentStatusFilterState == 'shown') {
+      currentStatusFilterState = 'hidden';
+      ulElem.hide();
+    }
+  }
+})

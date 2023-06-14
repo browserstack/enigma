@@ -29,7 +29,7 @@
       </div>
 
 
-      <div class="w-1/6 relative" onclick="focusFilterStatus(this)">
+      <div class="w-1/6 relative dropdown-search-collapse" onclick="focusFilterStatus(this)">
         <button type="button"
           class="min-w-full cursor-default rounded-md border
                                             border-gray-300 bg-white px-4 py-2 text-left shadow-sm focus:border-blue-500
@@ -53,23 +53,23 @@
           {% for filter in accessTypeFilter.selected %}
             <li
               class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-              id="listbox-option-0" role="option">
-              <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="accessType" onclick="select_filter(this, {'show_tab': 'accessList'})" checked>
+              id="listbox-option-0" role="option" onclick="select_filter(this, {'show_tab': 'accessList'})">
+              <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="accessType" onclick="select_filter_check(this, {'show_tab': 'accessList'})" checked>
               <label for="group_{{filter}}">{{filter}}</label>
             </li>
             {% endfor %}
             {% for filter in accessTypeFilter.notSelected %}
             <li
               class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-              id="listbox-option-0" role="option">
-              <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="accessType" onclick="select_filter(this, {'show_tab': 'accessList'})">
+              id="listbox-option-0" role="option" onclick="select_filter(this, {'show_tab': 'accessList'})">
+              <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="accessType" onclick="select_filter_check(this, {'show_tab': 'accessList'})">
               <label for="group_{{filter}}">{{filter}}</label>
             </li>
           {% endfor %}
         </ul>
       </div>
 
-      <div class="w-1/6 float-right relative" onclick="focusFilterStatus(this);">
+      <div class="w-1/6 float-right relative dropdown-search-collapse" onclick="focusFilterStatus(this);">
         <button type="button"
           class="min-w-full cursor-default rounded-md border
                                       border-gray-300 bg-white px-4 py-2 text-left shadow-sm focus:border-blue-500
@@ -92,16 +92,16 @@
           {% for filter in statusFilter.selected %}
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option">
-            <input type="checkbox" onclick="select_filter(this, {'show_tab': 'accessList'})" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" checked>
+            id="listbox-option-0" role="option" onclick="select_filter(this)">
+            <input type="checkbox" onclick="select_filter_check(this, {'show_tab': 'accessList'})" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" checked>
             <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}
           {% for filter in statusFilter.notSelected %}
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option">
-            <input type="checkbox" onclick="select_filter(this, {'show_tab': 'accessList'})" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}">
+            id="listbox-option-0" role="option" onclick="select_filter(this)">
+            <input type="checkbox" onclick="select_filter_check(this, {'show_tab': 'accessList'})" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}">
             <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}

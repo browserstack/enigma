@@ -84,7 +84,7 @@
         </div>
       </div>
 
-      <div class="w-1/6 float-right relative" onclick="focusFilterStatus(this);">
+      <div class="w-1/6 float-right relative dropdown-search-collapse" onclick="focusFilterStatus(this);">
         <button type="button"
           class="min-w-full cursor-default rounded-md border
                                       border-gray-300 bg-white px-4 py-2 text-left shadow-sm focus:border-blue-500
@@ -101,29 +101,29 @@
         </button>
 
         <ul
-          class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+          class="hidden min-w-full absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabindex="-1" role="listbox" aria-labelledby="listbox-label"
           aria-activedescendant="listbox-option-3">
           {% for filter in roleFilter.selected %}
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option">
-            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="role" onclick="select_filter(this)" checked>
+            id="listbox-option-0" role="option" onclick="select_filter(this)">
+            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="role" onclick="select_filter_check(this)" checked>
             <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}
           {% for filter in roleFilter.notSelected %}
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option">
-            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="role" onclick="select_filter(this)">
+            id="listbox-option-0" role="option" onclick="select_filter(this)">
+            <input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" param="role" onclick="select_filter_check(this)">
             <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}
         </ul>
       </div>
 
-      <div class="w-1/6 float-right relative" onclick="focusFilterStatus(this);">
+      <div class="w-1/6 float-right relative dropdown-search-collapse" onclick="focusFilterStatus(this);">
         <button type="button"
           class="min-w-full cursor-default rounded-md border
                                       border-gray-300 bg-white px-4 py-2 text-left shadow-sm focus:border-blue-500
@@ -140,22 +140,22 @@
         </button>
 
         <ul
-          class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+          class="hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm min-w-full"
           tabindex="-1" role="listbox" aria-labelledby="listbox-label"
           aria-activedescendant="listbox-option-3">
           {% for filter in statusFilter.selected %}
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option">
-            <input type="checkbox" onclick="select_filter(this)" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" checked>
+            id="listbox-option-0" role="option" onclick="select_filter(this)">
+            <input type="checkbox" onclick="select_filter_check(this)" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}" checked>
             <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}
           {% for filter in statusFilter.notSelected %}
           <li
             class="text-gray-900 relative cursor-default select-none px-4 py-2 hover:bg-gray-200 hover:text-black"
-            id="listbox-option-0" role="option">
-            <input type="checkbox" onclick="select_filter(this)" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}">
+            id="listbox-option-0" role="option" onclick="select_filter(this)">
+            <input type="checkbox" onclick="select_filter_check(this)" param="status" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" id="group_{{filter}}" name="group_{{filter}}" value="{{filter}}">
             <label for="group_{{filter}}">{{filter}}</label>
           </li>
           {% endfor %}
