@@ -255,7 +255,7 @@ function update_users(search, page) {
       })
 
       $("#users-list-table").append(rows.join(""));
-      
+
       if(data["next_page"]) {
         $("#user-list-nav").removeClass("hidden");
         $("#next_page").attr("onclick", `change_page('${data["next_page"]}')`);

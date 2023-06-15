@@ -45,8 +45,7 @@ class IdentityNotChangedException(Exception):
 def get_identity_templates(auth_user):
     user_identities = auth_user.user.get_all_active_identity()
     context = {}
-    context["configured_identity_template"] = []
-    context["unconfigured_identity_template"] = []
+    context["identity_template"] = []
     all_modules = helper.get_available_access_modules()
     for user_identity in user_identities:
         is_identity_configured = _is_valid_identity_json(
@@ -54,7 +53,7 @@ def get_identity_templates(auth_user):
         )
         if is_identity_configured:
             module = all_modules[user_identity.access_tag]
-            context["configured_identity_template"].append(
+            context["identity_template"].append(
                 {
                     "accessUserTemplatePath": module.get_identity_template(),
                     "identity": user_identity.identity,
@@ -70,7 +69,7 @@ def get_identity_templates(auth_user):
                     access_tag=mod.tag(), identity={}
                 )
             continue
-        context["unconfigured_identity_template"].append(
+        context["identity_template"].append(
             {
                 "accessUserTemplatePath": mod.get_identity_template(),
                 "extraFields": mod.get_extra_fields(),

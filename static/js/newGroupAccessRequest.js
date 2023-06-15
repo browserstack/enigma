@@ -65,7 +65,7 @@ const removeModuleSelection = (elem) => {
 };
 
 const removeModuleSelectionUI = (elem) => {
-  rightElem = elem.parentElement.parentElement; 
+  rightElem = elem.parentElement.parentElement;
   removeSelectionSpanElem(rightElem, $("#module-list-table").find(`tr[module_tag="${$(rightElem).attr('module_tag')}"]`));
 };
 
