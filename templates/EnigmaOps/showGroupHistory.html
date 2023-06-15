@@ -324,14 +324,14 @@
                   </div>
               </div>
 
-              <form class="form-horizontal" action="{% url 'newAccessGroupRequest' %}" method="GET" id="usrform" name="usrform">   
+              <form class="form-horizontal" action="{% url 'newAccessGroupRequest' %}" method="GET" id="usrform" name="usrform">
                   <div class="flex-row text-sm px-4 pt-4 pb-8">
                       <label for="groupName" class="text-sm font-medium test-gray-700 " name="groupName">Select Group</label>
                       <select id="groupName" class="w-full text-sm rounded-md border-gray-200 mt-1 mb-5" name="groupName" required>
                           {% for each_group in dataList %}
-                          {% if each_group.role == "Owner" and each_group.status == "Approved" %}                         
+                          {% if each_group.role == "Owner" and each_group.status == "Approved" %}
                           <option id="{{ each_group.name }}" value="{{ each_group.name }}">{{ each_group.name }}</option>
-                          {%endif%}                          
+                          {%endif%}
                           {% endfor %}
                       </select>
                   </div>
@@ -339,7 +339,7 @@
                   <div class="border-t w-full p-3 justify-end bg-gray-100 flex">
                       <button type="button" class="mr-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium" onclick="closeGroupModal()">Cancel</button>
                       <button type="submit" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">OK</button>
-                  </div>   
+                  </div>
               </form>
           </div>
       </div>
@@ -367,7 +367,7 @@
                       <label for="groupName" class="text-sm font-medium test-gray-700 " name="groupName">Select Group</label>
                       <select id="memberGroupName" class="w-full text-sm rounded-md border-gray-200 mt-1 mb-5" name="groupName" required>
                           {% for each_group in dataList %}
-                          {% if each_group.role == "Owner" and each_group.status == "Approved" %} 
+                          {% if each_group.role == "Owner" and each_group.status == "Approved" %}
                           <option id="grpname-{{each_group.name }}" value="{{ each_group.name }}">{{ each_group.name }}</option>
                           {%endif%}
                           {% endfor %}
@@ -377,7 +377,7 @@
                   <div class="border-t w-full p-3 justify-end bg-gray-100 flex">
                       <button type="button" class="mr-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium" onclick="closeMemberModal()">Cancel</button>
                       <button type="submit" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">OK</button>
-                  </div>   
+                  </div>
               </form>
 
           </div>

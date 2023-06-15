@@ -53,7 +53,7 @@ function select_filter(elem) {
   if(!$(elem).prop('checked')) {
     query_param[key] ? query_param[key].push($(elem).val()) : query_param[key] = [$(elem).val()];
   }
-  else { 
+  else {
     const index =  query_param[key].indexOf($(elem).attr("value"));
     if(index > -1) {
       query_param[key].splice(index, 1);
