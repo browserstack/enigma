@@ -275,7 +275,7 @@ def request_access(request):
             )
             if "error" in context:
                 status = 400
-            return JsonResponse(context, status=200)
+            return JsonResponse(context, status=status)
         except ImplementationPendingException:
             status = 400
             context = {
