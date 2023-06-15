@@ -2,7 +2,10 @@ var selectedList = {}
 var disabled = false
 
 const handleSelectionView = () => {
-  const finalCount = $('#member-selection-table').children('tr').length;
+  let finalCount = $('#member-selection-table').children('tr').length;
+  if(disabled) {
+    finalCount = 'All';
+  }
 
   if (finalCount < 1) {
     $('#member-selection-empty').show();
@@ -17,8 +20,6 @@ const handleSelectionView = () => {
     $('#member-selected-count').text(finalCount + ' selected');
   }
 };
-
-// const add
 
 const selectAllToggleSelection = (elem) => {
   if(elem.checked) {
@@ -49,22 +50,21 @@ const selectMemberSelectionCheckbox = (elem, checked) => {
 };
 
 const handleDisableMode = () => {
-  if (disabled) {
-    selectedList = {};
-    const users = $('#users-list-table').children('tr');
-    for (iter = 0; iter < users.length; iter++) {
+  selectedList = {};
+  const users = $('#users-list-table').children('tr');
+  for (iter = 0; iter < users.length; iter++) {
+    if (disabled) {
       $(users[iter]).find('input').prop('checked', true);
       $(users[iter]).removeAttr("onclick");
       $(users[iter]).find('input').attr("disabled", true);
-    }
-  }
-  else {
-    selectedList = {};
-    const users = $('#users-list-table').children('tr');
-    for (iter = 0; iter < users.length; iter++) {
+      $(users[iter]).removeClass('hover:bg-blue-50 hover:text-blue-700').addClass('bg-gray-50');
+      $(users[iter]).children('td#description-td').removeClass('text-gray-900').addClass('text-blue-600');
+    } else {
       $(users[iter]).attr("onclick", "handleMemberSelection(this)");
       $(users[iter]).find('input').attr("disabled", false);
       $(users[iter]).find('input').prop('checked', false);
+      $(users[iter]).children('td#description-td').addClass('text-gray-900').removeClass('text-blue-600');
+      $(users[iter]).addClass('hover:bg-blue-50 hover:text-blue-700').removeClass('bg-gray-50');
     }
   }
 }
@@ -107,6 +107,7 @@ const removeMemberSelectionUI = (elem) => {
     disabled = false;
     handleDisableMode();
     $(rightElem).remove();
+    handleSelectionView();
   } else {
     removeSelectionSpanElem(rightElem, $("#users-list-table").find(`tr[email="${$(rightElem).attr('email')}"]`));
   }
@@ -124,6 +125,7 @@ const removeAllMembers = (disabledState) => {
     }
   }
   handleDisableMode();
+  handleSelectionView();
 };
 
 const handleMemberSelection = (elem) => {
