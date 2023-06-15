@@ -20,7 +20,7 @@ const handleSelectionView = () => {
 const selectAllToggleSelection = (elem) => {
   if(elem.checked) {
     const members = $("#users-list-table").children('tr');
-  
+
     for (iter = 0; iter < members.length; iter++) {
       if(!selectedList[$(members[iter]).attr("email")]){
         addMemberSelection(members[iter])
@@ -212,7 +212,7 @@ function update_users(search, page) {
       })
 
       $("#users-list-table").append(rows.join(""));
-      
+
       if(data["next_page"]) {
         $("#user-list-nav").removeClass("hidden");
         $("#next_page").attr("onclick", `change_page('${data["next_page"]}')`);

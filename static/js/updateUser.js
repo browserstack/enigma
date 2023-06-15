@@ -17,7 +17,7 @@ function create_post(formId) {
       // handle a successful response
       success : function(json, textStatus, jqXHR) {
           var msg = jQuery.parseJSON(json);
-          if (! msg.error){   
+          if (! msg.error){
             modName = $('#' + formId + " input[name='modname']").val()
             // showNotification(error_message)
           }

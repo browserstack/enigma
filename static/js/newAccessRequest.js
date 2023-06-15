@@ -32,7 +32,7 @@ const selectCheckbox = (elem, checked) => {
 const addModuleSelection = (elem) => {
   const selectionList = $('#module-selection-table');
   const newSpan = $("#module-selection-row-template").clone(true, true);
-  
+
   selectCheckbox(elem, true);
   const moduleDesc = $(elem).attr("module_desc");
   const moduleTag = $(elem).attr("module_tag");
