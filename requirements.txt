@@ -66,7 +66,7 @@ Pygments==2.13.0
 PyJWT==2.6.0
 PyMySQL==0.10.1
 PyNaCl==1.5.0
-pyOpenSSL==23.0.0
+pyOpenSSL==23.2.0
 pyparsing==2.4.7
 python-dateutil==2.8.1
 python-Levenshtein==0.12.0
