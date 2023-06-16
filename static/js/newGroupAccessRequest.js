@@ -110,7 +110,7 @@ const fetchAccessModules = (search=undefined) => {
     data: {"search": search},
     error: function (XMLHttpRequest, textStatus, errorThrown) {
       const msg = XMLHttpRequest.responseJSON;
-      showNotificiation("Failed", msg["error"]);
+      showNotificiation("failed", msg["error"]);
     }
   }).done(function(data, statusText, xhr) {
     if(data["modulesList"]) {
@@ -126,6 +126,10 @@ const fetchAccessModules = (search=undefined) => {
       });
 
       $("#module-list-table").append(rows.join(""));
+
+      if(data["search_error"]) {
+        showNotification("failed", data["search_error"])
+      }
     }
   });
 }
