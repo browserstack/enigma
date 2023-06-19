@@ -11,7 +11,7 @@ def is_current_nav(navType, currentPath):
     if navType == "Dashboard":
         return pathMapping[navType] == currentPath
 
-    return currentPath.startswith(pathMapping[navType])  # pathMapping[navType] in currentPath
+    return currentPath.startswith(pathMapping[navType])
 
 @register.simple_tag
 def ahref_class_for_path(navType, currentPath):
