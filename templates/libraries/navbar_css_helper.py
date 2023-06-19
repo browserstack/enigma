@@ -8,8 +8,10 @@ def is_current_nav(navType, currentPath):
         "Groups": "/group/dashboard",
         "PendingActions": "/access/pendingRequests"
     }
+    if navType == "Dashboard":
+        return pathMapping[navType] == currentPath
 
-    return pathMapping[navType] == currentPath
+    return currentPath.startswith(pathMapping[navType])  # pathMapping[navType] in currentPath
 
 @register.simple_tag
 def ahref_class_for_path(navType, currentPath):
