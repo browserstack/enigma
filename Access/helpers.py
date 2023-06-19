@@ -91,7 +91,7 @@ def sla_breached(requested_on):
         tzinfo=None
     )
     duration_in_s = diff.total_seconds()
-    days = divmod(duration_in_s, (3600*24))[0]
+    days = divmod(duration_in_s, (3600 * 24))[0]
     if days >= 1:
         return int(days)
     return None

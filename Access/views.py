@@ -569,7 +569,7 @@ def accept_bulk(request, selector):
             else:
                 raise ValidationError("Invalid request")
             if "error" in json_response:
-                status=400
+                status = 400
                 context["response"][request_id] = {
                     "error": json_response["error"],
                     "success": False,
