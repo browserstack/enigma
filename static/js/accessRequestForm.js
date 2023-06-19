@@ -10,7 +10,7 @@ function submitRequest(event, elem, multi, access_tag, accesses="") {
     data: form.serialize(),
     error: (xhr, statusText, data) => {
       if(xhr.responseJSON) {
-        showNotification("failed", xhr.responseJSON["error"]["error_msg"], xhr.responseJSON["error"]["msg"]);
+        showNotification("failed", xhr.responseJSON["error"]["msg"], xhr.responseJSON["error"]["error_msg"]);
       }
       else {
         showNotification("failed", "Failed to send the request", "Something went wrong");
@@ -62,8 +62,4 @@ function markedSubmitted(access_tag) {
   $(`#${access_tag}_status`).removeClass("text-gray-800").addClass("text-emerald-800");
   $(`#${access_tag}_status`).html("Details submitted");
   rotateArrowOnCheck(access_tag);
-}
-
-function showNotification(type, title, message) {
-  // TODO
 }

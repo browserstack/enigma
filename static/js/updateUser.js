@@ -19,11 +19,11 @@ function create_post(formId) {
           var msg = jQuery.parseJSON(json);
           if (! msg.error){
             modName = $('#' + formId + " input[name='modname']").val()
-            // showNotification(error_message)
+            showNotification("failed", error_message)
           }
           else {
             modName = $('#' + formId + " input[name='modname']").val()
-            // showNotification(error_message)
+            showNotification("failed", error_message)
           }
       },
 
@@ -31,7 +31,7 @@ function create_post(formId) {
       error : function(jqXHR, status, err) {
         errorObj = JSON.parse(jqXHR.responseJSON);
         modName = $('#' + formId + " input[name='modname']").val()
-        // showNotification(error_message)
+        showNotification("failed", error_message)
       }
   });
 };

@@ -5,20 +5,20 @@
       <div class="p-4">
         <div class="flex items-start">
           <div class="flex-shrink-0">
-						<div class="notification_success hidden">
-							<svg class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-							</svg>
+						<div id="notification_success" class="hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24" class="fill-emerald-600" viewBox="0 -960 960 960" width="24">
+                <path d="m419-283 294-294-66-66-228 228-111-111-65 66 176 177Zm61.138 228Q392-55 314.513-88.084q-77.488-33.083-135.417-91.012T88.084-314.375Q55-391.724 55-479.862 55-569 88.084-646.487q33.083-77.488 90.855-134.969 57.772-57.482 135.195-91.013Q391.557-906 479.779-906q89.221 0 166.827 33.454 77.605 33.453 135.012 90.802 57.407 57.349 90.895 134.877Q906-569.34 906-480q0 88.276-33.531 165.747-33.531 77.471-91.013 135.278-57.481 57.808-134.831 90.891Q569.276-55 480.138-55Z"/>
+              </svg>
 						</div>
-						<div class="notification_fail hidden">
-							<svg xmlns="http://www.w3.org/2000/svg" class="fill-current text-red-600" height="24px" viewBox="0 0 24 24" width="24px" fill="none"><path d="M0 0h24v24H0z" fill="none"/>
-								<path d="M14.59 8L12 10.59 9.41 8 8 9.41 10.59 12 8 14.59 9.41 16 12 13.41 14.59 16 16 14.59 13.41 12 16 9.41 14.59 8zM12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-							</svg>
+						<div id="notification_fail" class="hidden">
+              <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" class="fill-red-600">
+                <path d="m338-288 142-142 142 142 50-50-142-142 142-142-50-50-142 142-142-142-50 50 142 142-142 142 50 50ZM480.138-55Q392-55 314.513-88.084q-77.488-33.083-135.417-91.012T88.084-314.375Q55-391.724 55-479.862 55-569 88.084-646.487q33.083-77.488 90.855-134.969 57.772-57.482 135.195-91.013Q391.557-906 479.779-906q89.221 0 166.827 33.454 77.605 33.453 135.012 90.802 57.407 57.349 90.895 134.877Q906-569.34 906-480q0 88.276-33.531 165.747-33.531 77.471-91.013 135.278-57.481 57.808-134.831 90.891Q569.276-55 480.138-55Z"/>
+              </svg>
 						</div>
           </div>
           <div class="ml-3 w-0 flex-1 pt-0.5">
-            <h3 class="notification_title font-extrabold text-gray-900"></h3>
-            <p class="notification_message text-sm font-medium text-gray-900"></p>
+            <h3 id="notification_title" class="text-sm leading-5 font-medium text-gray-900"></h3>
+            <p id="notification_message" class="text-sm leading-5 font-normal text-gray-500"></p>
           </div>
           <div class="ml-4 flex flex-shrink-0">
             <button type="button" class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" onclick="closeNotification()">
