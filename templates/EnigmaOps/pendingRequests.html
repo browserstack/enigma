@@ -17,9 +17,9 @@
 			{% if groupGenericRequests|length %}
 			<li>
 				<div class="relative px-4 py-4 sm:px-6">
-					<input type="checkbox" id="test" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
+					<input type="checkbox" onclick="rotateArrowOnCheck('groupAccess')" id="groupAccess_dropdown" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
 					<div class="flex">
-						<div class="peer-checked:opacity-0">
+						<div id="groupAccess_arrow" class="-rotate-90 peer-checked:opacity-0">
 							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
 						</div>
 
@@ -102,9 +102,9 @@
 			{% if newGroupPending|length %}
 			<li>
 				<div class="relative px-4 py-4 sm:px-6">
-					<input type="checkbox" id="test" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
+					<input type="checkbox"onclick="rotateArrowOnCheck('groupNew')" id="groupNew_dropdown" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
 					<div class="flex">
-						<div class="peer-checked:opacity-0">
+						<div id="groupNew_arrow" class="-rotate-90 peer-checked:opacity-0">
 							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
 						</div>
 
@@ -159,9 +159,9 @@
 			{% if membershipPending|length %}
 			<li>
 				<div class="relative px-4 py-4 sm:px-6">
-					<input type="checkbox" id="test" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
+					<input type="checkbox" onclick="rotateArrowOnCheck('groupMember')" id="groupMember_dropdown" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
 					<div class="flex">
-						<div class="peer-checked:opacity-0">
+						<div id="groupMember_arrow" class="-rotate-90 peer-checked:opacity-0">
 							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
 						</div>
 
@@ -217,9 +217,9 @@
 			{% if each_module.requests|length %}
 			<li>
 				<div class="relative px-4 py-4 sm:px-6">
-					<input type="checkbox" id="test" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
+					<input type="checkbox" onclick="rotateArrowOnCheck('{{ each_module.module_tag }}')" id="{{ each_module.module_tag }}_dropdown" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
 					<div class="flex">
-						<div class="peer-checked:opacity-0">
+						<div id="{{ each_module.module_tag }}_arrow" class="-rotate-90 peer-checked:opacity-0">
 							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
 						</div>
 

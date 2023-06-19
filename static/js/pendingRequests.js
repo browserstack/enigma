@@ -14,8 +14,6 @@ const clickDeclineFinalButton = (requestId, action, messageId) => {
   closeDeclineModal();
   const declineReason = $("#declineReasonText").val();
   const urlBuilder = `/decline/${action}/${requestId}`
-  console.log(declineReason)
-  console.log(urlBuilder)
   $.ajax({
     url: urlBuilder,
     data: {"reason": declineReason},

@@ -39,16 +39,6 @@ function submitRequest(event, elem, multi, access_tag, accesses="") {
   })
 }
 
-function rotateArrowOnCheck(access_tag) {
-  const checkbox = $(`#${access_tag}_arrow`);
-  if(checkbox.hasClass("-rotate-90")) {
-    checkbox.removeClass("-rotate-90");
-  }
-  else {
-    checkbox.addClass("-rotate-90");
-  }
-}
-
 function showRedirectModal(title, message="") {
   $("#redirect_to_dashboard").show();
   $("#modal-title").html(title);
