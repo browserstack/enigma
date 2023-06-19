@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block head_body %}
-<script src={% static "js/updateUser.js" %}></script>  
+<script src={% static "js/updateUser.js" %}></script>
 {% endblock %}
 
 {% block nav_breadcrumb %}
@@ -40,7 +40,7 @@
     </div>
     <div class="mt-4 sm:mt-0 sm:ml-4 sm:flex-none">
       <a href="{% url 'logout' %}">
-        <button type="button" class="sm:h-10 sm:w-28 inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2">Logout 
+        <button type="button" class="sm:h-10 sm:w-28 inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-300 focus:ring-offset-2">Logout
           <span class="px-1"> <svg xmlns="http://www.w3.org/2000/svg" height="16" viewBox="0 96 960 960" width="16"><path d="M180 936q-24 0-42-18t-18-42V276q0-24 18-42t42-18h291v60H180v600h291v60H180Zm486-185-43-43 102-102H375v-60h348L621 444l43-43 176 176-174 174Z"/></svg> </span>
         </button>
       </a>
@@ -74,4 +74,6 @@
     {% endfor %}
   </div>
 </div>
+
+{% include "EnigmaOps/shared/notificationTemplate.html" %}
 {% endblock %}

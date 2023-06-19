@@ -447,7 +447,7 @@ def add_user_to_group(request):
                 "msg": NON_OWNER_PERMISSION_DENIED_ERROR["msg"],
             }
             return context
-        
+
         selected_users_list = json.loads(data.get("selectedUserList"))
 
         duplicate_request_emails = _check_if_members_in_group(
@@ -676,19 +676,19 @@ def save_group_access_request(form_data, auth_user):
     json_response = _validate_group_access_request(form_data, auth_user)
     if json_response:
         return json_response
-    
+
     access_request = dict(form_data.lists())
     group_name = form_data.get("groupName")
     access_tag = form_data.get("access_tag")
-    
+
     group = GroupV2.get_active_group_by_name(group_name=group_name)
-    
+
     validation_error = validate_group_access_create_request(
         group=group, auth_user=auth_user
     )
     if validation_error:
         return validation_error
-    
+
     access_module = helper.get_available_access_modules()[access_tag]
 
     module_access_labels = access_module.validate_request(form_data, auth_user.user)
@@ -773,7 +773,7 @@ def _validate_group_access_request(form_data, auth_user):
             "error_msg": GROUP_REQUEST_EMPTY_FORM_ERR_MSG["error_msg"],
             "msg": GROUP_REQUEST_EMPTY_FORM_ERR_MSG["msg"]
         }
-    return json_response    
+    return json_response
 
 
 def validate_group_access_create_request(group, auth_user):

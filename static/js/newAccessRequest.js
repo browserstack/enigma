@@ -32,7 +32,7 @@ const selectCheckbox = (elem, checked) => {
 const addModuleSelection = (elem) => {
   const selectionList = $('#module-selection-table');
   const newSpan = $("#module-selection-row-template").clone(true, true);
-  
+
   selectCheckbox(elem, true);
   const moduleDesc = $(elem).attr("module_desc");
   const moduleTag = $(elem).attr("module_tag");
@@ -108,8 +108,11 @@ const fetchAccessModules = (search=undefined) => {
     url: "/api/v1/getAccessModules",
     data: {"search": search},
     error: function (XMLHttpRequest, textStatus, errorThrown) {
-      const msg = XMLHttpRequest.responseJSON;
-      showNotificiation("Failed", msg["error"]);
+      console.log(XMLHttpRequest)
+      if(XMLHttpRequest.responseJSON) {
+        const msg = XMLHttpRequest.responseJSON;
+        showNotificiation("failed", msg["error"], "Internal Error");
+      }
     }
   }).done(function(data, statusText, xhr) {
     if(data["modulesList"]) {
@@ -125,6 +128,10 @@ const fetchAccessModules = (search=undefined) => {
       });
 
       $("#module-list-table").append(rows.join(""));
+
+      if(data["search_error"]) {
+        showNotification("failed", data["search_error"])
+      }
     }
   });
 }

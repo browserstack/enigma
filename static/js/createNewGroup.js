@@ -20,7 +20,7 @@ const handleSelectionView = () => {
 const selectAllToggleSelection = (elem) => {
   if(elem.checked) {
     const members = $("#users-list-table").children('tr');
-  
+
     for (iter = 0; iter < members.length; iter++) {
       if(!selectedList[$(members[iter]).attr("email")]){
         addMemberSelection(members[iter])
@@ -129,19 +129,10 @@ const validateGroupReason = (elem) => {
   }
 }
 
-// Implementation Pending
-function showNotificiation(type, message, title) {
-
-}
-
 function showRedirectModal(title, message="") {
   $("#redirect_to_dashboard").show();
   $("#modal-title").html(title);
   $("#modal-message").html(message);
-}
-
-function closeNotification() {
-  $("#notification_bar").addClass("hidden")
 }
 
 function submitRequest() {
@@ -161,6 +152,7 @@ function submitRequest() {
   const requiresAccessApprove = $("#requiresAccessApprove").prop("checked");
 
   if (!validateGroupName(newGroupNameElem) || !validateGroupReason(newGroupReasonElem)) {
+    $(window).scrollTop(0)
     return;
   }
   else {
@@ -178,8 +170,12 @@ function submitRequest() {
         showRedirectModal("Request Submitted", result.status.msg)
       },
       error: function (XMLHttpRequest, textStatus, errorThrown) {
-        const msg = JSON.parse(XMLHttpRequest.responseText).error.msg
-        showNotificiation("failed", msg)
+        if(XMLHttpRequest.responseJSON) {
+          response = XMLHttpRequest.responseJSON.error
+          showNotification("failed", response["msg"], response["error_msg"])
+        } else {
+          showNotification("failed", "Something when wrong while creating the group, contact admin.", "Internal Error")
+        }
       }
     });
   }
@@ -190,9 +186,10 @@ function update_users(search, page) {
     url: "/api/v1/getActiveUsers",
     data: {"search": search, "page":page},
     error: function (XMLHttpRequest, textStatus, errorThrown) {
-      const msg = XMLHttpRequest.responseJSON;
-      alert(msg["error"]);
-      showNotificiation("Failed", msg["error"]);
+      if(XMLHttpRequest.responseJSON) {
+        const msg = XMLHttpRequest.responseJSON;
+        showNotificiation("failed", msg["error"], "Internal Error");
+      }
     }
   }).done(function(data, statusText, xhr) {
     if(data["users"]) {
@@ -212,7 +209,7 @@ function update_users(search, page) {
       })
 
       $("#users-list-table").append(rows.join(""));
-      
+
       if(data["next_page"]) {
         $("#user-list-nav").removeClass("hidden");
         $("#next_page").attr("onclick", `change_page('${data["next_page"]}')`);

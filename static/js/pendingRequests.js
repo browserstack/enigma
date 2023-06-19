@@ -1,7 +1,3 @@
-function closeNotification(){
-  $("#notification_bar").hide();
-}
-
 function showDeclineModal(request_id) {
   $('#decline_modal').show();
   $(".declineHeading").html("<p class='text-lg leading-6 font-medium'>"+request_id+"<p/>")
@@ -31,17 +27,4 @@ function onChangeDeclineReason() {
 
 function setDeclineReason(reason) {
   $("#declineReasonText").val(reason);
-}
-
-function showNotificiation(type, message) {
-  if(type === "success"){
-    $(".notification_success").show();
-    $(".notification_fail").hide();
-  }
-  else if(type === "failed") {
-    $(".notification_success").hide();
-    $(".notification_fail").show();
-  }
-  $(".notification_message").html(message);
-  $("#notification_bar").show();
 }

@@ -123,7 +123,7 @@ function submitRequest(event, elem) {
     data: form.serialize(),
     error: (xhr, statusText, data) => {
       if(xhr.responseJSON) {
-        showNotification("failed", xhr.responseJSON["error"]["error_msg"], xhr.responseJSON["error"]["msg"]);
+        showNotification("failed", xhr.responseJSON["error"]["msg"], xhr.responseJSON["error"]["error_msg"]);
       }
       else {
         showNotification("failed", "Failed to send the request", "Something went wrong");
@@ -146,9 +146,6 @@ function showRedirectModal(title, message="") {
   $("#modal-message").html(message);
 };
 
-function showNotification(type, title, message) {
-  // TODO
-};
 
 function update_users(search, page, groupName) {
   $.ajax({
@@ -156,7 +153,7 @@ function update_users(search, page, groupName) {
     data: {"search": search, "page":page, "groupName":groupName},
     error: function (XMLHttpRequest, textStatus, errorThrown) {
       const msg = XMLHttpRequest.responseJSON;
-      // showNotificiation("Failed", msg["error"]);
+      showNotificiation("failed", msg["error"]);
     }
   }).done(function(data, statusText, xhr) {
     if(data["users"]) {
@@ -197,7 +194,7 @@ function update_users(search, page, groupName) {
       }
       $("#user-scroll-bar").scrollTop(0)
       if(data["search_error"]) {
-        // showNotificiation(data["search_error"])
+        showNotificiation("failed", data["search_error"], "Search Error")
       }
     }
   })
