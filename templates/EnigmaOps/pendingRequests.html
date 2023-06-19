@@ -6,43 +6,6 @@
 {% endblock %}
 
 {% block content_body %}
-
-<div aria-live="assertive" id="notification_bar" class="hidden pointer-events-none z-10 fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6">
-  <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
-    <div class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5">
-      <div class="p-4">
-        <div class="flex items-start">
-          <div class="flex-shrink-0">
-						<div class="notification_success hidden">
-							<svg class="h-6 w-6 text-green-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-								<path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-							</svg>
-						</div>
-						<div class="notification_fail hidden">
-							<svg xmlns="http://www.w3.org/2000/svg" class="fill-current text-red-600" height="24px" viewBox="0 0 24 24" width="24px" fill="none"><path d="M0 0h24v24H0z" fill="none"/>
-								<path d="M14.59 8L12 10.59 9.41 8 8 9.41 10.59 12 8 14.59 9.41 16 12 13.41 14.59 16 16 14.59 13.41 12 16 9.41 14.59 8zM12 2C6.47 2 2 6.47 2 12s4.47 10 10 10 10-4.47 10-10S17.53 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
-							</svg>
-						</div>
-          </div>
-          <div class="ml-3 w-0 flex-1 pt-0.5">
-            <p class="notification_message text-sm font-medium text-gray-900"></p>
-          </div>
-          <div class="ml-4 flex flex-shrink-0">
-            <button type="button" class="inline-flex rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" onclick="closeNotification()">
-              <span class="sr-only">Close</span>
-              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-              </svg>
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-
-
 <div class="px-8 py-6 sm:px-6 lg:px-8 w-full">
 	<div class="sm:flex sm:items-center">
 		<div class="sm:flex-auto">
@@ -51,6 +14,7 @@
 	</div><br>
 	<div class="overflow-hidden bg-white shadow sm:rounded-md">
 		<ul role="list" class="divide-y divide-gray-200">
+			{% if groupGenericRequests|length %}
 			<li>
 				<div class="relative px-4 py-4 sm:px-6">
 					<input type="checkbox" id="test" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
@@ -65,31 +29,26 @@
 						<span class="bg-blue-100 ml-auto text-center h-6 w-8 inline-block pt-1 text-xs text-blue-600 rounded-full">{{ groupGenericRequests|length }}</span>
 					</div>
 					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
-						{% if groupGenericRequests|length %}
 						<div class="divide-y divide-gray-200">
 							{% for group in groupGenericRequests %}
-								<div class="py-7">
+								<div class="px-4 py-3">
 									<H1 class="text-xl leading-8 font-semibold py-2">{{group.group_club_id}}</H1>
-									<table class="table-auto text-left leading-5 text-sm w-7/12">
+									<table class="table-fixed border-b border-t text-left leading-5 text-sm w-7/12">
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Requested for group</td>
-											<td class="text-gray-700 py-4">{{ group.groupName }}</td>
+											<td class="text-blue-600 hover:text-blue-900 py-4"><a href="/group/access/list?group_name={{ group.groupName }}"><u>{{ group.groupName }}</u></a></td>
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Requested by</td>
-											<td class="text-gray-700 py-4">{{ group.userEmail }}</td>
+											<td class="text-gray-900 py-4">{{ group.userEmail }}</td>
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Requested on</td>
-											<td class="text-gray-700 py-4">{{ group.requested_on }}</td>
+											<td class="text-gray-900 py-4">{{ group.requested_on }} UTC</td>
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Approval SLA Breached</td>
-                                            {% if group.sla_breached %}
-											<td class="text-red-500 py-4">{{ group.sla_breached }}</td>
-                                            {% else %}
-											<td class="text-gray-900 py-4">{{ group.sla_breached }}</td>
-                                            {% endif %}
+											<td class="{% if group.sla_breached %} text-red-500 {% else %} text-gray-900 {% endif %} py-4">{% if group.sla_breached %} True - Time passed {{ group.sla_breached }} days {% else %} False {% endif %}</td>
 										</tr>
 									</table>
 									{% if not group.needsAccessApprove %}
@@ -98,32 +57,49 @@
 										<div class="text-blue-800 text-sm"><p>Note - This group does not require approval for adding new members</p></div>
 									</div>
 									{% endif %}
-									<p class="font-bold text-sm pt-6">Access Requested</p>
+									<p class="text-sm leading-5 font-semibold text-gray-900 pt-6">Access Requested</p>
 									{% for eachAccessDetails in group.accessData %}
-										<div class="border-b drop-shadow-lg border-gray-200 bg-white px-4 py-5 my-4 rounded-md border flex-none w-7/12">
-											<table class="table-auto text-left text-sm w-full">
+										<div class="border-b border-gray-200 bg-white px-4 py-5 my-4 rounded-md border flex-none w-7/12">
+											<table class="table-fixed text-left text-sm w-full">
 												<tr class="bg-white border-b dark:border-gray-700">
-													<td class="font-bold py-4">{{ eachAccessDetails.accessType }}</td>
-													<td class="text-gray-600 py-4">{{ eachAccessDetails.accessCategory }}</td>
+													<td class="text-sm leading-5 font-semibold text-gray-900 py-4">Access Type</td>
+													<td class="text-gray-900 py-4">{{ eachAccessDetails.accessType }}</td>
 												</tr>
 												<tr class="bg-white border-b dark:border-gray-700">
-													<td class="text-gray-600 py-4">Reason</td>
-													<td class="text-gray-600 py-4">{{ eachAccessDetails.accessReason }}</td>
+													<td class="text-sm leading-5 font-semibold text-gray-900 py-4">Reason for request</td>
+													<td class="text-gray-900 py-4">{{ eachAccessDetails.accessReason }}</td>
 												</tr>
+												<tr class="bg-white border-b dark:border-gray-700">
+													<td class="text-sm leading-5 font-semibold text-gray-900 py-4">Access description</td>
+													<td class="text-gray-900 py-4">{{ eachAccessDetails.accessCategory }}</td>
+												</tr>
+												{% if accessData.accessMeta %}
+												<tr class="bg-white border-b dark:border-gray-700">
+													<td class="text-sm leading-5 font-semibold text-gray-900 pb-4 pt-8">Access Metadata</td>
+												</tr>
+												{% for key, value in accessData.accessMeta.items %}
+												<tr class="bg-white border-b dark:border-gray-700">
+													<td class="text-sm leading-5 font-medium text-gray-500 py-4">{{ key }}</td>
+													<td class="text-gray-900 py-4">{{ value }}</td>
+												</tr>
+												{% endfor %}
+												{% endif %}
 											</table>
-											<div class="text-sm pt-5">
-												<button class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
-												<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium" value="{{ eachAccessDetails.requestId }}" onclick="showDeclineModal($(this).val())">Decline</button>
+											<div id="groupAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}"></div>
+											<div id="groupAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}-actions" class="text-sm pt-5">
+												<button onclick="approveAccess('{{eachAccessDetails.requestId}}', 'groupAccess', 'groupAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}')" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+												<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium" onclick="showDeclineModal('{{ eachAccessDetails.requestId }}', 'groupAccess', 'groupAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}')">Decline</button>
 											</div>
 										</div>
 									{% endfor %}
 								</div>
 							{% endfor %}
 						</div>
-						{% endif %}
 					</div>
 				</div>
 			</li>
+			{% endif %}
+			{% if newGroupPending|length %}
 			<li>
 				<div class="relative px-4 py-4 sm:px-6">
 					<input type="checkbox" id="test" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
@@ -133,61 +109,54 @@
 						</div>
 
 						<div class="px-2 peer-checked:opacity-0">
-							<p class="truncate text-lg leading-7 font-medium text-grey-900">Group Creation Requests</p>
+							<p class="truncate text-lg leading-7 font-medium text-grey-900">New Group Creation</p>
 						</div>
 						<span class="bg-blue-100 ml-auto text-center h-6 w-8 inline-block pt-1 text-xs text-blue-600 rounded-full">{{ newGroupPending|length }}</span>
 					</div>
 					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
-						{% if newGroupPending|length %}
 						<div class="divide-y divide-gray-200">
 							{% for group in newGroupPending %}
-								<div class="py-7">
-									<H1 class="text-xl py-2">{{group.groupRequest.group_id}}</H1>
-									<table class="table-auto text-left text-sm w-7/12">
-										<tr class="bg-white border-b dark:border-gray-700">
-											<td class="text-gray-500 py-4">Group Name</td>
-											<td class="text-gray-700 py-4">{{ group.groupRequest.name }}</td>
-										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
-											<td class="text-gray-500 py-4">Group Description</td>
-											<td class="text-gray-700 py-4">{{ group.groupRequest.description }}</td>
-										</tr>
+								<div class="px-4 py-3">
+									<H1 class="text-xl leading-8 font-semibold py-2">{{group.groupRequest.group_id}}</H1>
+									<table class="table-fixed border-b border-t text-left text-sm w-7/12">
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Requested by</td>
-											<td class="text-gray-700 py-4">{{ group.groupRequest.requester.email }}</td>
+											<td class="text-gray-900 py-4">{{ group.groupRequest.requester.email }}</td>
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Requested on</td>
-											<td class="text-gray-700 py-4">{{ group.groupRequest.requested_on }}</td>
+											<td class="text-gray-900 py-4">{{ group.groupRequest.requested_on }} UTC</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Requested Group Name</td>
+											<td class="text-gray-900 py-4">{{ group.groupRequest.name }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Reason for Request</td>
+											<td class="text-gray-900 py-4">{{ group.groupRequest.description }}</td>
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Initial Members</td>
-											<td class="text-gray-700 py-4">{{ group.initialMembers }}</td>
+											<td class="text-gray-900 py-4">{{ group.initialMembers }} (These members will be automatically added to group)</td>
 										</tr>
 									</table>
 									<div class="border-b border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
 										<div class="pr-3"><svg class="fill-current h-6 w-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
-										{% if not group.needsAccessApprove %}
-										<div class="text-blue-800 text-sm"><p>Note - Further addition of users will not require permission from access_approve</p></div>
-										{% else %}
-										<div class="text-blue-800 text-sm"><p>Note - Further addition of users will require permission from access_approve</p></div>
-										{% endif %}
+										<div class="text-blue-800 text-sm"><p>Note - Further addition of users will {% if not group.needsAccessApprove %}not{% endif %} require permission from access_approve</p></div>
 									</div>
-									<div class="border-b border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
-										<div class="pr-3"><svg class="fill-current h-6 w-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
-										<div class="text-blue-800 text-sm"><p>Note - Initial members will be automatically added to group.</p></div>
-									</div>
-									<div class="text-sm pt-5">
-										<button class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
-										<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium">Decline</button>
+									<div id="groupNew-{{forloop.counter}}"></div>
+									<div id="groupNew-{{forloop.counter}}-actions" class="text-sm pt-5">
+										<button onclick="approveAccess('{{ group.groupRequest.group_id }}', 'groupNew', 'groupNew-{{forloop.counter}}')" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+										<button onclick="showDeclineModal('{{ group.groupRequest.group_id }}', 'declineNewGroup', 'groupNew-{{forloop.counter}}')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Decline</button>
 									</div>
 								</div>
 							{% endfor %}
 						</div>
-						{% endif %}
 					</div>
 				</div>
 			</li>
+			{% endif %}
+			{% if membershipPending|length %}
 			<li>
 				<div class="relative px-4 py-4 sm:px-6">
 					<input type="checkbox" id="test" class="absolute w-full h-7 opacity-0 cursor-pointer peer">
@@ -197,49 +166,53 @@
 						</div>
 
 						<div class="px-2 peer-checked:opacity-0">
-							<p class="truncate text-lg leading-7 font-medium text-grey-900">Group Membership Addition Request</p>
+							<p class="truncate text-lg leading-7 font-medium text-grey-900">Membership Addition</p>
 						</div>
 						<span class="bg-blue-100 ml-auto text-center h-6 w-8 inline-block pt-1 text-xs text-blue-600 rounded-full">{{ membershipPending|length }}</span>
 					</div>
 					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
-						{% if membershipPending|length %}
 						<div class="divide-y divide-gray-200">
 							{% for member in membershipPending %}
-								<div class="py-7">
-									<H1 class="text-xl py-2">{{member.membership_id}}</H1>
-									<table class="table-auto text-left text-sm w-7/12">
+								<div class="px-4 py-3">
+									<H1 class="text-xl leading-8 font-semibold py-2">{{member.membership_id}}</H1>
+									<table class="table-fixed border-b border-t text-left text-sm w-7/12">
 										<tr class="bg-white border-b dark:border-gray-700">
-											<td class="text-gray-500 py-4">Group Name</td>
-											<td class="text-gray-700 py-4">{{ member.group.name }}</td>
-										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
-											<td class="text-gray-500 py-4">New Member</td>
-											<td class="text-gray-700 py-4">{{ member.user.email }}</td>
+											<td class="text-gray-500 py-4">Group</td>
+											<td class="text-blue-600 hover:text-blue-900 py-4"><a href="/group/access/list?group_name={{ member.group.name }}"><u>{{ member.group.name }}</u></a></td>
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Requested by</td>
-											<td class="text-gray-700 py-4">{{ member.requested_by.email }}</td>
+											<td class="text-gray-900 py-4">{{ member.requested_by.email }}</td>
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Requested on</td>
-											<td class="text-gray-700 py-4">{{ member.requested_on }}</td>
+											<td class="text-gray-900 py-4">{{ member.requested_on }} UTC</td>
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
-											<td class="text-gray-500 py-4">Reason for Request</td>
-											<td class="text-gray-700 py-4">{{ member.reason }}</td>
+											<td class="text-gray-500 py-4">New member name</td>
+											<td class="text-gray-900 py-4">{{ member.user }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Email</td>
+											<td class="text-gray-900 py-4">{{ member.user.email }}</td>
+										</tr>
+										<tr class="bg-white border-b dark:border-gray-700">
+											<td class="text-gray-500 py-4">Reason for request</td>
+											<td class="text-gray-900 py-4">{{ member.reason }}</td>
 										</tr>
 									</table>
-									<div class="text-sm pt-5">
-										<button class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
-										<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium">Decline</button>
+									<div id="groupMember-{{forloop.counter}}"></div>
+									<div id="groupMember-{{forloop.counter}}-actions" class="text-sm pt-5">
+										<button onclick="approveAccess('{{member.membership_id}}', 'groupMember', 'groupMember-{{forloop.counter}}')" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+										<button onclick="showDeclineModal('{{member.membership_id}}', 'declineMember', 'groupMember-{{forloop.counter}}')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Decline</button>
 									</div>
 								</div>
 							{% endfor %}
 						</div>
-						{% endif %}
 					</div>
 				</div>
 			</li>
+			{% endif %}
 			{% for each_module in genericRequests %}
 			{% if each_module.requests|length %}
 			<li>
@@ -258,47 +231,55 @@
 					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
 						<div class="divide-y divide-gray-200">
 							{% for eachRequest in each_module.requests %}
-								<div class="py-7">
+								<div class="px-4 py-3">
 									<H1 class="text-xl leading-8 font-semibold py-2">{{eachRequest.club_id}}</H1>
-									<table class="table-auto text-left text-sm w-7/12">
+									<table class="table-fixed border-b border-t text-left text-sm w-7/12">
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Requested by</td>
-											<td classs="text-gray-700 py-4">{{ eachRequest.userEmail }}</td>
+											<td classs="text-gray-900 py-4">{{ eachRequest.userEmail }}</td>
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Requested On</td>
-											<td class="text-gray-700 py-4">{{ eachRequest.requested_on }} UTC</td>
+											<td class="text-gray-900 py-4">{{ eachRequest.requested_on }} UTC</td>
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Approval SLA Breached</td>
-											<td class="text-gray-700 py-4">{{ eachRequest.sla_breached}}</td>
+											<td class="{% if eachRequest.sla_breached %} text-red-500 {% else %} text-gray-900 {% endif %} py-4">{% if eachRequest.sla_breached %} True - Time passed {{ eachRequest.sla_breached }} days {% else %} False {% endif %}</td>
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Access type</td>
-											<td class="text-gray-700 py-4">{{ eachRequest.accessType }}</td>
+											<td class="text-gray-900 py-4">{{ eachRequest.accessType }}</td>
 										</tr>
 										<tr class="bg-white border-b dark:border-gray-700">
 											<td class="text-gray-500 py-4">Reason for Request</td>
-											<td class="text-gray-700 py-4">{{ eachRequest.accessReason }}</td>
+											<td class="text-gray-900 py-4">{{ eachRequest.accessReason }}</td>
 										</tr>
 									</table>
-									<p class="font-bold text-sm pt-6">Accesses</p>
+									<p class="text-sm leading-5 font-semibold pt-6">Accesses</p>
 									{% for accessData in eachRequest.accessData %}
 									<div>
-										<p class="text-gray-700 text-sm pt-2">{{ accessData.accessCategory }}</p>
-										<b class="text-sm pt-5">Access Metadata</b>
-										<div class="border-b drop-shadow-lg border-gray-200 bg-white px-4 py-5 my-4 rounded-md border flex-none w-7/12">
-											<table class="table-auto text-left text-sm w-full">
+										<div class="border-b border-gray-200 bg-white px-4 pt-2 pb-4 my-2 rounded-md border flex-none w-7/12">
+											<table class="table-fixed text-left text-sm w-full">
+												<tr class="bg-white border-b dark:border-gray-700">
+													<td class="text-sm leading-5 font-semibold text-gray-900 py-4">Access Description</td>
+													<td class="text-gray-900 py-4">{{ accessData.accessCategory }}</td>
+												</tr>
+												{% if accessData.accessMeta %}
+												<tr class="bg-white dark:border-gray-700">
+													<td class="text-sm leading-5 font-semibold text-gray-900 pt-4">Access Metadata</td>
+												</tr>
 												{% for key, value in accessData.accessMeta.items %}
 												<tr class="bg-white border-b dark:border-gray-700">
-													<td class="text-gray-600 py-4">{{ key }}</td>
-													<td class="text-gray-600 py-4">{{ value }}</td>
+													<td class="text-gray-500 py-4">{{ key }}</td>
+													<td class="text-gray-900 py-4">{{ value }}</td>
 												</tr>
 												{% endfor %}
+												{% endif %}
 											</table>
-											<div class="text-sm pt-5">
-												<button class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
-												<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-blue-900 px-4 py-2 text-sm font-medium">Decline</button>
+											<div id="{{eachRequest.access_tag}}-moduleAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}"></div>
+											<div id="{{eachRequest.access_tag}}-moduleAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}-actions" class="text-sm pt-5">
+												<button onclick="approveAccess('{{ accessData.requestId }}', 'moduleAccess', '{{eachRequest.access_tag}}-moduleAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}')" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+												<button onclick="showDeclineModal('{{ accessData.requestId }}', 'moduleAccess', '{{eachRequest.access_tag}}-moduleAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Decline</button>
 											</div>
 										</div>
 									</div>
@@ -315,7 +296,7 @@
 	</div>
 </div>
 
-<div id="decline_modal" class="decline_modal relative z-10 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div id="decline_modal" class="relative z-10 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
 
     <div class="fixed inset-0 z-10 overflow-y-auto">
@@ -323,16 +304,16 @@
             <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
 
                 <div class="border-b px-4 py-3 bg-gray-100 flex">
-                    <div class="declineHeading">
+                    <div id="declineHeading">
                     </div>
-                    <div class="close_decline_modal ml-auto inline-block text-sm cursor-pointer">
+                    <div class="ml-auto inline-block text-sm cursor-pointer">
                         <svg onclick="closeDeclineModal()" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
                     </div>
                 </div>
 
                 <form onsubmit="clickDeclineFinalButton();return false">
                     <div class="flex-row text-sm px-4 pt-4 pb-8">
-                        <label for="declineReason">Reason</label>
+                        <label class="text-gray-700 text-sm leading-5 font-medium" for="declineReason">Reason</label>
                         <select onchange="onChangeDeclineReason()" id="declineReason" class="w-full text-sm rounded-md border-gray-200 mt-1 mb-5" name="reason" required>
                             <option selected disabled value="">Select</option>
                             {% for key,value in declineReasons.items %}
@@ -342,7 +323,7 @@
                         </select>
                         <input type="hidden" id="declineReasonText">
                         <div id="otherType" style="display:none;">
-                            <label for="">Details</label>
+                            <label class="text-gray-700 text-sm leading-5 font-medium" for="">Details</label>
                             <input oninput="setDeclineReason($(this).val())" class="text-sm rounded-md border-gray-200 w-full mt-1" type="text" name="reason_box" id="reason_box" placeholder="Please mention the reason for request decline">
                         </div>
                     </div>
@@ -355,6 +336,22 @@
             </div>
         </div>
     </div>
+</div>
+
+<div id="message-box" class="hidden rounded-md p-4 my-2">
+	<div class="flex">
+		<div class="flex-shrink-0">
+			<svg id="success" class="hidden h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+				<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+			</svg>
+			<svg id="failure" class="hidden h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+      </svg>
+		</div>
+		<div class="ml-3">
+			<h3 class="text-sm font-medium">The request - {{eachAccessDetails.requestId}} is Approved</h3>
+		</div>
+	</div>
 </div>
 
 
