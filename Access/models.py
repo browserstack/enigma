@@ -318,7 +318,9 @@ class User(models.Model):
 
     def get_group_pending_access_count(self):
         """" method to get pending access count from group """
-        return UserAccessMapping.objects.filter(user_identity__user=self, access_type="Group").count()
+        return UserAccessMapping.objects.filter(
+            user_identity__user=self, access_type="Group"
+        ).count()
 
     @staticmethod
     def get_user_from_username(username):
