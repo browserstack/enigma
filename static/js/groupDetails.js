@@ -18,8 +18,10 @@ function remove_user_from_user_confirmed(btnElem) {
 
       $(checkbox_elem).prop("checked", false);
       $(checkbox_elem).prop("disabled", true);
+      showNotification("success", "Request sent successfully!")
     },
     error: function(jqXHR, exception) {
+      showNotification("failed", "Failed to send the request", "Something went wrong");
     },
   });
 
@@ -47,12 +49,17 @@ $(document).on("submit", "#updateOwners", function(e){
     url: actionUrl,
     data: form.serialize(),
     error: (xhr, status, error) => {
-      alert("Failed to Update Owners");
+      if(xhr.responseJSON) {
+        showNotification("failed", xhr.responseJSON["error"]["msg"], xhr.responseJSON["error"]["error_msg"]);
+      }
+      else {
+        showNotification("failed", "Failed to send the request", "Something went wrong");
+      }
     }
   }).done(function(data, statusText, xhr){
     let status = xhr.status;
     if(status !== 200) {
-      alert(data["error"] || "Failed to update Owners")
+      showNotification("failed", data["error"], ["error_msg"])
     }
     else {
       location.reload(true);
@@ -81,6 +88,6 @@ $(document).on('click', '.group-revoke-button', function(){
             </span>`);
         },
         error: function(result){
-          alert("Error occured while marking revoke! - "+result["responseJSON"]["error"])
+          showNotification("failed", "Error occurred while marking revoke! - " + result["responseJSON"], ["error"]);
         }});
   });
