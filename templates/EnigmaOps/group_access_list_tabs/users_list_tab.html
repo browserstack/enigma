@@ -175,9 +175,9 @@
                         <input type="checkbox" class="rounded" name="owners" value="{{ user.is_owner }}" checked disabled="true"></input>
                       {% else %}
                         {% if user.is_owner %}
-                        <input id="{{ user.membership_id }}-user-checkbox" type="checkbox" class="rounded" name="owners" value="{{ user.email }}" checked></input>
+                        <input user_checkbox_id="{{ user.membership_id }}-user-checkbox" type="checkbox" class="rounded" name="owners" value="{{ user.email }}" checked></input>
                         {% else %}
-                        <input id="{{ user.membership_id }}-user-checkbox" type="checkbox" class="rounded" name="owners" value="{{ user.email }}" > </input>
+                        <input user_checkbox_id="{{ user.membership_id }}-user-checkbox" type="checkbox" class="rounded" name="owners" value="{{ user.email }}" > </input>
                         {% endif %}
                       {% endif %}
                   </td>
@@ -194,10 +194,10 @@
                       Member
                     {% endif %}
                   </td>
-                  <td id="{{ user.membership_id }}-user-state" class="w-2/12 whitespace-nowrap py-4 px-3 text-sm font-normal text-gray-900">
+                  <td user_state_id="{{ user.membership_id }}-user-state" class="w-2/12 whitespace-nowrap py-4 px-3 text-sm font-normal text-gray-900">
                     {{ user.current_state }}
                   </td>
-                  <td id="{{ user.membership_id }}-remove-user-button" class="w-2/12 py-4 px-3">
+                  <td remove_user_button_id="{{ user.membership_id }}-remove-user-button" class="w-2/12 py-4 px-3">
                     {% if allowRevoke and user.current_state == "Active" %}
                     {% csrf_token %}
                     <button type="button"
