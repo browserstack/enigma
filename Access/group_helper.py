@@ -805,19 +805,19 @@ def remove_member(request, auth_user):
     try:
         membership_id = request.POST.get("membershipId")
         if not membership_id:
-            raise ("Membership Id is not loaded.")
+            raise Exception("Membership Id is not loaded.")
         membership = MembershipV2.get_membership(membership_id)
 
         if not auth_user.user.is_allowed_admin_actions_on_group(membership.group):
             logger.exception("Permission denied, you're not owner of this group")
-            raise ("Permision Denied. You're not owner of this group")
+            raise Exception("Permision Denied. You're not owner of this group")
 
         if membership.user == auth_user.user:
-            raise "User cannot remove itself"
+            raise Exception("User cannot remove itself")
 
-    except Exception as e:
+    except Exception as exc:
         logger.error("Membership id not found in request")
-        logger.exception(str(e))
+        logger.exception(str(exc))
         return {"error": ERROR_MESSAGE}
 
     user = membership.user
