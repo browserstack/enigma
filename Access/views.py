@@ -137,6 +137,7 @@ def new_access_request(request):
 @login_required
 @user_admin_or_ops
 def failure_requests(request):
+    """ Request failed to process by celery """
     try:
         grant_failures = get_grant_failed_requests(request)
         revoke_failures = get_pending_revoke_failures(request)
@@ -886,7 +887,7 @@ def ignore_failure(request, selector):
                         "msg": "The request is already in final state.",
                     }
                 )
-        return JsonResponse(json_response) #render(request, "EnigmaOps/accessStatus.html", json_response)
+        return JsonResponse(json_response)
     except Exception as exc:
         logger.debug("Error in request not found OR Invalid request type")
         logger.exception("Error while executing ignore_failure: %s", (traceback.format_exc()))
@@ -895,7 +896,7 @@ def ignore_failure(request, selector):
             "error_msg": str(exc),
             "msg": "Error in request not found OR Invalid request type",
         }
-        return JsonResponse(json_response, status = 400) #render(request, "EnigmaOps/accessStatus.html", json_response)
+        return JsonResponse(json_response, status = 400)
 
 
 @login_required
@@ -925,14 +926,14 @@ def resolve_bulk(request):
                         "msg": "The request is already in final state.",
                     }
                 )
-        return JsonResponse(json_response) #render(request, "EnigmaOps/accessStatus.html", json_response)
+        return JsonResponse(json_response)
     except Exception:
         logger.debug("Error in request not found OR Invalid request type")
         logger.exception("Raised error during resolve_bulk: %s", (traceback.format_exc()))
         json_response = {}
         json_response['error'] = {'error_msg': "Bad request",
                                   'msg': "Error in request not found OR Invalid request type"}
-        return JsonResponse(json_response,status = 400) #render(request, 'EnigmaOps/accessStatus.html', json_response)
+        return JsonResponse(json_response,status = 400)
 
 
 def revoke_group_access(request):

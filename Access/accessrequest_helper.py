@@ -217,7 +217,6 @@ def get_pending_revoke_failures(request):
             status__in=["RevokeFailed"]
         ).order_by("-requested_on")
 
-    context = {"failures": failures, "heading": "Revoke Failures"}
     return failures
 
 
@@ -703,6 +702,7 @@ def run_accept_request_task(
             "msg": REQUEST_SUCCESS_MSG["msg"],
         }
     )
+    logger.info("Accept request ran successfully for access %s", json.dumps(access_label))
 
     return json_response
 
