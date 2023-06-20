@@ -129,6 +129,7 @@ const removeAllMembers = (disabledState) => {
 };
 
 const handleMemberSelection = (elem) => {
+  if(disabled) return;
   if (!$(elem).find('input').prop('checked')) {
     addMemberSelection(elem);
   } else {
@@ -247,7 +248,7 @@ function update_users(search, page) {
         <td id="checkbox-td" class="relative w-12 px-6 sm:w-16 sm:px-8">
           <input type="checkbox" value="${user["email"]}"
             name="selectedUserList"
-            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 focus:ring-blue-500 sm:left-6" ${ (selectedList[user["email"]] || disabled)? "checked": "" } onclick="handleMemberSelectionCheckbox(this)"></input>
+            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 focus:ring-blue-500 sm:left-6" ${ (selectedList[user["email"]] || disabled)? "checked": "" } onclick="handleMemberSelectionCheckbox(this)" ${(disabled) ? "disabled" : ""}></input>
         </td>
         <td id="description-td" class="whitespace-nowrap py-4 pr-3 text-sm font-normal ${ (selectedList[user["email"]] || disabled)? "text-blue-600" : "text-gray-900"}">
           ${user["first_name"]} ${user["last_name"]} ${user["email"]}</td>
