@@ -10,7 +10,7 @@ from typing import List
 from django.template import loader
 from Access.access_modules import *  # NOQA
 from Access.models import User
-from enigma_automation.settings import PERMISSION_CONSTANTS
+from enigma_automation.settings import PERMISSION_CONSTANTS, ACCESS_SLA_DAYS
 
 logger = logging.getLogger(__name__)
 
@@ -92,9 +92,9 @@ def sla_breached(requested_on):
     )
     duration_in_s = diff.total_seconds()
     days = divmod(duration_in_s, (3600 * 24))[0]
-    if days >= 1:
+    if days >= ACCESS_SLA_DAYS:
         return int(days)
-    return None
+    return False
 
 
 def generate_string_from_template(filename, **kwargs):
