@@ -8,9 +8,9 @@
 
 {% block content_body %}
 <div id="users" class="mt-8 px-4 sm:px-6 lg:px-8">
-  <form id="updateOwners" action="{% url 'updateGroupOwners' groupName %}" method="POST">
+  <form id="updateOwners" action="javascript:void(0);" onsubmit="updateOwners(this, '{{groupName}}')">
   <div class="flex flex-col gap-4">
-    <div class="flex flex-row gap-4 items-center">
+    <div class="flex flex-row gap-4 items-center">e
       <div>
         <div class="w-96 relative">
           <div class="box-border shadow-sm rounded-md border border-gray-300 border-solid">
