@@ -173,8 +173,8 @@
                     <div class="text-gray-400 font-normal">{{ eachAccess.requestId }}</div>
                   </td>
                   <td status_id="access-status-{{ eachAccess.requestId }}" class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
-                    <div status="{{eachAccess.status}}">{% access_status_content eachAccess.status|safe %}</div>
-                    <div status="Revoked" hidden >{% access_status_content 'Revoked'|safe %}</div>
+                    <div status="{{eachAccess.status}}">{% access_status_content eachAccess.status %}</div>
+                    <div status="Revoked" hidden >{% access_status_content 'Revoked' %}</div>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
                     {{ eachAccess.accessType }}
