@@ -83,6 +83,6 @@ function markRevoked(elem) {
           $(statuses[1]).show();
         },
         error: function(result){
-          showNotification("failed", "Error occurred while marking revoke! - " + result["responseJSON"], "error");
+          showNotification("failed", "Error occurred while marking revoke! - " + result["responseJSON"]["message"], "error");
         }});
   };
