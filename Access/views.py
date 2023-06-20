@@ -896,7 +896,7 @@ def ignore_failure(request, selector):
             "error_msg": str(exc),
             "msg": "Error in request not found OR Invalid request type",
         }
-        return JsonResponse(json_response, status = 400)
+        return JsonResponse(json_response, status=400)
 
 
 @login_required
@@ -933,7 +933,7 @@ def resolve_bulk(request):
         json_response = {}
         json_response['error'] = {'error_msg': "Bad request",
                                   'msg': "Error in request not found OR Invalid request type"}
-        return JsonResponse(json_response,status = 400)
+        return JsonResponse(json_response, status=400)
 
 
 def revoke_group_access(request):
