@@ -17,8 +17,11 @@ def add_variables_to_context(request):
     context = {}
     context["currentUser"] = currentUser
 
+
     context["totalAccessCount"] = currentUser.get_total_access_count()
+    context["pendingAccessCount"] = currentUser.get_pending_access_count()
     context["groupsMemberFor"] = len(currentUser.get_active_groups())
+    context["pendingGroupAccess"] = currentUser.get_group_pending_access_count()
     context["pendingActionsCount"] = currentUser.get_pending_approvals_count(all_access_modules)
 
     return context

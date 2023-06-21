@@ -312,6 +312,16 @@ class User(models.Model):
         """ method to get total access count """
         return UserAccessMapping.objects.filter(user_identity__user=self).count()
 
+    def get_pending_access_count(self):
+        """ method to get pending access count """
+        return UserAccessMapping.objects.filter(user_identity__user=self, status="Pending").count()
+
+    def get_group_pending_access_count(self):
+        """" method to get pending access count from group """
+        return UserAccessMapping.objects.filter(
+            user_identity__user=self, access_type="Group"
+        ).count()
+
     @staticmethod
     def get_user_from_username(username):
         """ method to get user from username """
