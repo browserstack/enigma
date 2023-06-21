@@ -1,14 +1,15 @@
+""" This file contains helper functions for userlist"""
 import json
+import logging
+from django.db import transaction
 from Access import helpers
 from Access.background_task_manager import (
-    background_task,
     accept_request,
     revoke_request,
 )
-from Access.models import User, ApprovalType
-import logging
+from Access.models import User
 from . import helpers as helper
-from django.db import transaction
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,12 +38,18 @@ OFFBOARDING_SUCCESS_MESSAGE = {"message": "Successfully initiated Offboard user"
 
 
 class IdentityNotChangedException(Exception):
+    """Raises identity exception"""
+
     def __init__(self):
         self.message = "Identity Unchanged"
         super().__init__(self.message)
 
 
 def get_identity_templates(auth_user):
+    """
+    Takes in an argument "auth_user" and returns a list of identity
+    templates associated with that user.
+    """
     user_identities = auth_user.user.get_all_active_identity()
     context = {}
     context["identity_template"] = []
@@ -65,9 +72,7 @@ def get_identity_templates(auth_user):
     for mod in all_modules.values():
         if not mod.get_identity_template():
             if not auth_user.user.get_active_identity(mod.tag()):
-                auth_user.user.create_new_identity(
-                    access_tag=mod.tag(), identity={}
-                )
+                auth_user.user.create_new_identity(access_tag=mod.tag(), identity={})
             continue
         context["identity_template"].append(
             {
@@ -79,6 +84,11 @@ def get_identity_templates(auth_user):
 
 
 def _is_valid_identity_json(identity):
+    """
+    The function checks if a given JSON object representing an identity is valid.
+
+    identity: object that contains information about the user's identity.
+    """
     try:
         identity_json = json.loads(json.dumps(identity))
         identity_dict = dict(identity_json)
@@ -90,6 +100,14 @@ def _is_valid_identity_json(identity):
 
 
 def create_identity(user_identity_form, auth_user):
+    """
+    Takes in a user identity form and an authenticated user and performs
+    some action(s) related to creating an identity.
+
+    user_identity_form: form or object that contains information about the user's identity.
+
+    auth_user: object representing an authenticated user.
+    """
     user = auth_user.user
     mod_name = user_identity_form.get("modname")
     selected_access_module = helper.get_available_access_modules()[mod_name]
@@ -106,7 +124,6 @@ def create_identity(user_identity_form, auth_user):
         )
         existing_user_access_mapping = None
 
-        # get useraccess if an identity already exists
         if existing_user_identity:
             if new_module_identity_json == existing_user_identity.identity:
                 raise IdentityNotChangedException()
@@ -114,7 +131,6 @@ def create_identity(user_identity_form, auth_user):
                 existing_user_identity.get_active_access_mapping()
             )
 
-        # create identity json  # call this verify identity
         try:
             __change_identity_and_transfer_access_mapping(
                 user=user,
@@ -143,14 +159,11 @@ def __change_identity_and_transfer_access_mapping(
     existing_user_access_mapping,
     new_module_identity,
 ):
-    # deactivate old identity and create new
     if existing_user_identity:
         existing_user_identity.deactivate()
-    # create new User Identity
     new_user_identity = user.create_new_identity(
         access_tag=access_tag, identity=new_module_identity
     )
-    # replicate the memberships with new identity
     new_user_access_mapping = []
     if existing_user_identity:
         if existing_user_access_mapping:
@@ -165,7 +178,9 @@ def __change_identity_and_transfer_access_mapping(
             if mapping.is_approved():
                 revoke_request(user_access_mapping=mapping, revoker=system_user)
 
-        existing_user_identity.decline_all_non_approved_access_mappings("Identity Updated")
+        existing_user_identity.decline_all_non_approved_access_mappings(
+            "Identity Updated"
+        )
 
     for mapping in new_user_access_mapping:
         if mapping.is_processing() or mapping.is_grantfailed():
@@ -175,12 +190,15 @@ def __change_identity_and_transfer_access_mapping(
                 accept_request(user_access_mapping=mapping)
             else:
                 logger.fatal(
-                    "migration failed for request_id:%s mapping is approved but approvers are missing: %s",
+                    "migration failed for request_id:%s mapping is approved but approvers are missing",
                     mapping.request_id,
                 )
 
 
 def getallUserList(request):
+    """
+    The function retrieves a list of all users.
+    """
     try:
         if not (
             helpers.check_user_permissions(request.user, PERMISSION_VIEW_USER_LIST)
@@ -200,7 +218,6 @@ def getallUserList(request):
                     "last_name": each_user.user.last_name,
                     "email": each_user.email,
                     "username": each_user.user.username,
-                    # "git_username": each_user.gitusername,
                     "is_active": each_user.user.is_active,
                     "offbaord_date": each_user.offbaord_date,
                     "state": each_user.current_state(),
@@ -213,15 +230,18 @@ def getallUserList(request):
             "allowOffboarding": allowOffboarding,
         }
         return context
-    except Exception as e:
+    except Exception as exc:
         logger.debug("Error in request not found OR Invalid request type")
-        logger.exception(e)
+        logger.exception(exc)
         json_response = {}
-        json_response["error"] = {"error_msg": str(e), "msg": ERROR_MESSAGE}
+        json_response["error"] = {"error_msg": str(exc), "msg": ERROR_MESSAGE}
         return json_response
 
 
 def offboard_user(request):
+    """
+    The function removes a user from a system or organization database.
+    """
     if not (
         request.user.user.has_permission("VIEW_USER_LIST")
         and request.user.user.has_permission("ALLOW_USER_OFFBOARD")
@@ -231,9 +251,9 @@ def offboard_user(request):
         offboard_user_email = request.POST.get("offboard_email")
         if not offboard_user_email:
             raise Exception("Invalid request, attribute not found")
-    except Exception as e:
+    except Exception as exc:
         logger.debug("Error in request, not found or Invalid request type")
-        logger.exception(str(e))
+        logger.exception(str(exc))
         return {"error": ERROR_MESSAGE}
 
     user = User.get_user_by_email(email=offboard_user_email)
