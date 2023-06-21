@@ -17,11 +17,3 @@ function showNotification(type, message, title=undefined) {
   $("#notification_title").html(title);
   $("#notification_bar").show();
 }
-
-
-function showTooltip(id) {
-  $(`#${id}`).removeClass("hidden");
-}
-function hideTooltip(id) {
-  $(`#${id}`).addClass("hidden");
-}

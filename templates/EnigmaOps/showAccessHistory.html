@@ -5,6 +5,8 @@
 {% block head_body %}
 <script src={% static "js/showAccessHistory.js" %}></script>
 <script src={% static "js/globalSearchMisc.js" %}></script>
+<script src={% static "js/jquery.powertip.min.js" %}></script>
+<link rel="stylesheet" type="text/css" href="{% static "css/jquery.powertip.min.css" %}">
 {% endblock %}
 
 {% block nav_breadcrumb %}
@@ -157,23 +159,20 @@
                   <div class="text-gray-900">{{ each_access.access_desc }}</div>
                   <div class="text-gray-400">{{ each_access.requestId }}</div>
                 </td>
-                <td onmouseover="showTooltip('access-tooltip-{{forloop.counter}}')" onfocus="showTooltip('access-tooltip-{{forloop.counter}}')" onmouseout="hideTooltip('access-tooltip-{{forloop.counter}}')">
-                  <div data-tooltip-target="tooltip-light" class="relative">
-                    <div class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{% access_status_content each_access.status|safe %}</div>
-                    <div id="access-tooltip-{{forloop.counter}}" class="bg-gray-800 text-gray-300 p-5 rounded z-20 absolute hidden ">
-                      This is a box with some content and an arrow at the top.
-                    </div>
+                <td onmouseenter="showToolTip(this, event, 'access-tooltip-{{forloop.counter}}')" class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-2xl truncate">
+                  <div>
+                    {% access_status_content each_access.status|safe %}
                   </div>
-
-
-                  <!-- <div class="relative flex">
-                    <div data-tooltip-target="tooltip-light" class="relative whitespace-nowrap px-3 py-4 text-sm text-gray-500">{% access_status_content each_access.status|safe %}</div>
-
-                    <div id="access-tooltip-{{forloop.counter}}" class="tooltip -right-40 z-20 absolute hidden ">
-                      This is a box with some content and an arrow at the top.
-                    </div>
-                  </div> -->
-
+                  <div id="access-tooltip-{{forloop.counter}}" class="hidden text-sm leading-5 p-3 font-normal">
+                    <ul>
+                      <li><b>Approver 1 -</b> {{ each_access.approver_1 }}</li>
+                      <li><b>Approver 2 -</b> {{ each_access.approver_2 }}</li>
+                    </ul><br>
+                    <ul>
+                      <li><b>Access Reason -</b> {{ each_access.accessReason }}</li>
+                      <li><b>Last Updated -</b> {{ each_access.updated_on }}</li>
+                    </ul>
+                  </div>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-2xl truncate">{{ each_access.accessCategory }}
                 </td>

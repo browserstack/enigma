@@ -49,3 +49,18 @@ $(document).click(function (e) {
     }
   }
 })
+
+function showToolTip(elem, evt, id) {
+  const tipContent = $(`#${id}`).clone(true, true);
+  tipContent.removeClass('hidden');
+
+  $(elem).data('powertipjq', tipContent).powerTip({
+    manual: true,
+    intentPollInterval: 1000,
+    intentSensitivity: 100,
+    placement: 'e',
+    mouseOnToPopup:true,
+    openEvents: ['mouseenter','focus' ],
+  });
+  $(elem).powerTip('show', evt)
+}
