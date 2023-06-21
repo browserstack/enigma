@@ -2,9 +2,7 @@ function remove_user_from_group(membership_id) {
   showRemoveMemberModal(membership_id)
 }
 
-function remove_user_from_user_confirmed(btnElem) {
-
-  const membership_id = $(btnElem).attr("membership_id");
+function remove_user_from_user_confirmed(membership_id) {
   url = "/group/removeGroupMember";
   var csrf_token = $('input[name="csrfmiddlewaretoken"]').val();
   $.ajax({
@@ -30,7 +28,7 @@ function remove_user_from_user_confirmed(btnElem) {
 
 function showRemoveMemberModal(membership_id) {
   $('#remove_member_modal').show();
-  $('button[name="final-remove-button"]').attr("membership_id", membership_id)
+  $('#final-remove-button').attr("onclick", `remove_user_from_user_confirmed('${membership_id}')`)
 }
 
 function closeRemoveMemberModal() {

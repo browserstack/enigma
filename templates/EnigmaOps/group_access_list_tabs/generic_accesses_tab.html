@@ -185,7 +185,7 @@
                   <td revoke_button_id="inactive-{{ eachAccess.requestId }}-revoke-button"
                     class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
 
-                    {% if allowRevoke %}
+                    {% if allowRevoke and eachAccess.status == 'Approved' %}
                     <button type="button" onclick="markRevoked(this)"
                       class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto group-revoke-button" id="{{ eachAccess.requestId }}">
                       Mark Revoked
