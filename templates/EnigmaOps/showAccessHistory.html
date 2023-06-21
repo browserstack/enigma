@@ -157,8 +157,26 @@
                   <div class="text-gray-900">{{ each_access.access_desc }}</div>
                   <div class="text-gray-400">{{ each_access.requestId }}</div>
                 </td>
-                <td data-tooltip-target="tooltip-light" class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{% access_status_content each_access.status|safe %}</td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-2xl truncate">{{ each_access.accessCategory }}</td>
+                <td onmouseover="showTooltip('access-tooltip-{{forloop.counter}}')" onfocus="showTooltip('access-tooltip-{{forloop.counter}}')" onmouseout="hideTooltip('access-tooltip-{{forloop.counter}}')">
+                  <div data-tooltip-target="tooltip-light" class="relative">
+                    <div class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{% access_status_content each_access.status|safe %}</div>
+                    <div id="access-tooltip-{{forloop.counter}}" class="bg-gray-800 text-gray-300 p-5 rounded z-20 absolute hidden ">
+                      This is a box with some content and an arrow at the top.
+                    </div>
+                  </div>
+
+
+                  <!-- <div class="relative flex">
+                    <div data-tooltip-target="tooltip-light" class="relative whitespace-nowrap px-3 py-4 text-sm text-gray-500">{% access_status_content each_access.status|safe %}</div>
+
+                    <div id="access-tooltip-{{forloop.counter}}" class="tooltip -right-40 z-20 absolute hidden ">
+                      This is a box with some content and an arrow at the top.
+                    </div>
+                  </div> -->
+
+                </td>
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-2xl truncate">{{ each_access.accessCategory }}
+                </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ each_access.accessRequestType }}</td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                   <a href="#" class="text-blue-100 hover:text-blue-200">
