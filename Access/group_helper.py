@@ -805,15 +805,19 @@ def remove_member(request, auth_user):
     try:
         membership_id = request.POST.get("membershipId")
         if not membership_id:
-            raise ("Membership Id is not loaded.")
+            raise Exception("Membership Id is not loaded.")
         membership = MembershipV2.get_membership(membership_id)
 
         if not auth_user.user.is_allowed_admin_actions_on_group(membership.group):
             logger.exception("Permission denied, you're not owner of this group")
-            raise ("Permision Denied. You're not owner of this group")
-    except Exception as e:
+            raise Exception("Permision Denied. You're not owner of this group")
+
+        if membership.user == auth_user.user:
+            raise Exception("User cannot remove itself")
+
+    except Exception as exc:
         logger.error("Membership id not found in request")
-        logger.exception(str(e))
+        logger.exception(str(exc))
         return {"error": ERROR_MESSAGE}
 
     user = membership.user
@@ -842,6 +846,7 @@ def remove_member(request, auth_user):
     membership.revoke_membership()
 
     return {"message": "Successfully removed user from group"}
+
 
 def access_exist_in_other_groups_of_user(membership, group, access):
     other_memberships = (
@@ -889,6 +894,7 @@ def revoke_access_from_group(request):
 
     return {"message": "Successfully initiated the revoke"}
 
+
 def get_selected_users_by_email(user_emails):
     selected_users = User.get_users_by_emails(emails=user_emails)
     selected_users_email = {user.email: user for user in selected_users}
@@ -906,6 +912,7 @@ def get_selected_users_by_email(user_emails):
         )
     return selected_users
 
+
 def get_group_status_list(selected_list):
     status_list = []
     for status in MembershipV2.STATUS:
@@ -913,6 +920,7 @@ def get_group_status_list(selected_list):
             status_list.append(status[0])
 
     return status_list
+
 
 def get_group_member_access_type(selected_list):
     access_type = []
@@ -933,12 +941,14 @@ def get_user_states(selected_list):
 
     return user_state
 
+
 def get_user_current_state():
     current_state = []
     for state in User.USER_STATUS_CHOICES:
         current_state.append(state[1].capitalize())
 
     return current_state
+
 
 def get_access_types(group_mappings):
     status_list = []
@@ -952,6 +962,7 @@ def get_access_types(group_mappings):
         status_list.append(access_module.access_desc())
 
     return set(status_list)
+
 
 def get_group_member_role_list(selected_list):
     roles = ["Member", "Owner"]

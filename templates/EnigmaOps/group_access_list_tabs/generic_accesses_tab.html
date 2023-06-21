@@ -3,6 +3,7 @@
 
 {% block head_body %}
 <script src={% static "js/globalSearchMisc.js" %}></script>
+<script src={% static "js/groupDetails.js" %}></script>
 {% endblock %}
 
 {% block content_body %}
@@ -109,7 +110,8 @@
       </div>
 
       <div class="sm:ml-auto sm:flex-none">
-        <a href="{% url 'groupRequestAccess' %}" class="text-blue-600 hover:text-blue-900">
+        <a href="{% url 'newAccessGroupRequest'%}?groupName={{groupName}}" class="text-blue-600 hover:text-blue-900">
+          {% csrf_token %}
           <button type="button"
             class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
             Request Access
@@ -170,8 +172,9 @@
                     <div class="text-gray-900 font-medium">{{ eachAccess.module }}</div>
                     <div class="text-gray-400 font-normal">{{ eachAccess.requestId }}</div>
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
-                    {% access_status_content eachAccess.status|safe %}
+                  <td status_id="access-status-{{ eachAccess.requestId }}" class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
+                    <div status="{{eachAccess.status}}">{% access_status_content eachAccess.status %}</div>
+                    <div status="Revoked" hidden >{% access_status_content 'Revoked' %}</div>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
                     {{ eachAccess.accessType }}
@@ -179,12 +182,12 @@
                   <td class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
                     {{ eachAccess.accessCategory }}
                   </td>
-                  <td id="inactive-{{ eachAccess.requestId }}-revoke-button"
+                  <td revoke_button_id="inactive-{{ eachAccess.requestId }}-revoke-button"
                     class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
 
                     {% if allowRevoke and eachAccess.status == 'Approved' %}
-                    <button type="button"
-                      class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto">
+                    <button type="button" onclick="markRevoked(this)"
+                      class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto group-revoke-button" id="{{ eachAccess.requestId }}">
                       Mark Revoked
                     </button>
                     {% endif %}
@@ -217,7 +220,7 @@
           <h1 class="text-sm font-normal text-gray-700">No module added to this group. Request module access to get started.</h1>
         </div>
         <div class="mt-6 place-items-center">
-          <a href="{% url 'groupRequestAccess' %}">
+          <a href="{% url 'newAccessGroupRequest'%}?groupName={{groupName}}">
             <button type="button" class="box-border border border-gray-300
                                         px-4 py-2 text-sm font-medium shadow-sm rounded-md
                                         sm:w-auto">
@@ -273,4 +276,5 @@
   </nav>
   {% endif %}
 </div>
+{% include "EnigmaOps/shared/notificationTemplate.html" %}
 {% endblock %}
