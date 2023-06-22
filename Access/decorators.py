@@ -78,7 +78,7 @@ def paginated_search(view_function):
             if search:
                 in_any_search_row = False
                 for row in search_rows:
-                    in_any_search_row = in_any_search_row or (search in value[row])
+                    in_any_search_row = in_any_search_row or (search.lower() in value[row].lower())
                 in_final_values = in_any_search_row
 
             if filters:

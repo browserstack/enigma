@@ -245,6 +245,7 @@ def get_group_access_list(auth_user, group_name):
     context["genericAccesses"] = [
         get_generic_access(group_mapping) for group_mapping in group_mappings
     ]
+    context["is_current_user_owner"] = group.member_is_owner(auth_user.user)
     if context["genericAccesses"] == [{}]:
         context["genericAccesses"] = []
 
