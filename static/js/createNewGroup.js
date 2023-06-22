@@ -1,5 +1,6 @@
 var selectedList = {}
 var disabled = false
+const SELECTION_LIMIT = 20
 
 const handleSelectionView = () => {
   let finalCount = $('#member-selection-table').children('tr').length;
@@ -35,6 +36,7 @@ const selectAllToggleSelection = (elem) => {
   } else {
     removeAllMembers(false);
   }
+  $('#max-repository-selected-warning').hide();
 };
 
 const selectMemberSelectionCheckbox = (elem, checked) => {
@@ -111,6 +113,7 @@ const removeMemberSelectionUI = (elem) => {
   } else {
     removeSelectionSpanElem(rightElem, $("#users-list-table").find(`tr[email="${$(rightElem).attr('email')}"]`));
   }
+  $('#max-repository-selected-warning').hide();
 };
 
 const removeAllMembers = (disabledState) => {
@@ -128,12 +131,29 @@ const removeAllMembers = (disabledState) => {
   handleSelectionView();
 };
 
+const findSelectedListLength = () => {
+  let count = 0;
+  Object.values(selectedList).forEach(val => {
+    if(val) count++;
+  })
+  return count;
+}
+
 const handleMemberSelection = (elem) => {
   if(disabled) return;
   if (!$(elem).find('input').prop('checked')) {
+    if(findSelectedListLength() === SELECTION_LIMIT) {
+      $('#max-repository-selected-warning').show();
+      return;
+    }
     addMemberSelection(elem);
   } else {
     removeMemberSelection(elem);
+  }
+  if(findSelectedListLength() === SELECTION_LIMIT) {
+    $('#max-repository-selected-warning').show();
+  } else {
+    $('#max-repository-selected-warning').hide();
   }
 };
 
