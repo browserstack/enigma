@@ -36,7 +36,7 @@ const selectAllToggleSelection = (elem) => {
   } else {
     removeAllMembers(false);
   }
-  $('#max-repository-selected-warning').hide();
+  $('#max-member-selected-warning').hide();
 };
 
 const selectMemberSelectionCheckbox = (elem, checked) => {
@@ -113,7 +113,7 @@ const removeMemberSelectionUI = (elem) => {
   } else {
     removeSelectionSpanElem(rightElem, $("#users-list-table").find(`tr[email="${$(rightElem).attr('email')}"]`));
   }
-  $('#max-repository-selected-warning').hide();
+  $('#max-member-selected-warning').hide();
 };
 
 const removeAllMembers = (disabledState) => {
@@ -143,7 +143,7 @@ const handleMemberSelection = (elem) => {
   if(disabled) return;
   if (!$(elem).find('input').prop('checked')) {
     if(findSelectedListLength() === SELECTION_LIMIT) {
-      $('#max-repository-selected-warning').show();
+      $('#max-member-selected-warning').show();
       return;
     }
     addMemberSelection(elem);
@@ -151,9 +151,9 @@ const handleMemberSelection = (elem) => {
     removeMemberSelection(elem);
   }
   if(findSelectedListLength() === SELECTION_LIMIT) {
-    $('#max-repository-selected-warning').show();
+    $('#max-member-selected-warning').show();
   } else {
-    $('#max-repository-selected-warning').hide();
+    $('#max-member-selected-warning').hide();
   }
 };
 
