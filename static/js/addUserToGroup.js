@@ -1,5 +1,6 @@
 var userSelectedList = {};
 var disabled = false;
+const SELECTION_LIMIT = 20
 
 const handleUserSelectionCheckbox = (elem) => {
   $(elem).prop('checked', !$(elem).prop('checked'));
@@ -75,6 +76,7 @@ const removeUserSelectionUI = (elem) => {
   } else {
     removeSelectionSpanElem(rightElem, $("#user-table").find(`tr[email="${$(rightElem).attr('email')}"]`));
   }
+  $('#max-member-selected-warning').hide();
 };
 
 const removeAllUsers = (disabledState) => {
@@ -120,16 +122,34 @@ const selectAllUserToggle = (elem) => {
   } else {
     removeAllUsers(false);
   }
+  $('#max-member-selected-warning').hide();
+}
+
+const findUserSelectedListLength = () => {
+  let count = 0;
+  Object.values(userSelectedList).forEach(val => {
+    if(val) count++;
+  })
+  return count;
 }
 
 const handleUserSelection = (elem) => {
   if(disabled) return;
   if(!$(elem).find('input').prop('checked')) {
+    if(findUserSelectedListLength() === SELECTION_LIMIT) {
+      $('#max-member-selected-warning').show();
+      return;
+    }
     addUserSelection(elem);
   } else {
     removeUserSelection(elem);
   }
   updateSelectedUser();
+  if(findUserSelectedListLength() === SELECTION_LIMIT) {
+    $('#max-member-selected-warning').show();
+  } else {
+    $('#max-member-selected-warning').hide();
+  }
 };
 
 const handleDisableMode = () => {

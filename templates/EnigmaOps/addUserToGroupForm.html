@@ -1,5 +1,6 @@
 {% extends 'global_layout.html' %}
 {% load static %}
+{% load reusable_components %}
 
 {% block head_body %}
 <script src={% static "js/addUserToGroup.js" %}></script>
@@ -73,6 +74,10 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <div id="max-member-selected-warning" class="hidden">
+    {% get_error_panel_with_message "Max number of members selected" "Deselect some selections or Submit request to select more members." %}
   </div>
 
   <h1 class="pt-8 text-sm leading-5 font-medium text-gray-900">Add members</h1>
