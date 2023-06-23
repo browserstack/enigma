@@ -33,9 +33,12 @@ from Access.models import User, UserAccessMapping, GroupAccessMapping
 
 from Access.userlist_helper import (
     getallUserList,
+    get_all_user_access_list,
     get_identity_templates,
     create_identity,
     offboard_user,
+    PERMISSION_VIEW_USER_LIST,
+    PERMISSION_VIEW_USER_ACCESS_LIST,
     NEW_IDENTITY_CREATE_ERROR_MESSAGE,
     IDENTITY_UNCHANGED_ERROR_MESSAGE,
     IdentityNotChangedException,
@@ -229,10 +232,22 @@ def create_new_group(request):
 
 
 @login_required
-def all_users_list(request):
-    """List of all users."""
-    context = getallUserList(request)
-    return render(request, "EnigmaOps/allUsersList.html", context)
+@paginated_search
+@user_with_permission([PERMISSION_VIEW_USER_LIST, PERMISSION_VIEW_USER_ACCESS_LIST])
+def user_management(request):
+    """ User Management. """
+    show_tab = request.GET.get("show_tab")
+    context = {}
+    if show_tab == "allUserList":
+        context = getallUserList(request)
+        context["isUserList"] = True
+    else:
+        context = get_all_user_access_list(request)
+        response_type = request.GET.get("responseType")
+        if response_type == "csv":
+            return "No render", views_helper.gen_all_user_access_list_csv(data_list=context["dataList"])
+
+    return TemplateResponse(request, "EnigmaOps/userManagement.html"), context
 
 
 @login_required
@@ -682,101 +697,8 @@ def get_generic_accesses(request, user, generic_accesses, show_tabs, username):
     return generic_accesses, show_tabs, username
 
 
-@api_view(["GET"])
 @login_required
-@user_with_permission(["VIEW_USER_ACCESS_LIST"])
-@authentication_classes((TokenAuthentication, BasicAuthentication))
-def all_user_access_list(request, load_ui=True):
-    """Lists all the user with the access of the users.
-
-    Args:
-        request (HTTPRequest): Filtering crtieria for the list of user data.
-        load_ui (bool, optional): Data to be returned for UI or in a file.
-
-    Returns:
-        HTTPResponse: List of all users with access details.
-    """
-    user = None
-    try:
-        if request.GET.get("username"):
-            username = request.GET.get("username")
-            user = djangoUser.objects.get(username=username)
-    except Exception:
-        # show all
-        logger.exception("Error raised in all_user_access_list: %s", (traceback.format_exc()))
-
-    try:
-        last_page = 1
-        show_tabs = False
-        username = ""
-        generic_accesses = UserAccessMapping.get_accesses_not_declined()
-        response_type = request.GET.get("responseType", "ui")
-        load_ui = request.GET.get("load_ui", "true").lower() == "true"
-        record_date = request.GET.get("recordDate", None)
-
-        generic_accesses, show_tabs, username = \
-            get_generic_accesses(request, user, generic_accesses, show_tabs, username)
-
-        filters = views_helper.get_filters_for_access_list(request)
-        generic_accesses = generic_accesses.filter(**filters)
-
-        page = int(request.GET.get("page", 1))
-
-        if load_ui and response_type != "csv":
-            paginator_obj = Paginator(generic_accesses, 10)
-            last_page = paginator_obj.num_pages
-            page = min(page, last_page) if page > last_page else page
-            page_items = paginator_obj.page(page)
-        else:
-            page_items = generic_accesses
-
-        access_types = list(
-            set(generic_accesses.values_list("access__access_tag", flat=True))
-        )
-
-        data_list = views_helper.prepare_datalist(
-            paginator=page_items, record_date=record_date
-        )
-
-        context = {}
-        logger.debug(data_list)
-
-        data_dict = {
-            "dataList": data_list,
-            "last_page": last_page,
-            "current_page": page,
-            "access_types": sorted(access_types, key=str.casefold),
-            "show_tabs": show_tabs,
-            "username": username,
-        }
-
-        context.update(data_dict)
-
-        if response_type == "json":
-            return JsonResponse(context, status=200)
-        if response_type == "csv":
-            return views_helper.gen_all_user_access_list_csv(data_list=data_list)
-        if load_ui:
-            return render(request, "EnigmaOps/allUserAccessList.html", context)
-
-        return JsonResponse(context)
-
-    except Exception:
-        logger.exception(
-            """Error fetching all users access list,
-                        request not found OR Invalid request type, Error: %s""",
-            traceback.format_exc(),
-        )
-        json_response = {}
-        json_response["error"] = {
-            "error_msg": INVALID_REQUEST_MESSAGE,
-            "msg": INVALID_REQUEST_MESSAGE,
-        }
-        return render(request, "EnigmaOps/accessStatus.html", json_response)
-
-
-@login_required
-@user_with_permission(["VIEW_USER_ACCESS_LIST"])
+@user_with_permission([PERMISSION_VIEW_USER_ACCESS_LIST])
 def mark_revoked(request):
     """Revoke an access
 
@@ -823,6 +745,7 @@ def mark_revoked(request):
             success_list.append(mapping_object.request_id)
         json_response["msg"] = "Success"
         json_response["request_ids"] = success_list
+        return JsonResponse(json_response, status=200)
     except Exception:
         logger.exception("Error Revoking User Access, Error: %s", traceback.format_exc())
         json_response["error"] = "Error Revoking User Access"
@@ -852,14 +775,14 @@ def individual_resolve(request):
                 json_response["status_list"].\
                     append({'title': 'The Request (' + request_id + ') is already resolved.',
                             'msg': 'The request is already in final state.'})
-        return render(request, 'EnigmaOps/accessStatus.html', json_response)
+        return JsonResponse(json_response)
     except Exception:
         logger.exception("Error raised during individual_resolve %s", (traceback.format_exc()))
         json_response["error"] = {
             "error_msg": "Bad request",
             "msg": "Error in request not found OR Invalid request type",
         }
-        return render(request, "EnigmaOps/accessStatus.html", json_response)
+        return JsonResponse(json_response, status=400)
 
 
 @login_required

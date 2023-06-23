@@ -55,10 +55,12 @@ def user_any_approver(function):
 def paginated_search(view_function):
     def wrap(request, *args, **kwargs):
         template, context = view_function(request, *args, **kwargs)
+        if template == "No render":
+            return context
         if context.get("error"):
             template.context_data = context
             return template.render()
-        page = request.GET.get("page")
+        page = int(request.GET.get("page", 1))
         max_page_size = 25
         key = context["search_data_key"]
         search_rows = context["search_rows"]
@@ -104,7 +106,7 @@ def paginated_search(view_function):
             context[key] = paginator.get_page(page)
 
         context["maxPagination"] = int(paginator.num_pages)
-        context["allPages"] = range(1, paginator.num_pages + 1)
+        context["allPages"] = range(max(1, page-5), min(paginator.num_pages + 1, page+5))
         context["currentPagination"] = int(page)
         template.context_data = context
 
