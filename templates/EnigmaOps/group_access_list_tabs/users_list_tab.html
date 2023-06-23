@@ -3,10 +3,12 @@
 
 {% block head_body %}
 <script src={% static "js/globalSearchMisc.js" %}></script>
+<script src={% static "js/groupDetails.js" %}></script>
 {% endblock %}
 
 {% block content_body %}
 <div id="users" class="mt-8 px-4 sm:px-6 lg:px-8">
+  <form id="updateOwners" action="javascript:void(0);" onsubmit="updateOwners(this, '{{groupName}}')">
   <div class="flex flex-col gap-4">
     <div class="flex flex-row gap-4 items-center">
       <div>
@@ -44,7 +46,7 @@
         </button>
 
         <ul
-          class="min-w-full hidden absolute right-0 origin-top-right z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1
+          class="min-w-full hidden absolute right-0 overflow-auto origin-top-right z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1
                   ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabindex="-1" role="listbox" aria-labelledby="listbox-label"
           aria-activedescendant="listbox-option-3">
@@ -84,7 +86,7 @@
         </button>
 
         <ul
-          class="min-w-full hidden absolute right-0 origin-top-right z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1
+          class="min-w-full hidden absolute overflow-auto right-0 origin-top-right z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1
                   ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabindex="-1" role="listbox" aria-labelledby="listbox-label"
           aria-activedescendant="listbox-option-3">
@@ -107,14 +109,16 @@
         </ul>
       </div>
 
+      {% if is_current_user_owner %}
       <div class="sm:ml-auto sm:flex-none">
-        <a href="#" class="text-blue-600 hover:text-blue-900">
+        <a href="{% url 'addUserToGroup' groupName %}" class="text-blue-600 hover:text-blue-900">
           <button type="button"
             class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
             Add member
           </button>
         </a>
       </div>
+      {% endif %}
     </div>
   </div>
 
@@ -159,9 +163,11 @@
                   <th scope="col"
                     class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase w-2/12">
                     Current State</th>
+                  {% if is_current_user_owner %}
                   <th scope="col"
                     class="pl-4 pr-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase w-2/12">
                     Action</th>
+                  {% endif %}
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200 bg-white h-45">
@@ -169,15 +175,11 @@
                 <tr data-status-1="{% if user.is_owner %}Owner{% else %}Member{% endif %}" data-status-2="{{ user.current_state }}"
                 {% if forloop.counter|divisibleby:2 %}class="bg-gray-50" {% endif %}>
                   <td class="w-1/12 whitespace-nowrap pl-3 pr-3 py-4 text-sm font-normal text-center text-gray-900">
-                      {% if request.user.email == user.email %}
-                        <input type="checkbox" class="rounded" name="owners" value="{{ user.is_owner }}" checked disabled="true"></input>
-                      {% else %}
-                        {% if user.is_owner %}
-                        <input type="checkbox" class="rounded" name="owners" value="{{ user.email }}" checked></input>
-                        {% else %}
-                        <input type="checkbox" class="rounded" name="owners" value="{{ user.email }}" > </input>
-                        {% endif %}
-                      {% endif %}
+                    {% if not is_current_user_owner %}
+                      <input user_checkbox_id="{{ user.membership_id }}-user-checkbox" type="checkbox" class="rounded" name="owners" value="{{ user.email }}" {% if user.is_owner %} checked {% endif %} disabled></input>
+                    {% else %}
+                      <input user_checkbox_id="{{ user.membership_id }}-user-checkbox" type="checkbox" class="rounded" name="owners" value="{{ user.email }}" {% if user.is_owner %} checked {% endif %} {% if user.email == request.user.email and user.is_owner %}disabled{% endif %}></input>
+                    {% endif %}
                   </td>
                   <td class="w-2/12 whitespace-nowrap py-4 px-3 text-sm font-medium text-gray-900">
                     {{user.name}}
@@ -192,19 +194,25 @@
                       Member
                     {% endif %}
                   </td>
-                  <td id="{{ user.membership_id }}-user-state" class="w-2/12 whitespace-nowrap py-4 px-3 text-sm font-normal text-gray-900">
+                  <td user_state_id="{{ user.membership_id }}-user-state" class="w-2/12 whitespace-nowrap py-4 px-3 text-sm font-normal text-gray-900">
                     {{ user.current_state }}
                   </td>
-                  <td id="{{ user.membership_id }}-remove-user-button" class="w-2/12 py-4 px-3">
+                  {% if is_current_user_owner %}
+                  <td remove_user_button_id="{{ user.membership_id }}-remove-user-button" class="w-2/12 py-4 px-3">
                     {% if allowRevoke and user.current_state == "Active" %}
+                    {% csrf_token %}
                     <button type="button"
                       class="inline-flex items-center justify-center rounded-md border border-transparent
                              bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-200
-                             focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto">
+                             focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto"
+                      onclick="remove_user_from_group('{{user.membership_id}}')"
+                            {% if request.user.email == user.email %} disabled {% endif %}
+                    >
                       Remove user
                     </button>
                     {% endif %}
                   </td>
+                  {% endif %}
                 </tr>
                 {% endfor %}
               </tbody>
@@ -279,7 +287,7 @@
 
   {% if userList %}
   <div class="mt-8">
-    <button type="button"
+    <button type="submit"
             class="inline-flex items-center justify-center rounded-md border border-gray-300
                    px-4 py-2 text-sm font-medium shadow-sm hover:bg-gray-50
                   focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-offset-2 sm:w-auto">
@@ -287,5 +295,40 @@
     </button>
   </div>
   {% endif %}
+  </form>
 </div>
+
+<div id="remove_member_modal" class="remove_member_modal relative z-10 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+
+  <div class="fixed inset-0 z-10 overflow-y-auto">
+      <div class="flex min-h-full  items-end justify-center p-4 text-center sm:items-center sm:p-0">
+          <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+
+              <div class="px-4 py-3 flex">
+                  <div class="groupModalHeading">
+                    <h1 class="text-lg font-medium text-gray-900">Member removal confirmation</h1>
+                  </div>
+                  <div class="close_remove_member_modal ml-auto inline-block text-sm cursor-pointer">
+                      <svg onclick="closeRemoveMemberModal()" xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 24 24" width="20px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+                  </div>
+              </div>
+
+            <p id="remove-details" class="px-4 py-3 text-gray-500">Are you sure you want to remove the selected member from the group, this action can't be undone.</p><br>
+
+
+            <div class="border-t w-full p-3 justify-end flex">
+                <button type="button" class="mr-3 rounded-md border bg-white px-4 py-2 text-sm font-medium" onclick="closeRemoveMemberModal()">Cancel</button>
+                <button type="button"
+                        class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        onclick="remove_user_from_user_confirmed()"
+                        id="final-remove-button" >Remove
+                </button>
+            </div>
+
+          </div>
+      </div>
+  </div>
+</div>
+{% include "EnigmaOps/shared/notificationTemplate.html" %}
 {% endblock %}

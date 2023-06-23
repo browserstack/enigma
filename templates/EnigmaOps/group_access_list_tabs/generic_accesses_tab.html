@@ -3,6 +3,7 @@
 
 {% block head_body %}
 <script src={% static "js/globalSearchMisc.js" %}></script>
+<script src={% static "js/groupDetails.js" %}></script>
 {% endblock %}
 
 {% block content_body %}
@@ -46,7 +47,7 @@
         </button>
 
         <ul
-          class="min-w-full hidden absolute right-0 origin-top-right z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1
+          class="min-w-full hidden overflow-auto absolute right-0 origin-top-right z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1
                   ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabindex="-1" role="listbox" aria-labelledby="listbox-label"
           aria-activedescendant="listbox-option-3">
@@ -86,7 +87,7 @@
         </button>
 
         <ul
-          class="min-w-full hidden absolute z-10 mt-1 max-h-60 rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
+          class="min-w-full hidden absolute z-10 mt-1 max-h-60 overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm"
           tabindex="-1" role="listbox" aria-labelledby="listbox-label"
           aria-activedescendant="listbox-option-3">
           {% for filter in statusFilter.selected %}
@@ -107,15 +108,17 @@
           {% endfor %}
         </ul>
       </div>
-
+      {% if is_current_user_owner %}
       <div class="sm:ml-auto sm:flex-none">
-        <a href="{% url 'groupRequestAccess' %}" class="text-blue-600 hover:text-blue-900">
+        <a href="{% url 'newAccessGroupRequest'%}?groupName={{groupName}}" class="text-blue-600 hover:text-blue-900">
+          {% csrf_token %}
           <button type="button"
             class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto">
             Request Access
           </button>
         </a>
       </div>
+      {% endif %}
     </div>
   </div>
 
@@ -157,9 +160,11 @@
                   <th scope="col"
                     class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase w-3/12">
                     Access Category</th>
+                  {% if is_current_user_owner %}
                   <th scope="col"
                     class="px-3 py-3.5 text-left text-xs font-medium text-gray-500 uppercase w-2/12">
                     Action</th>
+                  {% endif %}
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200 bg-white">
@@ -170,8 +175,9 @@
                     <div class="text-gray-900 font-medium">{{ eachAccess.module }}</div>
                     <div class="text-gray-400 font-normal">{{ eachAccess.requestId }}</div>
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
-                    {% access_status_content eachAccess.status|safe %}
+                  <td status_id="access-status-{{ eachAccess.requestId }}" class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
+                    <div status="{{eachAccess.status}}">{% access_status_content eachAccess.status %}</div>
+                    <div status="Revoked" hidden >{% access_status_content 'Revoked' %}</div>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
                     {{ eachAccess.accessType }}
@@ -179,16 +185,18 @@
                   <td class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
                     {{ eachAccess.accessCategory }}
                   </td>
-                  <td id="inactive-{{ eachAccess.requestId }}-revoke-button"
+                  {% if is_current_user_owner %}
+                  <td revoke_button_id="inactive-{{ eachAccess.requestId }}-revoke-button"
                     class="whitespace-nowrap px-3 py-4 text-sm font-normal text-gray-500">
 
                     {% if allowRevoke and eachAccess.status == 'Approved' %}
-                    <button type="button"
-                      class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto">
+                    <button type="button" onclick="markRevoked(this)"
+                      class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto group-revoke-button" id="{{ eachAccess.requestId }}">
                       Mark Revoked
                     </button>
                     {% endif %}
                   </td>
+                  {% endif %}
                 </tr>
                 {% endfor %}
               </tbody>
@@ -217,7 +225,7 @@
           <h1 class="text-sm font-normal text-gray-700">No module added to this group. Request module access to get started.</h1>
         </div>
         <div class="mt-6 place-items-center">
-          <a href="{% url 'groupRequestAccess' %}">
+          <a href="{% url 'newAccessGroupRequest'%}?groupName={{groupName}}">
             <button type="button" class="box-border border border-gray-300
                                         px-4 py-2 text-sm font-medium shadow-sm rounded-md
                                         sm:w-auto">
@@ -273,4 +281,5 @@
   </nav>
   {% endif %}
 </div>
+{% include "EnigmaOps/shared/notificationTemplate.html" %}
 {% endblock %}

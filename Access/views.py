@@ -366,7 +366,8 @@ def group_access_list(request):
         context = {
             "search_value": request.GET.get("search"),
             "groupName": group_name,
-            "allowRevoke": group_detail["allowRevoke"]
+            "allowRevoke": group_detail["allowRevoke"],
+            "is_current_user_owner": group_detail["is_current_user_owner"]
         }
 
         show_tab = request.GET.get("show_tab")
