@@ -1,10 +1,8 @@
 function closeNotification() {
-  console.log("Hide notification")
   $("#notification_bar").hide()
 }
 
 function showNotification(type, message, title=undefined) {
-  console.log("Show Notification")
   if(type === "success"){
     $("#notification_success").show();
     $("#notification_fail").hide();
@@ -16,4 +14,14 @@ function showNotification(type, message, title=undefined) {
   $("#notification_message").html(message);
   $("#notification_title").html(title);
   $("#notification_bar").show();
+}
+
+function rotateArrowOnCheck(access_tag) {
+  const checkbox = $(`#${access_tag}_arrow`);
+  if(checkbox.hasClass("-rotate-90")) {
+    checkbox.removeClass("-rotate-90");
+  }
+  else {
+    checkbox.addClass("-rotate-90");
+  }
 }

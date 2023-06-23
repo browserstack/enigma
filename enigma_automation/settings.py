@@ -268,6 +268,7 @@ DEFAULT_ACCESS_GROUP = "default_access_group"
 MAIL_APPROVER_GROUPS = data["enigmaGroup"]["MAIL_APPROVER_GROUPS"]
 
 ACCESS_APPROVE_EMAIL = data["emails"]["access-approve"]
+ACCESS_SLA_DAYS = data.get("access_sla_days", 1)
 
 ACCESS_MODULES = data["access_modules"]
 
