@@ -36,7 +36,6 @@ const selectAllToggleSelection = (elem) => {
   } else {
     removeAllMembers(false);
   }
-  $('#max-member-selected-warning').hide();
 };
 
 const selectMemberSelectionCheckbox = (elem, checked) => {
@@ -129,6 +128,7 @@ const removeAllMembers = (disabledState) => {
   }
   handleDisableMode();
   handleSelectionView();
+  $('#max-member-selected-warning').hide();
 };
 
 const findSelectedListLength = () => {
