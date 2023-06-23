@@ -29,6 +29,11 @@
         }
       }
     },
+    "access_sla_days": {
+      "description": "SLA Time in days for an access to get approved",
+      "type": "integer",
+      "minimum": 1
+    },
     "sso": {
       "description": "Config keys related to SSO",
       "type": "object",

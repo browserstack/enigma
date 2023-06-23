@@ -552,6 +552,7 @@ def accept_bulk(request, selector):
         request_ids, return_ids, selector = _get_request_ids_for_bulk_processing(
             input_vals, selector
         )
+        status = 200
         for value in request_ids:
             request_id = value
             if selector == "groupNew" and is_access_approver:
@@ -569,6 +570,7 @@ def accept_bulk(request, selector):
             else:
                 raise ValidationError("Invalid request")
             if "error" in json_response:
+                status = 400
                 context["response"][request_id] = {
                     "error": json_response["error"],
                     "success": False,
@@ -580,13 +582,13 @@ def accept_bulk(request, selector):
                 }
         context["bulk_approve"] = True
         context["returnIds"] = return_ids
-        return JsonResponse(context, status=200)
+        return JsonResponse(context, status=status)
     except Exception:
         logger.error("Error processing bulk accept, Error: %s", traceback.format_exc())
         json_response = {}
         json_response["error"] = INVALID_REQUEST_MESSAGE
         json_response["success"] = False
-        return JsonResponse(json_response, status=400)
+        return JsonResponse(json_response, status=500)
 
 
 def _get_request_ids_for_bulk_processing(posted_request_ids, selector):

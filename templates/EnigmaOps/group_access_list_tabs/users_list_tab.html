@@ -8,7 +8,9 @@
 
 {% block content_body %}
 <div id="users" class="mt-8 px-4 sm:px-6 lg:px-8">
+  {% if is_current_user_owner %}
   <form id="updateOwners" action="javascript:void(0);" onsubmit="updateOwners(this, '{{groupName}}')">
+  {% endif %}
   <div class="flex flex-col gap-4">
     <div class="flex flex-row gap-4 items-center">
       <div>
@@ -285,6 +287,7 @@
     </div>
   </div>
 
+  {% if is_current_user_owner %}
   {% if userList %}
   <div class="mt-8">
     <button type="submit"
@@ -296,6 +299,7 @@
   </div>
   {% endif %}
   </form>
+  {% endif %}
 </div>
 
 <div id="remove_member_modal" class="remove_member_modal relative z-10 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
