@@ -2,11 +2,9 @@
 import json
 import logging
 import traceback
-from rest_framework.authentication import TokenAuthentication, BasicAuthentication
 from rest_framework.decorators import api_view
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
-from django.core.paginator import Paginator
 from django.contrib.auth.models import User as djangoUser
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -46,7 +44,7 @@ from Access.userlist_helper import (
 from Access.views_helper import render_error_message
 from enigma_automation.settings import PERMISSION_CONSTANTS
 from . import helpers as helper
-from .decorators import user_admin_or_ops, authentication_classes, \
+from .decorators import user_admin_or_ops, \
     user_with_permission, user_any_approver, paginated_search
 from .paginator_decorators import paginator
 
@@ -245,7 +243,10 @@ def user_management(request):
         context = get_all_user_access_list(request)
         response_type = request.GET.get("responseType")
         if response_type == "csv":
-            return "No render", views_helper.gen_all_user_access_list_csv(data_list=context["dataList"])
+            return ("No render",
+                    views_helper.gen_all_user_access_list_csv(
+                        data_list=context["dataList"]
+                    ))
 
     return TemplateResponse(request, "EnigmaOps/userManagement.html"), context
 
