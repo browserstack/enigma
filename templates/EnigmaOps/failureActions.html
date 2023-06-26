@@ -59,31 +59,31 @@
 							{% for request in grant_failures %}
 								<div class="px-4 py-3">
 									<H1 class="text-xl leading-8 font-semibold py-2">{{request.request_id}}</H1>
-									<table class="table-fixed border-b border-t text-left text-sm w-7/12">
-										<tr class="bg-white border-b dark:border-gray-700">
+									<table class="table-fixed border-b border-gray-200 border-t text-left text-sm w-7/12">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested by</td>
 											<td class="text-gray-900 py-4">{{ request.user_identity.user }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested access level</td>
 											<td class="text-gray-900 py-4">{{ request.access.access_tag }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Reason for Request</td>
 											<td class="text-gray-900 py-4">{{ request.request_reason }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested on</td>
 											<td class="text-gray-900 py-4">{{ request.requested_on }} UTC</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Access Type</td>
 											<td class="text-gray-900 py-4">{{ request.access.access_tag }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Access Category</td>
 											<td class="text-gray-900 py-4">
-												<ul class="list-disc">
+												<ul class="list-disc list-inside">
 												{% for data, val in request.access.access_label.items %}
 												<li>{{data}}: {{val}}</li>
 												{% endfor %}
@@ -91,12 +91,12 @@
 											</td>
 										</tr>
 									</table>
-									<div class="border-b border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
+									<div class="border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
 										<div class="pr-3"><svg class="fill-current h-6 w-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
 										<div class="text-blue-800 text-sm leading-5 font-medium"><ul>
-											<li><b>Resolve Instruction -</b> check logs or email for issue. Run approval again.</li>
-											<li><b>Mark Declined -</b> Click if request is not valid. It will be declined.</li>
-											<li><b>Mark Approved -</b> Click if request is resolved manually. It will be marked approved.</li>
+											<li><b class="font-bold">Resolve Instruction -</b> check logs or email for issue. Run approval again.</li>
+											<li><b class="font-bold">Mark Declined -</b> Click if request is not valid. It will be declined.</li>
+											<li><b class="font-bold">Mark Approved -</b> Click if request is resolved manually. It will be marked approved.</li>
 										</ul></div>
 									</div>
 									<div id="grantFailures-{{forloop.counter}}"></div>
@@ -129,31 +129,31 @@
 							{% for request in revoke_failures %}
 								<div class="px-4 py-3">
 									<H1 class="text-xl leading-8 font-semibold py-2">{{request.request_id}}</H1>
-									<table class="table-fixed border-b border-t text-left text-sm w-7/12">
-										<tr class="bg-white border-b dark:border-gray-700">
+									<table class="table-fixed border-b border-t border-gray-200 text-left text-sm w-7/12">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested by</td>
 											<td class="text-gray-900 py-4">{{ request.user_identity.user }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested access level</td>
 											<td class="text-gray-900 py-4">{{ request.access.access_tag }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Reason for Request</td>
 											<td class="text-gray-900 py-4">{{ request.request_reason }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested on</td>
 											<td class="text-gray-900 py-4">{{ request.requested_on }} UTC</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Access Type</td>
 											<td class="text-gray-900 py-4">{{ request.access.access_tag }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Access Category</td>
 											<td class="text-gray-900 py-4">
-												<ul class="list-disc">
+												<ul class="list-disc list-inside">
 												{% for data, val in request.access.access_label.items %}
 												<li>{{data}}: {{val}}</li>
 												{% endfor %}
@@ -161,12 +161,12 @@
 											</td>
 										</tr>
 									</table>
-									<div class="border-b border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
+									<div class="border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
 										<div class="pr-3"><svg class="fill-current h-6 w-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
 										<div class="text-blue-800 text-sm leading-5 font-medium"><ul>
-											<li><b>Resolve Instruction -</b> check logs or email for issue. Run approval again.</li>
-											<li><b>Mark Declined -</b> Click if request is not valid. It will be declined.</li>
-											<li><b>Mark Revoked -</b> Click if request is resolved manually. It will be marked approved.</li>
+											<li><b class="font-bold">Resolve Instruction -</b> check logs or email for issue. Run approval again.</li>
+											<li><b class="font-bold">Mark Declined -</b> Click if request is not valid. It will be declined.</li>
+											<li><b class="font-bold">Mark Revoked -</b> Click if request is resolved manually. It will be marked approved.</li>
 										</ul></div>
 									</div>
 									<div id="revokeFailures-{{forloop.counter}}"></div>
