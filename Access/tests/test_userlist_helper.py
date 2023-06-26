@@ -51,7 +51,7 @@ def test_getallUserList(
         mocker.patch(
             "Access.helpers.check_user_permissions", return_value=UserHasPermission
         )
-        mocker.patch("Access.models.User.objects.all", return_value=[userMock])
+        mocker.patch("Access.models.User.objects.exclude", return_value=[userMock])
 
     context = getallUserList(request)
     if expectedError:

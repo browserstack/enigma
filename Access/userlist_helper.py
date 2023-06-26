@@ -193,7 +193,7 @@ def getallUserList(request):
         )
 
         dataList = []
-        for each_user in User.objects.all().exclude(user__username='system_user'):
+        for each_user in User.objects.exclude(user__username='system_user'):
             dataList.append(
                 {
                     "name": each_user.name,
