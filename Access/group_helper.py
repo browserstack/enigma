@@ -614,7 +614,7 @@ def is_user_in_group(user_email, group_members_email):
     return user_email in group_members_email
 
 
-def accept_member(auth_user, requestId):
+def accept_member(auth_user, requestId, shouldRender=True):
     """
     The function accepts a member with a given request ID and renders the result if specified.
 
