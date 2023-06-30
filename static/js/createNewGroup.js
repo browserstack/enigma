@@ -1,7 +1,12 @@
-const selectedList = {}
+var selectedList = {}
+var disabled = false
+const SELECTION_LIMIT = 20
 
 const handleSelectionView = () => {
-  const finalCount = $('#member-selection-table').children('tr').length;
+  let finalCount = $('#member-selection-table').children('tr').length;
+  if(disabled) {
+    finalCount = 'All';
+  }
 
   if (finalCount < 1) {
     $('#member-selection-empty').show();
@@ -19,17 +24,18 @@ const handleSelectionView = () => {
 
 const selectAllToggleSelection = (elem) => {
   if(elem.checked) {
-    const members = $("#users-list-table").children('tr');
-
-    for (iter = 0; iter < members.length; iter++) {
-      if(!selectedList[$(members[iter]).attr("email")]){
-        addMemberSelection(members[iter])
-      }
-    }
+    removeAllMembers(true);
+    const selectionList = $('#member-selection-table');
+    const newSpan = $("#member-selection-row-template").clone(true, true);
+    newSpan.appendTo(selectionList);
+    newSpan.show();
+    const tableData = newSpan.children('td');
+    tableData[0].textContent = "All User Selected";
+    newSpan.attr("selectAll", true);
+    handleSelectionView();
   } else {
-    removeAllMembers()
+    removeAllMembers(false);
   }
-
 };
 
 const selectMemberSelectionCheckbox = (elem, checked) => {
@@ -43,6 +49,26 @@ const selectMemberSelectionCheckbox = (elem, checked) => {
     $(elem).addClass('hover:bg-blue-50 hover:text-blue-700').removeClass('bg-gray-50');
   }
 };
+
+const handleDisableMode = () => {
+  selectedList = {};
+  const users = $('#users-list-table').children('tr');
+  for (iter = 0; iter < users.length; iter++) {
+    if (disabled) {
+      $(users[iter]).find('input').prop('checked', true);
+      $(users[iter]).removeAttr("onclick");
+      $(users[iter]).find('input').attr("disabled", true);
+      $(users[iter]).removeClass('hover:bg-blue-50 hover:text-blue-700').addClass('bg-gray-50');
+      $(users[iter]).children('td#description-td').removeClass('text-gray-900').addClass('text-blue-600');
+    } else {
+      $(users[iter]).attr("onclick", "handleMemberSelection(this)");
+      $(users[iter]).find('input').attr("disabled", false);
+      $(users[iter]).find('input').prop('checked', false);
+      $(users[iter]).children('td#description-td').addClass('text-gray-900').removeClass('text-blue-600');
+      $(users[iter]).addClass('hover:bg-blue-50 hover:text-blue-700').removeClass('bg-gray-50');
+    }
+  }
+}
 
 const addMemberSelection = (elem) => {
   const selectionList = $('#member-selection-table');
@@ -77,21 +103,57 @@ const removeMemberSelection = (elem) => {
 
 const removeMemberSelectionUI = (elem) => {
   rightElem = elem.parentElement.parentElement;
-  removeSelectionSpanElem(rightElem, $("#users-list-table").find(`tr[email="${$(rightElem).attr('email')}"]`));
+  if($(rightElem).attr("selectAll")){
+    $("#selectAllUsers").prop("checked", false);
+    disabled = false;
+    handleDisableMode();
+    $(rightElem).remove();
+    handleSelectionView();
+  } else {
+    removeSelectionSpanElem(rightElem, $("#users-list-table").find(`tr[email="${$(rightElem).attr('email')}"]`));
+  }
+  $('#max-member-selected-warning').hide();
 };
 
-const removeAllMembers = () => {
+const removeAllMembers = (disabledState) => {
+  disabled = disabledState; 
   const members = $('#member-selection-table').children('tr');
   for (iter = 0; iter < members.length; iter++) {
-    removeSelectionSpanElem(members[iter], $("#users-list-table").find(`tr[email="${$(members[iter]).attr('email')}"]`));
+    if($(members[iter]).attr('selectAll')){
+      $("#selectAllUsers").prop("checked", false);
+      $(members[iter]).remove();
+    } else {
+      removeSelectionSpanElem(members[iter], $("#users-list-table").find(`tr[email="${$(members[iter]).attr('email')}"]`));
+    }
   }
+  handleDisableMode();
+  handleSelectionView();
+  $('#max-member-selected-warning').hide();
 };
 
+const findSelectedListLength = () => {
+  let count = 0;
+  Object.values(selectedList).forEach(val => {
+    if(val) count++;
+  })
+  return count;
+}
+
 const handleMemberSelection = (elem) => {
+  if(disabled) return;
   if (!$(elem).find('input').prop('checked')) {
+    if(findSelectedListLength() === SELECTION_LIMIT) {
+      $('#max-member-selected-warning').show();
+      return;
+    }
     addMemberSelection(elem);
   } else {
     removeMemberSelection(elem);
+  }
+  if(findSelectedListLength() === SELECTION_LIMIT) {
+    $('#max-member-selected-warning').show();
+  } else {
+    $('#max-member-selected-warning').hide();
   }
 };
 
@@ -150,6 +212,7 @@ function submitRequest() {
   const newGroupNameElem = $("#newGroupName");
   const newGroupReasonElem = $("#newGroupReason");
   const requiresAccessApprove = $("#requiresAccessApprove").prop("checked");
+  const selectAllUsers = $("#selectAllUsers").prop("checked");
 
   if (!validateGroupName(newGroupNameElem) || !validateGroupReason(newGroupReasonElem)) {
     $(window).scrollTop(0)
@@ -164,7 +227,8 @@ function submitRequest() {
         "newGroupReason": newGroupReasonElem.val(),
         "requiresAccessApprove": requiresAccessApprove,
         "selectedUserList": selectedUserList,
-        "csrfmiddlewaretoken": csrf_token
+        "csrfmiddlewaretoken": csrf_token,
+        "selectAllUsers": selectAllUsers,
       },
       success: function (result) {
         showRedirectModal("Request Submitted", result.status.msg)
@@ -197,13 +261,13 @@ function update_users(search, page) {
       $("#users-list-table tr").remove();
 
       const rows = users.map((user) => {
-        return `<tr onclick="handleMemberSelection(this)" email="${user["email"]}" user_name="${user["first_name"]} ${user["last_name"]}" class="${selectedList[user["email"]]? "bg-gray-50": "hover:bg-blue-50 hover:text-blue-700"}">
+        return `<tr onclick="handleMemberSelection(this)" email="${user["email"]}" user_name="${user["first_name"]} ${user["last_name"]}" class="${(selectedList[user["email"]] || disabled)? "bg-gray-50": "hover:bg-blue-50 hover:text-blue-700"}">
         <td id="checkbox-td" class="relative w-12 px-6 sm:w-16 sm:px-8">
           <input type="checkbox" value="${user["email"]}"
             name="selectedUserList"
-            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 focus:ring-blue-500 sm:left-6" ${ selectedList[user["email"]]? "checked": "" } onclick="handleMemberSelectionCheckbox(this)"></input>
+            class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 focus:ring-blue-500 sm:left-6" ${ (selectedList[user["email"]] || disabled)? "checked": "" } onclick="handleMemberSelectionCheckbox(this)" ${(disabled) ? "disabled" : ""}></input>
         </td>
-        <td id="description-td" class="whitespace-nowrap py-4 pr-3 text-sm font-normal ${ selectedList[user["email"]]? "text-blue-600" : "text-gray-900"}">
+        <td id="description-td" class="whitespace-nowrap py-4 pr-3 text-sm font-normal ${ (selectedList[user["email"]] || disabled)? "text-blue-600" : "text-gray-900"}">
           ${user["first_name"]} ${user["last_name"]} ${user["email"]}</td>
       </tr>`;
       })

@@ -214,6 +214,7 @@ def create_new_group(request):
             return JsonResponse(context, status=400)
         if "status" in context:
             return JsonResponse(context, status=200)
+        return JsonResponse({})
 
     return render(request, "EnigmaOps/createNewGroup.html")
 
