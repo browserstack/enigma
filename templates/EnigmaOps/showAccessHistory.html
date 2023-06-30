@@ -194,11 +194,19 @@
   </div>
 
   <div class="hidden md:-mt-px md:flex">
+    {% if allPages.0 != 1 %}
+    <span
+      class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium border-transparent text-gray-500">...</span>
+    {% endif %}
     {% for navIter in allPages %}
     <a onclick="change_page('{{ navIter }}')"
       class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium {% get_navigation_class navIter currentPagination %}">
       {{ navIter }}</a>
     {% endfor %}
+    {% if allPages|last != maxPagination %}
+    <span
+      class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium border-transparent text-gray-500">...</span>
+    {% endif %}
     {% comment %} <span
       class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium border-transparent text-gray-500">...</span>
     {% endcomment %}
