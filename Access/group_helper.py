@@ -113,14 +113,17 @@ def create_group(request):
     base_datetime_prefix = datetime.datetime.utcnow().strftime("%Y%m%d%H%M%S")
     try:
         data = request.POST
+        auth_user = request.user
         group_members = []
+        if data.get("selectAllUsers") == 'true':
+            group_members = list(map(lambda user: user["email"], auth_user.user.get_active_users().values('email')))
         new_group_name = data.get("newGroupName").lower()
         reason = data.get("newGroupReason")
         needs_access_approve = (
             data.get("requiresAccessApprove")
             and data.get("requiresAccessApprove") == "true"
         )
-        if data.getlist("selectedUserList[]"):
+        if not group_members and data.getlist("selectedUserList[]"):
             group_members = data.getlist("selectedUserList[]")
     except Exception as e:
         logger.exception(e)
@@ -145,16 +148,16 @@ def create_group(request):
 
     new_group = GroupV2.create(
         name=new_group_name,
-        requester=request.user.user,
+        requester=auth_user.user,
         description=reason,
         needs_access_approve=needs_access_approve,
         date_time=base_datetime_prefix,
     )
 
     new_group.add_member(
-        user=request.user.user,
+        user=auth_user.user,
         is_owner=True,
-        requested_by=request.user.user,
+        requested_by=auth_user.user,
         reason="Group Owner. Added as initial group member by requester.",
         date_time=base_datetime_prefix,
     )
@@ -163,13 +166,13 @@ def create_group(request):
         initial_members = list(map(str, group_members))
         new_group.add_members(
             users=User.objects.filter(email__in=initial_members),
-            requested_by=request.user.user,
+            requested_by=auth_user.user,
         )
     else:
-        initial_members = [request.user.email]
+        initial_members = [auth_user.email]
 
     notifications.send_new_group_create_notification(
-        request.user, base_datetime_prefix, new_group, initial_members
+        auth_user, base_datetime_prefix, new_group, initial_members
     )
 
     context = {}
@@ -245,6 +248,7 @@ def get_group_access_list(auth_user, group_name):
     context["genericAccesses"] = [
         get_generic_access(group_mapping) for group_mapping in group_mappings
     ]
+    context["is_current_user_owner"] = group.member_is_owner(auth_user.user)
     if context["genericAccesses"] == [{}]:
         context["genericAccesses"] = []
 

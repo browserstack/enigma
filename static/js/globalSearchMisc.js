@@ -34,6 +34,7 @@ function current_query_params() {
 
 function search(event, elem) {
   if(event.key === "Enter") {
+    event.preventDefault();
     const query_param = current_query_params();
     query_param["page"] = [];
     query_param["search"] ? query_param["search"].pop(): (query_param["search"] = []);

@@ -137,29 +137,19 @@ def new_access_request(request):
 
 @login_required
 @user_admin_or_ops
-def pending_failure(request):
-    """Access requests where grant failed."""
+def failure_requests(request):
+    """ Request failed to process by celery """
     try:
-        response = get_grant_failed_requests(request)
-        return render(request, "EnigmaOps/failureAdminRequests.html", response)
+        grant_failures = get_grant_failed_requests(request)
+        revoke_failures = get_pending_revoke_failures(request)
+        context = {
+            "grant_failures": grant_failures,
+            "revoke_failures": revoke_failures
+        }
+        return render(request, "EnigmaOps/failureActions.html", context)
+
     except Exception as ex:
         logger.error(
-            "Error in request not found OR Invalid request type, Error: %s", str(ex)
-        )
-        json_response = {}
-        json_response["error"] = {"error_msg": str(ex), "msg": INVALID_REQUEST_MESSAGE}
-        return render(request, "EnigmaOps/accessStatus.html", json_response)
-
-
-@login_required
-@user_admin_or_ops
-def pending_revoke(request):
-    """Access requests where the revoke failed."""
-    try:
-        response = get_pending_revoke_failures(request)
-        return render(request, "EnigmaOps/failureAdminRequests.html", response)
-    except Exception as ex:
-        logger.debug(
             "Error in request not found OR Invalid request type, Error: %s", str(ex)
         )
         json_response = {}
@@ -225,6 +215,7 @@ def create_new_group(request):
             return JsonResponse(context, status=400)
         if "status" in context:
             return JsonResponse(context, status=200)
+        return JsonResponse({})
 
     return render(request, "EnigmaOps/createNewGroup.html")
 
@@ -382,7 +373,8 @@ def group_access_list(request):
         context = {
             "search_value": request.GET.get("search"),
             "groupName": group_name,
-            "allowRevoke": group_detail["allowRevoke"]
+            "allowRevoke": group_detail["allowRevoke"],
+            "is_current_user_owner": group_detail["is_current_user_owner"]
         }
 
         show_tab = request.GET.get("show_tab")
@@ -567,6 +559,7 @@ def accept_bulk(request, selector):
         request_ids, return_ids, selector = _get_request_ids_for_bulk_processing(
             input_vals, selector
         )
+        status = 200
         for value in request_ids:
             request_id = value
             if selector == "groupNew" and is_access_approver:
@@ -584,6 +577,7 @@ def accept_bulk(request, selector):
             else:
                 raise ValidationError("Invalid request")
             if "error" in json_response:
+                status = 400
                 context["response"][request_id] = {
                     "error": json_response["error"],
                     "success": False,
@@ -595,13 +589,13 @@ def accept_bulk(request, selector):
                 }
         context["bulk_approve"] = True
         context["returnIds"] = return_ids
-        return JsonResponse(context, status=200)
+        return JsonResponse(context, status=status)
     except Exception:
         logger.error("Error processing bulk accept, Error: %s", traceback.format_exc())
         json_response = {}
         json_response["error"] = INVALID_REQUEST_MESSAGE
         json_response["success"] = False
-        return JsonResponse(json_response, status=400)
+        return JsonResponse(json_response, status=500)
 
 
 def _get_request_ids_for_bulk_processing(posted_request_ids, selector):
@@ -821,7 +815,7 @@ def ignore_failure(request, selector):
                         "msg": "The request is already in final state.",
                     }
                 )
-        return render(request, "EnigmaOps/accessStatus.html", json_response)
+        return JsonResponse(json_response)
     except Exception as exc:
         logger.debug("Error in request not found OR Invalid request type")
         logger.exception("Error while executing ignore_failure: %s", (traceback.format_exc()))
@@ -830,7 +824,7 @@ def ignore_failure(request, selector):
             "error_msg": str(exc),
             "msg": "Error in request not found OR Invalid request type",
         }
-        return render(request, "EnigmaOps/accessStatus.html", json_response)
+        return JsonResponse(json_response, status=400)
 
 
 @login_required
@@ -860,14 +854,14 @@ def resolve_bulk(request):
                         "msg": "The request is already in final state.",
                     }
                 )
-        return render(request, "EnigmaOps/accessStatus.html", json_response)
+        return JsonResponse(json_response)
     except Exception:
         logger.debug("Error in request not found OR Invalid request type")
         logger.exception("Raised error during resolve_bulk: %s", (traceback.format_exc()))
         json_response = {}
         json_response['error'] = {'error_msg': "Bad request",
                                   'msg': "Error in request not found OR Invalid request type"}
-        return render(request, 'EnigmaOps/accessStatus.html', json_response)
+        return JsonResponse(json_response, status=400)
 
 
 def revoke_group_access(request):

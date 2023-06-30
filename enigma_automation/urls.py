@@ -24,8 +24,6 @@ from Access.views import (
     user_offboarding,
     show_access_history,
     pending_requests,
-    pending_failure,
-    pending_revoke,
     update_user_info,
     save_identity,
     create_new_group,
@@ -45,7 +43,8 @@ from Access.views import (
     ignore_failure,
     resolve_bulk,
     new_group_access_request,
-    user_management
+    user_management,
+    failure_requests,
 )
 from Access.helpers import get_available_access_modules
 
@@ -59,8 +58,7 @@ urlpatterns = [
     path("access/showAccessHistory", show_access_history, name="showAccessHistory"),
     path("access/pendingRequests", pending_requests, name="pendingRequests"),
     path("access/newRequest", new_access_request, name="newAccessRequest"),
-    re_path(r"^resolve/pendingFailure", pending_failure, name="pendingFailure"),
-    re_path(r"^resolve/pendingRevoke", pending_revoke, name="pendingRevoke"),
+    path("resolve/requestFailure", failure_requests, name="requestFailure"),
     re_path(r"^user/updateUserInfo/", update_user_info, name="updateUserInfo"),
     path("user/saveIdentity/", save_identity, name="saveIdentity"),
     path("group/create", create_new_group, name="createNewGroup"),
@@ -97,8 +95,8 @@ urlpatterns = [
         r"^group/removeGroupMember$", remove_group_member, name="remove_group_member"
     ),
     path("individual_resolve", individual_resolve, name="individual_resolve"),
-    re_path(r"^resolve_bulk", resolve_bulk, name="resolve_bulk"),
-    re_path(r"^ignore/(?P<selector>.*)$", ignore_failure, name="ignoreFailure"),
+    path("resolve_bulk", resolve_bulk, name="resolve_bulk"),
+    path("ignore/<str:selector>", ignore_failure, name="ignoreFailure"),
     re_path(r"^group/revokeAccess", revoke_group_access, name="revoke_group_access"),
 
     path("api/v1/getActiveUsers", get_active_users, name="get_active_users"),

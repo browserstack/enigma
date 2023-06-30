@@ -30,6 +30,11 @@ REQUEST_SUCCESS_MSG = {
     "title": "Request Submitted {access_tag}",
     "msg": "Once approved you will receive the update",
 }
+
+REQUEST_SUBMITTED_SUCCESS_MSG = {
+    "title": "Request Submitted {request_id}",
+    "msg": "Once approved you will receive the update",
+}
 REQUEST_FAILED_MSG = {
     "error_msg": "Failed to create request",
     "msg": "Something when wrong while create the access request"
@@ -180,23 +185,19 @@ def validate_approver_permissions(access_mapping, access_type, request):
 
 def get_grant_failed_requests(request):
     """ Get all grant failed requests """
-    try:
-        failures = UserAccessMapping.objects.filter(
-            status__in=["GrantFailed"]
-        ).order_by("-requested_on")
-        if request.GET.get("username"):
-            user = User.objects.get(user__username=request.GET.get("username"))
-            failures = failures.filter(user=user).order_by("-requested_on")
-        if request.GET.get("access_type"):
-            access_tag = request.GET.get("access_type")
-            failures = failures.filter(access__access_tag=access_tag).order_by(
-                "-requested_on"
-            )
+    failures = UserAccessMapping.objects.filter(
+        status__in=["GrantFailed"]
+    ).order_by("-requested_on")
+    if request.GET.get("username"):
+        user = User.objects.get(user__username=request.GET.get("username"))
+        failures = failures.filter(user=user).order_by("-requested_on")
+    if request.GET.get("access_type"):
+        access_tag = request.GET.get("access_type")
+        failures = failures.filter(access__access_tag=access_tag).order_by(
+            "-requested_on"
+        )
 
-        context = {"failures": failures, "heading": "Grant Failures"}
-        return context
-    except Exception as exception:
-        return process_error_response(exception)
+    return failures
 
 
 def get_pending_revoke_failures(request):
@@ -216,8 +217,7 @@ def get_pending_revoke_failures(request):
             status__in=["RevokeFailed"]
         ).order_by("-requested_on")
 
-    context = {"failures": failures, "heading": "Revoke Failures"}
-    return context
+    return failures
 
 
 def get_pending_requests(request):
@@ -697,13 +697,12 @@ def run_accept_request_task(
     accept_request(access_mapping)
     json_response["status"].append(
         {
-            "title": REQUEST_SUCCESS_MSG["title"].format(
+            "title": REQUEST_SUBMITTED_SUCCESS_MSG["title"].format(
                 request_id=request_id),
-            "msg": REQUEST_SUCCESS_MSG["msg"].format(
-                access_label=json.dumps(access_label)
-            ),
+            "msg": REQUEST_SUCCESS_MSG["msg"],
         }
     )
+    logger.info("Accept request ran successfully for access %s", json.dumps(access_label))
 
     return json_response
 
@@ -989,6 +988,8 @@ def run_ignore_failure_task(auth_user, access_mapping, request_id, selector):
             access_mapping.decline_access()
         elif selector == "approve":
             access_mapping.approve_access()
+        elif selector == "revoke":
+            access_mapping.revoke()
         notifications.send_mail_for_request_resolve(
             auth_user, selector, request_id)
         return None

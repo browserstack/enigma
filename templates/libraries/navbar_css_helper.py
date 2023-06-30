@@ -7,7 +7,8 @@ def is_current_nav(navType, currentPath):
         "Access": "/access/showAccessHistory",
         "Groups": "/group/dashboard",
         "PendingActions": "/access/pendingRequests",
-        "userManagement": "/access/userManagement"
+        "userManagement": "/access/userManagement",
+        "FailureActions": "/resolve/requestFailure",
     }
     if navType == "Dashboard":
         return pathMapping[navType] == currentPath

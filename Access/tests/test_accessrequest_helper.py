@@ -147,19 +147,19 @@ Test_pendingFailure_Exception = "Throws Exception"
         # no exceptions are thrown
         (
             Test_pendingFailure_NoFailures,
-            "{'failures': ['Failure1'], 'heading': 'Grant Failures'}",
+            "['Failure1']",
             ["Failure1"],
             "",
         ),
         (
             Test_pendingFailure_UserBasedFailures,
-            "{'failures': ['Failure2'], 'heading': 'Grant Failures'}",
+            "['Failure2']",
             ["Failure2"],
             "",
         ),
         (
             Test_pendingFailure_AccessTypeBasedFailures,
-            "{'failures': ['Failure3'], 'heading': 'Grant Failures'}",
+            "['Failure3']",
             ["Failure3"],
             "",
         ),
@@ -247,19 +247,19 @@ test_pendingRevoke_Exception = "Exception"
         # no exceptions are thrown
         (
             test_PendingRevokeRequests_UserBasedFailures,
-            "{'failures': ['failure1'], 'heading': 'Revoke Failures'}",
+            "['failure1']",
             ["failure1"],
             "",
         ),
         (
             test_PendingRevokeRequests_AccessTypeBasedFailures,
-            "{'failures': ['failure2'], 'heading': 'Revoke Failures'}",
+            "['failure2']",
             ["failure2"],
             "",
         ),
         (
             test_PendingRevokeRequests_OtherFailures,
-            "{'failures': ['failure3'], 'heading': 'Revoke Failures'}",
+            "['failure3']",
             ["failure3"],
             "",
         ),

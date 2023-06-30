@@ -198,8 +198,15 @@
               {% for each_group in dataList %}
               <tr {% if forloop.counter|divisibleby:2 %}class="bg-gray-50" {% endif %}>
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium sm:pl-6">
+                  {% if each_group.status == "Approved" %}
                   <a href="/group/access/list?group_name={{ each_group.name }}"
-                    class="text-blue-600 hover:text-blue-900">{{ each_group.name }}</a>
+                    class="text-blue-600 hover:text-blue-900">
+                    {% endif %}
+                    {{ each_group.name }}
+
+                  {% if each_group.status == "Approved" %}
+                  </a>
+                  {% endif %}
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                   {% access_status_content each_group.status|safe %}
