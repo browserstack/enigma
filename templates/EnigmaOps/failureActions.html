@@ -1,0 +1,207 @@
+{% extends 'global_layout.html' %}
+{% load static %}
+
+{% block head_body %}
+<script src={% static "js/failureActions.js" %}></script>
+{% endblock %}
+
+{% block nav_breadcrumb %}
+<nav class="flex px-8 py-6 flex-shrink-0" aria-label="Breadcrumb">
+  <ol role="list" class="flex items-center space-x-4">
+    <li>
+      <div>
+        <a href="{% url 'dashboard' %}" class="text-gray-400 hover:text-gray-500">
+          <svg class="h-5 w-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path fill-rule="evenodd" d="M9.293 2.293a1 1 0 011.414 0l7 7A1 1 0 0117 11h-1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-3a1 1 0 00-1-1H9a1 1 0 00-1 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-6H3a1 1 0 01-.707-1.707l7-7z" clip-rule="evenodd" />
+          </svg>
+          <span class="sr-only">Home</span>
+        </a>
+      </div>
+    </li>
+
+    <li>
+      <div class="flex items-center">
+        <svg class="h-5 w-5 flex-shrink-0 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <path fill-rule="evenodd" d="M7.21 14.77a.75.75 0 01.02-1.06L11.168 10 7.23 6.29a.75.75 0 111.04-1.08l4.5 4.25a.75.75 0 010 1.08l-4.5 4.25a.75.75 0 01-1.06-.02z" clip-rule="evenodd" />
+        </svg>
+        <a href="{% url 'requestFailure' %}" class="ml-4 text-sm font-medium text-gray-500 hover:text-gray-700">Failure Actions</a>
+      </div>
+    </li>
+  </ol>
+</nav>
+{% endblock %}
+
+{% block content_body %}
+
+<div class="px-4 sm:px-6 lg:px-8 w-full">
+	<div class="sm:flex sm:items-center">
+		<div class="sm:flex-auto">
+			<h1 class="text-2xl font-bold leading-7 text-gray-900">Failure Actions</h1>
+		</div>
+	</div><br>
+	<div class="overflow-hidden bg-white shadow sm:rounded-md">
+		<ul role="list" class="divide-y divide-gray-200">
+			<li>
+				<div class="relative px-4 py-4 sm:px-6">
+					<input type="checkbox" onclick="rotateArrowOnCheck('grantFailures')" id="grantFailures_dropdown" class="z-10 absolute w-full h-7 opacity-0 cursor-pointer peer">
+					<div class="flex">
+						<div id="grantFailures_arrow" class="-rotate-90 peer-checked:opacity-0">
+							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+						</div>
+
+						<div class="px-2 peer-checked:opacity-0">
+							<p class="truncate text-lg leading-7 font-medium text-grey-900">Grant Failure</p>
+						</div>
+						<span class="bg-blue-100 ml-auto text-center h-6 w-8 inline-block pt-1 text-xs text-blue-600 rounded-full">{{ grant_failures|length }}</span>
+					</div>
+					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
+						<div class="divide-y divide-gray-200">
+							{% for request in grant_failures %}
+								<div class="px-4 py-3">
+									<H1 class="text-xl leading-8 font-semibold py-2">{{request.request_id}}</H1>
+									<table class="table-fixed border-b border-gray-200 border-t text-left text-sm w-7/12">
+										<tr class="bg-white border-b border-gray-200">
+											<td class="text-gray-500 py-4">Requested by</td>
+											<td class="text-gray-900 py-4">{{ request.user_identity.user }}</td>
+										</tr>
+										<tr class="bg-white border-b border-gray-200">
+											<td class="text-gray-500 py-4">Requested access level</td>
+											<td class="text-gray-900 py-4">{{ request.access.access_tag }}</td>
+										</tr>
+										<tr class="bg-white border-b border-gray-200">
+											<td class="text-gray-500 py-4">Reason for Request</td>
+											<td class="text-gray-900 py-4">{{ request.request_reason }}</td>
+										</tr>
+										<tr class="bg-white border-b border-gray-200">
+											<td class="text-gray-500 py-4">Requested on</td>
+											<td class="text-gray-900 py-4">{{ request.requested_on }} UTC</td>
+										</tr>
+										<tr class="bg-white border-b border-gray-200">
+											<td class="text-gray-500 py-4">Access Type</td>
+											<td class="text-gray-900 py-4">{{ request.access.access_tag }}</td>
+										</tr>
+										<tr class="bg-white border-b border-gray-200">
+											<td class="text-gray-500 py-4">Access Category</td>
+											<td class="text-gray-900 py-4">
+												<ul class="list-disc list-inside">
+												{% for data, val in request.access.access_label.items %}
+												<li>{{data}}: {{val}}</li>
+												{% endfor %}
+												</ul>
+											</td>
+										</tr>
+									</table>
+									<div class="border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
+										<div class="pr-3"><svg class="fill-current h-6 w-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+										<div class="text-blue-800 text-sm leading-5 font-medium"><ul>
+											<li><b class="font-bold">Resolve Instruction -</b> check logs or email for issue. Run approval again.</li>
+											<li><b class="font-bold">Mark Declined -</b> Click if request is not valid. It will be declined.</li>
+											<li><b class="font-bold">Mark Approved -</b> Click if request is resolved manually. It will be marked approved.</li>
+										</ul></div>
+									</div>
+									<div id="grantFailures-{{forloop.counter}}"></div>
+									<div id="grantFailures-{{forloop.counter}}-actions" class="text-sm pt-5">
+										<button onclick="sendAPICall('{{ request.request_id }}', '/resolve_bulk', 'grantFailures-{{forloop.counter}}', 'Resolved')" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Resolve</button>
+										<button onclick="sendAPICall('{{ request.request_id }}', '/ignore/decline', 'grantFailures-{{forloop.counter}}', 'Marked Declined')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Mark Declined</button>
+										<button onclick="sendAPICall('{{ request.request_id }}', '/ignore/approve', 'grantFailures-{{forloop.counter}}', 'Marked Approved')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Mark Approved</button>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+			</li>
+			<li>
+				<div class="relative px-4 py-4 sm:px-6">
+					<input onclick="rotateArrowOnCheck('revokeFailures')" id="revokeFailures_dropdown" type="checkbox" class="z-10 absolute w-full h-7 opacity-0 cursor-pointer peer">
+					<div class="flex">
+						<div id="revokeFailures_arrow" class="-rotate-90 peer-checked:opacity-0">
+							<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" width="24px" fill="#000000"><path d="M0 0h24v24H0z" fill="none"/><path d="M16.59 8.59L12 13.17 7.41 8.59 6 10l6 6 6-6z"/></svg>
+						</div>
+
+						<div class="px-2 peer-checked:opacity-0">
+							<p class="truncate text-lg leading-7 font-medium text-grey-900">Revoke Failure</p>
+						</div>
+						<span class="bg-blue-100 ml-auto text-center h-6 w-8 inline-block pt-1 text-xs text-blue-600 rounded-full">{{ revoke_failures|length }}</span>
+					</div>
+					<div class="max-h-0 w-full overflow-hidden peer-checked:max-h-full">
+						<div class="divide-y divide-gray-200">
+							{% for request in revoke_failures %}
+								<div class="px-4 py-3">
+									<H1 class="text-xl leading-8 font-semibold py-2">{{request.request_id}}</H1>
+									<table class="table-fixed border-b border-t border-gray-200 text-left text-sm w-7/12">
+										<tr class="bg-white border-b border-gray-200">
+											<td class="text-gray-500 py-4">Requested by</td>
+											<td class="text-gray-900 py-4">{{ request.user_identity.user }}</td>
+										</tr>
+										<tr class="bg-white border-b border-gray-200">
+											<td class="text-gray-500 py-4">Requested access level</td>
+											<td class="text-gray-900 py-4">{{ request.access.access_tag }}</td>
+										</tr>
+										<tr class="bg-white border-b border-gray-200">
+											<td class="text-gray-500 py-4">Reason for Request</td>
+											<td class="text-gray-900 py-4">{{ request.request_reason }}</td>
+										</tr>
+										<tr class="bg-white border-b border-gray-200">
+											<td class="text-gray-500 py-4">Requested on</td>
+											<td class="text-gray-900 py-4">{{ request.requested_on }} UTC</td>
+										</tr>
+										<tr class="bg-white border-b border-gray-200">
+											<td class="text-gray-500 py-4">Access Type</td>
+											<td class="text-gray-900 py-4">{{ request.access.access_tag }}</td>
+										</tr>
+										<tr class="bg-white border-b border-gray-200">
+											<td class="text-gray-500 py-4">Access Category</td>
+											<td class="text-gray-900 py-4">
+												<ul class="list-disc list-inside">
+												{% for data, val in request.access.access_label.items %}
+												<li>{{data}}: {{val}}</li>
+												{% endfor %}
+												</ul>
+											</td>
+										</tr>
+									</table>
+									<div class="border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
+										<div class="pr-3"><svg class="fill-current h-6 w-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
+										<div class="text-blue-800 text-sm leading-5 font-medium"><ul>
+											<li><b class="font-bold">Resolve Instruction -</b> check logs or email for issue. Run approval again.</li>
+											<li><b class="font-bold">Mark Declined -</b> Click if request is not valid. It will be declined.</li>
+											<li><b class="font-bold">Mark Revoked -</b> Click if request is resolved manually. It will be marked approved.</li>
+										</ul></div>
+									</div>
+									<div id="revokeFailures-{{forloop.counter}}"></div>
+									<div id="revokeFailures-{{forloop.counter}}-actions" class="text-sm pt-5">
+										<button onclick="sendAPICall('{{ request.request_id }}', '/resolve_bulk', 'revokeFailures-{{forloop.counter}}', 'Resolved')" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Resolve</button>
+										<button onclick="sendAPICall('{{ request.request_id }}', '/ignore/decline', 'revokeFailures-{{forloop.counter}}', 'Marked Declined')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Mark Declined</button>
+										<button onclick="sendAPICall('{{ request.request_id }}', '/ignore/revoke', 'revokeFailures-{{forloop.counter}}', 'Marked Revoked')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Mark Revoked</button>
+									</div>
+								</div>
+							{% endfor %}
+						</div>
+					</div>
+				</div>
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div id="message-box" class="hidden rounded-md p-4 my-2">
+	<div class="flex">
+		<div class="flex-shrink-0">
+			<svg id="success" class="hidden h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+				<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
+			</svg>
+			<svg id="failure" class="hidden h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+      </svg>
+		</div>
+		<div class="ml-3">
+			<h3 class="text-sm font-medium">The request - {{eachAccessDetails.requestId}} is Approved</h3>
+		</div>
+	</div>
+</div>
+
+{% include "EnigmaOps/shared/notificationTemplate.html" %}
+
+
+{% endblock %}

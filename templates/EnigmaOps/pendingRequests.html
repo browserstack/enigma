@@ -60,20 +60,20 @@
 							{% for group in groupGenericRequests %}
 								<div class="px-4 py-3">
 									<H1 class="text-xl leading-8 font-semibold py-2">{{group.group_club_id}}</H1>
-									<table class="table-fixed border-b border-t text-left leading-5 text-sm w-7/12">
-										<tr class="bg-white border-b dark:border-gray-700">
+									<table class="table-fixed border-b border-t border-gray-200 text-left leading-5 text-sm w-7/12">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested for group</td>
 											<td class="text-blue-600 hover:text-blue-900 py-4"><a href="/group/access/list?group_name={{ group.groupName }}"><u>{{ group.groupName }}</u></a></td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested by</td>
 											<td class="text-gray-900 py-4">{{ group.userEmail }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested on</td>
 											<td class="text-gray-900 py-4">{{ group.requested_on }} UTC</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Approval SLA Breached</td>
 											<td class="{% if group.sla_breached %} text-red-500 {% else %} text-gray-900 {% endif %} py-4">{% if group.sla_breached %} True - Time passed {{ group.sla_breached }} days {% else %} False {% endif %}</td>
 										</tr>
@@ -88,24 +88,24 @@
 									{% for eachAccessDetails in group.accessData %}
 										<div class="border-b border-gray-200 bg-white px-4 py-5 my-4 rounded-md border flex-none w-7/12">
 											<table class="table-fixed text-left text-sm w-full">
-												<tr class="bg-white border-b dark:border-gray-700">
+												<tr class="bg-white border-b border-gray-200">
 													<td class="text-sm leading-5 font-semibold text-gray-900 py-4">Access Type</td>
 													<td class="text-gray-900 py-4">{{ eachAccessDetails.accessType }}</td>
 												</tr>
-												<tr class="bg-white border-b dark:border-gray-700">
+												<tr class="bg-white border-b border-gray-200">
 													<td class="text-sm leading-5 font-semibold text-gray-900 py-4">Reason for request</td>
 													<td class="text-gray-900 py-4">{{ eachAccessDetails.accessReason }}</td>
 												</tr>
-												<tr class="bg-white border-b dark:border-gray-700">
+												<tr class="bg-white border-b border-gray-200">
 													<td class="text-sm leading-5 font-semibold text-gray-900 py-4">Access description</td>
 													<td class="text-gray-900 py-4">{{ eachAccessDetails.accessCategory }}</td>
 												</tr>
 												{% if accessData.accessMeta %}
-												<tr class="bg-white border-b dark:border-gray-700">
+												<tr class="bg-white border-b border-gray-200">
 													<td class="text-sm leading-5 font-semibold text-gray-900 pb-4 pt-8">Access Metadata</td>
 												</tr>
 												{% for key, value in accessData.accessMeta.items %}
-												<tr class="bg-white border-b dark:border-gray-700">
+												<tr class="bg-white border-b border-gray-200">
 													<td class="text-sm leading-5 font-medium text-gray-500 py-4">{{ key }}</td>
 													<td class="text-gray-900 py-4">{{ value }}</td>
 												</tr>
@@ -145,24 +145,24 @@
 							{% for group in newGroupPending %}
 								<div class="px-4 py-3">
 									<H1 class="text-xl leading-8 font-semibold py-2">{{group.groupRequest.group_id}}</H1>
-									<table class="table-fixed border-b border-t text-left text-sm w-7/12">
-										<tr class="bg-white border-b dark:border-gray-700">
+									<table class="table-fixed border-b border-t border-gray-200 text-left text-sm w-7/12">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested by</td>
 											<td class="text-gray-900 py-4">{{ group.groupRequest.requester.email }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested on</td>
 											<td class="text-gray-900 py-4">{{ group.groupRequest.requested_on }} UTC</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested Group Name</td>
 											<td class="text-gray-900 py-4">{{ group.groupRequest.name }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Reason for Request</td>
 											<td class="text-gray-900 py-4">{{ group.groupRequest.description }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Initial Members</td>
 											<td class="text-gray-900 py-4">{{ group.initialMembers }} (These members will be automatically added to group)</td>
 										</tr>
@@ -202,28 +202,28 @@
 							{% for member in membershipPending %}
 								<div class="px-4 py-3">
 									<H1 class="text-xl leading-8 font-semibold py-2">{{member.membership_id}}</H1>
-									<table class="table-fixed border-b border-t text-left text-sm w-7/12">
-										<tr class="bg-white border-b dark:border-gray-700">
+									<table class="table-fixed border-b border-t border-gray-200 text-left text-sm w-7/12">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Group</td>
 											<td class="text-blue-600 hover:text-blue-900 py-4"><a href="/group/access/list?group_name={{ member.group.name }}"><u>{{ member.group.name }}</u></a></td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested by</td>
 											<td class="text-gray-900 py-4">{{ member.requested_by.email }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested on</td>
 											<td class="text-gray-900 py-4">{{ member.requested_on }} UTC</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">New member name</td>
 											<td class="text-gray-900 py-4">{{ member.user }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Email</td>
 											<td class="text-gray-900 py-4">{{ member.user.email }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Reason for request</td>
 											<td class="text-gray-900 py-4">{{ member.reason }}</td>
 										</tr>
@@ -260,24 +260,24 @@
 							{% for eachRequest in each_module.requests %}
 								<div class="px-4 py-3">
 									<H1 class="text-xl leading-8 font-semibold py-2">{{eachRequest.club_id}}</H1>
-									<table class="table-fixed border-b border-t text-left text-sm w-7/12">
-										<tr class="bg-white border-b dark:border-gray-700">
+									<table class="table-fixed border-b border-t border-gray-200 text-left text-sm w-7/12">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested by</td>
 											<td classs="text-gray-900 py-4">{{ eachRequest.userEmail }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested On</td>
 											<td class="text-gray-900 py-4">{{ eachRequest.requested_on }} UTC</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Approval SLA Breached</td>
 											<td class="{% if eachRequest.sla_breached %} text-red-500 {% else %} text-gray-900 {% endif %} py-4">{% if eachRequest.sla_breached %} True - Time passed {{ eachRequest.sla_breached }} days {% else %} False {% endif %}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Access type</td>
 											<td class="text-gray-900 py-4">{{ eachRequest.accessType }}</td>
 										</tr>
-										<tr class="bg-white border-b dark:border-gray-700">
+										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Reason for Request</td>
 											<td class="text-gray-900 py-4">{{ eachRequest.accessReason }}</td>
 										</tr>
@@ -287,16 +287,16 @@
 									<div>
 										<div class="border-b border-gray-200 bg-white px-4 pt-2 pb-4 my-2 rounded-md border flex-none w-7/12">
 											<table class="table-fixed text-left text-sm w-full">
-												<tr class="bg-white border-b dark:border-gray-700">
+												<tr class="bg-white border-b border-gray-200">
 													<td class="text-sm leading-5 font-semibold text-gray-900 py-4">Access Description</td>
 													<td class="text-gray-900 py-4">{{ accessData.accessCategory }}</td>
 												</tr>
 												{% if accessData.accessMeta %}
-												<tr class="bg-white dark:border-gray-700">
+												<tr class="bg-white border-gray-200">
 													<td class="text-sm leading-5 font-semibold text-gray-900 pt-4">Access Metadata</td>
 												</tr>
 												{% for key, value in accessData.accessMeta.items %}
-												<tr class="bg-white border-b dark:border-gray-700">
+												<tr class="bg-white border-b border-gray-200">
 													<td class="text-gray-500 py-4">{{ key }}</td>
 													<td class="text-gray-900 py-4">{{ value }}</td>
 												</tr>

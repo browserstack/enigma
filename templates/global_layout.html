@@ -47,6 +47,15 @@
             <span class="{% count_class_for_path "PendingActions" request.path %} ml-auto inline-block py-0.5 px-3 text-xs rounded-full">{{ pendingActionsCount }}</span>
           </a>
 
+          <a href="{% url 'requestFailure' %}" class="{% ahref_class_for_path "FailureActions" request.path %} group flex items-center px-3 py-2 text-sm font-medium rounded-md cust-each-nav-tab" aria-current={% ahref_ariacurrent "FailureActions" request.path %}">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="{% svg_class_for_path "FailureActions" request.path %} flex-shrink-0 -ml-1 mr-3 h-6 w-6" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.99955 7V9M9.99955 13H10.0095M3.07134 17H16.9277C18.4673 17 19.4296 15.3333 18.6598 14L11.7316 2C10.9618 0.666667 9.0373 0.666667 8.2675 2L1.33929 14C0.569492 15.3333 1.53174 17 3.07134 17Z"/>
+            </svg>
+            <span class="truncate">Failure Actions</span>
+
+            <span class="{% count_class_for_path "FailureActions" request.path %} ml-auto inline-block py-0.5 px-3 text-xs rounded-full">{{ failureActionsCount }}</span>
+          </a>
+
           <a href="{% url 'showAccessHistory' %}" class="{% ahref_class_for_path "Access" request.path %} group flex items-center px-3 py-2 text-sm font-medium rounded-md cust-each-nav-tab" aria-current={% ahref_ariacurrent "Access" request.path %}">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="{% svg_class_for_path "Access" request.path %} flex-shrink-0 -ml-1 mr-3 h-6 w-6" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
