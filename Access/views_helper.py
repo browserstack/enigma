@@ -161,8 +161,6 @@ def gen_all_user_access_list_csv(data_list):
             "AccessStatus",
             "RequestDate",
             "Approver",
-            "GrantOwner",
-            "RevokeOwner",
             "Type",
         ]
     )
@@ -178,8 +176,6 @@ def gen_all_user_access_list_csv(data_list):
                 access_status,
                 data["requested_on"],
                 data["approver_1"],
-                data["grantOwner"],
-                data["revokeOwner"],
                 data["access_type"],
             ]
         )

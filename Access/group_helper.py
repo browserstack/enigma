@@ -939,14 +939,6 @@ def get_user_states(selected_list):
     return user_state
 
 
-def get_user_current_state():
-    current_state = []
-    for state in User.USER_STATUS_CHOICES:
-        current_state.append(state[1].capitalize())
-
-    return current_state
-
-
 def get_access_types(group_mappings):
     status_list = []
 

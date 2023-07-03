@@ -938,7 +938,7 @@ class UserAccessMapping(models.Model):
         # code metadata
         access_request_data["access_tag"] = access_tag
         # ui metadata
-        access_request_data["user"] = self.user_identity.user.name
+        access_request_data["user"] = self.user_identity.user
         access_request_data["userEmail"] = self.user_identity.user.email
         access_request_data["requestId"] = self.request_id
         access_request_data["accessReason"] = self.request_reason
