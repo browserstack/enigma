@@ -1,5 +1,5 @@
 function handleButtonLoading(elem, status) {
-  let parentElem = $(elem.parentElem);
+  let parentElem = $(elem.parentElement);
   let text = $(elem).html();
   let button = $(elem);
   if(status) {
