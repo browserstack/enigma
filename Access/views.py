@@ -63,25 +63,6 @@ logger.info("Server Started")
 @paginated_search
 def show_access_history(request):
     """Show access request history for a User."""
-    # if request.method == "POST":
-    #     logger.error("POST for showAccessHistory not supported")
-    #     return HttpResponseNotFound("Error request not found OR Invalid request type"), {}
-        # return render_error_message(
-        #     request,
-        #     "POST for showAccessHistory not supported",
-        #     "Invalid Request",
-        #     "Error request not found OR Invalid request type",
-        # )
-
-    # try:
-    #     access_user = User.objects.get(email=request.user.email)
-    # except Exception as ex:
-    #     return render_error_message(
-    #         request,
-    #         f"Access user with email {request.user.email} not found. Error: {str(ex)}",
-    #         "Invalid Request",
-    #         "Please login again",
-    #     )
 
     access_user = request.user.user
     selected_status = request.GET.getlist("status")
@@ -116,9 +97,6 @@ def show_access_history(request):
 @api_view(["GET"])
 def new_access_request(request):
     """ new access request """
-    # if request.method == "POST":
-    #     logger.error("POST for this endpoint is not supported")
-    #     return HttpResponseNotFound("Error request not found OR Invalid request type")
 
     return render(
         request,
@@ -144,9 +122,6 @@ def failure_requests(request):
         logger.error(
             "Error in request not found OR Invalid request type, Error: %s", str(ex)
         )
-        # json_response = {}
-        # json_response["error"] = {"error_msg": str(ex), "msg": INVALID_REQUEST_MESSAGE}
-        # return render(request, "EnigmaOps/accessStatus.html", json_response)
         return HttpResponseServerError("Internal Server Error, Something went wrong while fetching this page")
 
 

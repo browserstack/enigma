@@ -632,8 +632,7 @@ def accept_member(auth_user, requestId, shouldRender=True):
 
 
 def get_group_access(form_data, auth_user):
-    # data = dict(form_data.lists())
-    group_name = form_data.get("groupName") #data["groupName"][0]
+    group_name = form_data.get("groupName")
     context = {}
     context["accesses"] = []
 
