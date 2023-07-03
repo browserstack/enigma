@@ -51,7 +51,7 @@ def test_getallUserList(
         mocker.patch(
             "Access.helpers.check_user_permissions", return_value=UserHasPermission
         )
-        mocker.patch("Access.models.User.objects.all", return_value=[userMock])
+        mocker.patch("Access.models.User.objects.exclude", return_value=[userMock])
 
     context = getallUserList(request)
     if expectedError:
@@ -64,9 +64,8 @@ def test_getallUserList(
         assert context["dataList"][0]["email"] == userMock.email
         assert context["dataList"][0]["username"] == userMock.user.username
         assert context["dataList"][0]["offbaord_date"] == userMock.offbaord_date
-        assert context["dataList"][0]["state"] == userMock.current_state()
         assert context["dataList"][0]["is_active"] == userMock.user.is_active
         if UserHasOffboardPermission:
-            assert context["viewDetails"]["numColumns"] == 8
+            assert context["viewDetails"]["allowOffboarding"] == True
         else:
-            assert context["viewDetails"]["numColumns"] == 7
+            assert context["viewDetails"]["allowOffboarding"] == False
