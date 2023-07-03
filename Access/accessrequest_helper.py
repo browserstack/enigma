@@ -117,44 +117,33 @@ class ImplementationPendingException(Exception):
 def get_request_access(request):
     """ Get list of all accesses for requesting access to """
     context = {}
-    try:
-        for each_tag, each_module in \
-                helpers.get_available_access_modules().items():
-            if each_tag in request.GET.getlist("accesses"):
-                if "accesses" not in context:
-                    context["accesses"] = []
-                context["genericForm"] = True
-                try:
-                    extra_fields = each_module.get_extra_fields()
-                except Exception:
-                    extra_fields = []
-                try:
-                    notice = each_module.get_notice()
+    for each_tag, each_module in \
+            helpers.get_available_access_modules().items():
+        if each_tag in request.GET.getlist("accesses"):
+            if "accesses" not in context:
+                context["accesses"] = []
+            context["genericForm"] = True
+            try:
+                extra_fields = each_module.get_extra_fields()
+            except Exception:
+                extra_fields = []
+            try:
+                notice = each_module.get_notice()
 
-                except Exception:
-                    notice = ""
-                context["accesses"].append({
-                    "formDesc": each_module.access_desc(),
-                    "accessTag": each_tag,
-                    "accessTypes": each_module.access_types(),
-                    "accessRequestData": each_module.access_request_data(
-                        request, is_group=False
-                    ),
-                    "extraFields": extra_fields,
-                    "notice": notice,
-                    "accessRequestPath":
-                        each_module.fetch_access_request_form_path(),
-                })
-    except Exception as exception:
-        logger.exception(exception)
-        context = {}
-        context["status"] = {
-            "title": "Error Occured",
-            "msg": (
-                "There was an error in getting the requested access"
-                " resources. Please contact Admin"
-            ),
-        }
+            except Exception:
+                notice = ""
+            context["accesses"].append({
+                "formDesc": each_module.access_desc(),
+                "accessTag": each_tag,
+                "accessTypes": each_module.access_types(),
+                "accessRequestData": each_module.access_request_data(
+                    request, is_group=False
+                ),
+                "extraFields": extra_fields,
+                "notice": notice,
+                "accessRequestPath":
+                    each_module.fetch_access_request_form_path(),
+            })
     return context
 
 
@@ -441,6 +430,9 @@ def create_request(auth_user, access_request_form):
     access_module = helpers.get_available_access_module_from_tag(access_tag)
     module_access_labels = access_module.validate_request(access_request_form, auth_user.user)
 
+    if access_module.can_auto_approve():
+        raise ImplementationPendingException()
+
     for _, access_label in enumerate(module_access_labels):
         request_id = (
             auth_user.username
@@ -457,9 +449,6 @@ def create_request(auth_user, access_request_form):
         if access_create_error:
             logger.info("Duplicate request found: %s", access_create_error)
             continue
-
-        if access_module.can_auto_approve():
-            raise ImplementationPendingException()
 
     json_response["status"] = {
         "title": REQUEST_SUCCESS_MSG["title"].format(

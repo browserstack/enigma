@@ -26,6 +26,11 @@ INTERNAL_ERROR_MESSAGE = {
     "msg": "Error Occured while loading the page. Please contact admin",
 }
 
+INVALID_REQUEST_ERROR = {
+    "error_msg": "Invalid Request",
+    "msg": "Error in request parameters, please check and request."
+}
+
 USER_UNAUTHORIZED_MESSAGE = "User unauthorised to perform the action."
 GROUP_ACCESS_MAPPING_NOT_FOUND = "Group Access Mapping not found in the database."
 
@@ -128,10 +133,8 @@ def create_group(request):
     except Exception as e:
         logger.exception(e)
         logger.error("Error in Create New Group request.")
-        context = {}
-        context["error"] = {
-            "error_msg": INTERNAL_ERROR_MESSAGE["error_msg"],
-            "msg": INTERNAL_ERROR_MESSAGE["msg"],
+        context = {
+            "error": INVALID_REQUEST_ERROR
         }
         return context
 
@@ -215,15 +218,6 @@ def get_group_access_list(auth_user, group_name):
         return context
 
     auth_user = auth_user
-    if not auth_user.user.is_allowed_admin_actions_on_group(group):
-        logger.debug("Permission denied, requester is non owner")
-        context = {
-            "error": {
-                "error_msg": NON_OWNER_PERMISSION_DENIED_ERROR["error_msg"],
-                "msg": NON_OWNER_PERMISSION_DENIED_ERROR["msg"],
-            }
-        }
-        return context
 
     group_members = group.get_all_members().filter(status="Approved")
     group_members = [
@@ -638,8 +632,7 @@ def accept_member(auth_user, requestId, shouldRender=True):
 
 
 def get_group_access(form_data, auth_user):
-    data = dict(form_data.lists())
-    group_name = data["groupName"][0]
+    group_name = form_data.get("groupName")
     context = {}
     context["accesses"] = []
 
@@ -651,7 +644,7 @@ def get_group_access(form_data, auth_user):
         context["status"] = validation_error
         return context
 
-    access_module_list = data["accessList"]
+    access_module_list = form_data.getlist("accessList")
     for module_value in access_module_list:
         module = helper.get_available_access_modules()[module_value]
         try:

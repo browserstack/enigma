@@ -1,6 +1,7 @@
 from django.core.exceptions import PermissionDenied
 from Access.helpers import get_possible_approver_permissions
 from django.core.paginator import Paginator
+from django.template.response import TemplateResponse
 
 
 def user_admin_or_ops(function):
@@ -54,9 +55,14 @@ def user_any_approver(function):
 
 def paginated_search(view_function):
     def wrap(request, *args, **kwargs):
-        template, context = view_function(request, *args, **kwargs)
-        if template == "No render":
-            return context
+        response = view_function(request, *args, **kwargs)
+        if type(response) is not tuple:
+            return response
+        template, context = response
+        if not context:
+            if type(template) == TemplateResponse:
+                return template.render()
+            return template
         if context.get("error"):
             template.context_data = context
             return template.render()
