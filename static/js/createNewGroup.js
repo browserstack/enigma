@@ -197,6 +197,19 @@ function showRedirectModal(title, message="") {
   $("#modal-message").html(message);
 }
 
+function handleButtonLoading(elem, status) {
+  if(status) {
+    elem.attr('disabled', true);
+    elem.html("");
+    let newSpan = $("#submitButtonLoading").clone(true, true);
+    newSpan.removeClass("collapse");
+    newSpan.appendTo(elem);
+  } else {
+    elem.attr('disabled', false);
+    elem.html("Submit request");
+  }
+}
+
 function submitRequest() {
   const members = $('#member-selection-table').children('tr');
   const emails = [];
@@ -219,6 +232,8 @@ function submitRequest() {
     return;
   }
   else {
+    let button = $('#submitNewGroup');
+    handleButtonLoading(button, true);
     $.ajax({
       url: urlBuilder,
       type: "POST",
@@ -231,7 +246,8 @@ function submitRequest() {
         "selectAllUsers": selectAllUsers,
       },
       success: function (result) {
-        showRedirectModal("Request Submitted", result.status.msg)
+        showRedirectModal("Request Submitted", result.status.msg);
+        handleButtonLoading(button, false);
       },
       error: function (XMLHttpRequest, textStatus, errorThrown) {
         if(XMLHttpRequest.responseJSON) {
@@ -240,6 +256,7 @@ function submitRequest() {
         } else {
           showNotification("failed", "Something when wrong while creating the group, contact admin.", "Internal Error")
         }
+        handleButtonLoading(button, false);
       }
     });
   }

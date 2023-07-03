@@ -114,8 +114,8 @@
 											</table>
 											<div id="groupAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}"></div>
 											<div id="groupAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}-actions" class="text-sm pt-5">
-												<button onclick="approveAccess('{{eachAccessDetails.requestId}}', 'groupAccess', 'groupAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}')" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
-												<button class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium" onclick="showDeclineModal('{{ eachAccessDetails.requestId }}', 'groupAccess', 'groupAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}')">Decline</button>
+												<button id="accessButton" onclick="approveAccess(this, '{{eachAccessDetails.requestId}}', 'groupAccess', 'groupAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}')" class="items-center w-20 h-9 rounded-md border border-transparent bg-blue-600 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+												<button id="declineButton" class="w-20 h-9 ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 text-sm font-medium hover:bg-blue-200" onclick="showDeclineModal(this, '{{ eachAccessDetails.requestId }}', 'groupAccess', 'groupAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}')">Decline</button>
 											</div>
 										</div>
 									{% endfor %}
@@ -173,8 +173,8 @@
 									</div>
 									<div id="groupNew-{{forloop.counter}}"></div>
 									<div id="groupNew-{{forloop.counter}}-actions" class="text-sm pt-5">
-										<button onclick="approveAccess('{{ group.groupRequest.group_id }}', 'groupNew', 'groupNew-{{forloop.counter}}')" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
-										<button onclick="showDeclineModal('{{ group.groupRequest.group_id }}', 'declineNewGroup', 'groupNew-{{forloop.counter}}')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Decline</button>
+										<button id="accessButton" onclick="approveAccess('{{ group.groupRequest.group_id }}', 'groupNew', 'groupNew-{{forloop.counter}}')" class="items-center w-20 h-9 rounded-md border border-transparent bg-blue-600 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+										<button id="declineButton" onclick="showDeclineModal('{{ group.groupRequest.group_id }}', 'declineNewGroup', 'groupNew-{{forloop.counter}}')" class="w-20 h-9 ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 text-sm font-medium hover:bg-blue-200">Decline</button>
 									</div>
 								</div>
 							{% endfor %}
@@ -230,8 +230,8 @@
 									</table>
 									<div id="groupMember-{{forloop.counter}}"></div>
 									<div id="groupMember-{{forloop.counter}}-actions" class="text-sm pt-5">
-										<button onclick="approveAccess('{{member.membership_id}}', 'groupMember', 'groupMember-{{forloop.counter}}')" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
-										<button onclick="showDeclineModal('{{member.membership_id}}', 'declineMember', 'groupMember-{{forloop.counter}}')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Decline</button>
+										<button id="accessButton" onclick="approveAccess('{{member.membership_id}}', 'groupMember', 'groupMember-{{forloop.counter}}')" class="items-center w-20 h-9 rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+										<button id="declineButton" onclick="showDeclineModal('{{member.membership_id}}', 'declineMember', 'groupMember-{{forloop.counter}}')" class="w-20 h-9 ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium hover:bg-blue-200">Decline</button>
 									</div>
 								</div>
 							{% endfor %}
@@ -305,8 +305,8 @@
 											</table>
 											<div id="{{eachRequest.access_tag}}-moduleAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}"></div>
 											<div id="{{eachRequest.access_tag}}-moduleAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}-actions" class="text-sm pt-5">
-												<button onclick="approveAccess('{{ accessData.requestId }}', 'moduleAccess', '{{eachRequest.access_tag}}-moduleAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}')" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
-												<button onclick="showDeclineModal('{{ accessData.requestId }}', 'moduleAccess', '{{eachRequest.access_tag}}-moduleAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Decline</button>
+												<button id="accessButton" onclick="approveAccess('{{ accessData.requestId }}', 'moduleAccess', '{{eachRequest.access_tag}}-moduleAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}')" class="items-center w-20 h-9 rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Accept</button>
+												<button id="declineButton" onclick="showDeclineModal('{{ accessData.requestId }}', 'moduleAccess', '{{eachRequest.access_tag}}-moduleAccess-{{forloop.parentloop.counter}}-{{forloop.counter}}')" class="w-20 h-9 ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium hover:bg-blue-200">Decline</button>
 											</div>
 										</div>
 									</div>
@@ -356,7 +356,7 @@
                     </div>
 
                     <div class="border-t w-full p-3 justify-end bg-gray-100 flex">
-                        <button type="submit" class="declineFinalButton rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Decline</button>
+                        <button type="submit" class="items-center w-20 h-9 declineFinalButton rounded-md border border-transparent bg-blue-600 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Decline</button>
                     </div>
 
                 </form>
@@ -380,6 +380,15 @@
 		</div>
 	</div>
 </div>
+
+<svg id="buttonLoading" class="collapse inline w-4 h-4 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none"
+  viewBox="0 0 24 24">
+  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+  <path class="opacity-75" fill="currentColor"
+    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+  </path>
+</svg>
+
 {% include "EnigmaOps/shared/notificationTemplate.html" %}
 
 

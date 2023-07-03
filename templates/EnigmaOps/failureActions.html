@@ -59,7 +59,7 @@
 							{% for request in grant_failures %}
 								<div class="px-4 py-3">
 									<H1 class="text-xl leading-8 font-semibold py-2">{{request.request_id}}</H1>
-									<table class="table-fixed border-b border-gray-200 border-t text-left text-sm w-7/12">
+									<table class="table-fixed border-b border-gray-200 border-t text-left text-sm w-3/4">
 										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested by</td>
 											<td class="text-gray-900 py-4">{{ request.user_identity.user }}</td>
@@ -91,7 +91,7 @@
 											</td>
 										</tr>
 									</table>
-									<div class="border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
+									<div class="border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-3/4">
 										<div class="pr-3"><svg class="fill-current h-6 w-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
 										<div class="text-blue-800 text-sm leading-5 font-medium"><ul>
 											<li><b class="font-bold">Resolve Instruction -</b> check logs or email for issue. Run approval again.</li>
@@ -101,9 +101,9 @@
 									</div>
 									<div id="grantFailures-{{forloop.counter}}"></div>
 									<div id="grantFailures-{{forloop.counter}}-actions" class="text-sm pt-5">
-										<button onclick="sendAPICall('{{ request.request_id }}', '/resolve_bulk', 'grantFailures-{{forloop.counter}}', 'Resolved')" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Resolve</button>
-										<button onclick="sendAPICall('{{ request.request_id }}', '/ignore/decline', 'grantFailures-{{forloop.counter}}', 'Marked Declined')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Mark Declined</button>
-										<button onclick="sendAPICall('{{ request.request_id }}', '/ignore/approve', 'grantFailures-{{forloop.counter}}', 'Marked Approved')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Mark Approved</button>
+										<button id="resolveButton" onclick="sendAPICall(this, '{{ request.request_id }}', '/resolve_bulk', 'grantFailures-{{forloop.counter}}', 'Resolved')" class="items-center w-20 h-9 rounded-md border border-transparent bg-blue-600 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Resolve</button>
+										<button id="declineButton" onclick="sendAPICall(this, '{{ request.request_id }}', '/ignore/decline', 'grantFailures-{{forloop.counter}}', 'Marked Declined')" class="items-center w-32 h-9 ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 text-sm font-medium hover:bg-blue-200">Mark Declined</button>
+										<button id="actionButton" onclick="sendAPICall(this, '{{ request.request_id }}', '/ignore/approve', 'grantFailures-{{forloop.counter}}', 'Marked Approved')" class="items-center w-32 h-9 ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 text-sm font-medium hover:bg-blue-200">Mark Approved</button>
 									</div>
 								</div>
 							{% endfor %}
@@ -129,7 +129,7 @@
 							{% for request in revoke_failures %}
 								<div class="px-4 py-3">
 									<H1 class="text-xl leading-8 font-semibold py-2">{{request.request_id}}</H1>
-									<table class="table-fixed border-b border-t border-gray-200 text-left text-sm w-7/12">
+									<table class="table-fixed border-b border-t border-gray-200 text-left text-sm w-3/4">
 										<tr class="bg-white border-b border-gray-200">
 											<td class="text-gray-500 py-4">Requested by</td>
 											<td class="text-gray-900 py-4">{{ request.user_identity.user }}</td>
@@ -161,7 +161,7 @@
 											</td>
 										</tr>
 									</table>
-									<div class="border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-7/12">
+									<div class="border-blue-200 bg-blue-100 px-4 py-5 my-4 rounded-md border flex w-3/4">
 										<div class="pr-3"><svg class="fill-current h-6 w-6 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" fill="none"/><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg></div>
 										<div class="text-blue-800 text-sm leading-5 font-medium"><ul>
 											<li><b class="font-bold">Resolve Instruction -</b> check logs or email for issue. Run approval again.</li>
@@ -171,9 +171,9 @@
 									</div>
 									<div id="revokeFailures-{{forloop.counter}}"></div>
 									<div id="revokeFailures-{{forloop.counter}}-actions" class="text-sm pt-5">
-										<button onclick="sendAPICall('{{ request.request_id }}', '/resolve_bulk', 'revokeFailures-{{forloop.counter}}', 'Resolved')" class="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Resolve</button>
-										<button onclick="sendAPICall('{{ request.request_id }}', '/ignore/decline', 'revokeFailures-{{forloop.counter}}', 'Marked Declined')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Mark Declined</button>
-										<button onclick="sendAPICall('{{ request.request_id }}', '/ignore/revoke', 'revokeFailures-{{forloop.counter}}', 'Marked Revoked')" class="ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 px-4 py-2 text-sm font-medium">Mark Revoked</button>
+										<button id="resolveButton" onclick="sendAPICall(this, '{{ request.request_id }}', '/resolve_bulk', 'revokeFailures-{{forloop.counter}}', 'Resolved')" class="items-center w-20 h-9 rounded-md border border-transparent bg-blue-600 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Resolve</button>
+										<button id="declineButton" onclick="sendAPICall(this, '{{ request.request_id }}', '/ignore/decline', 'revokeFailures-{{forloop.counter}}', 'Marked Declined')" class="items-center w-32 h-9 ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 text-sm font-medium hover:bg-blue-200">Mark Declined</button>
+										<button id="actionButton" onclick="sendAPICall(this, '{{ request.request_id }}', '/ignore/revoke', 'revokeFailures-{{forloop.counter}}', 'Marked Revoked')" class="items-center w-32 h-9 ml-3 rounded-md border border-transparent bg-blue-100 text-indigo-700 text-sm font-medium hover:bg-blue-200">Mark Revoked</button>
 									</div>
 								</div>
 							{% endfor %}
@@ -200,6 +200,20 @@
 		</div>
 	</div>
 </div>
+
+<svg id="resolveButtonLoading" class="collapse inline w-4 h-4 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+  <path class="opacity-75" fill="currentColor"
+    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+  </path>
+</svg>
+
+<svg id="actionButtonLoading" class="collapse inline w-5 h-5 text-blue-500 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+  <path class="opacity-75" fill="currentColor"
+    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+  </path>
+</svg>
 
 {% include "EnigmaOps/shared/notificationTemplate.html" %}
 
