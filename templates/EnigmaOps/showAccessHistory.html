@@ -160,10 +160,12 @@
                 <td data-tooltip-target="tooltip-light" class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{% access_status_content each_access.status|safe %}</td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 max-w-2xl truncate">{{ each_access.accessCategory }}</td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ each_access.accessRequestType }}</td>
-                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                  <a href="#" class="text-blue-100 hover:text-blue-200">
-                    <button type="button" class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto">Regrant Access</button>
-                  </a>
+                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 text-gray-500">
+                  {% if each_access.status == "GrantFailed" or each_access.status == "Approved" %}
+                  <button onclick="regrantAccess('{{each_access.requestId}}')" type="button" class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 sm:w-auto">Regrant Access</button>
+                  {% else %}
+                  NA
+                  {% endif %}
                 </td>
               </tr>
               {% endfor %}
@@ -192,11 +194,19 @@
   </div>
 
   <div class="hidden md:-mt-px md:flex">
+    {% if allPages.0 != 1 %}
+    <span
+      class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium border-transparent text-gray-500">...</span>
+    {% endif %}
     {% for navIter in allPages %}
     <a onclick="change_page('{{ navIter }}')"
       class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium {% get_navigation_class navIter currentPagination %}">
       {{ navIter }}</a>
     {% endfor %}
+    {% if allPages|last != maxPagination %}
+    <span
+      class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium border-transparent text-gray-500">...</span>
+    {% endif %}
     {% comment %} <span
       class="inline-flex items-center border-t-2 px-4 pt-4 text-sm font-medium border-transparent text-gray-500">...</span>
     {% endcomment %}
@@ -215,4 +225,6 @@
       {% endif %}
   </div>
 </nav>
+
+{% include "EnigmaOps/shared/notificationTemplate.html" %}
 {% endblock %}

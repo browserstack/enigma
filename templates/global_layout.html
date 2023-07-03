@@ -56,6 +56,15 @@
             <span class="{% count_class_for_path "FailureActions" request.path %} ml-auto inline-block py-0.5 px-3 text-xs rounded-full">{{ failureActionsCount }}</span>
           </a>
 
+          <a href="{% url 'userManagement' %}" class="{% ahref_class_for_path "userManagement" request.path %} group flex items-center px-3 py-2 text-sm font-medium rounded-md cust-each-nav-tab" aria-current={% ahref_ariacurrent "userManagement" request.path %}">
+            <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="{% svg_class_for_path "userManagement" request.path %} flex-shrink-0 -ml-1 mr-3 h-6 w-6" aria-hidden="true">
+              <path d="M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 14C8.13401 14 5 17.134 5 21H19C19 17.134 15.866 14 12 14Z" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+
+            <span class="truncate">User Management</span>
+          </a>
+
           <a href="{% url 'showAccessHistory' %}" class="{% ahref_class_for_path "Access" request.path %} group flex items-center px-3 py-2 text-sm font-medium rounded-md cust-each-nav-tab" aria-current={% ahref_ariacurrent "Access" request.path %}">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="{% svg_class_for_path "Access" request.path %} flex-shrink-0 -ml-1 mr-3 h-6 w-6" aria-hidden="true">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
@@ -93,7 +102,7 @@
     {% block nav_breadcrumb %}
     {% endblock %}
     </div>
-    <div class="content-body inset-y-0 flex flex-col cust-left-nav-panel flex-1 inset-w-0 bg-gray-50 overflow-y-scroll overflow-x-clip">
+    <div class="content-body inset-y-0 flex flex-col cust-left-nav-panel flex-1 inset-w-0 bg-gray-50 mb-10">
     {% block content_body %}
     {% endblock %}
     </div>

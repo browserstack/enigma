@@ -1,11 +1,11 @@
 import json
-from Access import helpers
 from Access.background_task_manager import (
     background_task,
     accept_request,
     revoke_request,
 )
-from Access.models import User, ApprovalType
+from Access.models import User, UserAccessMapping
+from . import group_helper, views_helper
 import logging
 from . import helpers as helper
 from django.db import transaction
@@ -13,6 +13,7 @@ from django.db import transaction
 logger = logging.getLogger(__name__)
 
 PERMISSION_VIEW_USER_LIST = "VIEW_USER_LIST"
+PERMISSION_VIEW_USER_ACCESS_LIST = "VIEW_USER_ACCESS_LIST"
 PERMISSION_ALLOW_USER_OFFBOARD = "ALLOW_USER_OFFBOARD"
 
 EXCEPTION_USER_UNAUTHORIZED = "Unauthorized to list users"
@@ -183,7 +184,7 @@ def __change_identity_and_transfer_access_mapping(
 def getallUserList(request):
     try:
         if not (
-            helpers.check_user_permissions(request.user, PERMISSION_VIEW_USER_LIST)
+            helper.check_user_permissions(request.user, PERMISSION_VIEW_USER_LIST)
         ):
             raise Exception(EXCEPTION_USER_UNAUTHORIZED)
 
@@ -192,24 +193,34 @@ def getallUserList(request):
         )
 
         dataList = []
-        for each_user in User.objects.all():
+        for each_user in User.objects.exclude(user__username='system_user'):
             dataList.append(
                 {
                     "name": each_user.name,
+                    "full_name": f"{each_user.user.first_name} {each_user.user.last_name}",
                     "first_name": each_user.user.first_name,
                     "last_name": each_user.user.last_name,
                     "email": each_user.email,
                     "username": each_user.user.username,
-                    # "git_username": each_user.gitusername,
                     "is_active": each_user.user.is_active,
                     "offbaord_date": each_user.offbaord_date,
-                    "state": each_user.current_state(),
+                    "current_state": each_user.current_state().capitalize(),
                 }
             )
-        context = {}
+
+        selected_current_state = request.GET.getlist("current_state")
+        context = {
+            "search_data_key": "dataList",
+            "search_value": request.GET.get("search"),
+            "search_rows": ["full_name", "last_name", "first_name", "email"],
+            "currentStateFilter": {
+                "selected": selected_current_state,
+                "notSelected": group_helper.get_user_states(selected_current_state)
+            },
+            "filter_rows": ["current_state"]
+        }
         context["dataList"] = dataList
         context["viewDetails"] = {
-            "numColumns": 8 if allowOffboarding else 7,
             "allowOffboarding": allowOffboarding,
         }
         return context
@@ -220,6 +231,67 @@ def getallUserList(request):
         json_response["error"] = {"error_msg": str(e), "msg": ERROR_MESSAGE}
         return json_response
 
+def get_all_user_access_list(request):
+    try:
+        if not (
+            helper.check_user_permissions(request.user, PERMISSION_VIEW_USER_ACCESS_LIST)
+        ):
+            raise Exception(EXCEPTION_USER_UNAUTHORIZED)
+
+
+        generic_accesses = UserAccessMapping.get_accesses_not_declined()
+        user = None
+
+        if request.GET.get("username"):
+            username = request.GET.get("username")
+            user = User.objects.get(user__username=username)
+
+        if user:
+            generic_accesses = generic_accesses.filter(user_identity__user=user).order_by("-requested_on")
+
+
+        data_list = []
+        for access_mapping in generic_accesses:
+            access_module = helper.get_available_access_module_from_tag(
+                access_mapping.access.access_tag
+            )
+            data_list.append(access_mapping.get_access_request_details(access_module))
+
+        selected_access_type = request.GET.getlist("access_desc")
+        selected_status = request.GET.getlist("status")
+        context = {
+            "dataList": data_list,
+            "search_data_key": "dataList",
+            "search_value": request.GET.get("search"),
+            "accessDescFilter": {
+                "selected": selected_access_type,
+                "notSelected": group_helper.get_group_member_access_type(selected_access_type)
+            },
+            "statusFilter": {
+                "selected": selected_status,
+                "notSelected": get_group_status_list(selected_status),
+            },
+            "search_rows": ["access_tag", "access_desc", "accessCategory", "approver_1"],
+            "filter_rows": ["access_desc", "status"]
+        }
+
+        return context
+
+    except Exception as e:
+        logger.debug("Error in request not found OR Invalid request type")
+        logger.exception(e)
+        json_response = {}
+        json_response["error"] = {"error_msg": str(e), "msg": ERROR_MESSAGE}
+        return json_response
+
+
+def get_group_status_list(selected_list):
+    status_list = []
+    for status in UserAccessMapping.STATUS_CHOICES:
+        if status[0] not in selected_list:
+            status_list.append(status[0])
+
+    return status_list
 
 def offboard_user(request):
     if not (
