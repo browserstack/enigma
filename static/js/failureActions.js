@@ -1,5 +1,31 @@
-function sendAPICall(requestId, url, messageId, desc) {
-  url =`${url}?requestId=${requestId}`
+function handleButtonLoading(elem, status) {
+  let parentElem = $(elem.parentElem);
+  let text = $(elem).html();
+  let button = $(elem);
+  if(status) {
+    parentElem.find("button#resolveButton").attr('disabled', true);
+    parentElem.find("button#declineButton").attr('disabled', true);
+    parentElem.find("button#actionButton").attr('disabled', true);
+    button.html("");
+    let newSpan;
+    if (text == "Resolve") {
+      newSpan = $("#resolveButtonLoading").clone(true, true);
+    } else {
+      newSpan = $("#actionButtonLoading").clone(true, true);
+    }
+    newSpan.removeClass("collapse");
+    newSpan.appendTo(button);
+  } else {
+    parentElem.find("button#resolveButton").attr('disabled', false);
+    parentElem.find("button#declineButton").attr('disabled', false);
+    parentElem.find("button#actionButton").attr('disabled', false);
+    button.html(text);
+  }
+}
+
+function sendAPICall(elem, requestId, url, messageId, desc) {
+  url =`${url}?requestId=${requestId}`;
+  handleButtonLoading(elem, true);
   $.ajax({
     url: url,
     error: (xhr, statusText, data) => {
@@ -9,10 +35,12 @@ function sendAPICall(requestId, url, messageId, desc) {
       else {
         showNotification("failed", "Failed to send the request", "Something went wrong");
       }
+      handleButtonLoading(elem, false);
     }
   }).done((data) => {
     showNotification("success", data["status_list"][0]["title"], data["status_list"][0]["msg"]);
-    updateStatus(desc, messageId, requestId)
+    updateStatus(desc, messageId, requestId);
+    handleButtonLoading(elem, false);
   })
 }
 

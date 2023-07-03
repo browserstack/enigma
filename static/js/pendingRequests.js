@@ -1,7 +1,7 @@
 function showDeclineModal(request_id, action, messageId) {
   $('#decline_modal').show();
   $("#declineHeading").html("<p class='text-lg leading-6 font-medium'>"+request_id+"<p/>")
-  $('#decline_modal').find("form").attr("onsubmit", `clickDeclineFinalButton('${request_id}', '${action}', '${messageId}');return false`)
+  $('#decline_modal').find("form").attr("onsubmit", `clickDeclineFinalButton(this, '${request_id}', '${action}', '${messageId}');return false`)
 }
 
 function closeDeclineModal() {
@@ -10,20 +10,24 @@ function closeDeclineModal() {
   $('#decline_modal').hide();
 }
 
-const clickDeclineFinalButton = (requestId, action, messageId) => {
+const clickDeclineFinalButton = (elem, requestId, action, messageId) => {
   closeDeclineModal();
   const declineReason = $("#declineReasonText").val();
-  const urlBuilder = `/decline/${action}/${requestId}`
+  const urlBuilder = `/decline/${action}/${requestId}`;
+  let button = $(elem);
+  handleButtonLoading(button, true);
   $.ajax({
     url: urlBuilder,
     data: {"reason": declineReason},
     error: function (XMLHttpRequest, textStatus, errorThrown) {
       if(XMLHttpRequest.responseJSON) {
-        showNotification("failed", XMLHttpRequest.responseJSON["response"][requestId]["error"])
+        showNotification("failed", XMLHttpRequest.responseJSON["response"][requestId]["error"]);
       }
+      handleButtonLoading(button, true, "Decline");
     }
   }).done(function (data) {
-    updateStatus(false, messageId, requestId)
+    updateStatus(false, messageId, requestId);
+    handleButtonLoading(button, true, "Decline");
   })
 }
 
@@ -41,6 +45,19 @@ function onChangeDeclineReason() {
 
 function setDeclineReason(reason) {
   $("#declineReasonText").val(reason);
+}
+
+function handleButtonLoading(elem, status, text=null) {
+  if(status) {
+    elem.attr('disabled', true);
+    elem.html("");
+    let svgElem = $("#buttonLoading").clone(true, true);
+    svgElem.removeClass("collapse");
+    svgElem.appendTo(elem);
+  } else {
+    elem.attr('disabled', false);
+    elem.html(text);
+  }
 }
 
 function updateStatus(type, id, requestId) {
@@ -62,16 +79,23 @@ function updateStatus(type, id, requestId) {
   $(`#${id}-actions`).hide();
 }
 
-function approveAccess(requestId, action, messageId) {
+function approveAccess(elem, requestId, action, messageId) {
   const urlBuilder = `/accept_bulk/${action}?requestId=${encodeURIComponent(requestId)}`
+  let button = $(elem);
+  handleButtonLoading(button, true);
+  $(elem.parentElement).find("button#declineButton").attr('disabled', true);
   $.ajax({
     url: urlBuilder,
     error: function (XMLHttpRequest, textStatus, errorThrown) {
       if(XMLHttpRequest.responseJSON) {
         showNotification("failed", XMLHttpRequest.responseJSON["response"][requestId]["error"])
       }
+      handleButtonLoading(button, false, "Accept");
+      $(elem.parentElement).find("button#declineButton").attr('disabled', false);
     }
   }).done(() => {
     updateStatus(true, messageId, requestId);
+    handleButtonLoading(button, false, "Accept");
+    $(elem.parentElement).find("button#declineButton").attr('disabled', false);
   })
 }

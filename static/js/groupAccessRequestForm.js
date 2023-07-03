@@ -1,9 +1,24 @@
 let submitted_forms = 0
 
+function handleButtonLoading(elem, status) {
+  if(status) {
+    elem.attr('disabled', true);
+    elem.html("");
+    let newSpan = $("#submitButtonLoading").clone(true, true);
+    newSpan.removeClass("collapse");
+    newSpan.appendTo(elem);
+  } else {
+    elem.attr('disabled', false);
+    elem.html("Submit request");
+  }
+}
+
 function submitRequest(event, elem, multi, access_tag, accesses="") {
   event.preventDefault()
   form = $(elem)
   let actionUrl = form.attr('action');
+  let button = $(form.find("button#submitButton"));
+  handleButtonLoading(button, true);
   $.ajax({
     type: "POST",
     url: actionUrl,
@@ -15,6 +30,7 @@ function submitRequest(event, elem, multi, access_tag, accesses="") {
       else {
         showNotification("failed", "Failed to send the request", "Something went wrong");
       }
+      handleButtonLoading(button, false);
     }
   }).done(function(data, statusText, xhr) {
     let status = xhr.status;
@@ -36,6 +52,7 @@ function submitRequest(event, elem, multi, access_tag, accesses="") {
         showRedirectModal("Request submitted");
       }
     }
+    handleButtonLoading(button, false);
   })
 }
 
