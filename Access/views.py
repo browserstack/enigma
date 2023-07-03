@@ -8,8 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.contrib.auth.models import User as djangoUser
-from django.http import JsonResponse
-from django.shortcuts import render
+from django.http import HttpResponseServerError, JsonResponse, HttpResponseNotFound
+from django.contrib import messages
+from django.shortcuts import redirect, render
 from django.template.response import TemplateResponse
 from django.db.models import Q
 
@@ -58,27 +59,31 @@ logger.info("Server Started")
 
 
 @login_required
+@api_view(["GET"])
 @paginated_search
 def show_access_history(request):
     """Show access request history for a User."""
-    if request.method == "POST":
-        return render_error_message(
-            request,
-            "POST for showAccessHistory not supported",
-            "Invalid Request",
-            "Error request not found OR Invalid request type",
-        )
+    # if request.method == "POST":
+    #     logger.error("POST for showAccessHistory not supported")
+    #     return HttpResponseNotFound("Error request not found OR Invalid request type"), {}
+        # return render_error_message(
+        #     request,
+        #     "POST for showAccessHistory not supported",
+        #     "Invalid Request",
+        #     "Error request not found OR Invalid request type",
+        # )
 
-    try:
-        access_user = User.objects.get(email=request.user.email)
-    except Exception as ex:
-        return render_error_message(
-            request,
-            f"Access user with email {request.user.email} not found. Error: {str(ex)}",
-            "Invalid Request",
-            "Please login again",
-        )
+    # try:
+    #     access_user = User.objects.get(email=request.user.email)
+    # except Exception as ex:
+    #     return render_error_message(
+    #         request,
+    #         f"Access user with email {request.user.email} not found. Error: {str(ex)}",
+    #         "Invalid Request",
+    #         "Please login again",
+    #     )
 
+    access_user = request.user.user
     selected_status = request.GET.getlist("status")
     selected_access_modules = request.GET.getlist("access_desc")
 
@@ -108,25 +113,12 @@ def show_access_history(request):
 
 
 @login_required
+@api_view(["GET"])
 def new_access_request(request):
     """ new access request """
-    if request.method == "POST":
-        return render_error_message(
-            request,
-            "POST for this endpoint is not supported",
-            "Invalid Request",
-            "Error request not found OR Invalid request type",
-        )
-
-    try:
-        User.objects.get(email=request.user.email)
-    except Exception as exc:
-        return render_error_message(
-            request,
-            f"Access user with email {request.user.email} not found. Error: {str(exc)}",
-            "Invalid Request",
-            "Please login again",
-        )
+    # if request.method == "POST":
+    #     logger.error("POST for this endpoint is not supported")
+    #     return HttpResponseNotFound("Error request not found OR Invalid request type")
 
     return render(
         request,
@@ -135,6 +127,7 @@ def new_access_request(request):
 
 
 @login_required
+@api_view(["GET"])
 @user_admin_or_ops
 def failure_requests(request):
     """ Request failed to process by celery """
@@ -151,15 +144,18 @@ def failure_requests(request):
         logger.error(
             "Error in request not found OR Invalid request type, Error: %s", str(ex)
         )
-        json_response = {}
-        json_response["error"] = {"error_msg": str(ex), "msg": INVALID_REQUEST_MESSAGE}
-        return render(request, "EnigmaOps/accessStatus.html", json_response)
+        # json_response = {}
+        # json_response["error"] = {"error_msg": str(ex), "msg": INVALID_REQUEST_MESSAGE}
+        # return render(request, "EnigmaOps/accessStatus.html", json_response)
+        return HttpResponseServerError("Internal Server Error, Something went wrong while fetching this page")
 
 
 @login_required
+@api_view(["GET"])
 def update_user_info(request):
     """Templates to capture indentity information,
     with already saved Identity information for access modules"""
+
     context = get_identity_templates(request.user)
     return render(request, "updateUser.html", context)
 
@@ -190,31 +186,29 @@ def save_identity(request):
             "title": IDENTITY_UNCHANGED_ERROR_MESSAGE["title"],
             "msg": IDENTITY_UNCHANGED_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
-        return JsonResponse(json.dumps(context), safe=False, status=200)
+        return JsonResponse(json.dumps(context), safe=False, status=400)
 
     except Exception:
         context["error"] = {
             "title": NEW_IDENTITY_CREATE_ERROR_MESSAGE["title"],
             "msg": NEW_IDENTITY_CREATE_ERROR_MESSAGE["msg"].format(modulename=modname),
         }
-        return JsonResponse(json.dumps(context), safe=False, status=200)
-    context["error"] = {
-        "title": "Bad Request",
-        "msg": "Invalid Request.",
-    }
-    return JsonResponse(json.dumps(context), safe=False, status=400)
+        return JsonResponse(json.dumps(context), safe=False, status=500)
 
 
 @login_required
+@api_view(["GET", "POST"])
 def create_new_group(request):
     """Template to capture new group info, or status of save request."""
     if request.POST:
-        context = group_helper.create_group(request)
-        if "error" in context:
-            return JsonResponse(context, status=400)
-        if "status" in context:
+        try:
+            context = group_helper.create_group(request)
+            if "error" in context:
+                return JsonResponse(context, status=400)
             return JsonResponse(context, status=200)
-        return JsonResponse({})
+        except Exception as exception:
+            logger.error("Internal Server error occured while creating new group %s", str(exception))
+            return HttpResponseServerError("Something went wrong while processing request")
 
     return render(request, "EnigmaOps/createNewGroup.html")
 
@@ -249,6 +243,7 @@ def user_offboarding(request):
 
 
 @login_required
+@api_view(["POST", "GET"])
 def request_access(request):
     """Request access to a module.
 
@@ -284,38 +279,28 @@ def request_access(request):
             }
         return JsonResponse(context, status=status)
 
-    context = get_request_access(request)
-    return render(request, "EnigmaOps/accessRequestForm.html", context)
+    try:
+        context = get_request_access(request)
+        return render(request, "EnigmaOps/accessRequestForm.html", context)
+    except Exception as exp:
+        logger.exception("Error while getting access request forms: %s", str(exp))
+
+        return HttpResponseServerError("Something went wrong while processing request")
 
 
 @login_required
+@api_view(["GET"])
 def new_group_access_request(request):
     """Group Request Access"""
-    if request.method == "POST":
-        return render_error_message(
-            request,
-            "POST for this endpoint is not supported",
-            "Invalid Request",
-            "Error request not found OR Invalid request type",
-        )
-
-    try:
-        User.objects.get(email=request.user.email)
-    except Exception as ex:
-        return render_error_message(
-            request,
-            f"Access user with email {request.user.email} not found. Error: {str(ex)}",
-            "Invalid Request",
-            "Please login again",
-        )
 
     context = {
-        "groupName": dict(request.GET.lists())["groupName"][0]
+        "groupName": request.GET.get("groupName")
     }
     return render(request, "EnigmaOps/newAccessGroupRequest.html", context)
 
 
 @login_required
+@api_view(["GET", "POST"])
 def group_access(request):
     """Request access to a group.
 
@@ -339,19 +324,27 @@ def group_access(request):
             }
         return JsonResponse(context, status=status)
 
+    if not "groupName" in request.GET:
+        messages.error(request, "GroupName is missing for the request")
+        return redirect("/")
     context = group_helper.get_group_access(request.GET, request.user)
     return render(request, "EnigmaOps/groupAccessRequestForm.html", context)
 
 
 @login_required
+@api_view(["GET"])
 @paginated_search
 def group_access_list(request):
     """lists the accesses for a group."""
     try:
         group_name = request.GET.get('group_name')
+        if not group_name:
+            messages.error(request, "Group name is required for listing group details")
+            return redirect("/")
         group_detail = group_helper.get_group_access_list(request.user, group_name)
         if "error" in group_detail:
-            return TemplateResponse(request, "EnigmaOps/accessStatus.html"), group_detail
+            messages.error(request, group_access["msg"])
+            return redirect("/")
 
         group_detail = group_helper.get_role_based_on_membership(group_detail)
         context = {
@@ -401,12 +394,7 @@ def group_access_list(request):
         logger.exception(
             "Error in Group Access List, Error: %s", str(ex)
         )
-        json_response = {}
-        json_response["error"] = {
-            "error_msg": INVALID_REQUEST_MESSAGE,
-            "msg": INVALID_REQUEST_MESSAGE,
-        }
-        return TemplateResponse(request, "EnigmaOps/accessStatus.html"), json_response
+        return HttpResponseServerError("Something went wrong while processing request")
 
 
 @login_required
@@ -435,49 +423,37 @@ def update_group_owners(request, group_name):
         return JsonResponse(json_response, status=400)
 
 
+@api_view(["GET"])
 @login_required
 @paginated_search
 def group_dashboard(request):
     """ view group dashboard """
-    if request.method == "POST":
-        return render_error_message(
-            request,
-            "POST for groupHistory not supported",
-            "Invalid Request",
-            "Error request not found OR Invalid request type",
-        )
-
     try:
         access_user = request.user.user
-    except Exception as exc:
-        return render_error_message(
+        selected_role = request.GET.getlist("role")
+        selected_status = request.GET.getlist("status")
+
+        context = {
+            "search_data_key": "dataList",
+            "search_rows": ["name"],
+            "dataList": access_user.get_groups_history(),
+            "statusFilter": {
+                "selected": selected_status,
+                "notSelected": group_helper.get_group_status_list(selected_status),
+            },
+            "roleFilter": {
+                "selected": selected_role,
+                "notSelected": group_helper.get_group_member_role_list(selected_role)
+            },
+            "search_value": request.GET.get("search"),
+            "filter_rows": ["role", "status"]
+        }
+        return TemplateResponse(
             request,
-            f"Access user with email {request.user.email} not found. Error: {str(exc)}",
-            "Invalid Request",
-            "Please login again",
-        )
-
-    selected_role = request.GET.getlist("role")
-    selected_status = request.GET.getlist("status")
-
-    context = {
-        "search_data_key": "dataList",
-        "search_rows": ["name"],
-        "dataList": access_user.get_groups_history(),
-        "statusFilter": {
-            "selected": selected_status,
-            "notSelected": group_helper.get_group_status_list(selected_status),
-        },
-        "roleFilter": {
-            "selected": selected_role,
-            "notSelected": group_helper.get_group_member_role_list(selected_role)
-        },
-        "search_value": request.GET.get("search"),
-        "filter_rows": ["role", "status"]
-    }
-    return TemplateResponse(
-        request,
-        "EnigmaOps/showGroupHistory.html"), context
+            "EnigmaOps/showGroupHistory.html"), context
+    except Exception as e:
+        logger.exception("Error while listing all groups: %s", str(e))
+        return HttpResponseServerError("Something went wrong while processing request")
 
 
 def approve_new_group(request, group_id):
@@ -494,6 +470,7 @@ def approve_new_group(request, group_id):
 
 
 @login_required
+@api_view(["GET", "POST"])
 def add_user_to_group(request, group_name):
     """Add one or more users to a group.
 
