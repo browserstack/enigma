@@ -1,3 +1,5 @@
+""" This file contains backgroud task managers functions"""
+
 import json
 import threading
 import traceback
@@ -20,11 +22,14 @@ with open("config.json") as data_file:
 
 
 def background_task(func, *args):
+    """
+    func: The function that needs to be executed as a background task
+    """
     if background_task_manager_type == "celery":
         if func == "run_access_grant":
             request_id = args[0]
             run_access_grant.delay(request_id)
-        elif func == "test_grant":
+        if func == "test_grant":
             test_grant.delay(*args)
         elif func == "run_accept_request":
             run_accept_request.delay(*args)
@@ -34,17 +39,17 @@ def background_task(func, *args):
     else:
         if func == "run_access_grant":
             request_id = args[0]
-            accessAcceptThread = threading.Thread(
+            access_accept_thread = threading.Thread(
                 target=run_access_grant,
                 args=(request_id,),
             )
-            accessAcceptThread.start()
+            access_accept_thread.start()
         elif func == "run_accept_request":
-            accessAcceptThread = threading.Thread(
+            access_accept_thread = threading.Thread(
                 target=run_accept_request,
                 args=args,
             )
-            accessAcceptThread.start()
+            access_accept_thread.start()
         elif func == "run_access_revoke":
             access_revoke_thread = threading.Thread(target=run_access_revoke, args=args)
 
@@ -55,6 +60,9 @@ def background_task(func, *args):
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
 def run_access_grant(request_id):
+    """
+    request_id:  a unique identifier for a specific access request.
+    """
     user_access_mapping = UserAccessMapping.get_access_request(request_id=request_id)
     access_tag = user_access_mapping.access.access_tag
     user = user_access_mapping.user_identity.user
@@ -72,7 +80,10 @@ def run_access_grant(request_id):
             }
         )
         return False
-    elif user_access_mapping.user_identity.identity == {} and access_module.get_identity_template() != "":
+    if (
+        user_access_mapping.user_identity.identity == {}
+        and access_module.get_identity_template() != ""
+    ):
         user_access_mapping.grant_fail_access(
             fail_reason="Failed since identity is blank for user identity"
         )
@@ -101,7 +112,7 @@ def run_access_grant(request_id):
             request=user_access_mapping,
             is_group=False,
         )
-        if type(response) is bool:
+        if isinstance(response, bool):
             approve_success = response
         else:
             approve_success = response[0]
@@ -162,11 +173,14 @@ def run_access_grant(request_id):
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
 def run_access_revoke(request_id):
+    """
+    request_id:  a unique identifier for a specific access request.
+    """
     access_mapping = UserAccessMapping.get_access_request(request_id=request_id)
     if not access_mapping:
         logger.debug(f"Cannot find access mapping with id: {request_id}")
         return False
-    elif access_mapping.status == "Revoked":
+    if access_mapping.status == "Revoked":
         logger.debug(f"The request with id {request_id} is already revoked.")
         return True
     access = access_mapping.access
@@ -184,19 +198,18 @@ def run_access_revoke(request_id):
         response = access_module.revoke(
             user_identity.user, user_identity, access.access_label, access_mapping
         )
-        if type(response) is bool:
+        if isinstance(response, bool):
             revoke_success = response
             message = None
         else:
             revoke_success = response[0]
             message = str(response[1])
-    except Exception as e:
+    except Exception:
         logger.exception(
             "Error while running revoke function: " + str(traceback.format_exc())
         )
         revoke_success = False
         message = str(traceback.format_exc())
-
 
     if revoke_success:
         access_mapping.revoke()
@@ -209,31 +222,33 @@ def run_access_revoke(request_id):
             }
         )
     else:
-        access_mapping.revoke_failed(
-            fail_reason="Error while running revoke in module"
-        )
+        access_mapping.revoke_failed(fail_reason="Error while running revoke in module")
         logger.debug(
             {
                 "requestId": request_id,
                 "status": "RevokeFailed",
                 "by": revoker,
                 "response": message,
-                "retry_count": run_access_revoke.request.retries
+                "retry_count": run_access_revoke.request.retries,
             }
         )
         if run_access_revoke.request.retries == 3:
             logger.info("Sending the notification for failure")
             try:
                 notifications.send_revoke_failure_mail(
-                    access_module.access_mark_revoke_permission(access_mapping.access_type),
+                    access_module.access_mark_revoke_permission(
+                        access_mapping.access_type
+                    ),
                     access_mapping.request_id,
                     revoker.email,
                     run_access_revoke.request.retries,
                     message,
                     access.access_tag,
                 )
-            except Exception as e:
-                logger.debug(f"Failed to send Revoke failed mail due to exception: {str(e)}")
+            except Exception as exc:
+                logger.debug(
+                    f"Failed to send Revoke failed mail due to exception: {str(exc)}"
+                )
         raise Exception("Failed to revoke the access due to: " + str(message))
 
     return True
@@ -254,10 +269,16 @@ def task_failure(sender=None, **kwargs):
 
 
 def success_func():
+    """
+    Displays success log.
+    """
     logger.info("task successful")
 
 
 def fail_func():
+    """
+    Displays failed log.
+    """
     logger.info("task failed")
 
 
@@ -265,6 +286,9 @@ def fail_func():
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
 def test_grant():
+    """
+    The function returns the access desc of the tags from confluence module"
+    """
     access_module = helpers.get_available_access_module_from_tag("confluence_module")
 
     # call access_desc method of confluence module here
@@ -276,6 +300,9 @@ def test_grant():
     autoretry_for=(Exception,), retry_kwargs={"max_retries": 3, "countdown": 5}
 )
 def run_accept_request(data):
+    """
+    data: details of the user.
+    """
     data = json.loads(data)
     request_id = data["request_id"]
     user_access_mapping = UserAccessMapping.get_access_request(data["request_id"])
@@ -304,6 +331,9 @@ def run_accept_request(data):
 
 
 def accept_request(user_access_mapping):
+    """
+    user_access_mapping (dict): maps users to their access levels.
+    """
     result = None
     try:
         result = run_access_grant.delay(user_access_mapping.request_id)
@@ -316,8 +346,13 @@ def accept_request(user_access_mapping):
 
 
 def revoke_request(user_access_mapping, revoker=None):
+    """
+    user_access_mapping (dict): maps users to their access levels.
+
+    revoker: The revoker parameter is an optional argument that represents the user who is
+    revoking the access request.
+    """
     result = None
-    # change the status to revoke processing
     user_access_mapping.revoking(revoker)
     try:
         result = run_access_revoke.delay(user_access_mapping.request_id)
