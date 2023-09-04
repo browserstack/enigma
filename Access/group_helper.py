@@ -451,14 +451,19 @@ def add_user_to_group(request):
                 "msg": NON_OWNER_PERMISSION_DENIED_ERROR["msg"],
             }
             return context
+        selected_users_list = []
+        is_select_all = json.loads(data.get("selectAllUsers")) if data.get("selectAllUsers") else False
 
-        selected_users_list = json.loads(data.get("selectedUserList"))
+        if is_select_all:
+            selected_users_list = list(map(lambda user: user["email"], request.user.user.get_active_users().values('email')))
+        if not selected_users_list and data.get("selectedUserList"):
+            selected_users_list = json.loads(data.get("selectedUserList"))
 
         duplicate_request_emails = _check_if_members_in_group(
             group=group, selected_members=selected_users_list
         )
 
-        if duplicate_request_emails:
+        if duplicate_request_emails and not is_select_all:
             context = {}
             msg = DUPLICATE_GROUP_MEMBER_ADD_REQUEST.format(
                 user_emails=duplicate_request_emails

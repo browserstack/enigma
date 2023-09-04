@@ -1,5 +1,6 @@
 {% extends 'global_layout.html' %}
 {% load static %}
+{% load reusable_components %}
 
 {% block head_body %}
 <script src={% static "js/addUserToGroup.js" %}></script>
@@ -75,6 +76,10 @@
     </div>
   </div>
 
+  <div id="max-member-selected-warning" class="hidden">
+    {% get_error_panel_with_message "Max number of members selected" "Deselect some selections or Submit request to select more members." %}
+  </div>
+
   <h1 class="pt-8 text-sm leading-5 font-medium text-gray-900">Add members</h1>
   <div class="grid grid-cols-2 gap-4">
     <div class="flex-col">
@@ -90,8 +95,8 @@
           </div>
 
           <div class="flex-none flex">
-            <input type="checkbox" onclick="selectAllUserToggle(this)" name="select-all-user" id="selectAllUsers" class="ml-4 mr-2 mt-2 px-1 py-1 top-1/2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6">
-            <label class="ml-1 mr-3 mt-1 mb-2 text-base leading-6 font-normal text-gray-900">Select all</label>
+            <input type="checkbox" onclick="selectAllUserToggle(this)" name="selectAllUsers" id="selectAllUsers" class="ml-4 mr-2 mt-2 px-1 py-1 top-1/2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 sm:left-6">
+            <label for="selectAllUsers" class="ml-1 mr-3 mt-1 mb-2 text-base leading-6 font-normal text-gray-900">Select all</label>
           </div>
         </div>
 
@@ -143,7 +148,7 @@
           </table>
         </div>
         <nav class="flex flex-shrink-0 px-4 items-center justify-between align-bottom border-t border-gray-200 pt-2 pb-2 hidden">
-          <button type="button" class="inline-flex items-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-base font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2" onclick="removeAllUsers();">
+          <button type="button" class="inline-flex items-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-base font-medium text-blue-700 shadow-sm hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2" onclick="removeAllUsers(false);">
             Remove all new
           </button>
         </nav>
