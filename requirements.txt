@@ -86,7 +86,7 @@ traitlets==5.0.5
 uritemplate==3.0.1
 urllib3==2.2.2
 wcwidth==0.2.5
-zipp==3.4.0
+zipp==3.19.1
 selenium==4.23.1
 pyotp==2.7.0
 attrs==21.3.0
