@@ -78,7 +78,7 @@ rsa==4.7
 scandir==1.10.0
 simplegeneric==0.8.1
 six==1.15.0
-social-auth-app-django==5.0.0
+social-auth-app-django==5.4.1
 social-auth-core==4.3.0
 soupsieve==2.0.1
 sqlparse==0.5.1
