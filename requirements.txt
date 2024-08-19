@@ -1,6 +1,6 @@
 appdirs==1.4.4
 appnope==0.1.2
-asgiref==3.5.2
+asgiref==3.8.1
 asn1==2.4.1
 asn1crypto==1.4.0
 backports.shutil-get-terminal-size==1.0.0
@@ -16,7 +16,7 @@ cryptography==43.0.0
 decorator==4.4.2
 defusedxml==0.7.1
 Deprecated==1.2.10
-Django==4.1.13
+Django==4.2.15
 django-ajax-datatable==4.4.4
 django-filter==22.1
 django-mysql==4.7.1
@@ -60,7 +60,7 @@ pycparser==2.20
 pyflakes==3.0.0
 PyGithub==1.56
 Pygments==2.15.0
-PyJWT==2.6.0
+PyJWT==2.9.0
 PyMySQL==1.1.1
 PyNaCl==1.5.0
 pyOpenSSL==24.2.1
@@ -79,7 +79,7 @@ scandir==1.10.0
 simplegeneric==0.8.1
 six==1.15.0
 social-auth-app-django==5.4.1
-social-auth-core==4.3.0
+social-auth-core==4.5.4
 soupsieve==2.0.1
 sqlparse==0.5.1
 traitlets==5.0.5
