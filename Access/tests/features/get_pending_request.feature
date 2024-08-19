@@ -1,5 +1,5 @@
 Feature : Get Pending Request
-  
+
   Scenario: Retrieving All Pending Requests
         Given request to view all pending requests
         When the `get_pending_requests` method is called
@@ -13,4 +13,3 @@ Feature : Get Pending Request
         When the `get_pending_requests` method is called
         Then the method should handle the error
         And return an error response
-
