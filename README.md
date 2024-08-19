@@ -48,7 +48,7 @@ Enigma access management tool was developed internally at BrowserStack to solve 
 The following steps are for hosting Enigma locally from published docker container images.
 
 For development setup, follow these docs:
-[Setup using docker](/docs/“How-to”%20guides/User%20Guides/Local%20Developer%20Setup/Local%20Setup%20with%20Docker.md), 
+[Setup using docker](/docs/“How-to”%20guides/User%20Guides/Local%20Developer%20Setup/Local%20Setup%20with%20Docker.md),
 [Setup without docker](/docs/“How-to”%20guides/User%20Guides/Local%20Developer%20Setup/Local%20Setup%20without%20Docker.md)
 
 #### Pre-requisites
@@ -84,7 +84,7 @@ For first time user sign-in, follow [this doc](/docs/%E2%80%9CHow-to%E2%80%9D%20
 - The codebase is tested for Python 3.11.0
 - Setup pre-commit hooks for development (see rules [below](#rules-enforced-by-the-pre-commit-hooks))
   - run: `npm install @commitlint/cli @commitlint/config-conventional`
-  - run: `pip install pre-commit==2.21.0`
+  - run: `pip install pre-commit==3.8.0`
   - run: `pre-commit install --install-hooks --overwrite` in the base directory of this project
   - run: `pre-commit autoupdate`
   - run: `pre-commit run --all-files --show-diff-on-failure --color always`
