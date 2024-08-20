@@ -171,6 +171,8 @@ def clone_access_modules():
     initialize_init_file()
 
     helpers.ensure_file_exists(requirements_file_path)
+    # Ensure cleanup of requirements file before starting cloning process
+    helpers.write_content_to_file(requirements_file_path, [])
 
     for formatted_git_arg in git_urls:
         cloned_path = clone_repo(formatted_git_arg, retry_limit)
