@@ -16,7 +16,7 @@ cryptography==43.0.0
 decorator==4.4.2
 defusedxml==0.7.1
 Deprecated==1.2.10
-Django==4.2.15
+Django==4.2.17
 django-ajax-datatable==4.4.4
 django-filter==22.1
 django-mysql==4.7.1
