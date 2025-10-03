@@ -3,7 +3,7 @@
 # Based on an AMI
 ############################################################
 # Set the base image to use to Ubuntu
-FROM python:3.11-slim-buster AS base
+FROM python:3.11-slim-bullseye AS base
 
 ENV DJANGO_SETTINGS_MODULE=EnigmaAutomation.settings
 RUN DEBIAN_FRONTEND=noninteractive \
@@ -14,7 +14,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
   && apt-get autoremove -y
 
 # Set env variables used in this Dockerfile (add a unique prefix, such as DEV)
-RUN apt update && apt install -y netcat dnsutils libmariadbclient-dev
+RUN apt update && apt install -y netcat dnsutils libmariadb-dev
 
 RUN mkdir -p /ebs/logs && touch /ebs/logs/engima.log && chmod 777 /ebs/logs/engima.log
 
