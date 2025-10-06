@@ -135,6 +135,16 @@ References:
 - https://seesparkbox.com/foundry/semantic_commit_messages
 - http://karma-runner.github.io/1.0/dev/git-commit-msg.html
 
+## Deployment to Dockerhub
+
+Docker image deployment is handled automatically through a pre-defined GitHub Action workflow.
+To trigger the deployment, create and push a version tag to the repository:
+
+```bash
+git push origin tag v<version_number>
+```
+
+The new Docker image will then be available on Docker Hub under the corresponding version tag.
 
 ##  License
 See [LICENSE.md](/LICENSE.md)
