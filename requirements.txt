@@ -54,7 +54,7 @@ pre-commit==2.21.0
 prompt-toolkit==3.0.8
 ptpython==3.0.7
 ptyprocess==0.6.0
-pyasn1==0.4.8
+pyasn1==0.6.3
 pyasn1-modules==0.2.8
 pycparser==2.20
 pyflakes==3.0.0
