@@ -28,7 +28,7 @@ enum34==1.1.10
 futures==3.1.1
 fuzzywuzzy==0.18.0
 gunicorn==23.0.0
-gitpython==3.1.47
+gitpython==3.1.49
 httplib2==0.19.0
 hvac==0.10.5
 idna==3.7
