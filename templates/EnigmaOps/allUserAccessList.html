@@ -127,18 +127,27 @@ var current_username = "";
       x[i].style.background = "grey";
     }
     elem.style.background = "#429244";
-    title_line  = $("#access-header-row")
-    title_html = "<h4 id='header-title'>Access List for User {{username}}</h4>"
-    if(access_type.length) {
-      title_html = `<button class="btn btn-danger" data-toggle="modal" data-target="#revokeModal"
-                    onclick='revokeConfirm("module-`+access_type+`", "{{username}}")''
-                    style="float: left;" id=module-`+access_type+`>Revoke all `+ access_type+`</button>
-                    <h4 id="header-title">`+access_type+` Accesses for User {{username}}</h4>`
+    // Build the title via DOM APIs so user-controlled `access_type` is treated as
+    // text, not HTML. Fixes CodeQL js/xss-through-dom (CTO-4842).
+    var title_line = $("#access-header-row");
+    var username = "{{username|escapejs}}";
+    title_line.empty();
+    if (access_type && access_type.length && access_type !== "other") {
+      var $btn = $('<button>', {
+        'class': 'btn btn-danger',
+        'data-toggle': 'modal',
+        'data-target': '#revokeModal',
+        'style': 'float: left;',
+        'id': 'module-' + access_type
+      }).text('Revoke all ' + access_type);
+      $btn.on('click', function () { revokeConfirm('module-' + access_type, username); });
+      title_line.append($btn);
+      title_line.append($('<h4>', { id: 'header-title' }).text(access_type + ' Accesses for User ' + username));
+    } else if (access_type === "other") {
+      title_line.append($('<h4>', { id: 'header-title' }).text('Other Access List for User ' + username));
+    } else {
+      title_line.append($('<h4>', { id: 'header-title' }).text('Access List for User ' + username));
     }
-    else if(access_type == "other"){
-      title_html = "<h4 id='header-title'>Other Access List for User {{username}}</h4>"
-    }
-    title_line.html(title_html)
   }
 
   function updateTable() {

@@ -231,7 +231,7 @@ function inputRegion(e) {
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" onclick="javascript:location.href=document.getElementById('selectedGroup').value">Fill Request Form</button>
+            <button type="button" class="btn btn-primary" onclick="navigateToSelectedGroup('selectedGroup')">Fill Request Form</button>
             <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
           </div>
         </div>
@@ -253,7 +253,7 @@ function inputRegion(e) {
             </select>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" onclick="javascript:location.href= document.getElementById('groupList').value">Proceed</button>
+            <button type="button" class="btn btn-primary" onclick="navigateToSelectedGroup('groupList')">Proceed</button>
             <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
           </div>
         </div>
@@ -288,6 +288,16 @@ function inputRegion(e) {
       $('.group-access-select-dropdown').dropdown();
       $('.custom-dropdown').dropdown();
     });
+
+    // Same-origin navigation helper. Only allows relative paths (must start with "/"
+    // and not "//"). Prevents `javascript:`/`data:` URIs and cross-origin redirects
+    // if the <option value> is tampered. Fixes CodeQL js/xss-through-dom.
+    function navigateToSelectedGroup(selectId) {
+      var url = document.getElementById(selectId).value;
+      if (typeof url === 'string' && url.length > 1 && url.charAt(0) === '/' && url.charAt(1) !== '/') {
+        window.location.assign(url);
+      }
+    }
   </script>
 </body>
 
