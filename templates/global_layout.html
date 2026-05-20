@@ -293,8 +293,8 @@ function inputRegion(e) {
     // Navigation targets come from these JS literals (server-trusted `{% url %}`
     // outputs), never from DOM text — this removes the taint flow that CodeQL
     // js/xss-through-dom was flagging on the previous `<option value>` reads.
-    var SELECTED_GROUP_URLS = [{% for group in groups %}"{% url 'addUserToGroup' group %}"{% if not forloop.last %},{% endif %}{% endfor %}];
-    var GROUP_LIST_URLS = [{% for group in groups %}"{% url 'groupAccessList' group %}"{% if not forloop.last %},{% endif %}{% endfor %}];
+    var SELECTED_GROUP_URLS = [{% for group in groups %}{% url 'addUserToGroup' group as g_url %}"{{ g_url|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+    var GROUP_LIST_URLS = [{% for group in groups %}{% url 'groupAccessList' group as g_url %}"{{ g_url|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
 
     function navigateToSelectedGroup(selectId) {
       var sel = document.getElementById(selectId);
