@@ -138,7 +138,7 @@ $(function () {
 
             // Validate theme name is a simple identifier so a tampered <option value>
             // cannot inject a `javascript:` URI or off-origin stylesheet URL into the
-            // <link href>. Fixes CodeQL js/xss-through-dom (CTO-4843).
+            // <link href>. Fixes CodeQL js/xss-through-dom.
             if (!theme || !/^[a-zA-Z0-9_-]+$/.test(theme)) {
                 return false;
             }

@@ -128,7 +128,7 @@ var current_username = "";
     }
     elem.style.background = "#429244";
     // Build the title via DOM APIs so user-controlled `access_type` is treated as
-    // text, not HTML. Fixes CodeQL js/xss-through-dom (CTO-4842).
+    // text, not HTML. Fixes CodeQL js/xss-through-dom.
     var title_line = $("#access-header-row");
     var username = "{{username|escapejs}}";
     title_line.empty();
