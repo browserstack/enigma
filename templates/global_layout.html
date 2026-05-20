@@ -289,14 +289,26 @@ function inputRegion(e) {
       $('.custom-dropdown').dropdown();
     });
 
-    // Same-origin navigation helper. Only allows relative paths (must start with "/"
-    // and not "//"). Prevents `javascript:`/`data:` URIs and cross-origin redirects
-    // if the <option value> is tampered. Fixes CodeQL js/xss-through-dom.
+    // Parse the option value through URL with the current origin as base, then
+    // navigate only if the parsed origin matches and we reconstruct the target
+    // string from parsed pieces. This breaks the taint flow from DOM text into
+    // the navigation sink and rejects `javascript:`/`data:` URIs and off-origin
+    // redirects. Fixes CodeQL js/xss-through-dom.
     function navigateToSelectedGroup(selectId) {
-      var url = document.getElementById(selectId).value;
-      if (typeof url === 'string' && url.length > 1 && url.charAt(0) === '/' && url.charAt(1) !== '/') {
-        window.location.assign(url);
+      var raw = document.getElementById(selectId).value;
+      if (typeof raw !== 'string' || raw.length === 0) {
+        return;
       }
+      var parsed;
+      try {
+        parsed = new URL(raw, window.location.origin);
+      } catch (e) {
+        return;
+      }
+      if (parsed.origin !== window.location.origin) {
+        return;
+      }
+      window.location.assign(parsed.pathname + parsed.search + parsed.hash);
     }
   </script>
 </body>
