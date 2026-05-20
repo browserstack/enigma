@@ -225,7 +225,7 @@ function inputRegion(e) {
             <div>
               <select id="selectedGroup" name="group" class="form-control custom-dropdown">
                 {% for group in groups %}
-                <option value="{% url 'addUserToGroup' group %}" >{{group}}</option>
+                <option value="{{forloop.counter0}}">{{group}}</option>
                 {% endfor %}
               </select>
             </div>
@@ -248,7 +248,7 @@ function inputRegion(e) {
           <div class="modal-body">
             <select id="groupList" class="form-control custom-dropdown" name="groupName" style="width: -moz-available;width: -webkit-fill-available;">
               {% for group in groups %}
-                <option value="{% url 'groupAccessList' group %}" >{{group}}</option>
+                <option value="{{forloop.counter0}}">{{group}}</option>
               {% endfor %}
             </select>
           </div>
@@ -289,26 +289,26 @@ function inputRegion(e) {
       $('.custom-dropdown').dropdown();
     });
 
-    // Parse the option value through URL with the current origin as base, then
-    // navigate only if the parsed origin matches and we reconstruct the target
-    // string from parsed pieces. This breaks the taint flow from DOM text into
-    // the navigation sink and rejects `javascript:`/`data:` URIs and off-origin
-    // redirects. Fixes CodeQL js/xss-through-dom.
+    // Server-rendered URL allowlists keyed by the dropdown's selectedIndex.
+    // Navigation targets come from these JS literals (server-trusted `{% url %}`
+    // outputs), never from DOM text — this removes the taint flow that CodeQL
+    // js/xss-through-dom was flagging on the previous `<option value>` reads.
+    var SELECTED_GROUP_URLS = [{% for group in groups %}"{% url 'addUserToGroup' group %}"{% if not forloop.last %},{% endif %}{% endfor %}];
+    var GROUP_LIST_URLS = [{% for group in groups %}"{% url 'groupAccessList' group %}"{% if not forloop.last %},{% endif %}{% endfor %}];
+
     function navigateToSelectedGroup(selectId) {
-      var raw = document.getElementById(selectId).value;
-      if (typeof raw !== 'string' || raw.length === 0) {
+      var sel = document.getElementById(selectId);
+      if (!sel) {
         return;
       }
-      var parsed;
-      try {
-        parsed = new URL(raw, window.location.origin);
-      } catch (e) {
+      var urls = selectId === 'selectedGroup' ? SELECTED_GROUP_URLS : (selectId === 'groupList' ? GROUP_LIST_URLS : null);
+      if (!urls) {
         return;
       }
-      if (parsed.origin !== window.location.origin) {
-        return;
+      var idx = sel.selectedIndex;
+      if (idx >= 0 && idx < urls.length) {
+        window.location.assign(urls[idx]);
       }
-      window.location.assign(parsed.pathname + parsed.search + parsed.hash);
     }
   </script>
 </body>
