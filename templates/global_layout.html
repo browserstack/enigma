@@ -225,13 +225,13 @@ function inputRegion(e) {
             <div>
               <select id="selectedGroup" name="group" class="form-control custom-dropdown">
                 {% for group in groups %}
-                <option value="{% url 'addUserToGroup' group %}" >{{group}}</option>
+                <option value="{{forloop.counter0}}">{{group}}</option>
                 {% endfor %}
               </select>
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" onclick="javascript:location.href=document.getElementById('selectedGroup').value">Fill Request Form</button>
+            <button type="button" class="btn btn-primary" onclick="navigateToSelectedGroup('selectedGroup')">Fill Request Form</button>
             <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
           </div>
         </div>
@@ -248,12 +248,12 @@ function inputRegion(e) {
           <div class="modal-body">
             <select id="groupList" class="form-control custom-dropdown" name="groupName" style="width: -moz-available;width: -webkit-fill-available;">
               {% for group in groups %}
-                <option value="{% url 'groupAccessList' group %}" >{{group}}</option>
+                <option value="{{forloop.counter0}}">{{group}}</option>
               {% endfor %}
             </select>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-primary" onclick="javascript:location.href= document.getElementById('groupList').value">Proceed</button>
+            <button type="button" class="btn btn-primary" onclick="navigateToSelectedGroup('groupList')">Proceed</button>
             <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
           </div>
         </div>
@@ -288,6 +288,29 @@ function inputRegion(e) {
       $('.group-access-select-dropdown').dropdown();
       $('.custom-dropdown').dropdown();
     });
+
+    // Server-rendered URL allowlists keyed by the dropdown's selectedIndex.
+    // Navigation targets come from these JS literals (server-trusted reverses
+    // of the named URLs below), never from DOM text — this removes the taint
+    // flow that CodeQL js/xss-through-dom was flagging on the previous
+    // <option value> reads.
+    var SELECTED_GROUP_URLS = [{% for group in groups %}{% url 'addUserToGroup' group as g_url %}"{{ g_url|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+    var GROUP_LIST_URLS = [{% for group in groups %}{% url 'groupAccessList' group as g_url %}"{{ g_url|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
+
+    function navigateToSelectedGroup(selectId) {
+      var sel = document.getElementById(selectId);
+      if (!sel) {
+        return;
+      }
+      var urls = selectId === 'selectedGroup' ? SELECTED_GROUP_URLS : (selectId === 'groupList' ? GROUP_LIST_URLS : null);
+      if (!urls) {
+        return;
+      }
+      var idx = sel.selectedIndex;
+      if (idx >= 0 && idx < urls.length) {
+        window.location.assign(urls[idx]);
+      }
+    }
   </script>
 </body>
 

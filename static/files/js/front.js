@@ -134,18 +134,23 @@ $(function () {
 
         $("#colour").change(function () {
 
-            if ($(this).val() !== '') {
+            var theme = $(this).val();
 
-                var theme_csspath = 'css/style.' + $(this).val() + '.css';
-
-                alternateColour.attr("href", theme_csspath);
-
-                $.cookie("theme_csspath", theme_csspath, {
-                    expires: 365,
-                    path: document.URL.substr(0, document.URL.lastIndexOf('/'))
-                });
-
+            // Validate theme name is a simple identifier so a tampered <option value>
+            // cannot inject a `javascript:` URI or off-origin stylesheet URL into the
+            // <link href>. Fixes CodeQL js/xss-through-dom.
+            if (!theme || !/^[a-zA-Z0-9_-]+$/.test(theme)) {
+                return false;
             }
+
+            var theme_csspath = 'css/style.' + theme + '.css';
+
+            alternateColour.attr("href", theme_csspath);
+
+            $.cookie("theme_csspath", theme_csspath, {
+                expires: 365,
+                path: document.URL.substr(0, document.URL.lastIndexOf('/'))
+            });
 
             return false;
         });
