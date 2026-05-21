@@ -290,9 +290,10 @@ function inputRegion(e) {
     });
 
     // Server-rendered URL allowlists keyed by the dropdown's selectedIndex.
-    // Navigation targets come from these JS literals (server-trusted `{% url %}`
-    // outputs), never from DOM text — this removes the taint flow that CodeQL
-    // js/xss-through-dom was flagging on the previous `<option value>` reads.
+    // Navigation targets come from these JS literals (server-trusted reverses
+    // of the named URLs below), never from DOM text — this removes the taint
+    // flow that CodeQL js/xss-through-dom was flagging on the previous
+    // <option value> reads.
     var SELECTED_GROUP_URLS = [{% for group in groups %}{% url 'addUserToGroup' group as g_url %}"{{ g_url|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
     var GROUP_LIST_URLS = [{% for group in groups %}{% url 'groupAccessList' group as g_url %}"{{ g_url|escapejs }}"{% if not forloop.last %},{% endif %}{% endfor %}];
 
