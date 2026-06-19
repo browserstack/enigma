@@ -1,4 +1,8 @@
 name: Semgrep
+
+permissions:
+  contents: read
+  security-events: write
 on:
   pull_request: {}
   push:
@@ -14,8 +18,8 @@ jobs:
     name: Scan
     runs-on: ubuntu-20.04
     container:
-      image: returntocorp/semgrep
+      image: returntocorp/semgrep:1.166.0
     if: (github.actor != 'dependabot[bot]')
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - run: semgrep --error --config "p/cwe-top-25" --config "p/owasp-top-ten" --config "p/r2c-security-audit"
