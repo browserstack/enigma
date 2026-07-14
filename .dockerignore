@@ -1,0 +1,28 @@
+# Keep secrets and local config out of the build context / image layers (F-012)
+secrets/
+*.env
+.env*
+config.json
+
+# VCS / CI
+.git/
+.github/
+.gitignore
+
+# Local bind-mount data — provided at runtime, never baked into the image
+mounts/
+
+# Python / build noise
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
