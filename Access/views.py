@@ -575,7 +575,7 @@ def all_user_access_list(request, load_ui=True):
 
 
 @login_required
-@user_with_permission(["VIEW_USER_ACCESS_LIST"])
+@user_with_permission(["ALLOW_USER_OFFBOARD"])
 def mark_revoked(request):
     """Revoke an access
 
