@@ -156,40 +156,69 @@ var current_username = "";
     urlBuilder = buildUrlFromParams("json");
     $.ajax({url: urlBuilder,
         success: function(result){
-          html_string = "No Results"
-          for(i=0;i<result["dataList"].length;i++){
-            record = result["dataList"][i]
-            html_string += "<tr>"
-            html_string += "<td>"+record["user"]+"</td>"
-            html_string += "<td>"+record["access_desc"]+"</td>"
-            html_string += "<td>"
-            for(j=0;j<record["access_label"].length;j++)
-              html_string += record["access_label"][j]+"<br>"
-            html_string += "</td>"
-            if(record["status"] != "Revoked"){
-              html_string += "<td id='"+record["requestId"]+"-access-status'>"+record["status"]+"</td>"
-            }
-            else{
-              html_string += "<td id='"+record["requestId"]+"-access-status'>"+record["status"]+"<br>By-"+record["revoker"]+"</td>"
-            }
-            html_string += "<td id='"+record["requestId"]+"-revoke-button'>"
-            if(record["status"] != "Revoked")
-              html_string += '<button id="'+record["requestId"]+`" class="btn btn-danger" data-toggle="modal" data-target="#revokeModal" onclick='revokeConfirm("`+record["requestId"]+`")'>Mark Revoked</button>`
-            html_string += "</td>"
-            html_string += "<td>"+record["requested_on"]+"</td>"
-            html_string += "<td>"+record["approver"]+"</td>"
-            html_string += "<td>"+record["updated_on"]+"</td>"
-            html_string += "<td>"+record["offboarding_date"]+"</td>"
-            html_string += "<td>"+record["grantOwner"]+"</td>"
-            html_string += "<td>"+record["revokeOwner"]+"</td>"
-            html_string += "<td>{% if is_ops %} <a class=\"btn btn-primary\" target=\"_blank\" href=\"/individual_resolve?requestId="+encodeURIComponent(record["requestId"])+"&ops_resolve=true\">ReGrant</a></td>{% endif %}"
-            html_string += "<td>"+record["type"]+"</td>"
-            html_string += "</tr>"
+          // F-024: build rows with DOM APIs + .text() so DB-stored, user-controlled
+          // fields (requestId/user/approver/...) are treated as text, never HTML.
+          var isOps = {% if is_ops %}true{% else %}false{% endif %};
+          var $tbody = $("#tableData");
+          $tbody.empty();
+          var dataList = result["dataList"] || [];
+          if (dataList.length === 0) {
+            $tbody.text("No Results");
           }
-          $("#tableData").html(html_string);
+          for(var i=0;i<dataList.length;i++){
+            var record = dataList[i]
+            var $tr = $("<tr>");
+            $tr.append($("<td>").text(record["user"]));
+            $tr.append($("<td>").text(record["access_desc"]));
+            var $labelTd = $("<td>");
+            for(var j=0;j<record["access_label"].length;j++){
+              $labelTd.append(document.createTextNode(record["access_label"][j]));
+              $labelTd.append($("<br>"));
+            }
+            $tr.append($labelTd);
+            var $statusTd = $("<td>").attr("id", record["requestId"]+"-access-status");
+            if(record["status"] != "Revoked"){
+              $statusTd.text(record["status"]);
+            } else {
+              $statusTd.append(document.createTextNode(record["status"]));
+              $statusTd.append($("<br>"));
+              $statusTd.append(document.createTextNode("By-"+record["revoker"]));
+            }
+            $tr.append($statusTd);
+            var $btnTd = $("<td>").attr("id", record["requestId"]+"-revoke-button");
+            if(record["status"] != "Revoked"){
+              var $btn = $("<button>", {
+                "class": "btn btn-danger",
+                "data-toggle": "modal",
+                "data-target": "#revokeModal",
+                "id": record["requestId"]
+              }).text("Mark Revoked");
+              // read the request id off the element — no inline onclick/JS-context injection
+              $btn.on("click", function(){ revokeConfirm($(this).attr("id")); });
+              $btnTd.append($btn);
+            }
+            $tr.append($btnTd);
+            $tr.append($("<td>").text(record["requested_on"]));
+            $tr.append($("<td>").text(record["approver"]));
+            $tr.append($("<td>").text(record["updated_on"]));
+            $tr.append($("<td>").text(record["offboarding_date"]));
+            $tr.append($("<td>").text(record["grantOwner"]));
+            $tr.append($("<td>").text(record["revokeOwner"]));
+            var $regrantTd = $("<td>");
+            if(isOps){
+              $regrantTd.append($("<a>", {
+                "class": "btn btn-primary",
+                "target": "_blank",
+                "href": "/individual_resolve?requestId="+encodeURIComponent(record["requestId"])+"&ops_resolve=true"
+              }).text("ReGrant"));
+            }
+            $tr.append($regrantTd);
+            $tr.append($("<td>").text(record["type"]));
+            $tbody.append($tr);
+          }
           page_number = result['current_page'];
 
-          $("#pagedisplay").html("Page "+String(result['current_page'])+" of "+String(result['last_page']))
+          $("#pagedisplay").text("Page "+String(result['current_page'])+" of "+String(result['last_page']))
         },
         error: function(result){
           alert("Error occured while fetching data")
