@@ -91,6 +91,38 @@ def safe_access_module_path(name):
     return target_path
 
 
+def _pinned_commit_sha(target_ref):
+    """Return target_ref when it is a full 40-char commit SHA (an integrity pin)."""
+    if target_ref and re.fullmatch(r"[0-9a-fA-F]{40}", target_ref):
+        return target_ref
+    return None
+
+
+def verify_module_integrity(repo, url, pinned_sha):
+    """F-019: verify a cloned module against its pinned commit SHA.
+
+    External modules are cloned at runtime and imported directly, so a
+    compromised upstream = RCE. If a commit SHA was pinned, check it out and
+    assert HEAD matches, aborting on mismatch; otherwise warn that integrity
+    could not be verified.
+    """
+    if not pinned_sha:
+        logger.warning(
+            "Access module %s is not pinned to a commit SHA; runtime integrity "
+            "cannot be verified (F-019). Pin via '<git-url>#<40-char-commit-sha>'.",
+            url,
+        )
+        return
+    repo.git.checkout(pinned_sha)
+    actual_sha = repo.head.commit.hexsha
+    if actual_sha.lower() != pinned_sha.lower():
+        raise Exception(
+            f"Integrity check failed for {url}: expected commit "
+            f"{pinned_sha}, got {actual_sha}"
+        )
+    logger.info("Verified access module %s at pinned commit %s", url, pinned_sha)
+
+
 def clone_repo(formatted_git_arg, retry_limit):
     """ Clone a single repo """
     url, target_ref = get_repo_url_and_branch(formatted_git_arg)
@@ -99,9 +131,8 @@ def clone_repo(formatted_git_arg, retry_limit):
     # F-023: folder_name comes from the (untrusted) git URL — sanitize before use
     target_folder_path = safe_access_module_path(folder_name)
 
-    # F-019: if the ref after '#' is a full 40-char commit SHA, treat it as an
-    # integrity pin (verified below) rather than a branch to clone.
-    pinned_sha = target_ref if (target_ref and re.fullmatch(r"[0-9a-fA-F]{40}", target_ref)) else None
+    # F-019: a full 40-char SHA after '#' is an integrity pin, not a branch.
+    pinned_sha = _pinned_commit_sha(target_ref)
 
     retry_exception = None
     repo = None
@@ -134,25 +165,7 @@ def clone_repo(formatted_git_arg, retry_limit):
         logger.exception("Max retry count reached while cloning repo")
         raise retry_exception
 
-    # F-019: integrity verification. External modules are cloned at runtime and
-    # imported directly, so a compromised upstream = RCE. If a commit SHA was
-    # pinned, check it out and assert HEAD matches; abort on mismatch. Otherwise
-    # warn that the module could not be integrity-verified.
-    if pinned_sha:
-        repo.git.checkout(pinned_sha)
-        actual_sha = repo.head.commit.hexsha
-        if actual_sha.lower() != pinned_sha.lower():
-            raise Exception(
-                f"Integrity check failed for {url}: expected commit "
-                f"{pinned_sha}, got {actual_sha}"
-            )
-        logger.info("Verified access module %s at pinned commit %s", url, pinned_sha)
-    else:
-        logger.warning(
-            "Access module %s is not pinned to a commit SHA; runtime integrity "
-            "cannot be verified (F-019). Pin via '<git-url>#<40-char-commit-sha>'.",
-            url,
-        )
+    verify_module_integrity(repo, url, pinned_sha)
 
     return target_folder_path
 
