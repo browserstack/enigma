@@ -109,13 +109,15 @@ var current_username = "";
 
   function revokeConfirm(access_type_or_id, username=null){
     current_username = username
-    html = "<h4> Revoke Request ID: "+access_type_or_id+"?</h4>"
+    var message = "Revoke Request ID: " + access_type_or_id + "?"
     if(access_type_or_id.startsWith("module-")){
-      html = "<h4> Revoke all accesses for user "+username+" for "+access_type_or_id+"?</h4>"
+      message = "Revoke all accesses for user " + username + " for " + access_type_or_id + "?"
     }
     revokeButton = document.getElementsByName("final-revoke-button")[0]
     revokeButton.id = access_type_or_id
-    $("#revoke-details").html(html)
+    var $details = $("#revoke-details");
+    $details.empty();
+    $details.append($("<h4>").text(message));
   }
 
   function openType(elem) {
