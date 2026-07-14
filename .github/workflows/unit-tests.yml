@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.9', '3.10', '3.11']
+        python-version: ['3.12', '3.13', '3.14']
     steps:
     - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install pytest
+        pip install pytest "setuptools<81"
         pip install -r requirements.txt
     - name: Ensure Config
       run: cp config.json.sample config.json
@@ -28,6 +28,11 @@ jobs:
       run: |
         pip install -r Access/access_modules/requirements.txt --no-cache-dir --ignore-installed
     - name: Lint code base
-      run: python -m pylama Access/accessrequest_helper.py scripts bootprocess
+      run: |
+        pip install "setuptools<81"
+        python -m pylama Access/accessrequest_helper.py scripts bootprocess
     - name: Test with pytest
-      run: python -m pytest -v --cov --disable-warnings
+      # pylama ships a pytest plugin with the removed pytest_collect_file(path,...)
+      # signature that pytest 9 rejects. Linting runs as its own step, so disable
+      # the redundant pytest integration here.
+      run: python -m pytest -v --cov --disable-warnings -p no:pylama
