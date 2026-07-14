@@ -25,10 +25,6 @@ jobs:
       run: |
         pip install -r Access/access_modules/requirements.txt --no-cache-dir --ignore-installed
     - name: Lint code base
-      # pylama 8.4.1 and its linters (pydocstyle/typed_ast) predate Python 3.13+
-      # and can't parse their AST. Lint is version-independent, so run it once on
-      # the oldest matrix version; tests still run on every version.
-      if: matrix.python-version == '3.12'
       run: |
         pip install "setuptools<81"
         python -m pylama Access/accessrequest_helper.py scripts bootprocess
