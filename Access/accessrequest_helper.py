@@ -632,64 +632,74 @@ def is_request_valid(request_id, access_mapping):
 def accept_user_access_requests(auth_user, request_id):
     """ Grant for individual user access requests """
     json_response = {}
-    access_mapping = UserAccessMapping.get_access_request(request_id)
-    if not is_request_valid(request_id, access_mapping):
-        json_response["error"] = USER_REQUEST_IN_PROCESS_ERR_MSG.format(
-            request_id=request_id,
-        )
-        return json_response
-
-    requester = access_mapping.user_identity.user
-    if auth_user.user == requester:
-        json_response["error"] = SELF_APPROVAL_ERROR_MSG
-        return json_response
-
-    access_label = access_mapping.access.access_label
-
     try:
-        permissions = _get_approver_permissions(
-            access_mapping.access.access_tag, access_label
-        )
-        approver_permissions = permissions["approver_permissions"]
-        if not helpers.check_user_permissions(
-            auth_user, list(approver_permissions.values())
-        ):
-            logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
-            json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
-            return json_response
-
-        is_primary_approver = (
-            access_mapping.is_pending()
-            and auth_user.user.has_permission(approver_permissions["1"])
-        )
-        is_secondary_approver = (
-            access_mapping.is_secondary_pending()
-            and auth_user.user.has_permission(approver_permissions["2"])
-        )
-
-        if not (is_primary_approver or is_secondary_approver):
-            logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
-            json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
-            return json_response
-        if is_primary_approver and "2" in approver_permissions:
-            access_mapping.approver_1 = auth_user.user
-            access_mapping.update_access_status("SecondaryPending")
-            json_response["msg"] = USER_REQUEST_SECONDARY_PENDING_MSG.format(
-                request_id=request_id, approved_by=auth_user.username
+        with transaction.atomic():
+            # F-027: lock the mapping row so the validity/approver-state check and
+            # the processing() status write are atomic. Without the lock two
+            # concurrent approvers can both pass the check and double-dispatch the
+            # grant task. The Celery dispatch inside run_accept_request_task now
+            # only fires for the single request that wins the lock.
+            access_mapping = (
+                UserAccessMapping.objects.select_for_update()
+                .filter(request_id=request_id)
+                .first()
             )
-            logger.debug(
-                USER_REQUEST_SECONDARY_PENDING_MSG.format(
+            if not is_request_valid(request_id, access_mapping):
+                json_response["error"] = USER_REQUEST_IN_PROCESS_ERR_MSG.format(
+                    request_id=request_id,
+                )
+                return json_response
+
+            requester = access_mapping.user_identity.user
+            if auth_user.user == requester:
+                json_response["error"] = SELF_APPROVAL_ERROR_MSG
+                return json_response
+
+            access_label = access_mapping.access.access_label
+
+            permissions = _get_approver_permissions(
+                access_mapping.access.access_tag, access_label
+            )
+            approver_permissions = permissions["approver_permissions"]
+            if not helpers.check_user_permissions(
+                auth_user, list(approver_permissions.values())
+            ):
+                logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
+                json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+                return json_response
+
+            is_primary_approver = (
+                access_mapping.is_pending()
+                and auth_user.user.has_permission(approver_permissions["1"])
+            )
+            is_secondary_approver = (
+                access_mapping.is_secondary_pending()
+                and auth_user.user.has_permission(approver_permissions["2"])
+            )
+
+            if not (is_primary_approver or is_secondary_approver):
+                logger.debug(USER_REQUEST_PERMISSION_DENIED_ERR_MSG)
+                json_response["error"] = USER_REQUEST_PERMISSION_DENIED_ERR_MSG
+                return json_response
+            if is_primary_approver and "2" in approver_permissions:
+                access_mapping.approver_1 = auth_user.user
+                access_mapping.update_access_status("SecondaryPending")
+                json_response["msg"] = USER_REQUEST_SECONDARY_PENDING_MSG.format(
                     request_id=request_id, approved_by=auth_user.username
                 )
-            )
-        else:
-            json_response = run_accept_request_task(
-                is_primary_approver,
-                access_mapping,
-                auth_user=auth_user,
-                request_id=request_id,
-                access_label=access_label,
-            )
+                logger.debug(
+                    USER_REQUEST_SECONDARY_PENDING_MSG.format(
+                        request_id=request_id, approved_by=auth_user.username
+                    )
+                )
+            else:
+                json_response = run_accept_request_task(
+                    is_primary_approver,
+                    access_mapping,
+                    auth_user=auth_user,
+                    request_id=request_id,
+                    access_label=access_label,
+                )
     except Exception as exception:
         return process_error_response(exception)
 
