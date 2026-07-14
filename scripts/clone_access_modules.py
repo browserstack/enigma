@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 import shutil
 import sys
 import time
@@ -92,20 +93,25 @@ def safe_access_module_path(name):
 
 def clone_repo(formatted_git_arg, retry_limit):
     """ Clone a single repo """
-    url, target_branch = get_repo_url_and_branch(formatted_git_arg)
+    url, target_ref = get_repo_url_and_branch(formatted_git_arg)
 
     folder_name = url.split("/").pop()[:-4]
     # F-023: folder_name comes from the (untrusted) git URL — sanitize before use
     target_folder_path = safe_access_module_path(folder_name)
 
+    # F-019: if the ref after '#' is a full 40-char commit SHA, treat it as an
+    # integrity pin (verified below) rather than a branch to clone.
+    pinned_sha = target_ref if (target_ref and re.fullmatch(r"[0-9a-fA-F]{40}", target_ref)) else None
+
     retry_exception = None
+    repo = None
     for clone_attempt in range(1, retry_limit + 1):
         try:
             logger.info("Cloning Repo")
-            if target_branch:
-                Repo.clone_from(url, target_folder_path, branch=target_branch)
+            if target_ref and not pinned_sha:
+                repo = Repo.clone_from(url, target_folder_path, branch=target_ref)
             else:
-                Repo.clone_from(url, target_folder_path)
+                repo = Repo.clone_from(url, target_folder_path)
         except (GitCommandError, Exception) as exception:
             sleep_time = 10 * clone_attempt
             logger.error(
@@ -127,6 +133,26 @@ def clone_repo(formatted_git_arg, retry_limit):
     if retry_exception is not None:
         logger.exception("Max retry count reached while cloning repo")
         raise retry_exception
+
+    # F-019: integrity verification. External modules are cloned at runtime and
+    # imported directly, so a compromised upstream = RCE. If a commit SHA was
+    # pinned, check it out and assert HEAD matches; abort on mismatch. Otherwise
+    # warn that the module could not be integrity-verified.
+    if pinned_sha:
+        repo.git.checkout(pinned_sha)
+        actual_sha = repo.head.commit.hexsha
+        if actual_sha.lower() != pinned_sha.lower():
+            raise Exception(
+                f"Integrity check failed for {url}: expected commit "
+                f"{pinned_sha}, got {actual_sha}"
+            )
+        logger.info("Verified access module %s at pinned commit %s", url, pinned_sha)
+    else:
+        logger.warning(
+            "Access module %s is not pinned to a commit SHA; runtime integrity "
+            "cannot be verified (F-019). Pin via '<git-url>#<40-char-commit-sha>'.",
+            url,
+        )
 
     return target_folder_path
 
