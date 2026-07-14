@@ -21,5 +21,5 @@ jobs:
       image: returntocorp/semgrep:1.166.0
     if: (github.actor != 'dependabot[bot]')
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
     - run: semgrep --error --config "p/cwe-top-25" --config "p/owasp-top-ten" --config "p/r2c-security-audit"
