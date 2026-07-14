@@ -29,4 +29,7 @@ jobs:
         pip install "setuptools<81"
         python -m pylama Access/accessrequest_helper.py scripts bootprocess
     - name: Test with pytest
-      run: python -m pytest -v --cov --disable-warnings
+      # pylama ships a pytest plugin with the removed pytest_collect_file(path,...)
+      # signature that pytest 9 rejects. Linting runs as its own step, so disable
+      # the redundant pytest integration here.
+      run: python -m pytest -v --cov --disable-warnings -p no:pylama
