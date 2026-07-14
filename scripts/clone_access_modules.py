@@ -67,12 +67,36 @@ def get_repo_url_and_branch(formatted_git_arg):
     return url, target_branch
 
 
+ACCESS_MODULES_DIR = "./Access/access_modules"
+
+
+def safe_access_module_path(name):
+    """Resolve ``./Access/access_modules/<name>`` while rejecting path traversal.
+
+    ``name`` is untrusted: it is derived from a git URL (folder name) or read
+    from a cloned repository's directory listing. Strip any path components with
+    ``os.path.basename`` and confirm the resolved path stays inside
+    ``access_modules`` before it is used as a clone target or rename destination.
+    """
+    safe_name = os.path.basename(str(name).strip().rstrip("/"))
+    if safe_name in ("", ".", ".."):
+        raise Exception(f"Unsafe access module name derived from {name!r}")
+
+    target_path = os.path.join(ACCESS_MODULES_DIR, safe_name)
+    base_dir = os.path.realpath(ACCESS_MODULES_DIR)
+    resolved = os.path.realpath(target_path)
+    if resolved != base_dir and not resolved.startswith(base_dir + os.sep):
+        raise Exception(f"Refusing path outside access_modules: {name!r}")
+    return target_path
+
+
 def clone_repo(formatted_git_arg, retry_limit):
     """ Clone a single repo """
     url, target_branch = get_repo_url_and_branch(formatted_git_arg)
 
     folder_name = url.split("/").pop()[:-4]
-    target_folder_path = "./Access/access_modules/" + folder_name
+    # F-023: folder_name comes from the (untrusted) git URL — sanitize before use
+    target_folder_path = safe_access_module_path(folder_name)
 
     retry_exception = None
     for clone_attempt in range(1, retry_limit + 1):
@@ -123,9 +147,11 @@ def move_modules_from_cloned_repo(cloned_path):
             and each_path not in blacklist_paths
         ):
             try:
+                # F-021: each_path comes from the cloned repo — sanitize the
+                # rename destination so a crafted dir name can't escape.
                 os.rename(
                     cloned_path + "/" + each_path,
-                    "./Access/access_modules/" + each_path
+                    safe_access_module_path(each_path)
                 )
             except Exception as exception:
                 logger.exception(
