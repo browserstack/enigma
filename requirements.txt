@@ -80,7 +80,7 @@ simplegeneric==0.8.1
 six==1.15.0
 social-auth-app-django==5.4.1
 social-auth-core==4.5.4
-soupsieve==2.0.1
+soupsieve==2.8.4
 sqlparse==0.5.1
 traitlets==5.0.5
 uritemplate==3.0.1
