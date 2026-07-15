@@ -96,7 +96,10 @@ CID_GENERATE = True
 CID_CONCATENATE_IDS = True
 SESSION_EXPIRE_SECONDS = 7*24*60*60
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
-AXES_ONLY_USER_FAILURES=True
+# False so lockout also factors in source IP (username+IP), not username-only —
+# username-only tracking lets credential-stuffing spread one attempt across many
+# usernames from a single IP without ever tripping the limit (chain C-008 / F-032).
+AXES_ONLY_USER_FAILURES=False
 AXES_FAILURE_LIMIT=5
 AXES_COOLOFF_TIME=2.0
 
