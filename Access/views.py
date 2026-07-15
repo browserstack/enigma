@@ -337,8 +337,17 @@ def pending_requests(request):
 
 
 @login_required
+@user_any_approver
 def accept_bulk(request, selector):
     """approve one or more access request.
+
+    F-022: gate the bulk-approval endpoint with @user_any_approver (matching the
+    sibling views pending_requests / decline_access) so a logged-in NON-approver
+    cannot reach the approval paths at all. This checks "holds ANY approver
+    permission" via getPossibleApproverPermissions(), so module-specific approvers
+    are unaffected. Per-request authorization (module/group approver perms, primary/
+    secondary checks, self-approval block) is still enforced in the helpers below —
+    this is a defense-in-depth view gate, not a replacement for those checks.
 
     Args:
         request (HTTPRequest): Details of access and access approver.

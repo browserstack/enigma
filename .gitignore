@@ -1,4 +1,8 @@
 config.json
+
+# Real secrets must never be committed (chain C-004) — only *.sample templates.
+secrets/*.env
+
 __pycache__/
 *.py[cod]
 db.sqlite3

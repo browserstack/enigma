@@ -115,6 +115,7 @@ mypy==2.3.0
 mypy-extensions==1.1.0
 vulture==2.16
 django-cid==2.3
+django-csp==3.8
 flake8==7.3.0
 django-session-timeout==0.1.0
 django-axes==5.41.1
