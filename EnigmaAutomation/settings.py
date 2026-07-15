@@ -49,6 +49,30 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_HTTPONLY = True
 
+# --- Response security headers (chain C-002 / F-035) ---
+# Sent by django.middleware.security.SecurityMiddleware + clickjacking middleware.
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = "same-origin"
+X_FRAME_OPTIONS = "DENY"
+
+# --- Content-Security-Policy (django-csp / csp.middleware.CSPMiddleware) ---
+# NOTE: 'unsafe-inline' is retained for script/style because the ops UI still
+# ships inline <script> blocks and inline styles (16 templates). Even so this
+# policy blocks injected EXTERNAL scripts, object/embed, <base> hijacking and
+# clickjacking. Follow-up: migrate templates to nonces and drop 'unsafe-inline'.
+# The allowed CDN hosts below reflect the jQuery/FontAwesome assets the UI loads
+# — smoke-test the pages render before flipping CSP_REPORT_ONLY off.
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "code.jquery.com", "cdn.jsdelivr.net")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'", "fonts.googleapis.com", "use.fontawesome.com", "cdn.jsdelivr.net")
+CSP_FONT_SRC = ("'self'", "data:", "fonts.gstatic.com", "use.fontawesome.com")
+CSP_IMG_SRC = ("'self'", "data:")
+CSP_CONNECT_SRC = ("'self'",)
+CSP_OBJECT_SRC = ("'none'",)
+CSP_BASE_URI = ("'self'",)
+CSP_FRAME_ANCESTORS = ("'none'",)
+CSP_FORM_ACTION = ("'self'",)
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -78,6 +102,7 @@ AXES_COOLOFF_TIME=2.0
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "csp.middleware.CSPMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -107,7 +132,8 @@ SOCIAL_AUTH_PIPELINE = (
     "social_core.pipeline.social_auth.associate_user",
     "social_core.pipeline.social_auth.load_extra_data",
     "social_core.pipeline.user.user_details",
-    "social_core.pipeline.debug.debug",
+    # NOTE: social_core.pipeline.debug.debug removed (chain C-008) — it logs the
+    # full OAuth response, including access tokens and user PII, at DEBUG level.
 )
 
 SOCIAL_AUTH_DISCONNECT_PIPELINE = (
@@ -268,7 +294,9 @@ ACCESS_MODULES = data["access_modules"]
 
 AUTOMATED_EXEC_IDENTIFIER = "automated-grant"
 
-current_log_level = 'DEBUG'
+# INFO (not DEBUG) in the app loggers — DEBUG emits request/response bodies and
+# third-party token traffic that can leak secrets to the log sink (chain C-008).
+current_log_level = 'INFO'
 logging_apps = ["django.request", "inventory", "Access", "bootprocess"]
 LOGGING = {
     'version': 1,

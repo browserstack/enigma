@@ -41,3 +41,7 @@ jobs:
         target: web
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
+        # Attach SLSA build provenance + SBOM so a swapped/backdoored image can be
+        # detected against the attestation at deploy time (chain C-005).
+        provenance: true
+        sbom: true

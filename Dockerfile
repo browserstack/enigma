@@ -16,10 +16,15 @@ RUN DEBIAN_FRONTEND=noninteractive \
 # Set env variables used in this Dockerfile (add a unique prefix, such as DEV)
 RUN apt update && apt install -y netcat dnsutils libmariadb-dev
 
-RUN mkdir -p /ebs/logs && touch /ebs/logs/engima.log && chmod 777 /ebs/logs/engima.log
-
 ARG APPUID=1001
-RUN useradd -rm -d /home/app -s /bin/bash -g root -u "$APPUID" app
+# Own group for the app user (not gid 0 / root group) so a container escape
+# does not inherit root-group file access (chains C-001 / C-003).
+RUN groupadd -g "$APPUID" app \
+  && useradd -rm -d /home/app -s /bin/bash -g app -u "$APPUID" app
+
+# Log file owned by the app user, not world-writable (was chmod 777).
+RUN mkdir -p /ebs/logs && touch /ebs/logs/engima.log \
+  && chown -R app:app /ebs/logs && chmod 640 /ebs/logs/engima.log
 WORKDIR /srv/code/dev
 RUN mkdir -p logs
 RUN mkdir -p db
