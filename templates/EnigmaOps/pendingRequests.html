@@ -173,6 +173,15 @@
 
         $(".dropdown-menu a:first-child").trigger('click')
 
+        // F-025: server-supplied msg/error must be inserted as text, not HTML.
+        function setColoredMessage(el, text, color) {
+            if (!el) return;
+            el.innerHTML = "";
+            var p = document.createElement("p");
+            p.style.color = color;
+            p.textContent = text;
+            el.appendChild(p);
+        }
         function updateStatus(result, selector) {
             for (var request_id in result["response"]) {
                 div_id = request_id + "-action"
@@ -181,13 +190,11 @@
                     document.getElementById(chkbox).innerHTML = ""
                 if (result["response"][request_id]["success"]) {
                     msg = result["response"][request_id]["msg"]
-                    if (document.getElementById(div_id))
-                        document.getElementById(div_id).innerHTML = "<p style='color: #68e068'>" + msg + "</p>"
+                    setColoredMessage(document.getElementById(div_id), msg, "#68e068")
                 }
                 else {
                     error = result["response"][request_id]["error"];
-                    if (document.getElementById(div_id))
-                        document.getElementById(div_id).innerHTML = "<p style='color: red'>" + error + "</p>"
+                    setColoredMessage(document.getElementById(div_id), error, "red")
                 }
             }
             if (selector.endsWith("-club") || selector == "clubGroupAccess") {
@@ -278,7 +285,7 @@
                 },
                 error: function (result) {
                     error = result["responseJSON"]["error"]
-                    document.getElementById(div_id).innerHTML = "<p style='color: red'>" + error + "</p>"
+                    setColoredMessage(document.getElementById(div_id), error, "red")
                     modal.style.display = "none";
                     document.getElementById("decline-processing").innerHTML = ""
                 }
@@ -297,7 +304,7 @@
             request_id = $(this).val()
             modal.style.display = "block";
             $('#declineUrlParams').val(selector)
-            document.getElementById("declineHeading").innerHTML = "Decline " + request_id
+            document.getElementById("declineHeading").textContent = "Decline " + request_id
         });
 
         $('#declineReason').on('change', function () {
