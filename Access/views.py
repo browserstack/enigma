@@ -294,6 +294,7 @@ def group_dashboard(request):
     return render(request, "EnigmaOps/createNewGroup.html")
 
 
+@login_required
 def approve_new_group(request, group_id):
     """Approve a new group request.
 
@@ -448,6 +449,7 @@ def decline_access(request, access_type, request_id):
     return JsonResponse({"error": "Invalid request"}, status=400)
 
 
+@login_required
 def remove_group_member(request):
     """Remove a user from a group.
 
@@ -628,6 +630,7 @@ def mark_revoked(request):
     return JsonResponse(json_response, status=403)
 
 
+@login_required
 def individual_resolve(request):
     json_response = {"status_list": []}
     try:
@@ -738,6 +741,7 @@ def resolve_bulk(request):
         json_response['error'] = {'error_msg': "Bad request", 'msg': "Error in request not found OR Invalid request type"}
         return render(request,'EnigmaOps/accessStatus.html',json_response)
 
+@login_required
 def revoke_group_access(request):
     try:
         response = group_helper.revoke_access_from_group(request)
