@@ -56,6 +56,18 @@ def background_task(func, *args):
 )
 def run_access_grant(request_id):
     user_access_mapping = UserAccessMapping.get_access_request(request_id=request_id)
+    # F-029: idempotency guard. autoretry_for=(Exception,) can re-run this task;
+    # if the request is already approved, do not call the access module again
+    # (which would create duplicate external grants).
+    if user_access_mapping is None:
+        logger.warning("run_access_grant: request %s not found; skipping", request_id)
+        return False
+    if user_access_mapping.is_approved():
+        logger.info(
+            "run_access_grant: request %s already approved; skipping re-grant",
+            request_id,
+        )
+        return True
     access_tag = user_access_mapping.access.access_tag
     user = user_access_mapping.user_identity.user
     approver = user_access_mapping.approver_1.user

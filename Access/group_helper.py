@@ -547,57 +547,63 @@ def is_user_in_group(user_email, group_members_email):
 
 
 def accept_member(auth_user, requestId, shouldRender=True):
+    context = {}
     try:
-        membership = MembershipV2.get_membership(membership_id=requestId)
-        if not membership:
-            logger.error("Error request not found OR Invalid request type")
-            context = {}
-            context["error"] = REQUEST_NOT_FOUND_ERROR + str(e)
-            return context
+        with transaction.atomic():
+            # F-028: lock the membership row so the is_pending() check and the
+            # approve() write are atomic. Without the lock two concurrent
+            # approvers can both pass is_pending() and double-grant the group.
+            membership = (
+                MembershipV2.objects.select_for_update()
+                .filter(membership_id=requestId)
+                .first()
+            )
+            if not membership:
+                logger.error("Error request not found OR Invalid request type")
+                context["error"] = REQUEST_NOT_FOUND_ERROR
+                return context
+            if not membership.is_pending():
+                logger.warning(
+                    "An Already Approved/Declined/Processing Request was accessed by - "
+                    + auth_user.username
+                )
+                context["error"] = REQUEST_PROCESSED_BY.format(
+                    requestId=requestId, user=membership.approver.user.username
+                )
+                return context
+            if membership.is_self_approval(approver=auth_user.user):
+                context["error"] = SELF_APPROVAL_ERROR
+                return context
+
+            context["msg"] = REQUEST_PROCESSING.format(requestId=requestId)
+            membership.approve(auth_user.user)
+            group = membership.group
+            user = membership.user
+            user_mappings_list = views_helper.generate_user_mappings(
+                user, group, membership
+            )
+
+        # Lock released after commit. External grants and notifications must run
+        # outside the transaction so we never hold a row lock across them.
+        execute_group_access(user_mappings_list)
+
+        notifications.send_membership_accepted_notification(
+            user=user, group=group, membership=membership
+        )
+        logger.debug(
+            "Process has been started for the Approval of request - "
+            + requestId
+            + " - Approver="
+            + auth_user.username
+        )
+        return context
     except Exception as e:
+        logger.exception("Error while accepting group membership: %s", str(e))
         context["error"] = {
             "error_msg": INTERNAL_ERROR_MESSAGE["error_msg"],
             "msg": INTERNAL_ERROR_MESSAGE["msg"],
         }
-
-    try:
-        if not membership.is_pending():
-            logger.warning(
-                "An Already Approved/Declined/Processing Request was accessed by - "
-                + auth_user.username
-            )
-            context = {}
-            context["error"] = REQUEST_PROCESSED_BY.format(
-                requestId=requestId, user=membership.approver.user.username
-            )
-            return context
-        elif membership.is_self_approval(approver=auth_user.user):
-            context = {}
-            context["error"] = SELF_APPROVAL_ERROR
-            return context
-        else:
-            context = {}
-            context["msg"] = REQUEST_PROCESSING.format(requestId=requestId)
-            with transaction.atomic():
-                membership.approve(auth_user.user)
-                group = membership.group
-                user = membership.user
-                user_mappings_list = views_helper.generate_user_mappings(
-                    user, group, membership
-                )
-
-            execute_group_access(user_mappings_list)
-
-            notifications.send_membership_accepted_notification(
-                user=user, group=group, membership=membership
-            )
-            logger.debug(
-                "Process has been started for the Approval of request - "
-                + requestId
-                + " - Approver="
-                + auth_user.username
-            )
-            return context
+        return context
     except Exception as e:
         logger.exception(e)
         logger.error("Error in Accept of New Member in Group request.")
