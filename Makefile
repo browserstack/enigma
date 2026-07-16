@@ -1,6 +1,22 @@
 APP_UID := $(shell id -u)
 
-setup_mounts:
+## make setup : Bootstrap local secret env files + config.json from samples (idempotent)
+.PHONY: setup
+setup: setup_secrets setup_config
+
+setup_secrets:
+	@bash scripts/bootstrap_secrets.sh
+
+# config.json is gitignored and baked into the image, but the `.:/srv/code/dev`
+# bind mount shadows the baked copy, so a fresh clone must materialise it locally
+# or settings.py fails with FileNotFoundError. Idempotent: existing file is kept.
+setup_config:
+	@if [ ! -f config.json ]; then \
+		cp config.json.sample config.json; \
+		echo "  created config.json from sample"; \
+	fi
+
+setup_mounts: setup_secrets setup_config
 	@mkdir -p mounts/db
 	@mkdir -p mounts/mysql_db
 	@mkdir -p mounts/logs
@@ -27,7 +43,7 @@ dev: setup_mounts
 ## make build : Build and start docker containers - (web and db)
 .PHONY: build
 build: export APPUID = $(APP_UID)
-build:
+build: setup_secrets setup_config
 	@docker-compose up --build -d web
 
 ## make build_only : Only build the web container
