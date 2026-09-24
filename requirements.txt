@@ -28,7 +28,7 @@ enum34==1.1.10
 futures==3.1.1
 fuzzywuzzy==0.18.0
 gunicorn==23.0.0
-gitpython==3.1.50
+gitpython==3.1.59
 httplib2==0.32.0
 hvac==0.10.5
 idna==3.15
@@ -54,7 +54,7 @@ pre-commit==2.21.0
 prompt-toolkit==3.0.8
 ptpython==3.0.7
 ptyprocess==0.6.0
-pyasn1==0.6.3
+pyasn1==0.6.4
 pyasn1-modules==0.4.2
 pycparser==2.20
 pyflakes==3.4.0
@@ -81,7 +81,7 @@ six==1.15.0
 social-auth-app-django==5.4.1
 social-auth-core==4.5.4
 soupsieve==2.8.4
-sqlparse==0.5.4
+sqlparse==0.6.0
 traitlets==5.0.5
 uritemplate==3.0.1
 urllib3==2.7.0
@@ -121,4 +121,3 @@ django-session-timeout==0.1.0
 django-axes==5.41.1
 jsonschema==4.17.3
 types-jsonschema==4.17.0
-
