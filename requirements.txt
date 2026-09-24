@@ -79,7 +79,7 @@ scandir==1.10.0
 simplegeneric==0.8.1
 six==1.15.0
 social-auth-app-django==5.4.1
-social-auth-core==4.5.4
+social-auth-core==5.0.0
 soupsieve==2.8.4
 sqlparse==0.6.0
 traitlets==5.0.5
