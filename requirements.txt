@@ -84,7 +84,7 @@ soupsieve==2.8.4
 sqlparse==0.6.0
 traitlets==5.0.5
 uritemplate==3.0.1
-urllib3==2.7.0
+urllib3==2.8.0
 wcwidth==0.2.5
 zipp==3.19.1
 selenium==4.23.1
