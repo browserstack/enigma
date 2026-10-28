@@ -448,3 +448,60 @@ def test_add_user_to_group(mocker, test_name, post_data, expected_output):
 
     context = group_helper.add_user_to_group(request)
     assert expected_output in str(context)
+
+
+def _update_owners_request(mocker, is_admin_of_group):
+    request = mocker.MagicMock()
+    request.user.username = "requester"
+    request.user.user.email = "requester@example.com"
+    request.user.user.is_allowed_admin_actions_on_group.return_value = is_admin_of_group
+    request.POST = QueryDict("owners=member@example.com")
+    return request
+
+
+def test_update_owners_rejects_non_owner(mocker):
+    group = mocker.MagicMock()
+    group.name = testGroupName
+    mocker.patch(
+        "Access.models.GroupV2.get_active_group_by_name", return_value=group
+    )
+    send_mail = mocker.patch(
+        "Access.group_helper.notifications.send_group_owners_update_mail"
+    )
+    request = _update_owners_request(mocker, is_admin_of_group=False)
+
+    context = group_helper.update_owners(request, testGroupName)
+
+    assert context == {
+        "error": {
+            "error_msg": group_helper.NON_OWNER_PERMISSION_DENIED_ERROR["error_msg"],
+            "msg": group_helper.NON_OWNER_PERMISSION_DENIED_ERROR["msg"],
+        }
+    }
+    request.user.user.is_allowed_admin_actions_on_group.assert_called_once_with(group)
+    group.get_all_approved_members.assert_not_called()
+    send_mail.assert_not_called()
+
+
+def test_update_owners_allows_owner(mocker):
+    member = mocker.MagicMock()
+    member.user.email = "member@example.com"
+    member.is_owner = False
+    group = mocker.MagicMock()
+    group.name = testGroupName
+    group.get_all_approved_members.return_value.exclude.return_value = [member]
+    mocker.patch(
+        "Access.models.GroupV2.get_active_group_by_name", return_value=group
+    )
+    mocker.patch("Access.group_helper.transaction.atomic")
+    send_mail = mocker.patch(
+        "Access.group_helper.notifications.send_group_owners_update_mail"
+    )
+    request = _update_owners_request(mocker, is_admin_of_group=True)
+
+    context = group_helper.update_owners(request, testGroupName)
+
+    assert context == {"notification": "Owner's updated"}
+    assert member.is_owner is True
+    member.save.assert_called_once()
+    send_mail.assert_called_once()

@@ -248,6 +248,15 @@ def update_owners(request, group_name):
         }
         return context
 
+    if not request.user.user.is_allowed_admin_actions_on_group(group):
+        logger.debug("Permission denied, requester is non owner")
+        return {
+            "error": {
+                "error_msg": NON_OWNER_PERMISSION_DENIED_ERROR["error_msg"],
+                "msg": NON_OWNER_PERMISSION_DENIED_ERROR["msg"],
+            }
+        }
+
     logger.debug(
         "updating owners for group "
         + group.name
