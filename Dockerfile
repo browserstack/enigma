@@ -3,7 +3,7 @@
 # Based on an AMI
 ############################################################
 # Set the base image to use to Ubuntu
-FROM python:3.11-slim-bullseye AS base
+FROM python:3.11-slim-bookworm AS base
 
 ENV DJANGO_SETTINGS_MODULE=EnigmaAutomation.settings
 RUN DEBIAN_FRONTEND=noninteractive \
@@ -14,7 +14,9 @@ RUN DEBIAN_FRONTEND=noninteractive \
   && apt-get autoremove -y
 
 # Set env variables used in this Dockerfile (add a unique prefix, such as DEV)
-RUN apt update && apt install -y netcat dnsutils libmariadb-dev
+# netcat-traditional is what the old "netcat" alias resolved to on bullseye;
+# on bookworm "netcat" is a virtual package and cannot be installed by name.
+RUN apt update && apt install -y netcat-traditional dnsutils libmariadb-dev
 
 ARG APPUID=1001
 # Own group for the app user (not gid 0 / root group) so a container escape
