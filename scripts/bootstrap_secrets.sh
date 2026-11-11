@@ -17,7 +17,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SECRETS_DIR="$(cd "${SCRIPT_DIR}/../secrets" && pwd)"
 
-randstr() { LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c "$1"; }
+# `head` closes the pipe once it has enough bytes, so `tr` dies with SIGPIPE
+# (141). Under `set -o pipefail` that would abort the script, so tolerate it.
+randstr() { LC_ALL=C tr -dc 'A-Za-z0-9' < /dev/urandom | head -c "$1" || true; }
 
 # Extract a KEY=value from a file, or empty string if absent.
 readval() {
