@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.4.0
+  rev: f71fa2c1f9cf5cb705f73dffe4b21f7c61470ba9  # v4.4.0
   hooks:
   - id: check-merge-conflict
   - id: trailing-whitespace
@@ -19,7 +19,7 @@ repos:
     files: \.(json|json.sample)$
     args: [--autofix, --no-sort-keys]
 - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.6.0
+  rev: 4a72877d96875c49769109cf7881b44b8ad4e423  # v2.6.0
   hooks:
   - id: pretty-format-yaml
     args: [--autofix]

@@ -53,7 +53,7 @@ class RepeatedValidator(object):
         if user is None:
             return None
 
-        user_list = StoredPassword.objects.filter(user=user).order_by('-id')[:3:-1]
+        user_list = StoredPassword.objects.filter(user=user).order_by('-id')[:3]
         password_list = []
         for user in user_list:
             password_list.append(user.password)
@@ -70,13 +70,18 @@ class RepeatedValidator(object):
         if user is None:
             return None
 
-        hashed_password = make_password(password, salt=None, hasher='pbkdf2_sha256')
-        saved_password = StoredPassword.objects.filter(user=user, password=hashed_password).first()
-        if saved_password is None:
-            saved_password = StoredPassword()
-            saved_password.user = user
-            saved_password.password = hashed_password
-            saved_password.save()
+        # make_password salts randomly, so the hash can never be matched by a
+        # lookup; compare against the most recent stored hash instead.
+        latest = StoredPassword.objects.filter(user=user).order_by('-id').first()
+        if latest is not None and check_password(
+                password, latest.password, setter=None,
+                preferred='pbkdf2_sha256'):
+            return None
+        saved_password = StoredPassword()
+        saved_password.user = user
+        saved_password.password = make_password(
+            password, salt=None, hasher='pbkdf2_sha256')
+        saved_password.save()
 
     def get_help_text(self):
         return _(

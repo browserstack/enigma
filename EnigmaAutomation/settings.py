@@ -15,8 +15,7 @@ from os.path import join
 import json
 from pathlib import Path
 import os
-import time
-import random
+import uuid
 import django
 from django.utils.translation import gettext
 django.utils.translation.ugettext = gettext
@@ -90,7 +89,7 @@ INSTALLED_APPS = [
     "axes",
 ]
 CID_GENERATE = True
-CID_GENERATOR = lambda: f"{time.time()}-{random.random()}"
+CID_GENERATOR = lambda: uuid.uuid4().hex
 CID_HEADER = "X_CORRELATION_ID"
 CID_GENERATE = True
 CID_CONCATENATE_IDS = True
