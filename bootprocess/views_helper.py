@@ -2,6 +2,7 @@
 import logging
 import json
 import datetime
+from django.db import transaction
 from Access.models import (
     User as access_user,
     MembershipV2,
@@ -18,14 +19,20 @@ def get_dashboard_data(request):
     user = access_user.objects.get(user__username=request.user)
 
     # Add users to DEFAULT_ACCESS_GROUP if the user is not already on the group
-    user_membership = str(
-        MembershipV2.objects.filter(user=user).filter(status="Approved")
-    )
-    if DEFAULT_ACCESS_GROUP not in user_membership:
+    # The check and create run in one transaction holding a row lock on the
+    # user, so concurrent dashboard loads cannot both add the membership.
+    user_mappings_list = None
+    with transaction.atomic():
+        access_user.objects.select_for_update().get(pk=user.pk)
+        already_member = (
+            MembershipV2.objects.filter(user=user, status="Approved")
+            .filter(group__name=DEFAULT_ACCESS_GROUP)
+            .exists()
+        )
         group_objects = GroupV2.objects.filter(name=DEFAULT_ACCESS_GROUP).filter(
             status="Approved"
         )
-        if len(group_objects) > 0:
+        if not already_member and len(group_objects) > 0:
             group = group_objects[0]
             group_members = (
                 MembershipV2.objects.filter(group=group)
@@ -53,14 +60,16 @@ def get_dashboard_data(request):
             user_mappings_list = generate_user_mappings(user, group, member)
             member.save()
 
-            execute_group_access(user_mappings_list)
-
-            logger.debug(
-                "Process has been started for the Approval of request - "
-                + membership_id
-                + " - Approver="
-                + request.user.username
-            )
+    # Grant access outside the transaction so the row lock is not held while
+    # the (slow, external) access modules run.
+    if user_mappings_list is not None:
+        execute_group_access(user_mappings_list)
+        logger.debug(
+            "Process has been started for the Approval of request - "
+            + membership_id
+            + " - Approver="
+            + request.user.username
+        )
 
     with open("instanceTypes.json", encoding="utf-8") as data_file:
         data = json.load(data_file)

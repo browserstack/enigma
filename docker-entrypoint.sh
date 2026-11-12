@@ -30,7 +30,7 @@ log "===== Cloning Access Modules ====="
 python -m scripts.clone_access_modules 2>&1 | prepend
 
 log "===== Install requirements for access modules ====="
-pip install -r Access/access_modules/requirements.txt --no-cache-dir --ignore-installed 2>&1 | prepend
+pip install -r Access/access_modules/requirements.txt -c requirements.txt --no-cache-dir 2>&1 | prepend
 
 log "===== Ensure DB State ====="
 python manage.py createcachetable 2>&1 | prepend

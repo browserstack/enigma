@@ -608,7 +608,7 @@ def mark_revoked(request):
             username = request.GET.get("username")
             if not username:
                 json_response["error"] = "Username is invalid!"
-                status = 403
+                status = 400
                 return JsonResponse(json_response, status=status)
             access_tag = request_id.split("-", 1)[1]
             user = User.get_user_from_username(username=username)
@@ -636,7 +636,8 @@ def mark_revoked(request):
     except Exception as ex:
         logger.exception("Error Revoking User Access, Error: %s", traceback.format_exc())
         json_response["error"] = "Error Revoking User Access"
-    return JsonResponse(json_response, status=403)
+        status = 500
+    return JsonResponse(json_response, status=status)
 
 
 @login_required
